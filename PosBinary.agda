@@ -33,7 +33,7 @@ _div2 : ∀ n → Div2 n
 zero div2 = even 0
 suc n div2 with n div2
 suc .(n + (n + 0)) div2       | even n = odd n
-suc .(suc (n + (n + 0))) div2 | odd n 
+suc .(suc (n + (n + 0))) div2 | odd n
       rewrite sym (+-suc n (n + zero)) = even (1 + n)
 
 bin+' : (n : ℕ) → Acc _<′_ n → Bin+
@@ -41,7 +41,7 @@ bin+' n _ with n div2
 bin+' .0 _                              | even zero = []
 bin+' .(suc (m + suc (m + 0))) (acc rs) | even (suc m) =
    2∷ bin+' m (rs m (m≤′m+n (suc m) _))
-bin+' .(suc (m + (m + 0)))     (acc rs) | odd m  = 
+bin+' .(suc (m + (m + 0)))     (acc rs) | odd m  =
    1∷ bin+' m (rs m (m≤′m+n (suc m) _))
 
 bin+ : ℕ → Bin+
@@ -54,7 +54,7 @@ bin' n _ with n div2
 bin' .0 (acc rs) | even 0 = []
 bin' .(suc m + (suc m + 0)) (acc rs) | even (suc m) =
      0 ∷ bin' m (rs m (m≤′m+n (suc m) _))
-bin' .(suc (m + (m + 0))) (acc rs)   | odd m = 
+bin' .(suc (m + (m + 0))) (acc rs)   | odd m =
      1 ∷ bin' m (rs m (m≤′m+n (suc m) _))
 
 bin : ℕ → List ℕ
@@ -65,9 +65,9 @@ lInv' : ∀ n → (ac : Acc _<′_ n) → decimal (bin+' n ac) ≡ n
 lInv' n ac with n div2
 lInv' .0 ac | even zero = refl
 lInv' .(suc (m + suc (m + 0))) (acc rs) | even (suc m)
-  rewrite lInv' m (rs m (m≤′m+n (suc m) (suc (m + zero)))) 
+  rewrite lInv' m (rs m (m≤′m+n (suc m) (suc (m + zero))))
         | +-suc m (m + 0) = refl
-lInv' .(suc (m + (m + 0))) (acc rs) | odd m 
+lInv' .(suc (m + (m + 0))) (acc rs) | odd m
   rewrite lInv' m (rs m (m≤′m+n (suc m) (m + zero))) = refl
 
 lInv : ∀ n → decimal (bin+ n) ≡ n
