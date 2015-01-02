@@ -8,8 +8,6 @@ open import Data.Unit using (⊤; tt)
 open import Data.Empty using (⊥; ⊥-elim)
 open import Relation.Nullary using (¬_ ; yes; no)
 
-
-open import Function.Surjection using (Surjective)
 open import Relation.Binary
 
 open import Level
@@ -17,9 +15,6 @@ open import Level
 
 open import Relation.Binary.PropositionalEquality as PropEq
   using (_≡_; refl; setoid; cong)
-
-open import Relation.Binary using (IsEquivalence)
-open import Function.Equality using (_⟶_)
 
 open import Data.Nat.Properties using (≤-step)
 open DecTotalOrder Data.Nat.decTotalOrder using () renaming (refl to ≤-refl; trans to ≤-trans)
@@ -35,9 +30,9 @@ infixr 5 _∷[_,_]_
 
 data PN (b m n : ℕ) : Set where
   [_] : m < n → PN b m n
-  _∷[_,_]_ : (x : ℕ) → (m ≤ x) → (x < n) → PN b m n → PN b m n 
+  _∷[_,_]_ : (x : ℕ) → (m ≤ x) → (x < n) → PN b m n → PN b m n
 
-{- What is this for? 
+{- What is this for? To classify PN
 trivial : ∀ {b m n m<n} → PN b m n m<n → Set
 trivial {zero} _ = ⊤                        -- base: 0
 trivial {suc b} {zero} {zero} {()}
@@ -59,19 +54,27 @@ private
    ≤→< {n = suc n} z≤n neq = s≤s z≤n
    ≤→< (s≤s m≤n) 1+m≠1+n = s≤s (≤→< m≤n (λ m≡n → 1+m≠1+n (cong suc m≡n)))
 
+-- the image of 'incr' is "continuous" if when
+--    b = 1 ⇒ m ≥ 1, n ≥ 2m
+--    b > 1 ⇒ m ≥ 0, n ≥ m + b, n ≥ 1 + mb
+
 incr : ∀ {b m n} → m ≤ 1 → 2 ≤ n → PN b m n → PN b m n
 incr m≤1 2≤n [ m<n ] = 1 ∷[ m≤1 , 2≤n ] [ m<n ]
-incr {b} {m} {n} m≤1 2≤n (x ∷[ m≤x , x<n ] xs) with suc x ≟ n 
+incr {b} {m} {n} m≤1 2≤n (x ∷[ m≤x , x<n ] xs) with suc x ≟ n
 incr {b} {m} m≤1 2≤n (x ∷[ m≤x , x<n ] xs) | no  1+x≠n = suc x ∷[ ≤-step m≤x , ≤→< x<n 1+x≠n ] xs
 incr {b} {m} m≤1 2≤n (x ∷[ m≤x , x<n ] xs) | yes refl  = m ∷[ ≤-refl , s≤s m≤x ] incr m≤1 2≤n xs
 
-{-
-incr : ∀ {b m n m<n m+b≤n} → (p : PN b m n m<n m+b≤n) → nonNil p → PN b m n m<n m+b≤n
-incr [] ()
-incr {b} {m} {n} {m<n} {m+b≤n} (x ∷[ x≥m , x<n ] xs) p with suc x ≟ b
-... | yes q = m ∷[ {!   !} , {!   !} ] incr {!   !} {!   !}
-... | no ¬q = (suc x) ∷[ {!   !} , {!   !} ] xs
--}
+base=1-incr : ∀ {m n} → 1 ≤ m → m * 2 ≤ n → PN 1 m n → PN 1 m n
+base=1-incr {m} {n} 1≤m 2m≤n [ m<n ] = m ∷[ ≤-refl , m<n ] [ m<n ]
+base=1-incr {m} {n} 1≤m 2m≤n (x ∷[ m≤x , x<n ] xs) with suc x ≟ n
+base=1-incr {m} {n} 1≤m 2m≤n (x ∷[ m≤x , x<n ] xs) | no 1+x≠n = suc x ∷[ ≤-step m≤x , ≤→< x<n 1+x≠n ] xs
+base=1-incr {m} 1≤m 2m≤n (x ∷[ m≤x , x<n ] xs) | yes refl = m ∷[ ≤-refl , s≤s m≤x ] base=1-incr 1≤m 2m≤n xs
+
+base>1-incr : ∀ {b m n} → 1 < b → 0 ≤ m → m + b ≤ n → m * b + 1 ≤ n → PN b m n → PN b m n
+base>1-incr {b} {m} {n} 1<b 0≤m m+b≤n mb+1≤n [ m<n ] = m ∷[ ≤-refl , m<n ] [ m<n ]
+base>1-incr {b} {m} {n} 1<b 0≤m m+b≤n mb+1≤n (x ∷[ m≤x , x<n ] xs) with suc x ≟ n
+base>1-incr {b} {m} {n} 1<b 0≤m m+b≤n mb+1≤n (x ∷[ m≤x , x<n ] xs) | no 1+x≠n = suc x ∷[ ≤-step m≤x , ≤→< x<n 1+x≠n ] xs
+base>1-incr {b} {m} 1<b 0≤m m+b≤n mb+1≤n (x ∷[ m≤x , x<n ] xs) | yes refl = m ∷[ ≤-refl , s≤s m≤x ] base>1-incr 1<b 0≤m m+b≤n mb+1≤n xs
 
 --
 --  Instances
@@ -87,7 +90,7 @@ u₀ = 1 ∷[ s≤s z≤n , s≤s (s≤s z≤n) ] 1 ∷[ s≤s z≤n , s≤s (s�
 
 -- Binary
 Bin : Set
-Bin = PN 2 0 2 
+Bin = PN 2 0 2
 
 b₀ : Bin
 b₀ = 1 ∷[ z≤n , s≤s (s≤s z≤n) ] 0 ∷[ z≤n , s≤s z≤n ] [ s≤s z≤n ]
