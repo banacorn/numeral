@@ -78,32 +78,32 @@ base>1-incr {b} {m} 1<b 0≤m m+b≤n mb+1≤n (x ∷[ m≤x , x<n ] xs) | yes r
 --
 
 -- first attempt :p
-unary-toℕ-hom : (a : PN 1 1 2) → suc (toℕ a) ≡ toℕ (base=1-incr (s≤s z≤n) (s≤s (s≤s z≤n)) a)
-unary-toℕ-hom [ m<n ] = refl
-unary-toℕ-hom (zero ∷[ () , x<n ] xs)
-unary-toℕ-hom (suc zero ∷[ m≤x , x<n ] xs) = cong suc {!   !}
-unary-toℕ-hom (suc (suc x) ∷[ m≤x , s≤s (s≤s ()) ] xs)
+-- unary-toℕ-hom : (a : PN 1 1 2) → suc (toℕ a) ≡ toℕ (base=1-incr (s≤s z≤n) (s≤s (s≤s z≤n)) a)
+-- unary-toℕ-hom [ m<n ] = refl
+-- unary-toℕ-hom (zero ∷[ () , x<n ] xs)
+-- unary-toℕ-hom (suc zero ∷[ m≤x , x<n ] xs) = cong suc {!   !}
+-- unary-toℕ-hom (suc (suc x) ∷[ m≤x , s≤s (s≤s ()) ] xs)
 
 
 
 --------------------------------------------------------------------------------
 --  Instances
 
+private
+  -- Unary
+  Unary : Set
+  Unary = PN 1 1 2
 
--- Unary
-Unary : Set
-Unary = PN 1 1 2
+  u₀ : Unary
+  u₀ = 1 ∷[ s≤s z≤n , s≤s (s≤s z≤n) ] 1 ∷[ s≤s z≤n , s≤s (s≤s z≤n) ] [ s≤s (s≤s z≤n) ]
 
-u₀ : Unary
-u₀ = 1 ∷[ s≤s z≤n , s≤s (s≤s z≤n) ] 1 ∷[ s≤s z≤n , s≤s (s≤s z≤n) ] [ s≤s (s≤s z≤n) ]
+  -- Binary
+  Bin : Set
+  Bin = PN 2 0 2
 
--- Binary
-Bin : Set
-Bin = PN 2 0 2
+  b₀ : Bin
+  b₀ = 1 ∷[ z≤n , s≤s (s≤s z≤n) ] 0 ∷[ z≤n , s≤s z≤n ] [ s≤s z≤n ]
 
-b₀ : Bin
-b₀ = 1 ∷[ z≤n , s≤s (s≤s z≤n) ] 0 ∷[ z≤n , s≤s z≤n ] [ s≤s z≤n ]
-
--- Zeroless Binary
-Bin+ : Set
-Bin+ = PN 2 1 3
+  -- Zeroless Binary
+  Bin+ : Set
+  Bin+ = PN 2 1 3
