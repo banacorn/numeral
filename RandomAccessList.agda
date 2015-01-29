@@ -4,19 +4,12 @@ open import BuildingBlock
 open import Data.Unit using (⊤; tt)
 open import Data.Empty using (⊥)
 open import Data.Nat
-<<<<<<< HEAD
-open import Relation.Nullary
--- open import Data.Product
-open import Relation.Binary.PropositionalEquality as PropEq
-    using (_≡_; refl; cong)
-=======
 open import Data.Nat.Properties.Simple
 open import Function
 open import Relation.Nullary
 open import Relation.Nullary.Decidable using (map′)
 open import Relation.Binary.PropositionalEquality as PropEq
     using (_≡_; refl; cong; trans; sym)
->>>>>>> sync
 -- open import Relation.Nullary using (¬_)
 
 -- parameterized by the level of the least significant digit
