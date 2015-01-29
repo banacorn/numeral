@@ -5,11 +5,15 @@ open import Data.Unit using (⊤; tt)
 open import Data.Empty using (⊥)
 open import Data.Nat
 open import Data.Nat.Properties.Simple
-open import Function
+open import Data.Nat.Properties using (cancel-*-right)
+--open import Function
 open import Relation.Nullary
+open import Relation.Binary
 open import Relation.Nullary.Decidable using (map′)
 open import Relation.Binary.PropositionalEquality as PropEq
-    using (_≡_; refl; cong; trans; sym)
+    using (_≡_; _≢_; refl; cong; trans; sym)
+open PropEq.≡-Reasoning
+
 -- open import Relation.Nullary using (¬_)
 
 -- parameterized by the level of the least significant digit
@@ -23,9 +27,14 @@ toℕ [] = zero
 toℕ (0∷ xs) = 2 * (toℕ xs)
 toℕ (_ 1∷ xs) = 1 + 2 * toℕ xs
 
+n*a≡0⇒a≡0 : (a n : ℕ) → 0 < n → n * a ≡ 0 → a ≡ 0
+n*a≡0⇒a≡0 a       zero    ()        n*a≡0
+n*a≡0⇒a≡0 zero    (suc n) (s≤s z≤n) a+n*a≡0 = refl
+n*a≡0⇒a≡0 (suc a) (suc n) (s≤s z≤n) ()
+
 Null : ∀ {A n} → (xs : RandomAccessList A n) → Dec (toℕ xs ≡ zero)
 Null [] = yes refl
-Null (0∷ xs) = map′ (cong (λ w → 2 * w)) ? (Null xs)
+Null (0∷ xs) = map′ (cong (λ w → 2 * w)) (n*a≡0⇒a≡0 (toℕ xs) (suc (suc zero)) (s≤s z≤n)) (Null xs)
 Null (x 1∷ xs) = no (λ ())
 
 incr : ∀ {A n} → BinaryLeafTree A n → RandomAccessList A n → RandomAccessList A n
