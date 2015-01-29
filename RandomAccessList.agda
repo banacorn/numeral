@@ -4,10 +4,19 @@ open import BuildingBlock
 open import Data.Unit using (⊤; tt)
 open import Data.Empty using (⊥)
 open import Data.Nat
+<<<<<<< HEAD
 open import Relation.Nullary
 -- open import Data.Product
 open import Relation.Binary.PropositionalEquality as PropEq
     using (_≡_; refl; cong)
+=======
+open import Data.Nat.Properties.Simple
+open import Function
+open import Relation.Nullary
+open import Relation.Nullary.Decidable using (map′)
+open import Relation.Binary.PropositionalEquality as PropEq
+    using (_≡_; refl; cong; trans; sym)
+>>>>>>> sync
 -- open import Relation.Nullary using (¬_)
 
 -- parameterized by the level of the least significant digit
@@ -21,9 +30,9 @@ toℕ [] = zero
 toℕ (0∷ xs) = 2 * (toℕ xs)
 toℕ (_ 1∷ xs) = 1 + 2 * toℕ xs
 
-Null : ∀ {A n} → (xs : RandomAccessList A n) → Dec {! toℕ xs ≡ zero  !}
+Null : ∀ {A n} → (xs : RandomAccessList A n) → Dec (toℕ xs ≡ zero)
 Null [] = yes refl
-Null (0∷ xs) = Null xs
+Null (0∷ xs) = map′ (cong (λ w → 2 * w)) ? (Null xs)
 Null (x 1∷ xs) = no (λ ())
 
 incr : ∀ {A n} → BinaryLeafTree A n → RandomAccessList A n → RandomAccessList A n
