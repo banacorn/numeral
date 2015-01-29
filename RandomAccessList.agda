@@ -22,19 +22,19 @@ data RandomAccessList (A : Set) : ℕ → Set where
     0∷_ : ∀ {n} → RandomAccessList A (suc n) → RandomAccessList A n
     _1∷_ : ∀ {n} → BinaryLeafTree A n → RandomAccessList A (suc n) → RandomAccessList A n
 
-toℕ : ∀ {A n} → RandomAccessList A n → ℕ
-toℕ [] = zero
-toℕ (0∷ xs) = 2 * (toℕ xs)
-toℕ (_ 1∷ xs) = 1 + 2 * toℕ xs
+⟦_⟧ : ∀ {A n} → RandomAccessList A n → ℕ
+⟦ [] ⟧ = zero
+⟦ 0∷ xs ⟧ = 2 * ⟦ xs ⟧
+⟦ _ 1∷ xs ⟧ = 1 + 2 * ⟦ xs ⟧
 
 n*a≡0⇒a≡0 : (a n : ℕ) → 0 < n → n * a ≡ 0 → a ≡ 0
 n*a≡0⇒a≡0 a       zero    ()        n*a≡0
 n*a≡0⇒a≡0 zero    (suc n) (s≤s z≤n) a+n*a≡0 = refl
 n*a≡0⇒a≡0 (suc a) (suc n) (s≤s z≤n) ()
 
-Null : ∀ {A n} → (xs : RandomAccessList A n) → Dec (toℕ xs ≡ zero)
+Null : ∀ {A n} → (xs : RandomAccessList A n) → Dec (⟦ xs ⟧ ≡ zero)
 Null [] = yes refl
-Null (0∷ xs) = map′ (cong (λ w → 2 * w)) (n*a≡0⇒a≡0 (toℕ xs) (suc (suc zero)) (s≤s z≤n)) (Null xs)
+Null (0∷ xs) = map′ (cong (λ w → 2 * w)) (n*a≡0⇒a≡0 ⟦ xs ⟧ (suc (suc zero)) (s≤s z≤n)) (Null xs)
 Null (x 1∷ xs) = no (λ ())
 
 incr : ∀ {A n} → BinaryLeafTree A n → RandomAccessList A n → RandomAccessList A n
