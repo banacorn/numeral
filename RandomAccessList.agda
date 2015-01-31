@@ -5,6 +5,7 @@ open import BuildingBlock
 open import Data.Unit using (⊤; tt)
 open import Data.Empty using (⊥)
 open import Data.Nat
+open import Data.Nat.Properties.Simple
 open import Data.Product as Prod
 open import Data.Product hiding (map)
 
@@ -15,7 +16,7 @@ open import Relation.Nullary.Decidable using (False; True; fromWitnessFalse)
 
 open import Relation.Binary.PropositionalEquality as PropEq
     using (_≡_; _≢_; refl; cong; trans; sym)
-
+open PropEq.≡-Reasoning
 
 -- parameterized by the level of the least significant digit
 data RandomAccessList (A : Set) : ℕ → Set where
@@ -102,3 +103,28 @@ decr (0∷ xs) () | yes p
 decr (0∷ xs) tt | no ¬p with borrow xs (fromWitnessFalse ¬p)
 decr (0∷ xs) tt | no ¬p | n , x , xs' = 0∷ xs'
 decr (x 1∷ xs) q = 0∷ xs
+
+--------------------------------------------------------------------------------
+-- properties
+
+incr-+1 : ∀ {A n}
+        → (x : BinaryLeafTree A n)
+        → (xs : RandomAccessList A n)
+        → ⟦ incr x xs ⟧ ≡ suc ⟦ xs ⟧
+incr-+1 x [] = refl
+incr-+1 x (0∷ xs) = refl
+incr-+1 x (y 1∷ xs) = begin
+        ⟦ incr x (y 1∷ xs) ⟧
+    ≡⟨ refl ⟩
+        ⟦ 0∷ incr (Node x y) xs ⟧
+    ≡⟨ refl ⟩
+        2 * ⟦ incr (Node x y) xs ⟧
+    ≡⟨ cong (_*_ 2) (incr-+1 (Node x y) xs) ⟩
+        2 * (suc ⟦ xs ⟧)
+    ≡⟨ +-*-suc 2 ⟦ xs ⟧ ⟩
+        2 + 2 * ⟦ xs ⟧
+    ≡⟨ +-assoc 0 0 (2 + 2 * ⟦ xs ⟧) ⟩
+        suc (1 + 2 * ⟦ xs ⟧)
+    ≡⟨ refl ⟩
+        suc ⟦ y 1∷ xs ⟧
+    ∎
