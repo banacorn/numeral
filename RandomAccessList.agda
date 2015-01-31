@@ -11,7 +11,8 @@ open import Data.Product hiding (map)
 
 open import Function
 
-open import Relation.Nullary using (Dec; yes; no)
+open import Relation.Nullary.Negation
+open import Relation.Nullary using (Dec; yes; no; ¬_)
 open import Relation.Nullary.Decidable using (False; True; fromWitnessFalse)
 
 open import Relation.Binary.PropositionalEquality as PropEq
@@ -135,34 +136,100 @@ incr-+1 x (y 1∷ xs) =
         suc ⟦ y 1∷ xs ⟧
     ∎
 
-{-
-decr-─1 : ∀ {A n}
-        → (xs : RandomAccessList A n)
-        → (p : False (Null? xs))
-        → suc ⟦ decr xs p ⟧ ≡ ⟦ xs ⟧
-decr-─1 [] ()
-decr-─1 (0∷ xs) p with Null? xs
-decr-─1 (0∷ xs) () | yes q
-decr-─1 (0∷ xs) tt | no ¬q  with borrow xs (fromWitnessFalse ¬q)
-decr-─1 (0∷ xs) tt | no ¬q | n , x , xs' =
-    begin
-        suc ⟦ decr (0∷ {! incr  !} ) {!   !} ⟧
-    ≡⟨ {!   !} ⟩
-        {!   !}
-    ≡⟨ {!   !} ⟩
-        {!   !}
-    ≡⟨ {!   !} ⟩
-        {!   !}
-    ≡⟨ {!   !} ⟩
-        2 * ⟦ xs ⟧
-    ≡⟨ refl ⟩
-        ⟦ 0∷ xs ⟧
-    ∎
-decr-─1 (x 1∷ xs) p = refl
+distrib-left-*-+ : ∀ m n o → m * (n + o) ≡ m * n + m * o
+distrib-left-*-+ m n o =
+        begin
+            m * (n + o)
+        ≡⟨ *-comm m (n + o) ⟩
+            (n + o) * m
+        ≡⟨ distribʳ-*-+ m n o ⟩
+            n * m + o * m
+        ≡⟨ cong (flip _+_ (o * m)) (*-comm n m) ⟩
+            m * n + o * m
+        ≡⟨ cong (_+_ (m * n)) (*-comm o m) ⟩
+            m * n + m * o
+        ∎
 
-incr∘borrow-id : ∀ {A n}
+++-+ : ∀ {A n}
+    → (xs : RandomAccessList A n)
+    → (ys : RandomAccessList A n)
+    → ⟦ xs ++ ys ⟧ ≡ ⟦ xs ⟧ + ⟦ ys ⟧
+++-+ []        ys        = refl
+++-+ (  0∷ xs) []        = sym (+-right-identity (⟦ xs ⟧ + (⟦ xs ⟧ + 0)))
+++-+ (  0∷ xs) (  0∷ ys) =
+    begin
+        ⟦ (0∷ xs) ++ (0∷ ys) ⟧
+    ≡⟨ cong (_*_ 2) (++-+ xs ys) ⟩
+        2 * (⟦ xs ⟧ + ⟦ ys ⟧)
+    ≡⟨ distrib-left-*-+ 2 ⟦ xs ⟧ ⟦ ys ⟧ ⟩
+        ⟦ 0∷ xs ⟧ + ⟦ 0∷ ys ⟧
+    ∎
+++-+ (  0∷ xs) (y 1∷ ys) =
+    begin
+        ⟦ (0∷ xs) ++ (y 1∷ ys) ⟧
+    ≡⟨ cong suc (cong (_*_ 2) (++-+ xs ys)) ⟩
+        1 + (2 * (⟦ xs ⟧ + ⟦ ys ⟧))
+    ≡⟨ cong suc (distrib-left-*-+ 2 ⟦ xs ⟧ ⟦ ys ⟧) ⟩
+        1 + (2 * ⟦ xs ⟧ + 2 * ⟦ ys ⟧)
+    ≡⟨ sym (+-suc (⟦ xs ⟧ + (⟦ xs ⟧ + 0)) (⟦ ys ⟧ + (⟦ ys ⟧ + 0))) ⟩
+        2 * ⟦ xs ⟧ + (1 + 2 * ⟦ ys ⟧)
+    ≡⟨ cong (_+_ (2 * ⟦ xs ⟧)) refl ⟩
+        ⟦ 0∷ xs ⟧ + ⟦ y 1∷ ys ⟧
+    ∎
+++-+ (x 1∷ xs) []        = sym (+-right-identity (suc (⟦ xs ⟧ + (⟦ xs ⟧ + 0))))
+++-+ (x 1∷ xs) (  0∷ ys) =
+    begin
+        1 + 2 * ⟦ xs ++ ys ⟧
+    ≡⟨ cong (λ z → suc (2 * z)) (++-+ xs ys) ⟩
+        1 + 2 * (⟦ xs ⟧ + ⟦ ys ⟧)
+    ≡⟨ cong suc (distrib-left-*-+ 2 ⟦ xs ⟧ ⟦ ys ⟧) ⟩
+        1 + (2 * ⟦ xs ⟧ + 2 * ⟦ ys ⟧)
+    ≡⟨ sym (+-assoc 0 0 (suc (⟦ xs ⟧ + (⟦ xs ⟧ + 0) + (⟦ ys ⟧ + (⟦ ys ⟧ + 0))))) ⟩
+        (1 + 2 * ⟦ xs ⟧) + 2 * ⟦ ys ⟧
+    ∎
+++-+ (x 1∷ xs) (y 1∷ ys) =
+    begin
+        2 * ⟦ incr (Node x y) (xs ++ ys) ⟧
+    ≡⟨ cong (_*_ 2) (incr-+1 (Node x y) (xs ++ ys)) ⟩
+        2 * suc ⟦ xs ++ ys ⟧
+    ≡⟨ cong (λ w → 2 * suc w) (++-+ xs ys) ⟩
+        2 * (1 + (⟦ xs ⟧ + ⟦ ys ⟧))
+    ≡⟨ distrib-left-*-+ 2 1 (⟦ xs ⟧ + ⟦ ys ⟧) ⟩
+        2 + 2 * (⟦ xs ⟧ + ⟦ ys ⟧)
+    ≡⟨ cong (_+_ 2) (distrib-left-*-+ 2 ⟦ xs ⟧ ⟦ ys ⟧) ⟩
+        2 + (2 * ⟦ xs ⟧ + 2 * ⟦ ys ⟧)
+    ≡⟨ cong suc (+-assoc 0 0 (suc (⟦ xs ⟧ + (⟦ xs ⟧ + 0) + (⟦ ys ⟧ + (⟦ ys ⟧ + 0))))) ⟩
+        1 + (1 + (2 * ⟦ xs ⟧ + 2 * ⟦ ys ⟧))
+    ≡⟨ cong suc (+-assoc 0 0 (suc (⟦ xs ⟧ + (⟦ xs ⟧ + 0) + (⟦ ys ⟧ + (⟦ ys ⟧ + 0))))) ⟩
+        1 + ((1 + 2 * ⟦ xs ⟧) + 2 * ⟦ ys ⟧)
+    ≡⟨ cong (λ w → 1 + (w + 2 * ⟦ ys ⟧)) (+-comm 1 (⟦ xs ⟧ + (⟦ xs ⟧ + 0))) ⟩
+        1 + ((2 * ⟦ xs ⟧ + 1) + 2 * ⟦ ys ⟧)
+    ≡⟨ cong suc (+-assoc (⟦ xs ⟧ + (⟦ xs ⟧ + 0)) 1 (⟦ ys ⟧ + (⟦ ys ⟧ + 0))) ⟩
+        1 + (2 * ⟦ xs ⟧ + (1 + 2 * ⟦ ys ⟧))
+    ≡⟨ refl ⟩
+        ⟦ x 1∷ xs ⟧ + ⟦ y 1∷ ys ⟧
+    ∎
+
+++∘borrow-id : ∀ {A n}
                 → (xs : RandomAccessList A n)
                 → (p : False (Null? xs))
-                → (uncurry incr (proj₂ (borrow xs p))) ≡ xs
-incr∘borrow-id xs p = {!   !}
--}
+                → (uncurry _++_ (borrow xs p)) ≡ xs
+++∘borrow-id [] ()
+++∘borrow-id (0∷ xs) p with Null? xs
+++∘borrow-id (0∷ xs) () | yes q
+++∘borrow-id (0∷ xs) tt | no ¬q with borrow xs (fromWitnessFalse ¬q)
+++∘borrow-id (0∷ xs) tt | no ¬q | ys , xs' =
+    begin
+        uncurry _++_ (Prod.map 0∷_ 0∷_ (ys , xs'))
+    ≡⟨ refl ⟩
+        uncurry _++_ (0∷ ys , 0∷ xs')
+    ≡⟨ refl ⟩
+        (0∷ ys) ++ (0∷ xs')
+    ≡⟨ refl ⟩
+        0∷ (ys ++ xs')
+    ≡⟨ cong 0∷_ (sym (++∘borrow-id (ys ++ xs') (fromWitnessFalse (contraposition (trans {!   !}) ¬q)))) ⟩
+        0∷ {!   !}
+    ≡⟨ {!   !} ⟩
+        0∷ xs
+    ∎
+++∘borrow-id (x 1∷ xs) p = refl
