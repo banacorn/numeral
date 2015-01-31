@@ -51,6 +51,18 @@ incr a    []     = a 1∷ []
 incr a (  0∷ xs) = a 1∷ xs
 incr a (x 1∷ xs) = 0∷ (incr (Node a x) xs)
 
+carry : ∀ {A n} → BinaryLeafTree A n → BinaryLeafTree A n → BinaryLeafTree A (suc n)
+carry x y = Node x y
+
+_++_ : ∀ {A n} → RandomAccessList A n → RandomAccessList A n → RandomAccessList A n
+[]        ++ ys        = ys
+(  0∷ xs) ++ []        =   0∷ xs
+(  0∷ xs) ++ (  0∷ ys) =   0∷ (xs ++ ys)
+(  0∷ xs) ++ (x 1∷ ys) = x 1∷ (xs ++ ys)
+(x 1∷ xs) ++ []        = x 1∷ xs
+(x 1∷ xs) ++ (  0∷ ys) = x 1∷ (xs ++ ys)
+(x 1∷ xs) ++ (y 1∷ ys) =   0∷ (((Node x y) 1∷ []) ++ (xs ++ ys))
+
 -- borrow from the first non-zero digit, and splits it like so (1:xs)
 borrow : ∀ {A n} → (xs : RandomAccessList A n) → False (Null? xs) → RandomAccessList A n × RandomAccessList A n
 borrow [] ()
