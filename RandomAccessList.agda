@@ -24,6 +24,17 @@ data RandomAccessList (A : Set) : ℕ → Set where
     _1∷_ : ∀ {n} → BinaryLeafTree A n → RandomAccessList A (suc n) → RandomAccessList A n
 
 --------------------------------------------------------------------------------
+-- examples
+
+private
+    a : RandomAccessList ℕ 0
+    a = Leaf zero 1∷ []
+    b : RandomAccessList ℕ 1
+    b = (Node (Leaf zero) (Leaf zero)) 1∷ []
+    c : RandomAccessList ℕ 1
+    c = 0∷ ((Node (Node (Leaf zero) (Leaf zero)) (Node (Leaf zero) (Leaf zero))) 1∷ [])
+
+--------------------------------------------------------------------------------
 -- to ℕ
 
 ⟦_⟧ : ∀ {A n} → RandomAccessList A n → ℕ
@@ -75,9 +86,19 @@ _++_ : ∀ {A n} → RandomAccessList A n → RandomAccessList A n → RandomAcc
 
 -- borrow from the first non-zero digit, and splits it like so (1:xs)
 -- numerical: borrow
-borrow : ∀ {A n} → (xs : RandomAccessList A n) → False (Null? xs) → RandomAccessList A n × RandomAccessList A n
+borrow : ∀ {A n} → (xs : RandomAccessList A n) → False (Null? xs) → Σ[ m ∈ ℕ ] BinaryLeafTree A m × RandomAccessList A n
 borrow [] ()
 borrow (0∷ xs) q with Null? xs
 borrow (0∷ xs) () | yes p
-borrow (0∷ xs) tt | no ¬p = Prod.map 0∷_ 0∷_ (borrow xs (fromWitnessFalse ¬p))
-borrow (x 1∷ xs) q = x 1∷ [] , (0∷ xs)
+borrow (0∷ xs) tt | no ¬p = Prod.map id (Prod.map id 0∷_) (borrow xs (fromWitnessFalse ¬p))
+borrow {n = n} (x 1∷ xs) q = n , (x , (0∷ xs))
+
+-- numerical: -1
+-- container: deletion
+decr : ∀ {A n} → (xs : RandomAccessList A n) → False (Null? xs) → RandomAccessList A n
+decr [] ()
+decr (0∷ xs) q with Null? xs
+decr (0∷ xs) () | yes p
+decr (0∷ xs) tt | no ¬p with borrow xs (fromWitnessFalse ¬p)
+decr (0∷ xs) tt | no ¬p | n , x , xs' = 0∷ xs'
+decr (x 1∷ xs) q = 0∷ xs
