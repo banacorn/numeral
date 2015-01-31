@@ -24,6 +24,12 @@ data RandomAccessList (A : Set) : ℕ → Set where
     0∷_  : ∀ {n} → RandomAccessList A (suc n) → RandomAccessList A n
     _1∷_ : ∀ {n} → BinaryLeafTree A n → RandomAccessList A (suc n) → RandomAccessList A n
 
+0∷-lift : ∀ {A n} → RandomAccessList A n → (m : ℕ) → m ≤ n → RandomAccessList A m
+0∷-lift {n = zero} xs zero z≤n = xs
+0∷-lift {n = zero} xs (suc m) ()
+0∷-lift {n = suc n} xs zero z≤n = 0∷ (0∷-lift xs (suc zero) (s≤s z≤n))
+0∷-lift {n = suc n} xs (suc m) (s≤s m≤n) = 0∷-lift xs (suc m) (s≤s m≤n)
+
 --------------------------------------------------------------------------------
 -- examples
 
@@ -87,21 +93,20 @@ _++_ : ∀ {A n} → RandomAccessList A n → RandomAccessList A n → RandomAcc
 
 -- borrow from the first non-zero digit, and splits it like so (1:xs)
 -- numerical: borrow
-borrow : ∀ {A n} → (xs : RandomAccessList A n) → False (Null? xs) → Σ[ m ∈ ℕ ] BinaryLeafTree A m × RandomAccessList A n
+borrow : ∀ {A n} → (xs : RandomAccessList A n) → False (Null? xs) → RandomAccessList A n × RandomAccessList A n
 borrow [] ()
 borrow (0∷ xs) q with Null? xs
 borrow (0∷ xs) () | yes p
-borrow (0∷ xs) tt | no ¬p = Prod.map id (Prod.map id 0∷_) (borrow xs (fromWitnessFalse ¬p))
-borrow {n = n} (x 1∷ xs) q = n , (x , (0∷ xs))
+borrow (0∷ xs) tt | no ¬p = Prod.map 0∷_ 0∷_ (borrow xs (fromWitnessFalse ¬p))
+borrow {n = n} (x 1∷ xs) q = x 1∷ [] , 0∷ xs
 
 -- numerical: -1
--- container: deletion
+-- container: deletion{-
 decr : ∀ {A n} → (xs : RandomAccessList A n) → False (Null? xs) → RandomAccessList A n
 decr [] ()
 decr (0∷ xs) q with Null? xs
 decr (0∷ xs) () | yes p
-decr (0∷ xs) tt | no ¬p with borrow xs (fromWitnessFalse ¬p)
-decr (0∷ xs) tt | no ¬p | n , x , xs' = 0∷ xs'
+decr (0∷ xs) tt | no ¬p = 0∷ (proj₂ (borrow xs (fromWitnessFalse ¬p)))
 decr (x 1∷ xs) q = 0∷ xs
 
 --------------------------------------------------------------------------------
@@ -113,7 +118,8 @@ incr-+1 : ∀ {A n}
         → ⟦ incr x xs ⟧ ≡ suc ⟦ xs ⟧
 incr-+1 x [] = refl
 incr-+1 x (0∷ xs) = refl
-incr-+1 x (y 1∷ xs) = begin
+incr-+1 x (y 1∷ xs) =
+    begin
         ⟦ incr x (y 1∷ xs) ⟧
     ≡⟨ refl ⟩
         ⟦ 0∷ incr (Node x y) xs ⟧
@@ -128,3 +134,35 @@ incr-+1 x (y 1∷ xs) = begin
     ≡⟨ refl ⟩
         suc ⟦ y 1∷ xs ⟧
     ∎
+
+{-
+decr-─1 : ∀ {A n}
+        → (xs : RandomAccessList A n)
+        → (p : False (Null? xs))
+        → suc ⟦ decr xs p ⟧ ≡ ⟦ xs ⟧
+decr-─1 [] ()
+decr-─1 (0∷ xs) p with Null? xs
+decr-─1 (0∷ xs) () | yes q
+decr-─1 (0∷ xs) tt | no ¬q  with borrow xs (fromWitnessFalse ¬q)
+decr-─1 (0∷ xs) tt | no ¬q | n , x , xs' =
+    begin
+        suc ⟦ decr (0∷ {! incr  !} ) {!   !} ⟧
+    ≡⟨ {!   !} ⟩
+        {!   !}
+    ≡⟨ {!   !} ⟩
+        {!   !}
+    ≡⟨ {!   !} ⟩
+        {!   !}
+    ≡⟨ {!   !} ⟩
+        2 * ⟦ xs ⟧
+    ≡⟨ refl ⟩
+        ⟦ 0∷ xs ⟧
+    ∎
+decr-─1 (x 1∷ xs) p = refl
+
+incr∘borrow-id : ∀ {A n}
+                → (xs : RandomAccessList A n)
+                → (p : False (Null? xs))
+                → (uncurry incr (proj₂ (borrow xs p))) ≡ xs
+incr∘borrow-id xs p = {!   !}
+-}
