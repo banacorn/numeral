@@ -210,6 +210,23 @@ distrib-left-*-+ m n o =
         ⟦ x 1∷ xs ⟧ + ⟦ y 1∷ ys ⟧
     ∎
 
+borrow-+ : ∀ {A n}
+        → (xs : RandomAccessList A n)
+        → (p : False (Null? xs))
+        → ⟦ proj₁ (borrow xs p) ⟧ + ⟦ proj₂ (borrow xs p) ⟧ ≡ ⟦ xs ⟧
+borrow-+ [] ()
+borrow-+ (0∷ xs) p with Null? xs
+borrow-+ (0∷ xs) () | yes q
+borrow-+ (0∷ xs) tt | no ¬q =
+    begin
+        2 * ⟦ proj₁ (borrow xs (fromWitnessFalse ¬q)) ⟧ + 2 * ⟦ proj₂ (borrow xs (fromWitnessFalse ¬q)) ⟧
+    ≡⟨ sym (distrib-left-*-+ 2 ⟦ proj₁ (borrow xs (fromWitnessFalse ¬q)) ⟧ ⟦ proj₂ (borrow xs (fromWitnessFalse ¬q)) ⟧) ⟩
+        2 * (⟦ proj₁ (borrow xs (fromWitnessFalse ¬q)) ⟧ + ⟦ proj₂ (borrow xs (fromWitnessFalse ¬q)) ⟧)
+    ≡⟨ cong (_*_ 2) (borrow-+ xs (fromWitnessFalse ¬q)) ⟩
+        2 * ⟦ xs ⟧
+    ∎
+borrow-+ (x 1∷ xs) p = sym (++-+ [] (x 1∷ xs))
+
 ++∘borrow-id : ∀ {A n}
                 → (xs : RandomAccessList A n)
                 → (p : False (Null? xs))
@@ -227,9 +244,35 @@ distrib-left-*-+ m n o =
         (0∷ ys) ++ (0∷ xs')
     ≡⟨ refl ⟩
         0∷ (ys ++ xs')
-    ≡⟨ cong 0∷_ (sym (++∘borrow-id (ys ++ xs') (fromWitnessFalse (contraposition (trans {!   !}) ¬q)))) ⟩
-        0∷ {!   !}
-    ≡⟨ {!   !} ⟩
+    ≡⟨ cong 0∷_ (
+        begin
+            ys ++ xs'
+        ≡⟨ refl ⟩
+            uncurry _++_ (ys , xs')
+        ≡⟨ cong (uncurry _++_) (
+            begin
+                ys , xs'
+            ≡⟨ {!   !} ⟩
+                borrow xs (fromWitnessFalse ¬q)
+            ∎) ⟩
+            uncurry _++_ (borrow xs (fromWitnessFalse ¬q))
+        ≡⟨ ++∘borrow-id xs (fromWitnessFalse ¬q) ⟩
+            xs
+        ∎) ⟩
         0∷ xs
     ∎
 ++∘borrow-id (x 1∷ xs) p = refl
+
+{-
+begin
+    {!   !}
+≡⟨ {!   !} ⟩
+    {!   !}
+≡⟨ {!   !} ⟩
+    {!   !}
+≡⟨ {!   !} ⟩
+    {!   !}
+≡⟨ {!   !} ⟩
+    {!   !}
+∎
+-}
