@@ -16,7 +16,7 @@ open import Relation.Nullary using (Dec; yes; no; ¬_)
 open import Relation.Nullary.Decidable using (False; True; fromWitnessFalse)
 
 open import Relation.Binary.PropositionalEquality as PropEq
-    using (_≡_; _≢_; refl; cong; trans; sym)
+    using (_≡_; _≢_; refl; cong; trans; sym; inspect)
 open PropEq.≡-Reasoning
 
 -- parameterized by the level of the least significant digit
@@ -234,33 +234,15 @@ borrow-+ (x 1∷ xs) p = sym (++-+ [] (x 1∷ xs))
 ++∘borrow-id [] ()
 ++∘borrow-id (0∷ xs) p with Null? xs
 ++∘borrow-id (0∷ xs) () | yes q
-++∘borrow-id (0∷ xs) tt | no ¬q with borrow xs (fromWitnessFalse ¬q)
-++∘borrow-id (0∷ xs) tt | no ¬q | ys , xs' =
+++∘borrow-id (0∷ xs) tt | no ¬q with borrow xs (fromWitnessFalse ¬q) | inspect (borrow xs) (fromWitnessFalse ¬q)
+++∘borrow-id (0∷ xs) tt | no ¬q | ys , xs' | PropEq.[ eq ] = cong 0∷_ (
     begin
-        uncurry _++_ (Prod.map 0∷_ 0∷_ (ys , xs'))
-    ≡⟨ refl ⟩
-        uncurry _++_ (0∷ ys , 0∷ xs')
-    ≡⟨ refl ⟩
-        (0∷ ys) ++ (0∷ xs')
-    ≡⟨ refl ⟩
-        0∷ (ys ++ xs')
-    ≡⟨ cong 0∷_ (
-        begin
-            ys ++ xs'
-        ≡⟨ refl ⟩
-            uncurry _++_ (ys , xs')
-        ≡⟨ cong (uncurry _++_) (
-            begin
-                ys , xs'
-            ≡⟨ {!   !} ⟩
-                borrow xs (fromWitnessFalse ¬q)
-            ∎) ⟩
-            uncurry _++_ (borrow xs (fromWitnessFalse ¬q))
-        ≡⟨ ++∘borrow-id xs (fromWitnessFalse ¬q) ⟩
-            xs
-        ∎) ⟩
-        0∷ xs
-    ∎
+        uncurry _++_ (ys , xs')
+    ≡⟨ cong (uncurry _++_) {!   !} ⟩
+        uncurry _++_ (borrow xs (fromWitnessFalse ¬q))
+    ≡⟨ ++∘borrow-id xs (fromWitnessFalse ¬q) ⟩
+        xs
+    ∎)
 ++∘borrow-id (x 1∷ xs) p = refl
 
 {-
