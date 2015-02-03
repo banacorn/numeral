@@ -41,12 +41,11 @@ private
 -- to ℕ
 
 ⟦_⟧ₙ : ∀ {A n} → RandomAccessList A n → ℕ
-⟦ []      ⟧ₙ = 0
+⟦      [] ⟧ₙ = 0
 ⟦   0∷ xs ⟧ₙ =     2 * ⟦ xs ⟧ₙ
 ⟦ x 1∷ xs ⟧ₙ = 1 + 2 * ⟦ xs ⟧ₙ
 
 ⟦_⟧ : ∀ {A n} → RandomAccessList A n → ℕ
-⟦_⟧             [] = 0
 ⟦_⟧ {n = zero } xs = ⟦    xs ⟧ₙ
 ⟦_⟧ {n = suc n} xs = ⟦ 0∷ xs ⟧
 
@@ -59,33 +58,28 @@ n*a≡0⇒a≡0 (suc a) (suc n) (s≤s z≤n) ()
             → (xs : RandomAccessList A n)
             → ⟦ xs ⟧ₙ ≡ 0
             → ⟦ xs ⟧ ≡ 0
-⟦xs⟧ₙ≡0⇒⟦xs⟧≡0             []        p = refl
-⟦xs⟧ₙ≡0⇒⟦xs⟧≡0 {n = zero } (  0∷ xs) p = p
-⟦xs⟧ₙ≡0⇒⟦xs⟧≡0 {n = zero } (x 1∷ xs) p = p
-⟦xs⟧ₙ≡0⇒⟦xs⟧≡0 {n = suc n} (  0∷ xs) p = ⟦xs⟧ₙ≡0⇒⟦xs⟧≡0 {n = n} (0∷ (0∷ xs)) (cong (_*_ 2) p)
-⟦xs⟧ₙ≡0⇒⟦xs⟧≡0 {n = suc n} (x 1∷ xs) p = ⟦xs⟧ₙ≡0⇒⟦xs⟧≡0 {n = n} (0∷ (x 1∷ xs)) (cong (_*_ 2) p)
+⟦xs⟧ₙ≡0⇒⟦xs⟧≡0 {n = zero } xs p = p
+⟦xs⟧ₙ≡0⇒⟦xs⟧≡0 {n = suc n} xs p = ⟦xs⟧ₙ≡0⇒⟦xs⟧≡0 (0∷ xs) (cong (_*_ 2) p)
 
 ⟦xs⟧≡0⇒⟦xs⟧ₙ≡0 : ∀ {A n}
             → (xs : RandomAccessList A n)
             → ⟦ xs ⟧ ≡ 0
             → ⟦ xs ⟧ₙ ≡ 0
-⟦xs⟧≡0⇒⟦xs⟧ₙ≡0             []        p = refl
-⟦xs⟧≡0⇒⟦xs⟧ₙ≡0 {n = zero } (  0∷ xs) p = p
-⟦xs⟧≡0⇒⟦xs⟧ₙ≡0 {n = suc n} (  0∷ xs) p = n*a≡0⇒a≡0 (2 * ⟦ xs ⟧ₙ) 2 (s≤s z≤n) (⟦xs⟧≡0⇒⟦xs⟧ₙ≡0 {n = n} (0∷ (0∷ xs)) p)
-⟦xs⟧≡0⇒⟦xs⟧ₙ≡0 {n = zero } (x 1∷ xs) p = p
-⟦xs⟧≡0⇒⟦xs⟧ₙ≡0 {n = suc n} (x 1∷ xs) p = n*a≡0⇒a≡0 (1 + 2 * ⟦ xs ⟧ₙ) 2 (s≤s z≤n) (⟦xs⟧≡0⇒⟦xs⟧ₙ≡0 {n = n} (0∷ (x 1∷ xs)) p)
+⟦xs⟧≡0⇒⟦xs⟧ₙ≡0 {n = zero } xs p = p
+⟦xs⟧≡0⇒⟦xs⟧ₙ≡0 {n = suc n} xs p = n*a≡0⇒a≡0 ⟦ xs ⟧ₙ 2 (s≤s z≤n) (⟦xs⟧≡0⇒⟦xs⟧ₙ≡0 (0∷ xs) p)
 
 --------------------------------------------------------------------------------
 -- predicates
 
+
 Null? : ∀ {A n} → (xs : RandomAccessList A n) → Dec (⟦ xs ⟧ ≡ 0)
-Null? [] = yes refl
-Null? {n = zero } (  0∷ xs) with Null? xs
-Null? {n = zero } (  0∷ xs) | yes p = yes (cong (_*_ 2) (⟦xs⟧≡0⇒⟦xs⟧ₙ≡0 xs p))
-Null? {n = zero } (  0∷ xs) | no ¬p = no (¬p ∘ ⟦xs⟧ₙ≡0⇒⟦xs⟧≡0 xs ∘ n*a≡0⇒a≡0 ⟦ xs ⟧ₙ 2 (s≤s z≤n))
-Null? {n = suc n} (  0∷ xs) = Null? {n = n} (0∷ (0∷ xs))
-Null? {n = zero } (x 1∷ xs) = no (λ ())
-Null? {n = suc n} (x 1∷ xs) = Null? {n = n} (0∷ (x 1∷ xs))
+Null? {n = zero} [] = yes refl
+Null? {n = zero} (0∷ xs) with Null? xs
+Null? {A} {zero} (0∷ xs) | yes p = yes (cong (_*_ 2) (⟦xs⟧≡0⇒⟦xs⟧ₙ≡0 xs p))
+Null? {A} {zero} (0∷ xs) | no ¬p = no (¬p ∘ ⟦xs⟧ₙ≡0⇒⟦xs⟧≡0 xs ∘ n*a≡0⇒a≡0 ⟦ xs ⟧ₙ 2 (s≤s z≤n))
+Null? {n = zero} (x 1∷ xs) = no (λ ())
+Null? {n = suc n} xs = Null? (0∷ xs)
+{-
 
 --------------------------------------------------------------------------------
 -- operations
@@ -115,7 +109,10 @@ _++_ : ∀ {A n} → RandomAccessList A n → RandomAccessList A n → RandomAcc
 
 -- borrow from the first non-zero digit, and splits it like so (1:xs)
 -- numerical: borrow
-{-
+borrow : ∀ {A n} → (xs : RandomAccessList A n) → False (Null? xs) → RandomAccessList A n × RandomAccessList A n
+borrow []        q = {!   !}
+borrow (  0∷ xs) q = {!   !}
+borrow (x 1∷ xs) q = {!   !}
 borrow : ∀ {A n} → (xs : RandomAccessList A n) → False (Null? xs) → RandomAccessList A n × RandomAccessList A n
 borrow [] ()
 borrow (0∷ xs) q with Null? xs
