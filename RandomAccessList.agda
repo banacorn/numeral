@@ -35,6 +35,8 @@ private
     c = 0∷ ((Node (Node (Leaf zero) (Leaf zero)) (Node (Leaf zero) (Leaf zero))) 1∷ [])
     d : RandomAccessList ℕ 1
     d = []
+    d' : RandomAccessList ℕ 0
+    d' = 0∷ d
     e : RandomAccessList ℕ 0
     e = []
 --------------------------------------------------------------------------------
@@ -47,7 +49,7 @@ private
 
 ⟦_⟧ : ∀ {A n} → RandomAccessList A n → ℕ
 ⟦_⟧ {n = zero } xs = ⟦    xs ⟧ₙ
-⟦_⟧ {n = suc n} xs = ⟦ 0∷ xs ⟧
+⟦_⟧ {n = suc n} xs = ⟦_⟧ {n = n} (0∷ xs)
 
 n*a≡0⇒a≡0 : (a n : ℕ) → 0 < n → n * a ≡ 0 → a ≡ 0
 n*a≡0⇒a≡0 a       zero    ()        n*a≡0
@@ -68,18 +70,18 @@ n*a≡0⇒a≡0 (suc a) (suc n) (s≤s z≤n) ()
 ⟦xs⟧≡0⇒⟦xs⟧ₙ≡0 {n = zero } xs p = p
 ⟦xs⟧≡0⇒⟦xs⟧ₙ≡0 {n = suc n} xs p = n*a≡0⇒a≡0 ⟦ xs ⟧ₙ 2 (s≤s z≤n) (⟦xs⟧≡0⇒⟦xs⟧ₙ≡0 (0∷ xs) p)
 
+
 --------------------------------------------------------------------------------
 -- predicates
 
 
 Null? : ∀ {A n} → (xs : RandomAccessList A n) → Dec (⟦ xs ⟧ ≡ 0)
-Null? {n = zero} [] = yes refl
-Null? {n = zero} (0∷ xs) with Null? xs
-Null? {A} {zero} (0∷ xs) | yes p = yes (cong (_*_ 2) (⟦xs⟧≡0⇒⟦xs⟧ₙ≡0 xs p))
-Null? {A} {zero} (0∷ xs) | no ¬p = no (¬p ∘ ⟦xs⟧ₙ≡0⇒⟦xs⟧≡0 xs ∘ n*a≡0⇒a≡0 ⟦ xs ⟧ₙ 2 (s≤s z≤n))
-Null? {n = zero} (x 1∷ xs) = no (λ ())
-Null? {n = suc n} xs = Null? (0∷ xs)
-{-
+Null? {n = zero } (     []) = yes refl
+Null? {n = zero } (  0∷ xs) with ⟦ xs ⟧
+Null? {n = zero } (0∷ xs) | zero = yes refl
+Null? {n = zero } (0∷ xs) | suc a = no (λ ())
+Null? {n = zero } (x 1∷ xs) = no (λ ())
+Null? {n = suc n} (     xs) = Null? {n = n} (0∷ xs)
 
 --------------------------------------------------------------------------------
 -- operations
@@ -107,25 +109,31 @@ _++_ : ∀ {A n} → RandomAccessList A n → RandomAccessList A n → RandomAcc
 (x 1∷ xs) ++ (  0∷ ys) = x 1∷ (xs ++ ys)
 (x 1∷ xs) ++ (y 1∷ ys) =   0∷ (incr (Node x y) (xs ++ ys))
 
+shift : ∀ {A n} → RandomAccessList A n → RandomAccessList A (suc n)
+shift [] = []
+shift (0∷ xs) = xs
+shift (x 1∷ xs) = xs
+
 -- borrow from the first non-zero digit, and splits it like so (1:xs)
 -- numerical: borrow
 borrow : ∀ {A n} → (xs : RandomAccessList A n) → False (Null? xs) → RandomAccessList A n × RandomAccessList A n
-borrow []        q = {!   !}
-borrow (  0∷ xs) q = {!   !}
-borrow (x 1∷ xs) q = {!   !}
-borrow : ∀ {A n} → (xs : RandomAccessList A n) → False (Null? xs) → RandomAccessList A n × RandomAccessList A n
-borrow [] ()
-borrow (0∷ xs) q with Null? xs
-borrow (0∷ xs) () | yes p
-borrow (0∷ xs) tt | no ¬p = Prod.map 0∷_ 0∷_ (borrow xs (fromWitnessFalse ¬p))
-borrow {n = n} (x 1∷ xs) q = x 1∷ [] , 0∷ xs
+borrow {n = zero } (     []) ()
+borrow {n = zero } (  0∷ xs) q with Null? xs
+borrow {n = zero } (  0∷ xs) () | yes p
+borrow {n = zero } (  0∷ xs) q  | no ¬p = Prod.map 0∷_ 0∷_ (borrow xs (fromWitnessFalse ¬p))
+borrow {n = zero } (x 1∷ xs) q = x 1∷ [] , 0∷ xs
+borrow {n = suc n} (     xs) q with Null? xs
+borrow {n = suc n} (     xs) () | yes p
+borrow {n = suc n} (     xs) q | no ¬p = Prod.map shift shift (borrow (0∷ xs) (fromWitnessFalse ¬p))
 
 -- numerical: -1
 -- container: deletion
 decr : ∀ {A n} → (xs : RandomAccessList A n) → False (Null? xs) → RandomAccessList A n
-decr [] ()
-decr (0∷ xs) q with Null? xs
-decr (0∷ xs) () | yes p
-decr (0∷ xs) tt | no ¬p = 0∷ (proj₂ (borrow xs (fromWitnessFalse ¬p)))
-decr (x 1∷ xs) q = 0∷ xs
--}
+decr {n = zero } (     []) ()
+decr {n = zero } (  0∷ xs) q with Null? xs
+decr {n = zero } (  0∷ xs) () | yes p
+decr {n = zero } (  0∷ xs) q  | no ¬p = 0∷_ (proj₂ (borrow xs (fromWitnessFalse ¬p)))
+decr {n = zero } (x 1∷ xs) q = 0∷ xs
+decr {n = suc n} (     xs) q with Null? xs
+decr {n = suc n} (     xs) () | yes p
+decr {n = suc n} (     xs) q | no ¬p = shift (decr (0∷ xs) (fromWitnessFalse ¬p))
