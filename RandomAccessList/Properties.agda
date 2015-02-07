@@ -13,7 +13,7 @@ open import Function
 open import Relation.Nullary using (Dec; yes; no; ¬_)
 open import Relation.Nullary.Decidable using (False; True; fromWitnessFalse)
 open import Relation.Binary.PropositionalEquality as PropEq
-    using (_≡_; _≢_; refl; cong; trans; sym; inspect)
+    using (_≡_; _≢_; refl; cong; cong₂; trans; sym; inspect)
 open PropEq.≡-Reasoning
 
 
@@ -86,68 +86,73 @@ incr-2^n {n} x xs =
     ≡⟨ cong (_+_ (2 ^ n)) (sym (⟦xs⟧≡2ⁿ*⟦xs⟧ₙ xs)) ⟩
         2 ^ n + ⟦ xs ⟧
     ∎
-{-
 
-++-+ : ∀ {A n}
-    → (xs : RandomAccessList A n)
-    → (ys : RandomAccessList A n)
-    → ⟦ xs ++ ys ⟧ₙ ≡ ⟦ xs ⟧ₙ + ⟦ ys ⟧ₙ
-++-+ []        ys        = refl
-++-+ (  0∷ xs) []        = sym (+-right-identity (⟦ xs ⟧ₙ + (⟦ xs ⟧ₙ + 0)))
-++-+ (  0∷ xs) (  0∷ ys) =
+
+++hom+ₙ : ∀ {A n}
+        → (xs : RandomAccessList A n)
+        → (ys : RandomAccessList A n)
+        → ⟦ xs ++ ys ⟧ₙ ≡ ⟦ xs ⟧ₙ + ⟦ ys ⟧ₙ
+++hom+ₙ (     []) (     ys) = refl
+++hom+ₙ (  0∷ xs) (     []) = sym (+-right-identity (2 * ⟦ xs ⟧ₙ))
+++hom+ₙ (  0∷ xs) (  0∷ ys) =
     begin
-        ⟦ (0∷ xs) ++ (0∷ ys) ⟧ₙ
-    ≡⟨ cong (_*_ 2) (++-+ xs ys) ⟩
+        2 * ⟦ xs ++ ys ⟧ₙ
+    ≡⟨ cong (_*_ 2) (++hom+ₙ xs ys) ⟩
         2 * (⟦ xs ⟧ₙ + ⟦ ys ⟧ₙ)
     ≡⟨ distrib-left-*-+ 2 ⟦ xs ⟧ₙ ⟦ ys ⟧ₙ ⟩
-        ⟦ 0∷ xs ⟧ₙ + ⟦ 0∷ ys ⟧ₙ
+        2 * ⟦ xs ⟧ₙ + 2 * ⟦ ys ⟧ₙ
     ∎
-++-+ (  0∷ xs) (y 1∷ ys) =
+++hom+ₙ (  0∷ xs) (y 1∷ ys) =
     begin
-        ⟦ (0∷ xs) ++ (y 1∷ ys) ⟧ₙ
-    ≡⟨ cong suc (cong (_*_ 2) (++-+ xs ys)) ⟩
-        1 + (2 * (⟦ xs ⟧ₙ + ⟦ ys ⟧ₙ))
+        suc (2 * ⟦ xs ++ ys ⟧ₙ)
+    ≡⟨ cong (suc ∘ _*_ 2) (++hom+ₙ xs ys) ⟩
+        suc (2 * (⟦ xs ⟧ₙ + ⟦ ys ⟧ₙ))
     ≡⟨ cong suc (distrib-left-*-+ 2 ⟦ xs ⟧ₙ ⟦ ys ⟧ₙ) ⟩
-        1 + (2 * ⟦ xs ⟧ₙ + 2 * ⟦ ys ⟧ₙ)
-    ≡⟨ sym (+-suc (⟦ xs ⟧ₙ + (⟦ xs ⟧ₙ + 0)) (⟦ ys ⟧ₙ + (⟦ ys ⟧ₙ + 0))) ⟩
-        2 * ⟦ xs ⟧ₙ + (1 + 2 * ⟦ ys ⟧ₙ)
-    ≡⟨ cong (_+_ (2 * ⟦ xs ⟧ₙ)) refl ⟩
-        ⟦ 0∷ xs ⟧ₙ + ⟦ y 1∷ ys ⟧ₙ
+        suc (2 * ⟦ xs ⟧ₙ + 2 * ⟦ ys ⟧ₙ)
+    ≡⟨ sym (+-suc (2 * ⟦ xs ⟧ₙ) (2 * ⟦ ys ⟧ₙ)) ⟩
+        2 * ⟦ xs ⟧ₙ + suc (2 * ⟦ ys ⟧ₙ)
     ∎
-++-+ (x 1∷ xs) []        = sym (+-right-identity (suc (⟦ xs ⟧ₙ + (⟦ xs ⟧ₙ + 0))))
-++-+ (x 1∷ xs) (  0∷ ys) =
+++hom+ₙ (x 1∷ xs) (     []) = cong suc (sym (+-right-identity (2 * ⟦ xs ⟧ₙ)))
+++hom+ₙ (x 1∷ xs) (  0∷ ys) =
     begin
-        1 + 2 * ⟦ xs ++ ys ⟧ₙ
-    ≡⟨ cong (λ z → suc (2 * z)) (++-+ xs ys) ⟩
-        1 + 2 * (⟦ xs ⟧ₙ + ⟦ ys ⟧ₙ)
+        suc (2 * ⟦ xs ++ ys ⟧ₙ)
+    ≡⟨ cong (suc ∘ _*_ 2) (++hom+ₙ xs ys) ⟩
+        suc (2 * (⟦ xs ⟧ₙ + ⟦ ys ⟧ₙ))
     ≡⟨ cong suc (distrib-left-*-+ 2 ⟦ xs ⟧ₙ ⟦ ys ⟧ₙ) ⟩
-        1 + (2 * ⟦ xs ⟧ₙ + 2 * ⟦ ys ⟧ₙ)
-    ≡⟨ sym (+-assoc 0 0 (suc (⟦ xs ⟧ₙ + (⟦ xs ⟧ₙ + 0) + (⟦ ys ⟧ₙ + (⟦ ys ⟧ₙ + 0))))) ⟩
-        (1 + 2 * ⟦ xs ⟧ₙ) + 2 * ⟦ ys ⟧ₙ
+        suc (2 * ⟦ xs ⟧ₙ + 2 * ⟦ ys ⟧ₙ)
     ∎
-++-+ (x 1∷ xs) (y 1∷ ys) =
+++hom+ₙ (x 1∷ xs) (y 1∷ ys) =
     begin
         2 * ⟦ incr (Node x y) (xs ++ ys) ⟧ₙ
-    ≡⟨ cong (_*_ 2) (incr-+1 (Node x y) (xs ++ ys)) ⟩
+    ≡⟨ cong (_*_ 2) (incr-2^n-lemma (Node x y) (xs ++ ys)) ⟩
         2 * suc ⟦ xs ++ ys ⟧ₙ
-    ≡⟨ cong (λ w → 2 * suc w) (++-+ xs ys) ⟩
-        2 * (1 + (⟦ xs ⟧ₙ + ⟦ ys ⟧ₙ))
-    ≡⟨ distrib-left-*-+ 2 1 (⟦ xs ⟧ₙ + ⟦ ys ⟧ₙ) ⟩
-        2 + 2 * (⟦ xs ⟧ₙ + ⟦ ys ⟧ₙ)
-    ≡⟨ cong (_+_ 2) (distrib-left-*-+ 2 ⟦ xs ⟧ₙ ⟦ ys ⟧ₙ) ⟩
-        2 + (2 * ⟦ xs ⟧ₙ + 2 * ⟦ ys ⟧ₙ)
-    ≡⟨ cong suc (+-assoc 0 0 (suc (⟦ xs ⟧ₙ + (⟦ xs ⟧ₙ + 0) + (⟦ ys ⟧ₙ + (⟦ ys ⟧ₙ + 0))))) ⟩
-        1 + (1 + (2 * ⟦ xs ⟧ₙ + 2 * ⟦ ys ⟧ₙ))
-    ≡⟨ cong suc (+-assoc 0 0 (suc (⟦ xs ⟧ₙ + (⟦ xs ⟧ₙ + 0) + (⟦ ys ⟧ₙ + (⟦ ys ⟧ₙ + 0))))) ⟩
-        1 + ((1 + 2 * ⟦ xs ⟧ₙ) + 2 * ⟦ ys ⟧ₙ)
-    ≡⟨ cong (λ w → 1 + (w + 2 * ⟦ ys ⟧ₙ)) (+-comm 1 (⟦ xs ⟧ₙ + (⟦ xs ⟧ₙ + 0))) ⟩
-        1 + ((2 * ⟦ xs ⟧ₙ + 1) + 2 * ⟦ ys ⟧ₙ)
-    ≡⟨ cong suc (+-assoc (⟦ xs ⟧ₙ + (⟦ xs ⟧ₙ + 0)) 1 (⟦ ys ⟧ₙ + (⟦ ys ⟧ₙ + 0))) ⟩
-        1 + (2 * ⟦ xs ⟧ₙ + (1 + 2 * ⟦ ys ⟧ₙ))
-    ≡⟨ refl ⟩
-        ⟦ x 1∷ xs ⟧ₙ + ⟦ y 1∷ ys ⟧ₙ
+    ≡⟨ cong (_*_ 2 ∘ suc) (++hom+ₙ xs ys) ⟩
+        2 * suc (⟦ xs ⟧ₙ + ⟦ ys ⟧ₙ)
+    ≡⟨ +-*-suc 2 (⟦ xs ⟧ₙ + ⟦ ys ⟧ₙ) ⟩
+        suc (suc (2 * (⟦ xs ⟧ₙ + ⟦ ys ⟧ₙ)))
+    ≡⟨ cong (suc ∘ suc) (distrib-left-*-+ 2 ⟦ xs ⟧ₙ ⟦ ys ⟧ₙ) ⟩
+        suc (suc (2 * ⟦ xs ⟧ₙ + 2 * ⟦ ys ⟧ₙ))
+    ≡⟨ cong suc (sym (+-suc (2 * ⟦ xs ⟧ₙ) (2 * ⟦ ys ⟧ₙ))) ⟩
+        suc (2 * ⟦ xs ⟧ₙ + suc (2 * ⟦ ys ⟧ₙ))
     ∎
 
+++hom+ : ∀ {n A}
+        → (xs : RandomAccessList A n)
+        → (ys : RandomAccessList A n)
+        → ⟦ xs ++ ys ⟧ ≡ ⟦ xs ⟧ + ⟦ ys ⟧
+++hom+ {n} xs ys =
+    begin
+        ⟦ xs ++ ys ⟧
+    ≡⟨ ⟦xs⟧≡2ⁿ*⟦xs⟧ₙ (xs ++ ys) ⟩
+        2 ^ n * ⟦ xs ++ ys ⟧ₙ
+    ≡⟨ cong (_*_ (2 ^ n)) (++hom+ₙ xs ys) ⟩
+        2 ^ n * (⟦ xs ⟧ₙ + ⟦ ys ⟧ₙ)
+    ≡⟨ distrib-left-*-+ (2 ^ n) ⟦ xs ⟧ₙ ⟦ ys ⟧ₙ ⟩
+        2 ^ n * ⟦ xs ⟧ₙ + 2 ^ n * ⟦ ys ⟧ₙ
+    ≡⟨ cong₂ (λ x y → x + y) (sym (⟦xs⟧≡2ⁿ*⟦xs⟧ₙ xs)) (sym (⟦xs⟧≡2ⁿ*⟦xs⟧ₙ ys)) ⟩
+        ⟦ xs ⟧ + ⟦ ys ⟧
+    ∎
+{-
 borrow-+ : ∀ {A n}
         → (xs : RandomAccessList A n)
         → (p : False (null? xs))
