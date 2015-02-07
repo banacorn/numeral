@@ -20,24 +20,24 @@ open PropEq.≡-Reasoning
 --------------------------------------------------------------------------------
 -- properties
 
+_^_ : ℕ → ℕ → ℕ
+a ^ zero  = 1
+a ^ suc b = a * (a ^ b)
 
-
-incr-+1 : ∀ {n A}
-        → (x : BinaryLeafTree A n)
-        → (xs : RandomAccessList A n)
-        → ⟦ incr x xs ⟧ₙ ≡ suc ⟦ xs ⟧ₙ
-incr-+1 x [] = refl
-incr-+1 x (0∷ xs) = refl
-incr-+1 x (y 1∷ xs) =
+⟦xs⟧≡2ⁿ*⟦xs⟧ₙ : ∀ {A n} → (xs : RandomAccessList A n)
+                       → ⟦ xs ⟧ ≡ (2 ^ n) * ⟦ xs ⟧ₙ
+⟦xs⟧≡2ⁿ*⟦xs⟧ₙ {n = zero } xs = sym (+-right-identity ⟦ xs ⟧ₙ)
+⟦xs⟧≡2ⁿ*⟦xs⟧ₙ {n = suc n} xs =
     begin
-        2 * ⟦ incr (Node x y) xs ⟧ₙ
-    ≡⟨ cong (_*_ 2) (incr-+1 (Node x y) xs) ⟩
-        2 * (suc ⟦ xs ⟧ₙ)
-    ≡⟨ +-*-suc 2 ⟦ xs ⟧ₙ ⟩
-        2 + 2 * ⟦ xs ⟧ₙ
-    ≡⟨ +-assoc 0 0 (2 + 2 * ⟦ xs ⟧ₙ) ⟩
-        suc ⟦ y 1∷ xs ⟧ₙ
+        ⟦ 0∷ xs ⟧
+    ≡⟨ ⟦xs⟧≡2ⁿ*⟦xs⟧ₙ (0∷ xs) ⟩
+        (2 ^ n) * (2 * ⟦ xs ⟧ₙ)
+    ≡⟨ sym (*-assoc (2 ^ n) 2 ⟦ xs ⟧ₙ) ⟩
+        2 ^ n * 2 * ⟦ xs ⟧ₙ
+    ≡⟨ cong (λ x → x * ⟦ xs ⟧ₙ) (*-comm (2 ^ n) 2) ⟩
+        2 * (2 ^ n) * ⟦ xs ⟧ₙ
     ∎
+
 
 distrib-left-*-+ : ∀ m n o → m * (n + o) ≡ m * n + m * o
 distrib-left-*-+ m n o =
@@ -52,6 +52,41 @@ distrib-left-*-+ m n o =
         ≡⟨ cong (_+_ (m * n)) (*-comm o m) ⟩
             m * n + m * o
         ∎
+
+incr-2^n-lemma : ∀ {n A}
+        → (x : BinaryLeafTree A n)
+        → (xs : RandomAccessList A n)
+        → ⟦ incr x xs ⟧ₙ ≡ suc ⟦ xs ⟧ₙ
+incr-2^n-lemma x [] = refl
+incr-2^n-lemma x (0∷ xs) = refl
+incr-2^n-lemma x (y 1∷ xs) =
+    begin
+        2 * ⟦ incr (Node x y) xs ⟧ₙ
+    ≡⟨ cong (_*_ 2) (incr-2^n-lemma (Node x y) xs) ⟩
+        2 * (suc ⟦ xs ⟧ₙ)
+    ≡⟨ +-*-suc 2 ⟦ xs ⟧ₙ ⟩
+        2 + 2 * ⟦ xs ⟧ₙ
+    ≡⟨ +-assoc 0 0 (2 + 2 * ⟦ xs ⟧ₙ) ⟩
+        suc ⟦ y 1∷ xs ⟧ₙ
+    ∎
+
+incr-2^n : ∀ {n A}
+        → (x : BinaryLeafTree A n)
+        → (xs : RandomAccessList A n)
+        → ⟦ incr x xs ⟧ ≡ 2 ^ n + ⟦ xs ⟧
+incr-2^n {n} x xs =
+    begin
+        ⟦ incr x xs ⟧
+    ≡⟨ ⟦xs⟧≡2ⁿ*⟦xs⟧ₙ (incr x xs) ⟩
+        (2 ^ n) * ⟦ incr x xs ⟧ₙ
+    ≡⟨ cong (_*_ (2 ^ n)) (incr-2^n-lemma x xs) ⟩
+        2 ^ n * suc ⟦ xs ⟧ₙ
+    ≡⟨ +-*-suc (2 ^ n) ⟦ xs ⟧ₙ ⟩
+        2 ^ n + 2 ^ n * ⟦ xs ⟧ₙ
+    ≡⟨ cong (_+_ (2 ^ n)) (sym (⟦xs⟧≡2ⁿ*⟦xs⟧ₙ xs)) ⟩
+        2 ^ n + ⟦ xs ⟧
+    ∎
+{-
 
 ++-+ : ∀ {A n}
     → (xs : RandomAccessList A n)
@@ -160,4 +195,5 @@ begin
 ≡⟨ {!   !} ⟩
     {!   !}
 ∎
+-}
 -}
