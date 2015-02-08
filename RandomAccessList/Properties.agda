@@ -182,6 +182,42 @@ xs≡xs++[] (x 1∷ xs) = refl
     ≡⟨ cong₂ (λ x y → x + y) (sym (⟦xs⟧≡2ⁿ*⟦xs⟧ₙ xs)) (sym (⟦xs⟧≡2ⁿ*⟦xs⟧ₙ ys)) ⟩
         ⟦ xs ⟧ + ⟦ ys ⟧
     ∎
+
+
+borrow-+ₙ : ∀ {A n}
+          → (xs : RandomAccessList A n)
+          → (p : False (null? xs))
+          → ⟦ proj₁ (borrow xs p) ⟧ₙ + ⟦ proj₂ (borrow xs p) ⟧ₙ ≡ ⟦ xs ⟧ₙ
+borrow-+ₙ (     []) ()
+borrow-+ₙ (  0∷ xs) p  with null? xs
+borrow-+ₙ (  0∷ xs) () | yes q
+borrow-+ₙ (  0∷ xs) p  | no ¬q =
+    begin
+        2 * ⟦ proj₁ (borrow xs (fromWitnessFalse ¬q)) ⟧ₙ + 2 * ⟦ proj₂ (borrow xs (fromWitnessFalse ¬q)) ⟧ₙ
+    ≡⟨ sym (distrib-left-*-+ 2 ⟦ proj₁ (borrow xs (fromWitnessFalse ¬q)) ⟧ₙ ⟦ proj₂ (borrow xs (fromWitnessFalse ¬q)) ⟧ₙ) ⟩
+        2 * (⟦ proj₁ (borrow xs (fromWitnessFalse ¬q)) ⟧ₙ + ⟦ proj₂ (borrow xs (fromWitnessFalse ¬q)) ⟧ₙ)
+    ≡⟨ cong (_*_ 2) (borrow-+ₙ xs (fromWitnessFalse ¬q)) ⟩
+        2 * ⟦ xs ⟧ₙ
+    ∎
+borrow-+ₙ (x 1∷ xs) p = refl
+
+borrow-+ : ∀ {n A}
+        → (xs : RandomAccessList A n)
+        → (p : False (null? xs))
+        → ⟦ proj₁ (borrow xs p) ⟧ + ⟦ proj₂ (borrow xs p) ⟧ ≡ ⟦ xs ⟧
+borrow-+ {zero } xs p = borrow-+ₙ xs p
+borrow-+ {suc n} xs p =
+    begin
+        ⟦ proj₁ (borrow xs p) ⟧ + ⟦ proj₂ (borrow xs p) ⟧
+    ≡⟨ cong₂ _+_ (⟦xs⟧≡2ⁿ*⟦xs⟧ₙ (proj₁ (borrow xs p))) (⟦xs⟧≡2ⁿ*⟦xs⟧ₙ (proj₂ (borrow xs p))) ⟩
+        2 ^ suc n * ⟦ proj₁ (borrow xs p) ⟧ₙ + 2 ^ suc n * ⟦ proj₂ (borrow xs p) ⟧ₙ
+    ≡⟨ sym (distrib-left-*-+ (2 ^ suc n) ⟦ proj₁ (borrow xs p) ⟧ₙ ⟦ proj₂ (borrow xs p) ⟧ₙ) ⟩
+        2 ^ suc n * (⟦ proj₁ (borrow xs p) ⟧ₙ + ⟦ proj₂ (borrow xs p) ⟧ₙ)
+    ≡⟨ cong (_*_ (2 ^ suc n)) (borrow-+ₙ xs p) ⟩
+        2 ^ suc n * ⟦ xs ⟧ₙ
+    ≡⟨ sym (⟦xs⟧≡2ⁿ*⟦xs⟧ₙ xs) ⟩
+        ⟦ 0∷ xs ⟧
+    ∎
 {-
 borrow-+ : ∀ {A n}
         → (xs : RandomAccessList A n)
