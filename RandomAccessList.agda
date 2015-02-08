@@ -6,6 +6,7 @@ open import Data.Empty using (⊥)
 open import Data.Unit using (⊤; tt)
 open import Data.Nat
 open import Data.Nat.Properties.Simple
+import Data.Fin as Fin
 open import Data.Product as Prod
 open import Data.Product hiding (map)
 open import Function
@@ -50,7 +51,7 @@ private
 
 ⟦_⟧ : ∀ {A n} → RandomAccessList A n → ℕ
 ⟦_⟧ {n = zero } xs = ⟦    xs ⟧ₙ
-⟦_⟧ {n = suc n} xs = ⟦_⟧ {n = n} (0∷ xs)
+⟦_⟧ {n = suc n} xs = ⟦ 0∷ xs ⟧
 
 --------------------------------------------------------------------------------
 -- predicates

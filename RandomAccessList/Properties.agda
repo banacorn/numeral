@@ -38,7 +38,6 @@ a ^ suc b = a * (a ^ b)
         2 * (2 ^ n) * ⟦ xs ⟧ₙ
     ∎
 
-
 distrib-left-*-+ : ∀ m n o → m * (n + o) ≡ m * n + m * o
 distrib-left-*-+ m n o =
         begin
@@ -88,45 +87,76 @@ incr-2^n {n} x xs =
     ∎
 
 
-++hom+ₙ : ∀ {A n}
+
+-- left & right identity of _++_
+[]++xs≡xs : ∀ {A n} → (xs : RandomAccessList A n) → [] ++ xs ≡ xs
+[]++xs≡xs xs = refl
+
+xs≡xs++[] : ∀ {A n} → (xs : RandomAccessList A n) → xs ≡ xs ++ []
+xs≡xs++[] (     []) = refl
+xs≡xs++[] (  0∷ xs) = refl
+xs≡xs++[] (x 1∷ xs) = refl
+
+-- identity
+⟦[]⟧ₙ≡0 : ∀ {A n} → (xs : RandomAccessList A n) → xs ≡ [] → ⟦ xs ⟧ₙ ≡ 0
+⟦[]⟧ₙ≡0 (     []) p  = refl
+⟦[]⟧ₙ≡0 (  0∷ xs) ()
+⟦[]⟧ₙ≡0 (x 1∷ xs) ()
+
+⟦[]⟧≡0 : ∀ {n A} → (xs : RandomAccessList A n) → xs ≡ [] → ⟦ xs ⟧ ≡ 0
+⟦[]⟧≡0 {zero } (     []) p = refl
+⟦[]⟧≡0 {suc n} (     []) p =
+    begin
+        ⟦_⟧ {n = n} (0∷ [])
+    ≡⟨ ⟦xs⟧≡2ⁿ*⟦xs⟧ₙ {n = n} (0∷ []) ⟩
+        2 ^ n * zero
+    ≡⟨ *-right-zero (2 ^ n) ⟩
+        0
+    ∎
+⟦[]⟧≡0         (  0∷ xs) ()
+⟦[]⟧≡0         (x 1∷ xs) ()
+
+
+-- ⟦ xs ++ ys ⟧ ≡ ⟦ xs ⟧ + ⟦ ys ⟧
+⟦xs++ys⟧ₙ≡⟦xs⟧ₙ+⟦ys⟧ₙ : ∀ {A n}
         → (xs : RandomAccessList A n)
         → (ys : RandomAccessList A n)
         → ⟦ xs ++ ys ⟧ₙ ≡ ⟦ xs ⟧ₙ + ⟦ ys ⟧ₙ
-++hom+ₙ (     []) (     ys) = refl
-++hom+ₙ (  0∷ xs) (     []) = sym (+-right-identity (2 * ⟦ xs ⟧ₙ))
-++hom+ₙ (  0∷ xs) (  0∷ ys) =
+⟦xs++ys⟧ₙ≡⟦xs⟧ₙ+⟦ys⟧ₙ (     []) (     ys) = refl
+⟦xs++ys⟧ₙ≡⟦xs⟧ₙ+⟦ys⟧ₙ (  0∷ xs) (     []) = sym (+-right-identity (2 * ⟦ xs ⟧ₙ))
+⟦xs++ys⟧ₙ≡⟦xs⟧ₙ+⟦ys⟧ₙ (  0∷ xs) (  0∷ ys) =
     begin
         2 * ⟦ xs ++ ys ⟧ₙ
-    ≡⟨ cong (_*_ 2) (++hom+ₙ xs ys) ⟩
+    ≡⟨ cong (_*_ 2) (⟦xs++ys⟧ₙ≡⟦xs⟧ₙ+⟦ys⟧ₙ xs ys) ⟩
         2 * (⟦ xs ⟧ₙ + ⟦ ys ⟧ₙ)
     ≡⟨ distrib-left-*-+ 2 ⟦ xs ⟧ₙ ⟦ ys ⟧ₙ ⟩
         2 * ⟦ xs ⟧ₙ + 2 * ⟦ ys ⟧ₙ
     ∎
-++hom+ₙ (  0∷ xs) (y 1∷ ys) =
+⟦xs++ys⟧ₙ≡⟦xs⟧ₙ+⟦ys⟧ₙ (  0∷ xs) (y 1∷ ys) =
     begin
         suc (2 * ⟦ xs ++ ys ⟧ₙ)
-    ≡⟨ cong (suc ∘ _*_ 2) (++hom+ₙ xs ys) ⟩
+    ≡⟨ cong (suc ∘ _*_ 2) (⟦xs++ys⟧ₙ≡⟦xs⟧ₙ+⟦ys⟧ₙ xs ys) ⟩
         suc (2 * (⟦ xs ⟧ₙ + ⟦ ys ⟧ₙ))
     ≡⟨ cong suc (distrib-left-*-+ 2 ⟦ xs ⟧ₙ ⟦ ys ⟧ₙ) ⟩
         suc (2 * ⟦ xs ⟧ₙ + 2 * ⟦ ys ⟧ₙ)
     ≡⟨ sym (+-suc (2 * ⟦ xs ⟧ₙ) (2 * ⟦ ys ⟧ₙ)) ⟩
         2 * ⟦ xs ⟧ₙ + suc (2 * ⟦ ys ⟧ₙ)
     ∎
-++hom+ₙ (x 1∷ xs) (     []) = cong suc (sym (+-right-identity (2 * ⟦ xs ⟧ₙ)))
-++hom+ₙ (x 1∷ xs) (  0∷ ys) =
+⟦xs++ys⟧ₙ≡⟦xs⟧ₙ+⟦ys⟧ₙ (x 1∷ xs) (     []) = cong suc (sym (+-right-identity (2 * ⟦ xs ⟧ₙ)))
+⟦xs++ys⟧ₙ≡⟦xs⟧ₙ+⟦ys⟧ₙ (x 1∷ xs) (  0∷ ys) =
     begin
         suc (2 * ⟦ xs ++ ys ⟧ₙ)
-    ≡⟨ cong (suc ∘ _*_ 2) (++hom+ₙ xs ys) ⟩
+    ≡⟨ cong (suc ∘ _*_ 2) (⟦xs++ys⟧ₙ≡⟦xs⟧ₙ+⟦ys⟧ₙ xs ys) ⟩
         suc (2 * (⟦ xs ⟧ₙ + ⟦ ys ⟧ₙ))
     ≡⟨ cong suc (distrib-left-*-+ 2 ⟦ xs ⟧ₙ ⟦ ys ⟧ₙ) ⟩
         suc (2 * ⟦ xs ⟧ₙ + 2 * ⟦ ys ⟧ₙ)
     ∎
-++hom+ₙ (x 1∷ xs) (y 1∷ ys) =
+⟦xs++ys⟧ₙ≡⟦xs⟧ₙ+⟦ys⟧ₙ (x 1∷ xs) (y 1∷ ys) =
     begin
         2 * ⟦ incr (Node x y) (xs ++ ys) ⟧ₙ
     ≡⟨ cong (_*_ 2) (incr-2^n-lemma (Node x y) (xs ++ ys)) ⟩
         2 * suc ⟦ xs ++ ys ⟧ₙ
-    ≡⟨ cong (_*_ 2 ∘ suc) (++hom+ₙ xs ys) ⟩
+    ≡⟨ cong (_*_ 2 ∘ suc) (⟦xs++ys⟧ₙ≡⟦xs⟧ₙ+⟦ys⟧ₙ xs ys) ⟩
         2 * suc (⟦ xs ⟧ₙ + ⟦ ys ⟧ₙ)
     ≡⟨ +-*-suc 2 (⟦ xs ⟧ₙ + ⟦ ys ⟧ₙ) ⟩
         suc (suc (2 * (⟦ xs ⟧ₙ + ⟦ ys ⟧ₙ)))
@@ -136,16 +166,16 @@ incr-2^n {n} x xs =
         suc (2 * ⟦ xs ⟧ₙ + suc (2 * ⟦ ys ⟧ₙ))
     ∎
 
-++hom+ : ∀ {n A}
+⟦xs++ys⟧≡⟦xs⟧+⟦ys⟧ : ∀ {n A}
         → (xs : RandomAccessList A n)
         → (ys : RandomAccessList A n)
         → ⟦ xs ++ ys ⟧ ≡ ⟦ xs ⟧ + ⟦ ys ⟧
-++hom+ {n} xs ys =
+⟦xs++ys⟧≡⟦xs⟧+⟦ys⟧ {n} xs ys =
     begin
         ⟦ xs ++ ys ⟧
     ≡⟨ ⟦xs⟧≡2ⁿ*⟦xs⟧ₙ (xs ++ ys) ⟩
         2 ^ n * ⟦ xs ++ ys ⟧ₙ
-    ≡⟨ cong (_*_ (2 ^ n)) (++hom+ₙ xs ys) ⟩
+    ≡⟨ cong (_*_ (2 ^ n)) (⟦xs++ys⟧ₙ≡⟦xs⟧ₙ+⟦ys⟧ₙ xs ys) ⟩
         2 ^ n * (⟦ xs ⟧ₙ + ⟦ ys ⟧ₙ)
     ≡⟨ distrib-left-*-+ (2 ^ n) ⟦ xs ⟧ₙ ⟦ ys ⟧ₙ ⟩
         2 ^ n * ⟦ xs ⟧ₙ + 2 ^ n * ⟦ ys ⟧ₙ
@@ -189,16 +219,16 @@ borrow-+ (x 1∷ xs) p = sym (++-+ [] (x 1∷ xs))
 ++∘borrow-id (x 1∷ xs) p = refl
 
 {-
-begin
-    {!   !}
-≡⟨ {!   !} ⟩
-    {!   !}
-≡⟨ {!   !} ⟩
-    {!   !}
-≡⟨ {!   !} ⟩
-    {!   !}
-≡⟨ {!   !} ⟩
-    {!   !}
-∎
+    begin
+        {!   !}
+    ≡⟨ {!   !} ⟩
+        {!   !}
+    ≡⟨ {!   !} ⟩
+        {!   !}
+    ≡⟨ {!   !} ⟩
+        {!   !}
+    ≡⟨ {!   !} ⟩
+        {!   !}
+    ∎
 -}
 -}
