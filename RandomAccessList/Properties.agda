@@ -219,23 +219,6 @@ borrow-+ {suc n} xs p =
         ⟦ 0∷ xs ⟧
     ∎
 {-
-borrow-+ : ∀ {A n}
-        → (xs : RandomAccessList A n)
-        → (p : False (null? xs))
-        → ⟦ proj₁ (borrow xs p) ⟧ₙ + ⟦ proj₂ (borrow xs p) ⟧ₙ ≡ ⟦ xs ⟧ₙ
-borrow-+ [] ()
-borrow-+ (0∷ xs) p with null? xs
-borrow-+ (0∷ xs) () | yes q
-borrow-+ (0∷ xs) tt | no ¬q =
-    begin
-        2 * ⟦ proj₁ (borrow xs (fromWitnessFalse ¬q)) ⟧ₙ + 2 * ⟦ proj₂ (borrow xs (fromWitnessFalse ¬q)) ⟧ₙ
-    ≡⟨ sym (distrib-left-*-+ 2 ⟦ proj₁ (borrow xs (fromWitnessFalse ¬q)) ⟧ₙ ⟦ proj₂ (borrow xs (fromWitnessFalse ¬q)) ⟧ₙ) ⟩
-        2 * (⟦ proj₁ (borrow xs (fromWitnessFalse ¬q)) ⟧ₙ + ⟦ proj₂ (borrow xs (fromWitnessFalse ¬q)) ⟧ₙ)
-    ≡⟨ cong (_*_ 2) (borrow-+ xs (fromWitnessFalse ¬q)) ⟩
-        2 * ⟦ xs ⟧ₙ
-    ∎
-borrow-+ (x 1∷ xs) p = sym (++-+ [] (x 1∷ xs))
-
 ++∘borrow-id : ∀ {A n}
                 → (xs : RandomAccessList A n)
                 → (p : False (null? xs))

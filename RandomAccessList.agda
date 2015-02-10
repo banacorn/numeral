@@ -1,6 +1,8 @@
 module RandomAccessList where
 
-open import BuildingBlock
+open import BuildingBlock.BinaryLeafTree using (BinaryLeafTree; Node; Leaf)
+import BuildingBlock.BinaryLeafTree as BLT
+open import BuildingBlock using (_^_)
 
 open import Data.Empty using (⊥)
 open import Data.Unit using (⊤; tt)
@@ -117,3 +119,61 @@ decr (  0∷ xs) p  with null? xs
 decr (  0∷ xs) () | yes q
 decr (  0∷ xs) tt | no ¬q = 0∷ (proj₂ (borrow xs (fromWitnessFalse ¬q)))
 decr (x 1∷ xs) p = 0∷ xs
+
+private
+    ⟦xs⟧≡2ⁿ*⟦xs⟧ₙ : ∀ {A n} → (xs : RandomAccessList A n)
+                           → ⟦ xs ⟧ ≡ (2 ^ n) * ⟦ xs ⟧ₙ
+    ⟦xs⟧≡2ⁿ*⟦xs⟧ₙ {n = zero } xs = sym (+-right-identity ⟦ xs ⟧ₙ)
+    ⟦xs⟧≡2ⁿ*⟦xs⟧ₙ {n = suc n} xs =
+        begin
+            ⟦ 0∷ xs ⟧
+        ≡⟨ ⟦xs⟧≡2ⁿ*⟦xs⟧ₙ (0∷ xs) ⟩
+            (2 ^ n) * (2 * ⟦ xs ⟧ₙ)
+        ≡⟨ sym (*-assoc (2 ^ n) 2 ⟦ xs ⟧ₙ) ⟩
+            2 ^ n * 2 * ⟦ xs ⟧ₙ
+        ≡⟨ cong (λ x → x * ⟦ xs ⟧ₙ) (*-comm (2 ^ n) 2) ⟩
+            2 * (2 ^ n) * ⟦ xs ⟧ₙ
+        ∎
+
+    ⟦[]⟧≡0 : ∀ {n A} → (xs : RandomAccessList A n) → xs ≡ [] → ⟦ xs ⟧ ≡ 0
+    ⟦[]⟧≡0 {zero } (     []) p = refl
+    ⟦[]⟧≡0 {suc n} (     []) p =
+        begin
+            ⟦_⟧ {n = n} (0∷ [])
+        ≡⟨ ⟦xs⟧≡2ⁿ*⟦xs⟧ₙ {n = n} (0∷ []) ⟩
+            2 ^ n * zero
+        ≡⟨ *-right-zero (2 ^ n) ⟩
+            0
+        ∎
+    ⟦[]⟧≡0         (  0∷ xs) ()
+    ⟦[]⟧≡0         (x 1∷ xs) ()
+
+
+-- elemAt : ∀ {A n} → (xs : RandomAccessList A n) → Fin.Fin ⟦ xs ⟧ → A
+-- elemAt {n = n} [] i rewrite cong Fin.fromℕ (⟦[]⟧≡0 {n} [] _) = {! i  !}
+-- elemAt [] i rewrite BLT.transportFin (⟦[]⟧≡0 [] _) i = {! i  !}
+-- elemAt (0∷ xs) i = {!   !}
+-- elemAt (x 1∷ xs) i = {!   !}
+{-
+elemAt {n = zero} [] ()
+elemAt {n = zero} (0∷ xs) i with ⟦ 0∷ xs ⟧ | inspect ⟦_⟧ (0∷ xs)
+elemAt {n = zero} (0∷ xs) () | zero | w
+elemAt {n = zero} (0∷ xs) i | suc z | PropEq.[ eq ] = elemAt xs (BLT.transportFin (sym eq) i)
+elemAt {n = zero} (Leaf x 1∷ xs) Fin.zero = x
+elemAt {n = zero} (x 1∷ xs) (Fin.suc i) = elemAt xs i
+elemAt {n = suc n} [] i = {!   !}
+elemAt {n = suc n} (0∷ xs) i = {!   !}
+elemAt {n = suc n} (x 1∷ xs) i = {!   !}
+-}
+
+{-
+elemAt : ∀ {A n} → (xs : RandomAccessList A n) → Fin.Fin ⟦ xs ⟧ₙ  → A
+elemAt [] ()
+elemAt (0∷ xs) i with ⟦ 0∷ xs ⟧ₙ
+elemAt (0∷ xs) () | zero
+elemAt (0∷ xs) i  | suc a = elemAt xs (Fin.fromℕ≤ {⌊ Fin.toℕ i /2⌋} {!   !})    -- keep searching the next digit
+elemAt {n = n} (x 1∷ xs) i = {!   !}
+
+-}
+
+-- BLT.elemAt x {! BLT.transportFin (+-right-identity (2 ^ n))  !}
