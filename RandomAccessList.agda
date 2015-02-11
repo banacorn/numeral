@@ -1,11 +1,12 @@
 module RandomAccessList where
 
-open import BuildingBlock.BinaryLeafTree using (BinaryLeafTree; Node; Leaf; _^_)
+open import BuildingBlock.BinaryLeafTree using (BinaryLeafTree; Node; Leaf)
 import BuildingBlock.BinaryLeafTree as BLT
 
 open import Data.Empty using (⊥)
 open import Data.Unit using (⊤; tt)
 open import Data.Nat
+open import Data.Nat.Exp
 open import Data.Nat.Properties.Simple
 import Data.Fin as Fin
 open import Data.Product as Prod
@@ -28,20 +29,21 @@ data RandomAccessList (A : Set) : ℕ → Set where
 
 --------------------------------------------------------------------------------
 -- examples
-
+{-
 private
     a : RandomAccessList ℕ 0
     a = Leaf zero 1∷ []
     b : RandomAccessList ℕ 1
-    b = (Node (Leaf zero) (Leaf zero)) 1∷ []
+    b = (Node (Leaf 0) (Leaf 1)) 1∷ []
     c : RandomAccessList ℕ 1
-    c = 0∷ ((Node (Node (Leaf zero) (Leaf zero)) (Node (Leaf zero) (Leaf zero))) 1∷ [])
+    c = 0∷ ((Node (Node (Leaf 0) (Leaf 1)) (Node (Leaf 2) (Leaf 3))) 1∷ [])
     d : RandomAccessList ℕ 1
     d = []
     d' : RandomAccessList ℕ 0
     d' = 0∷ d
     e : RandomAccessList ℕ 0
     e = []
+-}
 --------------------------------------------------------------------------------
 -- to ℕ
 
@@ -149,9 +151,23 @@ private
             (2 ^ n) + ⟦ 0∷ xs ⟧
         ∎
 
+    ⟦[]⟧≡⟦[]⟧ : ∀ {n A} → ⟦ [] {A} {suc n} ⟧ ≡ ⟦ [] {A} {n} ⟧
+    ⟦[]⟧≡⟦[]⟧ {n} =
+        begin
+            ⟦ [] {n = suc n} ⟧
+        ≡⟨ ⟦xs⟧≡2ⁿ*⟦xs⟧ₙ ([] {n = suc n}) ⟩
+            2 * 2 ^ n * 0
+        ≡⟨ *-right-zero (2 * 2 ^ n) ⟩
+            0
+        ≡⟨ sym (*-right-zero (2 ^ n)) ⟩
+            2 ^ n * 0
+        ≡⟨ sym (⟦xs⟧≡2ⁿ*⟦xs⟧ₙ ([] {n = n})) ⟩
+            ⟦ [] {n = n} ⟧
+        ∎
+
 elemAt : ∀ {n A} → (xs : RandomAccessList A n) → Fin.Fin ⟦ xs ⟧ → A
-elemAt {zero } (     []) ()
-elemAt {suc n} (     []) i  = elemAt {n} (0∷ []) i
+elemAt {zero}  (     []) ()
+elemAt {suc n} (     []) i  = elemAt {n} ([] {n = n}) (BLT.transportFin (⟦[]⟧≡⟦[]⟧ {n}) i)
 elemAt         (  0∷ xs) i  with ⟦ 0∷ xs ⟧ | inspect ⟦_⟧ (0∷ xs)
 elemAt         (  0∷ xs) () | zero  | _
 elemAt         (  0∷ xs) i  | suc z | PropEq.[ eq ] = elemAt xs (BLT.transportFin (sym eq) i)

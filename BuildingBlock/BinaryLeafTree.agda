@@ -2,6 +2,7 @@ module BuildingBlock.BinaryLeafTree where
 
 open import Function
 open import Data.Nat
+open import Data.Nat.Exp
 open import Data.Nat.Properties.Simple using (+-right-identity)
 open import Data.Product using (_×_; _,_)
 open import Data.Fin
@@ -35,9 +36,6 @@ merge : ∀ {A n} → BinaryLeafTree A n
 merge = Node
 
 -- elemAt
-_^_ : ℕ → ℕ → ℕ
-a ^ zero  = 1
-a ^ suc b = a * (a ^ b)
 
 transportFin : ∀ {a b} → a ≡ b → Fin a → Fin b
 transportFin refl i = i

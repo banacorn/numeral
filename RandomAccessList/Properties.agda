@@ -6,6 +6,7 @@ open import RandomAccessList
 
 
 open import Data.Nat
+open import Data.Nat.Exp
 open import Data.Nat.Properties.Simple
 open import Data.Product as Prod
 open import Data.Product hiding (map)
