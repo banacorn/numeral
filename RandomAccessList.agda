@@ -137,12 +137,24 @@ private
             2 * (2 ^ n) * ⟦ xs ⟧ₙ
         ∎
 
+    splitIndex : ∀ {n A} → (x : BinaryLeafTree A n) → (xs : RandomAccessList A (suc n)) → ⟦ x 1∷ xs ⟧ ≡ (2 ^ n) + ⟦ 0∷ xs ⟧
+    splitIndex {n} x xs =
+        begin
+            ⟦ x 1∷ xs ⟧
+        ≡⟨ ⟦xs⟧≡2ⁿ*⟦xs⟧ₙ (x 1∷ xs) ⟩
+            2 ^ n * suc (2 * ⟦ xs ⟧ₙ)
+        ≡⟨ +-*-suc (2 ^ n) (2 * ⟦ xs ⟧ₙ) ⟩
+            2 ^ n + 2 ^ n * (2 * ⟦ xs ⟧ₙ)
+        ≡⟨ cong (_+_ (2 ^ n)) (sym (⟦xs⟧≡2ⁿ*⟦xs⟧ₙ (0∷ xs))) ⟩
+            (2 ^ n) + ⟦ 0∷ xs ⟧
+        ∎
+
 elemAt : ∀ {n A} → (xs : RandomAccessList A n) → Fin.Fin ⟦ xs ⟧ → A
-elemAt {zero} [] ()
-elemAt {suc n} [] i = elemAt {n} (0∷ []) i
-elemAt (0∷ xs) i with ⟦ 0∷ xs ⟧ | inspect ⟦_⟧ (0∷ xs)
-elemAt (0∷ xs) () | zero  | _
-elemAt (0∷ xs) i  | suc z | PropEq.[ eq ] = elemAt xs (BLT.transportFin (sym eq) i)
-elemAt {n} (x 1∷ xs) i with (2 ^ n) ≤? Fin.toℕ i
-elemAt {n} (x 1∷ xs) i | yes p rewrite trans (⟦xs⟧≡2ⁿ*⟦xs⟧ₙ (x 1∷ xs)) (+-*-suc (2 ^ n) (2 * ⟦ xs ⟧ₙ)) = elemAt xs (BLT.transportFin (sym (⟦xs⟧≡2ⁿ*⟦xs⟧ₙ (0∷ xs))) (Fin.reduce≥ {2 ^ n} {2 ^ n * (2 * ⟦ xs ⟧ₙ)} i p))
-elemAt (x 1∷ xs) i | no ¬p = BLT.elemAt x (Fin.fromℕ≤ (BLT.¬a≤b⇒b<a ¬p))
+elemAt {zero } (     []) ()
+elemAt {suc n} (     []) i  = elemAt {n} (0∷ []) i
+elemAt         (  0∷ xs) i  with ⟦ 0∷ xs ⟧ | inspect ⟦_⟧ (0∷ xs)
+elemAt         (  0∷ xs) () | zero  | _
+elemAt         (  0∷ xs) i  | suc z | PropEq.[ eq ] = elemAt xs (BLT.transportFin (sym eq) i)
+elemAt {n}     (x 1∷ xs) i  with (2 ^ n) ≤? Fin.toℕ i
+elemAt {n}     (x 1∷ xs) i  | yes p rewrite splitIndex x xs = elemAt xs (Fin.reduce≥ i p)
+elemAt         (x 1∷ xs) i  | no ¬p = BLT.elemAt x (Fin.fromℕ≤ (BLT.¬a≤b⇒b<a ¬p))
