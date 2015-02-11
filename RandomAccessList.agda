@@ -29,7 +29,7 @@ data RandomAccessList (A : Set) : ℕ → Set where
 
 --------------------------------------------------------------------------------
 -- examples
-{-
+
 private
     a : RandomAccessList ℕ 0
     a = Leaf zero 1∷ []
@@ -43,7 +43,7 @@ private
     d' = 0∷ d
     e : RandomAccessList ℕ 0
     e = []
--}
+
 --------------------------------------------------------------------------------
 -- to ℕ
 
@@ -97,11 +97,6 @@ _++_ : ∀ {A n} → RandomAccessList A n → RandomAccessList A n → RandomAcc
 (x 1∷ xs) ++ []        = x 1∷ xs
 (x 1∷ xs) ++ (  0∷ ys) = x 1∷ (xs ++ ys)
 (x 1∷ xs) ++ (y 1∷ ys) =   0∷ (incr (Node x y) (xs ++ ys))
-
-shift : ∀ {A n} → RandomAccessList A n → RandomAccessList A (suc n)
-shift []        = []
-shift (  0∷ xs) = xs
-shift (x 1∷ xs) = xs
 
 -- borrow from the first non-zero digit, and splits it like so (1:xs)
 -- numerical: borrow
