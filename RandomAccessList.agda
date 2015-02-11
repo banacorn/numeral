@@ -1,8 +1,7 @@
 module RandomAccessList where
 
-open import BuildingBlock.BinaryLeafTree using (BinaryLeafTree; Node; Leaf)
+open import BuildingBlock.BinaryLeafTree using (BinaryLeafTree; Node; Leaf; _^_)
 import BuildingBlock.BinaryLeafTree as BLT
-open import BuildingBlock using (_^_)
 
 open import Data.Empty using (⊥)
 open import Data.Unit using (⊤; tt)
@@ -51,9 +50,12 @@ private
 ⟦   0∷ xs ⟧ₙ =     2 * ⟦ xs ⟧ₙ
 ⟦ x 1∷ xs ⟧ₙ = 1 + 2 * ⟦ xs ⟧ₙ
 
+normalize : ∀ {n A} → RandomAccessList A n → RandomAccessList A 0
+normalize {zero} xs = xs
+normalize {suc n} xs = normalize (0∷ xs)
+
 ⟦_⟧ : ∀ {A n} → RandomAccessList A n → ℕ
-⟦_⟧ {n = zero } xs = ⟦    xs ⟧ₙ
-⟦_⟧ {n = suc n} xs = ⟦ 0∷ xs ⟧
+⟦_⟧ xs = ⟦ normalize xs ⟧ₙ
 
 --------------------------------------------------------------------------------
 -- predicates
@@ -121,6 +123,21 @@ decr (  0∷ xs) tt | no ¬q = 0∷ (proj₂ (borrow xs (fromWitnessFalse ¬q)))
 decr (x 1∷ xs) p = 0∷ xs
 
 private
+
+    distrib-left-*-+ : ∀ m n o → m * (n + o) ≡ m * n + m * o
+    distrib-left-*-+ m n o =
+            begin
+                m * (n + o)
+            ≡⟨ *-comm m (n + o) ⟩
+                (n + o) * m
+            ≡⟨ distribʳ-*-+ m n o ⟩
+                n * m + o * m
+            ≡⟨ cong (flip _+_ (o * m)) (*-comm n m) ⟩
+                m * n + o * m
+            ≡⟨ cong (_+_ (m * n)) (*-comm o m) ⟩
+                m * n + m * o
+            ∎
+
     ⟦xs⟧≡2ⁿ*⟦xs⟧ₙ : ∀ {A n} → (xs : RandomAccessList A n)
                            → ⟦ xs ⟧ ≡ (2 ^ n) * ⟦ xs ⟧ₙ
     ⟦xs⟧≡2ⁿ*⟦xs⟧ₙ {n = zero } xs = sym (+-right-identity ⟦ xs ⟧ₙ)
@@ -134,7 +151,6 @@ private
         ≡⟨ cong (λ x → x * ⟦ xs ⟧ₙ) (*-comm (2 ^ n) 2) ⟩
             2 * (2 ^ n) * ⟦ xs ⟧ₙ
         ∎
-
     ⟦[]⟧≡0 : ∀ {n A} → (xs : RandomAccessList A n) → xs ≡ [] → ⟦ xs ⟧ ≡ 0
     ⟦[]⟧≡0 {zero } (     []) p = refl
     ⟦[]⟧≡0 {suc n} (     []) p =
@@ -148,32 +164,29 @@ private
     ⟦[]⟧≡0         (  0∷ xs) ()
     ⟦[]⟧≡0         (x 1∷ xs) ()
 
+    banana : ∀ {A n} → (xs : RandomAccessList A (suc (suc n))) → (2 * 2 ^ n) * (2 * ⟦ xs ⟧ₙ) ≡ ⟦ xs ⟧
+    banana {n = n} xs =
+        begin
+            (2 * 2 ^ n) * (2 * ⟦ xs ⟧ₙ)
+        ≡⟨ cong (λ x → x * (2 * ⟦ xs ⟧ₙ)) (*-comm 2 (2 ^ n)) ⟩
+            (2 ^ n * 2) * (2 * ⟦ xs ⟧ₙ)
+        ≡⟨ *-assoc (2 ^ n) 2 (2 * ⟦ xs ⟧ₙ) ⟩
+            2 ^ n * (2 * (2 * ⟦ xs ⟧ₙ))
+        ≡⟨ sym (⟦xs⟧≡2ⁿ*⟦xs⟧ₙ (0∷ (0∷ xs))) ⟩
+            ⟦ xs ⟧
+        ∎
 
--- elemAt : ∀ {A n} → (xs : RandomAccessList A n) → Fin.Fin ⟦ xs ⟧ → A
--- elemAt {n = n} [] i rewrite cong Fin.fromℕ (⟦[]⟧≡0 {n} [] _) = {! i  !}
--- elemAt [] i rewrite BLT.transportFin (⟦[]⟧≡0 [] _) i = {! i  !}
--- elemAt (0∷ xs) i = {!   !}
--- elemAt (x 1∷ xs) i = {!   !}
-{-
-elemAt {n = zero} [] ()
-elemAt {n = zero} (0∷ xs) i with ⟦ 0∷ xs ⟧ | inspect ⟦_⟧ (0∷ xs)
-elemAt {n = zero} (0∷ xs) () | zero | w
-elemAt {n = zero} (0∷ xs) i | suc z | PropEq.[ eq ] = elemAt xs (BLT.transportFin (sym eq) i)
-elemAt {n = zero} (Leaf x 1∷ xs) Fin.zero = x
-elemAt {n = zero} (x 1∷ xs) (Fin.suc i) = elemAt xs i
-elemAt {n = suc n} [] i = {!   !}
-elemAt {n = suc n} (0∷ xs) i = {!   !}
-elemAt {n = suc n} (x 1∷ xs) i = {!   !}
--}
-
-{-
-elemAt : ∀ {A n} → (xs : RandomAccessList A n) → Fin.Fin ⟦ xs ⟧ₙ  → A
-elemAt [] ()
-elemAt (0∷ xs) i with ⟦ 0∷ xs ⟧ₙ
-elemAt (0∷ xs) () | zero
-elemAt (0∷ xs) i  | suc a = elemAt xs (Fin.fromℕ≤ {⌊ Fin.toℕ i /2⌋} {!   !})    -- keep searching the next digit
-elemAt {n = n} (x 1∷ xs) i = {!   !}
-
--}
-
--- BLT.elemAt x {! BLT.transportFin (+-right-identity (2 ^ n))  !}
+elemAt : ∀ {A n} → (xs : RandomAccessList A n) → Fin.Fin ⟦ xs ⟧ → A
+elemAt {n = zero } [] ()
+elemAt {n = zero } (0∷ xs) i with ⟦ 0∷ xs ⟧ | inspect ⟦_⟧ (0∷ xs)
+elemAt {n = zero } (0∷ xs) () | zero | _
+elemAt {n = zero } (0∷ xs) i | _ | PropEq.[ eq ] = elemAt xs (BLT.transportFin (sym eq) i)
+elemAt {n = zero } (Leaf x 1∷ xs) Fin.zero = x
+elemAt {n = zero } (x 1∷ xs) (Fin.suc i) = elemAt xs i
+elemAt {n = suc n} [] i = elemAt {n = n} (0∷ []) i
+elemAt {n = suc n} (0∷ xs) i with ⟦ 0∷ xs ⟧ | inspect ⟦_⟧ (0∷ xs)
+elemAt {n = suc n} (0∷ xs) () | zero | _
+elemAt {n = suc n} (0∷ xs) i | suc a | PropEq.[ eq ] = elemAt xs (BLT.transportFin (sym eq) i)
+elemAt {n = suc n} (x 1∷ xs) i with (2 ^ suc n) ≤? Fin.toℕ i
+elemAt {n = suc n} (x 1∷ xs) i | yes p rewrite trans (⟦xs⟧≡2ⁿ*⟦xs⟧ₙ (x 1∷ xs)) (+-*-suc (2 * 2 ^ n) (2 * ⟦ xs ⟧ₙ)) = elemAt xs (BLT.transportFin (banana xs) (Fin.reduce≥ {2 * 2 ^ n} {2 * 2 ^ n * (2 * ⟦ xs ⟧ₙ)} i p))
+elemAt {n = suc n} (x 1∷ xs) i | no ¬p = BLT.elemAt x (Fin.fromℕ≤ (BLT.¬a≤b⇒b<a ¬p))

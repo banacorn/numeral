@@ -1,6 +1,7 @@
 module RandomAccessList.Properties where
 
 open import BuildingBlock
+open import BuildingBlock.BinaryLeafTree using (BinaryLeafTree; Node; Leaf)
 open import RandomAccessList
 
 
@@ -20,9 +21,6 @@ open PropEq.≡-Reasoning
 --------------------------------------------------------------------------------
 -- properties
 
-_^_ : ℕ → ℕ → ℕ
-a ^ zero  = 1
-a ^ suc b = a * (a ^ b)
 
 ⟦xs⟧≡2ⁿ*⟦xs⟧ₙ : ∀ {A n} → (xs : RandomAccessList A n)
                        → ⟦ xs ⟧ ≡ (2 ^ n) * ⟦ xs ⟧ₙ
