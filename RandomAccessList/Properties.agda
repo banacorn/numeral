@@ -2,7 +2,7 @@ module RandomAccessList.Properties where
 
 open import BuildingBlock
 open import BuildingBlock.BinaryLeafTree using (BinaryLeafTree; Node; Leaf)
-open import RandomAccessList
+open import RandomAccessList.Core
 
 
 open import Data.Nat
@@ -20,8 +20,7 @@ open PropEq.≡-Reasoning
 
 
 --------------------------------------------------------------------------------
--- properties
-
+-- On ⟦_⟧ and ⟦_⟧ₙ
 
 ⟦xs⟧≡2ⁿ*⟦xs⟧ₙ : ∀ {A n} → (xs : RandomAccessList A n)
                        → ⟦ xs ⟧ ≡ (2 ^ n) * ⟦ xs ⟧ₙ
@@ -37,6 +36,44 @@ open PropEq.≡-Reasoning
         2 * (2 ^ n) * ⟦ xs ⟧ₙ
     ∎
 
+-- identity
+⟦[]⟧ₙ≡0 : ∀ {A n} → (xs : RandomAccessList A n) → xs ≡ [] → ⟦ xs ⟧ₙ ≡ 0
+⟦[]⟧ₙ≡0 (     []) p  = refl
+⟦[]⟧ₙ≡0 (  0∷ xs) ()
+⟦[]⟧ₙ≡0 (x 1∷ xs) ()
+
+⟦[]⟧≡0 : ∀ {n A} → (xs : RandomAccessList A n) → xs ≡ [] → ⟦ xs ⟧ ≡ 0
+⟦[]⟧≡0 {zero } (     []) p = refl
+⟦[]⟧≡0 {suc n} (     []) p =
+    begin
+        ⟦_⟧ {n = n} (0∷ [])
+    ≡⟨ ⟦xs⟧≡2ⁿ*⟦xs⟧ₙ {n = n} (0∷ []) ⟩
+        2 ^ n * zero
+    ≡⟨ *-right-zero (2 ^ n) ⟩
+        0
+    ∎
+⟦[]⟧≡0         (  0∷ xs) ()
+⟦[]⟧≡0         (x 1∷ xs) ()
+
+
+⟦[]⟧≡⟦[]⟧ : ∀ {n A} → ⟦ [] {A} {suc n} ⟧ ≡ ⟦ [] {A} {n} ⟧
+⟦[]⟧≡⟦[]⟧ {n} =
+    begin
+        ⟦ [] {n = suc n} ⟧
+    ≡⟨ ⟦xs⟧≡2ⁿ*⟦xs⟧ₙ ([] {n = suc n}) ⟩
+        2 * 2 ^ n * 0
+    ≡⟨ *-right-zero (2 * 2 ^ n) ⟩
+        0
+    ≡⟨ sym (*-right-zero (2 ^ n)) ⟩
+        2 ^ n * 0
+    ≡⟨ sym (⟦xs⟧≡2ⁿ*⟦xs⟧ₙ ([] {n = n})) ⟩
+        ⟦ [] {n = n} ⟧
+    ∎
+
+
+--------------------------------------------------------------------------------
+-- On ℕ
+
 distrib-left-*-+ : ∀ m n o → m * (n + o) ≡ m * n + m * o
 distrib-left-*-+ m n o =
         begin
@@ -51,6 +88,8 @@ distrib-left-*-+ m n o =
             m * n + m * o
         ∎
 
+
+{-
 incr-2^n-lemma : ∀ {n A}
         → (x : BinaryLeafTree A n)
         → (xs : RandomAccessList A n)
@@ -95,27 +134,9 @@ xs≡xs++[] : ∀ {A n} → (xs : RandomAccessList A n) → xs ≡ xs ++ []
 xs≡xs++[] (     []) = refl
 xs≡xs++[] (  0∷ xs) = refl
 xs≡xs++[] (x 1∷ xs) = refl
+-}
 
--- identity
-⟦[]⟧ₙ≡0 : ∀ {A n} → (xs : RandomAccessList A n) → xs ≡ [] → ⟦ xs ⟧ₙ ≡ 0
-⟦[]⟧ₙ≡0 (     []) p  = refl
-⟦[]⟧ₙ≡0 (  0∷ xs) ()
-⟦[]⟧ₙ≡0 (x 1∷ xs) ()
-
-⟦[]⟧≡0 : ∀ {n A} → (xs : RandomAccessList A n) → xs ≡ [] → ⟦ xs ⟧ ≡ 0
-⟦[]⟧≡0 {zero } (     []) p = refl
-⟦[]⟧≡0 {suc n} (     []) p =
-    begin
-        ⟦_⟧ {n = n} (0∷ [])
-    ≡⟨ ⟦xs⟧≡2ⁿ*⟦xs⟧ₙ {n = n} (0∷ []) ⟩
-        2 ^ n * zero
-    ≡⟨ *-right-zero (2 ^ n) ⟩
-        0
-    ∎
-⟦[]⟧≡0         (  0∷ xs) ()
-⟦[]⟧≡0         (x 1∷ xs) ()
-
-
+{-
 -- ⟦ xs ++ ys ⟧ ≡ ⟦ xs ⟧ + ⟦ ys ⟧
 ⟦xs++ys⟧ₙ≡⟦xs⟧ₙ+⟦ys⟧ₙ : ∀ {A n}
         → (xs : RandomAccessList A n)
@@ -217,6 +238,7 @@ borrow-+ {suc n} xs p =
     ≡⟨ sym (⟦xs⟧≡2ⁿ*⟦xs⟧ₙ xs) ⟩
         ⟦ 0∷ xs ⟧
     ∎
+-}
 {-
 ++∘borrow-id : ∀ {A n}
                 → (xs : RandomAccessList A n)

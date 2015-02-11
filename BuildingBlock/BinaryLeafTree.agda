@@ -35,8 +35,7 @@ merge : ∀ {A n} → BinaryLeafTree A n
                 → BinaryLeafTree A (suc n)
 merge = Node
 
--- elemAt
-
+-- searching
 transportFin : ∀ {a b} → a ≡ b → Fin a → Fin b
 transportFin refl i = i
 
