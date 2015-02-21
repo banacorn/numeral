@@ -11,7 +11,7 @@ open import Data.Fin using (Fin; fromℕ≤; reduce≥; toℕ)
 import      Data.Fin as Fin
 open import Data.Nat
 open import Data.Nat.Properties.Simple
-open import Data.Nat.Exp
+open import Data.Nat.Etc
 open import Data.Product
 open import Function
 open import Relation.Nullary using (Dec; yes; no; ¬_)
@@ -126,5 +126,8 @@ elemAt     (x     1∷ xs) i | no ¬p = BLT.elemAt x (fromℕ≤ (BLT.¬a≤b⇒
 elemAt {n} (x , y 2∷ xs) i with  (2 * (2 ^ n)) ≤? toℕ i
 elemAt     (x , y 2∷ xs) i | yes p rewrite splitIndex2∷ x y xs = elemAt xs (reduce≥ i p)
 elemAt {n} (x , y 2∷ xs) i | no ¬p with (2 ^ n) ≤? toℕ i
-elemAt     (x , y 2∷ xs) i | no ¬p | yes q = {!   !}
-elemAt     (x , y 2∷ xs) i | no ¬p | no ¬q = {!   !}
+elemAt     (x , y 2∷ xs) i | no ¬p | yes q rewrite splitIndex2∷ x y xs = BLT.elemAt y {!   !} -- y
+elemAt     (x , y 2∷ xs) i | no ¬p | no ¬q = BLT.elemAt x (fromℕ≤ (BLT.¬a≤b⇒b<a ¬q)) -- x
+-- reduce≥ : ∀ {m n} (i : Fin (m N+ n)) (i≥m : toℕ i N≥ m) → Fin n
+-- i : 2 * 2 ^ n + (2 * 2 ^ n) * ⟦ xs ⟧ₙ
+-- m : 2 ^ n

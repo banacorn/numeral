@@ -2,7 +2,7 @@ module BuildingBlock.BinaryLeafTree where
 
 open import Function
 open import Data.Nat
-open import Data.Nat.Exp
+open import Data.Nat.Etc
 open import Data.Nat.Properties.Simple using (+-right-identity)
 open import Data.Product using (_×_; _,_)
 open import Data.Fin
@@ -24,16 +24,23 @@ data BinaryLeafTree (A : Set) : ℕ → Set where
                  → BinaryLeafTree A n
                  → BinaryLeafTree A (suc n)
 
--- merge 2 BinaryLeafTree
+-- splits a BinaryLeafTree into 2
 split : ∀ {A n} → BinaryLeafTree A (suc n)
                 → BinaryLeafTree A n × BinaryLeafTree A n
 split (Node xs ys) = xs , ys
 
--- splits a BinaryLeafTree into 2
+-- merge 2 BinaryLeafTree
 merge : ∀ {A n} → BinaryLeafTree A n
                 → BinaryLeafTree A n
                 → BinaryLeafTree A (suc n)
 merge = Node
+
+-- get the first element
+head : ∀ {A n} → BinaryLeafTree A n → A
+head (Leaf x) = x
+head (Node xs ys) = head xs
+
+
 
 -- searching
 transportFin : ∀ {a b} → a ≡ b → Fin a → Fin b

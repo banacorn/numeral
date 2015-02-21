@@ -3,7 +3,7 @@ module ZerolessRAL.Core where
 open import BuildingBlock.BinaryLeafTree using (BinaryLeafTree; Node; Leaf)
 
 open import Data.Nat
-open import Data.Nat.Exp
+open import Data.Nat.Etc
 
 --  parameterized by the level of the least significant digit
 data 1-2-RAL (A : Set) : ℕ → Set where
