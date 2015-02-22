@@ -4,7 +4,7 @@ open import Function
 open import Data.Nat
 open import Data.Nat.Etc
 open import Data.Nat.Properties.Simple using (+-right-identity)
-open import Data.Product using (_×_; _,_)
+open import Data.Product using (_×_; _,_; proj₁; proj₂)
 open import Data.Fin
     using (Fin; toℕ; fromℕ; fromℕ≤; reduce≥)
     renaming (zero to Fzero; suc to Fsuc)
@@ -34,6 +34,10 @@ merge : ∀ {A n} → BinaryLeafTree A n
                 → BinaryLeafTree A n
                 → BinaryLeafTree A (suc n)
 merge = Node
+
+split-merge : ∀ {n A} → (xs : BinaryLeafTree A (suc n))
+            → merge (proj₁ (split xs)) (proj₂ (split xs)) ≡ xs
+split-merge (Node xs ys) = refl
 
 -- get the first element
 head : ∀ {A n} → BinaryLeafTree A n → A

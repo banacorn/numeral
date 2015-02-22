@@ -24,7 +24,7 @@ open PropEq.≡-Reasoning
 
 tailₙ-suc : ∀ {n A} → (xs : RandomAccessList A n) → (p : False (null? xs))
            → suc ⟦ tailₙ xs p ⟧ₙ ≡ ⟦ xs ⟧ₙ
-tailₙ-suc [] ()
+tailₙ-suc []        ()
 tailₙ-suc (  0∷ xs) p  with null? xs
 tailₙ-suc (  0∷ xs) () | yes q
 tailₙ-suc (  0∷ xs) p  | no ¬q =
@@ -41,7 +41,7 @@ tailₙ-suc (x 1∷ xs) p = refl
 
 tail-suc : ∀ {A} → (xs : RandomAccessList A 0) → (p : False (null? xs))
           → suc ⟦ tail xs p ⟧ ≡ ⟦ xs ⟧
-tail-suc [] ()
+tail-suc []        ()
 tail-suc (  0∷ xs) p  with null? xs
 tail-suc (  0∷ xs) () | yes q
 tail-suc (  0∷ xs) p  | no ¬q =
@@ -58,25 +58,49 @@ tail-suc (  0∷ xs) p  | no ¬q =
     ∎
 tail-suc (x 1∷ xs) p  = refl
 
+
+
+headₙ-tailₙ-consₙ : ∀ {n A} → (xs : RandomAccessList A n) → (p : False (null? xs))
+                 → consₙ (headₙ xs p) (tailₙ xs p) ≡ xs
+headₙ-tailₙ-consₙ []        ()
+headₙ-tailₙ-consₙ (  0∷ xs) p  with null? xs
+headₙ-tailₙ-consₙ (  0∷ xs) () | yes q
+headₙ-tailₙ-consₙ (  0∷ xs) p  | no ¬q =
+    begin
+        consₙ (proj₁ (BLT.split (headₙ xs (fromWitnessFalse ¬q)))) (proj₂ (BLT.split (headₙ xs (fromWitnessFalse ¬q))) 1∷ tailₙ xs (fromWitnessFalse ¬q))
+    ≡⟨ refl ⟩
+        0∷ consₙ (Node (proj₁ (BLT.split (headₙ xs (fromWitnessFalse ¬q)))) (proj₂ (BLT.split (headₙ xs (fromWitnessFalse ¬q))))) (tailₙ xs (fromWitnessFalse ¬q))
+    ≡⟨ cong (λ x → 0∷ consₙ x (tailₙ xs (fromWitnessFalse ¬q))) (BLT.split-merge (headₙ xs (fromWitnessFalse ¬q))) ⟩
+        0∷ consₙ (headₙ xs (fromWitnessFalse ¬q)) (tailₙ xs (fromWitnessFalse ¬q))
+    ≡⟨ cong 0∷_ (headₙ-tailₙ-consₙ xs (fromWitnessFalse ¬q)) ⟩
+        0∷ xs
+    ∎
+headₙ-tailₙ-consₙ (x 1∷ xs) p  = refl
+
 head-tail-cons : ∀ {A} → (xs : RandomAccessList A 0) → (p : False (null? xs))
                → cons (head xs p) (tail xs p) ≡ xs
-head-tail-cons [] ()
+head-tail-cons []      ()
 head-tail-cons (0∷ xs) p  with null? xs
 head-tail-cons (0∷ xs) () | yes q
 head-tail-cons (0∷ xs) p  | no ¬q =
     begin
-        cons (head (0∷ xs) (fromWitnessFalse ¬q)) (tail {!   !} (fromWitnessFalse ¬q))
-    ≡⟨ {!   !} ⟩
-        {!   !}
-    ≡⟨ {!   !} ⟩
-        {!   !}
-    ≡⟨ {!   !} ⟩
-        {!   !}
-    ≡⟨ {!   !} ⟩
+        cons (BLT.head (proj₁ (BLT.split (headₙ xs (fromWitnessFalse ¬q))))) (proj₂ (BLT.split (headₙ xs (fromWitnessFalse ¬q))) 1∷ tailₙ xs (fromWitnessFalse ¬q))
+    ≡⟨ cong (λ x → consₙ x (proj₂ (BLT.split (headₙ xs (fromWitnessFalse ¬q))) 1∷ tailₙ xs (fromWitnessFalse ¬q))) (lemma (proj₁ (BLT.split (headₙ xs (fromWitnessFalse ¬q))))) ⟩
+        0∷ consₙ (Node (proj₁ (BLT.split (headₙ xs (fromWitnessFalse ¬q))))  (proj₂ (BLT.split (headₙ xs (fromWitnessFalse ¬q))))) (tailₙ xs (fromWitnessFalse ¬q))
+    ≡⟨ cong (λ x → 0∷ consₙ x (tailₙ xs (fromWitnessFalse ¬q))) (BLT.split-merge (headₙ xs (fromWitnessFalse ¬q))) ⟩
+        0∷ consₙ (headₙ xs (fromWitnessFalse ¬q)) (tailₙ xs (fromWitnessFalse ¬q))
+    ≡⟨ cong 0∷_ (headₙ-tailₙ-consₙ xs (fromWitnessFalse ¬q)) ⟩
         0∷ xs
     ∎
-
+    where
+        lemma : ∀ {A} → (xs : BinaryLeafTree A 0)
+              → Leaf (BLT.head xs) ≡ xs
+        lemma (Leaf x) = refl
 head-tail-cons (Leaf x 1∷ xs) p = refl
+
+
+
+
 {-
     begin
         {!   !}

@@ -58,12 +58,14 @@ head :  ∀ {n A}
         → (xs : RandomAccessList A n)
         → False (null? xs)
         → A
+head xs p = BLT.head (headₙ xs p)
+        {-
 head []        ()
 head (  0∷ xs) p  with null? xs
 head (  0∷ xs) () | yes q
 head (  0∷ xs) p  | no ¬q = head xs (fromWitnessFalse ¬q)
 head (x 1∷ xs) p  = BLT.head x
-
+-}
 
 tailₙ : ∀ {n A}
         → (xs : RandomAccessList A n)
