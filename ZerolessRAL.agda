@@ -23,59 +23,54 @@ open PropEq.≡-Reasoning
 --------------------------------------------------------------------------------
 -- predicates
 
-null : ∀ {A n} → 1-2-RAL A n → Set
+null : ∀ {n A} → 1-2-RAL A n → Set
 null (         []) = ⊤
-null (    x 1∷ xs) = ⊥
+null (x     1∷ xs) = ⊥
 null (x , y 2∷ xs) = ⊥
 
-null? : ∀ {A n} → (xs : 1-2-RAL A n) → Dec (null xs)
+null? : ∀ {n A} → (xs : 1-2-RAL A n) → Dec (null xs)
 null? (         []) = yes tt
-null? (    x 1∷ xs) = no (λ z → z)
+null? (x     1∷ xs) = no (λ z → z)
 null? (x , y 2∷ xs) = no (λ z → z)
+
 --------------------------------------------------------------------------------
 -- Operations
 
--- numerical: +1
--- container: insertion
-incr : ∀ {A n} → BinaryLeafTree A n → 1-2-RAL A n → 1-2-RAL A n
-incr a (         []) = a     1∷ []
-incr a (    x 1∷ xs) = a , x 2∷ xs
-incr a (x , y 2∷ xs) = a     1∷ incr (Node x y) xs
+-- cons
+consₙ : ∀ {n A} → BinaryLeafTree A n → 1-2-RAL A n → 1-2-RAL A n
+consₙ a (         []) = a     1∷ []
+consₙ a (x     1∷ xs) = a , x 2∷ xs
+consₙ a (x , y 2∷ xs) = a     1∷ consₙ (Node x y) xs
 
--- numerical: +
--- container: merge
-_++_ : ∀ {A n} → 1-2-RAL A n → 1-2-RAL A n → 1-2-RAL A n
-(         []) ++ (         ys) =          ys
-(         xs) ++ (         []) =          xs
-(    x 1∷ xs) ++ (    y 1∷ ys) = x , y 2∷                 (xs ++ ys)
-(    x 1∷ xs) ++ (y , z 2∷ ys) = x     1∷ incr (Node y z) (xs ++ ys)
-(x , w 2∷ xs) ++ (    y 1∷ ys) = y     1∷ incr (Node x w) (xs ++ ys)
-(x , w 2∷ xs) ++ (y , z 2∷ ys) = x , w 2∷ incr (Node y z) (xs ++ ys)
+cons : ∀ {A} → A → 1-2-RAL A 0 → 1-2-RAL A 0
+cons a xs = consₙ (Leaf a) xs
+
+-- head
+headₙ : ∀ {n A} → (xs : 1-2-RAL A n) → False (null? xs) → BinaryLeafTree A n
+headₙ []            ()
+headₙ (x     1∷ xs) p  = x
+headₙ (x , y 2∷ xs) p  = x
+
+head : ∀ {A} → (xs : 1-2-RAL A 0) → False (null? xs) → A
+head xs p = BLT.head (headₙ xs p)
 
 
-spread : ∀ {A n} → BinaryLeafTree A (suc n) → 1-2-RAL A (suc n) → 1-2-RAL A n
-spread (Node xₒ x₁) xs = xₒ , x₁ 2∷ xs
+spread : ∀ {n A} → (xs : 1-2-RAL A (suc n)) → False (null? xs) → 1-2-RAL A (suc n) → 1-2-RAL A n
+spread []                      () rest
+spread (Node x₀ x₁      1∷ xs) p  rest = x₀ , x₁ 2∷ rest
+spread (Node x₀ x₁  , y 2∷ xs) p  rest = x₀ , x₁ 2∷ rest
 
--- borrow from the first non-zero digit, and splits it like so (1:xs)
--- numerical: borrow
-borrow : ∀ {A n}
-        → (xs : 1-2-RAL A n)
-        → False (null? xs)
-        → BinaryLeafTree A n × 1-2-RAL A n
-borrow (                   [] ) ()
-borrow (    x 1∷           [] ) p         = x , []                                                          -- 1 ⇒ 0
-borrow (    x 1∷ (y     1∷ xs)) p with null? xs
-borrow (    x 1∷ (y     1∷ xs)) p | yes q = x , spread y []                                                 -- 11 ⇒ 2
-borrow (    x 1∷ (y     1∷ xs)) p | no ¬q = x , spread y (uncurry spread (borrow xs (fromWitnessFalse ¬q))) -- 11x ⇒ 22?
-borrow (    x 1∷ (y , z 2∷ xs)) p         = x , spread y (z 1∷ xs)                                          -- 12 ⇒ 21
-borrow (x , y 2∷           xs ) p         = x , y 1∷ xs                                                     -- 2x ⇒ 1x
+-- tail
+tailₙ : ∀ {n A} → (xs : 1-2-RAL A n) → False (null? xs) → 1-2-RAL A n
+tailₙ []            ()
+tailₙ (x     1∷ xs) p  with null? xs
+tailₙ (x     1∷ xs) p  | yes q = []
+tailₙ (x     1∷ xs) p  | no ¬q = spread xs (fromWitnessFalse ¬q) (tailₙ xs (fromWitnessFalse ¬q))
+tailₙ (x , y 2∷ xs) p          = y 1∷ xs
 
--- numerical: -1
--- container: deletion
-decr : ∀ {A n} → (xs : 1-2-RAL A n) → False (null? xs) → 1-2-RAL A n
-decr (           []) ()
-decr (x       1∷ xs) p  = proj₂ (borrow (x 1∷ xs) p)
-decr (x₀ , x₁ 2∷ xs) p  = x₁ 1∷ xs
+tail : ∀ {A} → (xs : 1-2-RAL A 0) → False (null? xs) → 1-2-RAL A 0
+tail = tailₙ
+
 --------------------------------------------------------------------------------
 -- Searching
 

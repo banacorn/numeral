@@ -13,10 +13,10 @@ open import Data.Nat
 open import Data.Nat.Properties.Simple
 open import Data.Nat.Etc
 open import Data.Product as Prod
-open import Relation.Nullary using (Dec; yes; no; ¬_)
+open import Relation.Nullary using (Dec; yes; no)
 open import Relation.Nullary.Decidable using (False; fromWitnessFalse)
 open import Relation.Binary.PropositionalEquality as PropEq
-    using (_≡_; _≢_; refl; cong; trans; sym; inspect)
+    using (_≡_; refl; cong; trans; sym; inspect)
 open PropEq.≡-Reasoning
 
 --------------------------------------------------------------------------------
@@ -43,10 +43,7 @@ consₙ a (x 1∷ xs) =   0∷ (consₙ (Node a x) xs)
 cons : ∀ {A} → A → RandomAccessList A 0 → RandomAccessList A 0
 cons a xs = consₙ (Leaf a) xs
 
-headₙ :  ∀ {n A}
-        → (xs : RandomAccessList A n)
-        → False (null? xs)
-        → BinaryLeafTree A n
+headₙ :  ∀ {n A} → (xs : RandomAccessList A n) → False (null? xs) → BinaryLeafTree A n
 headₙ []        ()
 headₙ (  0∷ xs) p  with null? xs
 headₙ (  0∷ xs) () | yes q
@@ -54,18 +51,8 @@ headₙ (  0∷ xs) p  | no ¬q = proj₁ (BLT.split (headₙ xs (fromWitnessFal
 headₙ (x 1∷ xs) p  = x
 
 
-head :  ∀ {n A}
-        → (xs : RandomAccessList A n)
-        → False (null? xs)
-        → A
+head :  ∀ {A} → (xs : RandomAccessList A 0) → False (null? xs) → A
 head xs p = BLT.head (headₙ xs p)
-        {-
-head []        ()
-head (  0∷ xs) p  with null? xs
-head (  0∷ xs) () | yes q
-head (  0∷ xs) p  | no ¬q = head xs (fromWitnessFalse ¬q)
-head (x 1∷ xs) p  = BLT.head x
--}
 
 tailₙ : ∀ {n A}
         → (xs : RandomAccessList A n)
@@ -77,12 +64,8 @@ tailₙ (  0∷ xs) () | yes q
 tailₙ (  0∷ xs) p  | no ¬q = proj₂ (BLT.split (headₙ xs (fromWitnessFalse ¬q))) 1∷ tailₙ xs (fromWitnessFalse ¬q)
 tailₙ (x 1∷ xs) p  = 0∷ xs
 
-tail : ∀ {n A}
-        → (xs : RandomAccessList A n)
-        → False (null? xs)
-        → RandomAccessList A 0
-tail {zero } xs p = tailₙ xs p
-tail {suc n} xs p = tail (0∷ xs) p
+tail : ∀ {A} → (xs : RandomAccessList A 0) → False (null? xs) → RandomAccessList A 0
+tail = tailₙ
 
 
 --------------------------------------------------------------------------------
