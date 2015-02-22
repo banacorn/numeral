@@ -2,7 +2,6 @@ module RandomAccessList where
 
 open import RandomAccessList.Core
 open import RandomAccessList.Core.Properties
-open import RandomAccessList.Properties
 open import BuildingBlock.BinaryLeafTree using (BinaryLeafTree; Node; Leaf)
 import BuildingBlock.BinaryLeafTree as BLT
 
@@ -36,10 +35,13 @@ null? (x 1∷ xs) = no (λ z → z)
 --------------------------------------------------------------------------------
 -- Operations
 
-cons : ∀ {n A} → BinaryLeafTree A n → RandomAccessList A n → RandomAccessList A n
-cons a []        = a 1∷ []
-cons a (  0∷ xs) = a 1∷ xs
-cons a (x 1∷ xs) =   0∷ (cons (Node a x) xs)
+consₙ : ∀ {n A} → BinaryLeafTree A n → RandomAccessList A n → RandomAccessList A n
+consₙ a []        = a 1∷ []
+consₙ a (  0∷ xs) = a 1∷ xs
+consₙ a (x 1∷ xs) =   0∷ (consₙ (Node a x) xs)
+
+cons : ∀ {A} → A → RandomAccessList A 0 → RandomAccessList A 0
+cons a xs = consₙ (Leaf a) xs
 
 headₙ :  ∀ {n A}
         → (xs : RandomAccessList A n)
