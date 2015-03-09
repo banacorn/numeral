@@ -5,7 +5,7 @@ open import ZerolessRAL.Core
 open import BuildingBlock.BinaryLeafTree using (BinaryLeafTree; Node; Leaf; split)
 import BuildingBlock.BinaryLeafTree as BLT
 
-open import Data.Empty using (⊥)
+open import Data.Empty using (⊥; ⊥-elim)
 open import Data.Unit using (⊤; tt)
 open import Data.Fin using (Fin; fromℕ≤; reduce≥; toℕ)
 import      Data.Fin as Fin
@@ -16,6 +16,7 @@ open import Data.Product
 open import Function
 open import Relation.Nullary using (Dec; yes; no; ¬_)
 open import Relation.Nullary.Decidable using (False; fromWitnessFalse)
+-- open import Relation.Nullary.Negation using (False; fromWitnessFalse)
 open import Relation.Binary.PropositionalEquality as PropEq
     using (_≡_; _≢_; refl; cong; trans; sym; inspect)
 open PropEq.≡-Reasoning
@@ -54,18 +55,15 @@ headₙ (x , y 2∷ xs) p  = x
 head : ∀ {A} → (xs : 1-2-RAL A 0) → False (null? xs) → A
 head xs p = BLT.head (headₙ xs p)
 
-
-spread : ∀ {n A} → (xs : 1-2-RAL A (suc n)) → False (null? xs) → 1-2-RAL A (suc n) → 1-2-RAL A n
-spread []                      () rest
-spread (Node x₀ x₁      1∷ xs) p  rest = x₀ , x₁ 2∷ rest
-spread (Node x₀ x₁  , y 2∷ xs) p  rest = x₀ , x₁ 2∷ rest
-
 -- tail
 tailₙ : ∀ {n A} → (xs : 1-2-RAL A n) → False (null? xs) → 1-2-RAL A n
 tailₙ []            ()
 tailₙ (x     1∷ xs) p  with null? xs
 tailₙ (x     1∷ xs) p  | yes q = []
-tailₙ (x     1∷ xs) p  | no ¬q = spread xs (fromWitnessFalse ¬q) (tailₙ xs (fromWitnessFalse ¬q))
+tailₙ (x     1∷ xs) p  | no ¬q =
+    let y₀ = proj₁ (split (headₙ xs (fromWitnessFalse ¬q)))
+        y₁ = proj₂ (split (headₙ xs (fromWitnessFalse ¬q)))
+    in  y₀ , y₁ 2∷ (tailₙ xs (fromWitnessFalse ¬q))
 tailₙ (x , y 2∷ xs) p          = y 1∷ xs
 
 tail : ∀ {A} → (xs : 1-2-RAL A 0) → False (null? xs) → 1-2-RAL A 0
@@ -112,7 +110,7 @@ splitIndex2∷ {n} x y xs =
     ≡⟨ cong (λ w → w + 2 * 2 ^ n * ⟦ xs ⟧ₙ) (n+n≡2*n (2 ^ n)) ⟩
         2 * 2 ^ n + ⟦ xs ⟧
     ∎
-
+{-
 elemAt : ∀ {n A} → (xs : 1-2-RAL A n) → Fin ⟦ xs ⟧ → A
 elemAt     (         []) ()
 elemAt {n} (x     1∷ xs) i with  (2 ^ n) ≤? toℕ i
@@ -123,6 +121,7 @@ elemAt     (x , y 2∷ xs) i | yes p rewrite splitIndex2∷ x y xs = elemAt xs (
 elemAt {n} (x , y 2∷ xs) i | no ¬p with (2 ^ n) ≤? toℕ i
 elemAt     (x , y 2∷ xs) i | no ¬p | yes q rewrite splitIndex2∷ x y xs = BLT.elemAt y {!   !} -- y
 elemAt     (x , y 2∷ xs) i | no ¬p | no ¬q = BLT.elemAt x (fromℕ≤ (BLT.¬a≤b⇒b<a ¬q)) -- x
+-}
 -- reduce≥ : ∀ {m n} (i : Fin (m N+ n)) (i≥m : toℕ i N≥ m) → Fin n
 -- i : 2 * 2 ^ n + (2 * 2 ^ n) * ⟦ xs ⟧ₙ
 -- m : 2 ^ n

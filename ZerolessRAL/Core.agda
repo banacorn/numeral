@@ -11,6 +11,8 @@ data 1-2-RAL (A : Set) : ℕ → Set where
     _1∷_   : ∀ {n} → BinaryLeafTree A n                      → 1-2-RAL A (suc n) → 1-2-RAL A n
     _,_2∷_ : ∀ {n} → BinaryLeafTree A n → BinaryLeafTree A n → 1-2-RAL A (suc n) → 1-2-RAL A n
 
+infixr 2 _1∷_
+infixr 2 _,_2∷_
 --------------------------------------------------------------------------------
 -- to ℕ
 
