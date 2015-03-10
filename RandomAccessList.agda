@@ -5,7 +5,7 @@ open import RandomAccessList.Core.Properties
 open import BuildingBlock.BinaryLeafTree using (BinaryLeafTree; Node; Leaf)
 import BuildingBlock.BinaryLeafTree as BLT
 
-open import Data.Empty using (⊥)
+open import Data.Empty using (⊥; ⊥-elim)
 open import Data.Unit using (⊤; tt)
 open import Data.Fin using (Fin; fromℕ≤; reduce≥; toℕ)
 import      Data.Fin as Fin
@@ -14,23 +14,10 @@ open import Data.Nat.Properties.Simple
 open import Data.Nat.Etc
 open import Data.Product as Prod
 open import Relation.Nullary using (Dec; yes; no)
-open import Relation.Nullary.Decidable using (False; fromWitnessFalse)
+open import Relation.Nullary.Negation using (contraposition)
 open import Relation.Binary.PropositionalEquality as PropEq
-    using (_≡_; refl; cong; trans; sym; inspect)
+    using (_≡_; _≢_; refl; cong; trans; sym; inspect)
 open PropEq.≡-Reasoning
-
---------------------------------------------------------------------------------
--- predicates
-
-null : ∀ {n A} → RandomAccessList A n → Set
-null []        = ⊤
-null (  0∷ xs) = null xs
-null (x 1∷ xs) = ⊥
-
-null? : ∀ {n A} → (xs : RandomAccessList A n) → Dec (null xs)
-null? []        = yes tt
-null? (  0∷ xs) = null? xs
-null? (x 1∷ xs) = no (λ z → z)
 
 --------------------------------------------------------------------------------
 -- Operations
@@ -43,30 +30,22 @@ consₙ a (x 1∷ xs) =   0∷ (consₙ (Node a x) xs)
 cons : ∀ {A} → A → RandomAccessList A 0 → RandomAccessList A 0
 cons a xs = consₙ (Leaf a) xs
 
-headₙ :  ∀ {n A} → (xs : RandomAccessList A n) → False (null? xs) → BinaryLeafTree A n
-headₙ []        ()
-headₙ (  0∷ xs) p  with null? xs
-headₙ (  0∷ xs) () | yes q
-headₙ (  0∷ xs) p  | no ¬q = proj₁ (BLT.split (headₙ xs (fromWitnessFalse ¬q)))
-headₙ (x 1∷ xs) p  = x
 
+headₙ :  ∀ {n A} → (xs : RandomAccessList A n) → ⟦ xs ⟧ ≢ 0 → BinaryLeafTree A n
+headₙ {n} {A} [] p = ⊥-elim (p (⟦[]⟧≡0 ([] {A} {n}) refl))
+headₙ (  0∷ xs)  p = proj₁ (BLT.split (headₙ xs (contraposition (trans (⟦0∷xs⟧≡⟦xs⟧ xs)) p)))
+headₙ (x 1∷ xs)  p = x
 
-head :  ∀ {A} → (xs : RandomAccessList A 0) → False (null? xs) → A
+head : ∀ {A} → (xs : RandomAccessList A 0) → ⟦ xs ⟧ ≢ 0 → A
 head xs p = BLT.head (headₙ xs p)
 
-tailₙ : ∀ {n A}
-        → (xs : RandomAccessList A n)
-        → False (null? xs)
-        → RandomAccessList A n
-tailₙ []        ()
-tailₙ (  0∷ xs) p  with null? xs
-tailₙ (  0∷ xs) () | yes q
-tailₙ (  0∷ xs) p  | no ¬q = proj₂ (BLT.split (headₙ xs (fromWitnessFalse ¬q))) 1∷ tailₙ xs (fromWitnessFalse ¬q)
-tailₙ (x 1∷ xs) p  = 0∷ xs
+tailₙ : ∀ {n A} → (xs : RandomAccessList A n) → ⟦ xs ⟧ ≢ 0 → RandomAccessList A n
+tailₙ {n} {A} [] p = ⊥-elim (p (⟦[]⟧≡0 ([] {A} {n}) refl))
+tailₙ (  0∷ xs)  p = proj₂ (BLT.split (headₙ xs (contraposition (trans (⟦0∷xs⟧≡⟦xs⟧ xs)) p))) 1∷ tailₙ xs (contraposition (trans (⟦0∷xs⟧≡⟦xs⟧ xs)) p)
+tailₙ (x 1∷ xs)  p = 0∷ xs
 
-tail : ∀ {A} → (xs : RandomAccessList A 0) → False (null? xs) → RandomAccessList A 0
+tail : ∀ {A} → (xs : RandomAccessList A 0) → ⟦ xs ⟧ ≢ 0 → RandomAccessList A 0
 tail = tailₙ
-
 
 --------------------------------------------------------------------------------
 -- Searching

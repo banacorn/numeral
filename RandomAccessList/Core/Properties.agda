@@ -14,6 +14,7 @@ open import Data.Product hiding (map)
 open import Function
 open import Relation.Nullary using (Dec; yes; no; ¬_)
 open import Relation.Nullary.Decidable using (False; True; fromWitnessFalse)
+open import Relation.Nullary.Negation using (contraposition)
 open import Relation.Binary.PropositionalEquality as PropEq
     using (_≡_; _≢_; refl; cong; cong₂; trans; sym; inspect)
 open PropEq.≡-Reasoning
@@ -57,3 +58,9 @@ open PropEq.≡-Reasoning
     ≡⟨ cong (λ x → 2 * x * ⟦ xs ⟧ₙ) (*-comm (2 ^ n) 2) ⟩
         (2 * (2 * 2 ^ n)) * ⟦ xs ⟧ₙ
     ∎
+
+⟦0∷xs⟧≢0⇒⟦xs⟧≢0  : ∀ {n A}
+                → (xs : RandomAccessList A (suc n))
+                → ⟦ 0∷ xs ⟧ ≢ 0
+                → ⟦ xs ⟧ ≢ 0
+⟦0∷xs⟧≢0⇒⟦xs⟧≢0 xs p = contraposition (trans (⟦0∷xs⟧≡⟦xs⟧ xs)) p
