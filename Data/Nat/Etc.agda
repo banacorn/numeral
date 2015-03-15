@@ -3,8 +3,9 @@ module Data.Nat.Etc where
 open import Data.Nat
 open import Data.Nat.Properties.Simple
 open import Function
+open import Relation.Nullary.Negation using (contradiction; contraposition)
 open import Relation.Binary.PropositionalEquality as PropEq
-    using (_≡_; refl; cong; trans; sym)
+    using (_≡_; _≢_; refl; cong; trans; sym)
 open PropEq.≡-Reasoning
 
 -- exponention
@@ -29,3 +30,26 @@ distrib-left-*-+ m n o =
         ≡⟨ cong (_+_ (m * n)) (*-comm o m) ⟩
             m * n + m * o
         ∎
+
+no-zero-divisor : ∀ m n → m ≢ 0 → m * n ≡ 0 → n ≡ 0
+no-zero-divisor zero    n       p q = contradiction q p
+no-zero-divisor (suc m) zero    p q = refl
+no-zero-divisor (suc m) (suc n) p ()
+
+m^n≢0 : ∀ m n → m ≢ 0 → m ^ n ≢ 0
+m^n≢0 m zero    p = λ ()
+m^n≢0 m (suc n) p = contraposition (no-zero-divisor m (m ^ n) p) (m^n≢0 m n p)
+
+{-
+    begin
+        {!   !}
+    ≡⟨ {!   !} ⟩
+        {!   !}
+    ≡⟨ {!   !} ⟩
+        {!   !}
+    ≡⟨ {!   !} ⟩
+        {!   !}
+    ≡⟨ {!   !} ⟩
+        {!   !}
+    ∎
+-}

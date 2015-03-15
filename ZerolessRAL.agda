@@ -1,7 +1,7 @@
 module ZerolessRAL where
 
 open import ZerolessRAL.Core
--- open import RandomAccessList.Properties
+open import ZerolessRAL.Core.Properties
 open import BuildingBlock.BinaryLeafTree using (BinaryLeafTree; Node; Leaf; split)
 import BuildingBlock.BinaryLeafTree as BLT
 
@@ -16,23 +16,10 @@ open import Data.Product
 open import Function
 open import Relation.Nullary using (Dec; yes; no; ¬_)
 open import Relation.Nullary.Decidable using (False; fromWitnessFalse)
--- open import Relation.Nullary.Negation using (False; fromWitnessFalse)
+open import Relation.Nullary.Negation using (contradiction; contraposition)
 open import Relation.Binary.PropositionalEquality as PropEq
     using (_≡_; _≢_; refl; cong; trans; sym; inspect)
 open PropEq.≡-Reasoning
-
---------------------------------------------------------------------------------
--- predicates
-
-null : ∀ {n A} → 1-2-RAL A n → Set
-null (         []) = ⊤
-null (x     1∷ xs) = ⊥
-null (x , y 2∷ xs) = ⊥
-
-null? : ∀ {n A} → (xs : 1-2-RAL A n) → Dec (null xs)
-null? (         []) = yes tt
-null? (x     1∷ xs) = no (λ z → z)
-null? (x , y 2∷ xs) = no (λ z → z)
 
 --------------------------------------------------------------------------------
 -- Operations
@@ -47,28 +34,29 @@ cons : ∀ {A} → A → 1-2-RAL A 0 → 1-2-RAL A 0
 cons a xs = consₙ (Leaf a) xs
 
 -- head
-headₙ : ∀ {n A} → (xs : 1-2-RAL A n) → False (null? xs) → BinaryLeafTree A n
-headₙ []            ()
-headₙ (x     1∷ xs) p  = x
-headₙ (x , y 2∷ xs) p  = x
+headₙ : ∀ {n A} → (xs : 1-2-RAL A n) → ⟦ xs ⟧ ≢ 0 → BinaryLeafTree A n
+headₙ {n} {A} []    p = contradiction (⟦[]⟧≡0 ([] {A} {n}) refl) p
+headₙ (x     1∷ xs) p = x
+headₙ (x , y 2∷ xs) p = x
 
-head : ∀ {A} → (xs : 1-2-RAL A 0) → False (null? xs) → A
+head : ∀ {A} → (xs : 1-2-RAL A 0) → ⟦ xs ⟧ ≢ 0 → A
 head xs p = BLT.head (headₙ xs p)
 
 -- tail
-tailₙ : ∀ {n A} → (xs : 1-2-RAL A n) → False (null? xs) → 1-2-RAL A n
-tailₙ []            ()
-tailₙ (x     1∷ xs) p  with null? xs
-tailₙ (x     1∷ xs) p  | yes q = []
-tailₙ (x     1∷ xs) p  | no ¬q =
-    let y₀ = proj₁ (split (headₙ xs (fromWitnessFalse ¬q)))
-        y₁ = proj₂ (split (headₙ xs (fromWitnessFalse ¬q)))
-    in  y₀ , y₁ 2∷ (tailₙ xs (fromWitnessFalse ¬q))
-tailₙ (x , y 2∷ xs) p          = y 1∷ xs
+tailₙ : ∀ {n A} → (xs : 1-2-RAL A n) → ⟦ xs ⟧ ≢ 0 → 1-2-RAL A n
+tailₙ []            p = []
+tailₙ (x     1∷ xs) p with ⟦ xs ⟧ ≟ 0
+tailₙ (x 1∷ xs) p | yes q = []
+tailₙ (x 1∷ xs) p | no ¬q =
+    let y₀ = proj₁ (split (headₙ xs ¬q))
+        y₁ = proj₂ (split (headₙ xs ¬q))
+    in  y₀ , y₁ 2∷ tailₙ xs ¬q
+tailₙ (x , y 2∷ xs) p = y 1∷ xs
 
-tail : ∀ {A} → (xs : 1-2-RAL A 0) → False (null? xs) → 1-2-RAL A 0
+tail : ∀ {A} → (xs : 1-2-RAL A 0) → ⟦ xs ⟧ ≢ 0 → 1-2-RAL A 0
 tail = tailₙ
 
+{-
 --------------------------------------------------------------------------------
 -- Searching
 
@@ -125,3 +113,4 @@ elemAt     (x , y 2∷ xs) i | no ¬p | no ¬q = BLT.elemAt x (fromℕ≤ (BLT.�
 -- reduce≥ : ∀ {m n} (i : Fin (m N+ n)) (i≥m : toℕ i N≥ m) → Fin n
 -- i : 2 * 2 ^ n + (2 * 2 ^ n) * ⟦ xs ⟧ₙ
 -- m : 2 ^ n
+-}
