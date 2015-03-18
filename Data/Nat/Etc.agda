@@ -16,6 +16,7 @@ a ^ suc b = a * (a ^ b)
 
 --------------------------------------------------------------------------------
 -- Properties
+--------------------------------------------------------------------------------
 
 distrib-left-*-+ : ∀ m n o → m * (n + o) ≡ m * n + m * o
 distrib-left-*-+ m n o =
@@ -39,6 +40,11 @@ no-zero-divisor (suc m) (suc n) p ()
 m^n≢0 : ∀ m n → m ≢ 0 → m ^ n ≢ 0
 m^n≢0 m zero    p = λ ()
 m^n≢0 m (suc n) p = contraposition (no-zero-divisor m (m ^ n) p) (m^n≢0 m n p)
+
+m≰n⇒n<m : (m n : ℕ) → m ≰ n → m > n
+m≰n⇒n<m zero n p = contradiction p (λ z → z z≤n)
+m≰n⇒n<m (suc m) zero p = s≤s z≤n
+m≰n⇒n<m (suc m) (suc n) p = s≤s (m≰n⇒n<m m n (λ z → p (s≤s z)))
 
 {-
     begin

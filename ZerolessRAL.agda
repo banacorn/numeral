@@ -5,17 +5,15 @@ open import ZerolessRAL.Core.Properties
 open import BuildingBlock.BinaryLeafTree using (BinaryLeafTree; Node; Leaf; split)
 import BuildingBlock.BinaryLeafTree as BLT
 
-open import Data.Empty using (⊥; ⊥-elim)
-open import Data.Unit using (⊤; tt)
-open import Data.Fin using (Fin; fromℕ≤; reduce≥; toℕ)
+open import Data.Fin using (Fin; fromℕ; fromℕ≤; reduce≥; toℕ)
 import      Data.Fin as Fin
 open import Data.Nat
-open import Data.Nat.Properties.Simple
+open import Data.Nat.DivMod
+-- open import Data.Nat.Properties.Simple
 open import Data.Nat.Etc
 open import Data.Product
 open import Function
-open import Relation.Nullary using (Dec; yes; no; ¬_)
-open import Relation.Nullary.Decidable using (False; fromWitnessFalse)
+open import Relation.Nullary using (yes; no)
 open import Relation.Nullary.Negation using (contradiction; contraposition)
 open import Relation.Binary.PropositionalEquality as PropEq
     using (_≡_; _≢_; refl; cong; trans; sym; inspect)
@@ -23,6 +21,7 @@ open PropEq.≡-Reasoning
 
 --------------------------------------------------------------------------------
 -- Operations
+--------------------------------------------------------------------------------
 
 -- cons
 consₙ : ∀ {n A} → BinaryLeafTree A n → 1-2-RAL A n → 1-2-RAL A n
@@ -45,7 +44,7 @@ head xs p = BLT.head (headₙ xs p)
 -- tail
 tailₙ : ∀ {n A} → (xs : 1-2-RAL A n) → ⟦ xs ⟧ ≢ 0 → 1-2-RAL A n
 tailₙ []            p = []
-tailₙ (x     1∷ xs) p with ⟦ xs ⟧ ≟ 0
+tailₙ (x 1∷ xs) p with ⟦ xs ⟧ ≟ 0
 tailₙ (x 1∷ xs) p | yes q = []
 tailₙ (x 1∷ xs) p | no ¬q =
     let y₀ = proj₁ (split (headₙ xs ¬q))
@@ -56,12 +55,33 @@ tailₙ (x , y 2∷ xs) p = y 1∷ xs
 tail : ∀ {A} → (xs : 1-2-RAL A 0) → ⟦ xs ⟧ ≢ 0 → 1-2-RAL A 0
 tail = tailₙ
 
-{-
 --------------------------------------------------------------------------------
 -- Searching
+--------------------------------------------------------------------------------
+
+{-
+data Occurrence : ℕ → Set where
+    here : ∀ {n b} → ℕ → Fin (b * 2 ^ n) → Occurrence n
+    there : ∀ {n} → Occurrence n
 
 transportFin : ∀ {a b} → a ≡ b → Fin a → Fin b
 transportFin refl i = i
+
+search : ∀ {n A} → (xs : 1-2-RAL A n) → ℕ → Occurrence n
+search []            i = there
+search {n} (x     1∷ xs) i with (1 * 2 ^ n) ≤? i
+search (x 1∷ xs) i | yes p = there
+search {n} (x 1∷ xs) i | no ¬p = here 0 (fromℕ≤ (m≰n⇒n<m (1 * 2 ^ n) i ¬p))
+search {n} (x , y 2∷ xs) i with (2 * 2 ^ n) ≤? i
+search (x , y 2∷ xs) i | yes p = there
+search {n} (x , y 2∷ xs) i | no ¬p with i divMod (2 ^ n)
+search (x , y 2∷ xs) i | no ¬p | result zero remainder _ = here zero {!   !}
+search (x , y 2∷ xs) i | no ¬p | result (suc quotient) remainder _ = {!   !}
+
+elemAt : ∀ {n A} → (xs : 1-2-RAL A n) → Fin ⟦ xs ⟧ → A
+elemAt {n} {A} []    i = contradiction (transportFin (⟦[]⟧≡0 ([] {A} {n}) refl) i) (λ ())
+elemAt (x     1∷ xs) i = {!   !}
+elemAt (x , y 2∷ xs) i = {!   !}
 
 splitIndex1∷ : ∀ {n A} → (x : BinaryLeafTree A n) → (xs : 1-2-RAL A (suc n)) → ⟦ x 1∷ xs ⟧ ≡ (2 ^ n) + ⟦ xs ⟧
 splitIndex1∷ {n} x xs =
@@ -74,6 +94,7 @@ splitIndex1∷ {n} x xs =
     ≡⟨ cong (λ w → 2 ^ n + w * ⟦ xs ⟧ₙ) (*-comm (2 ^ n) 2) ⟩
         (2 ^ n) + ⟦ xs ⟧
     ∎
+
 
 n+n≡2*n : (n : ℕ) → n + n ≡ 2 * n
 n+n≡2*n n = cong (_+_ n) (sym (+-right-identity n))
