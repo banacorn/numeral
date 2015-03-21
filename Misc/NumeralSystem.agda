@@ -1,4 +1,4 @@
-module NumeralSystem where -- One Numeral System to rule them all!?
+module Misc.NumeralSystem where -- One Numeral System to rule them all!?
 
 open import Data.Maybe using (Maybe; nothing; just)
 open import Data.Nat

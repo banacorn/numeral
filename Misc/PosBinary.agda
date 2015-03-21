@@ -1,8 +1,8 @@
-module PosBinary where  -- Positive Binary Numbers
+module Misc.PosBinary where  -- Positive Binary Numbers
 
 open import Data.Nat
 open import Data.List
-open import Relation.Binary.PropositionalEquality 
+open import Relation.Binary.PropositionalEquality
   using (_≡_; refl; sym)
 
 open import Induction.WellFounded

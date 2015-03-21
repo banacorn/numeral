@@ -1,7 +1,7 @@
-module RandomAccessList where
+module RandomAccessList.Standard where
 
-open import RandomAccessList.Core
-open import RandomAccessList.Core.Properties
+open import RandomAccessList.Standard.Core
+open import RandomAccessList.Standard.Core.Properties
 open import BuildingBlock.BinaryLeafTree using (BinaryLeafTree; Node; Leaf)
 import BuildingBlock.BinaryLeafTree as BLT
 
@@ -22,29 +22,29 @@ open PropEq.≡-Reasoning
 --------------------------------------------------------------------------------
 -- Operations
 
-consₙ : ∀ {n A} → BinaryLeafTree A n → RandomAccessList A n → RandomAccessList A n
+consₙ : ∀ {n A} → BinaryLeafTree A n → 0-1-RAL A n → 0-1-RAL A n
 consₙ a []        = a 1∷ []
 consₙ a (  0∷ xs) = a 1∷ xs
 consₙ a (x 1∷ xs) =   0∷ (consₙ (Node a x) xs)
 
-cons : ∀ {A} → A → RandomAccessList A 0 → RandomAccessList A 0
+cons : ∀ {A} → A → 0-1-RAL A 0 → 0-1-RAL A 0
 cons a xs = consₙ (Leaf a) xs
 
 
-headₙ :  ∀ {n A} → (xs : RandomAccessList A n) → ⟦ xs ⟧ ≢ 0 → BinaryLeafTree A n
+headₙ :  ∀ {n A} → (xs : 0-1-RAL A n) → ⟦ xs ⟧ ≢ 0 → BinaryLeafTree A n
 headₙ {n} {A} [] p = ⊥-elim (p (⟦[]⟧≡0 ([] {A} {n}) refl))
 headₙ (  0∷ xs)  p = proj₁ (BLT.split (headₙ xs (contraposition (trans (⟦0∷xs⟧≡⟦xs⟧ xs)) p)))
 headₙ (x 1∷ xs)  p = x
 
-head : ∀ {A} → (xs : RandomAccessList A 0) → ⟦ xs ⟧ ≢ 0 → A
+head : ∀ {A} → (xs : 0-1-RAL A 0) → ⟦ xs ⟧ ≢ 0 → A
 head xs p = BLT.head (headₙ xs p)
 
-tailₙ : ∀ {n A} → (xs : RandomAccessList A n) → ⟦ xs ⟧ ≢ 0 → RandomAccessList A n
+tailₙ : ∀ {n A} → (xs : 0-1-RAL A n) → ⟦ xs ⟧ ≢ 0 → 0-1-RAL A n
 tailₙ {n} {A} [] p = ⊥-elim (p (⟦[]⟧≡0 ([] {A} {n}) refl))
 tailₙ (  0∷ xs)  p = proj₂ (BLT.split (headₙ xs (contraposition (trans (⟦0∷xs⟧≡⟦xs⟧ xs)) p))) 1∷ tailₙ xs (contraposition (trans (⟦0∷xs⟧≡⟦xs⟧ xs)) p)
 tailₙ (x 1∷ xs)  p = 0∷ xs
 
-tail : ∀ {A} → (xs : RandomAccessList A 0) → ⟦ xs ⟧ ≢ 0 → RandomAccessList A 0
+tail : ∀ {A} → (xs : 0-1-RAL A 0) → ⟦ xs ⟧ ≢ 0 → 0-1-RAL A 0
 tail = tailₙ
 
 --------------------------------------------------------------------------------
@@ -53,7 +53,7 @@ tail = tailₙ
 transportFin : ∀ {a b} → a ≡ b → Fin a → Fin b
 transportFin refl i = i
 
-splitIndex : ∀ {n A} → (x : BinaryLeafTree A n) → (xs : RandomAccessList A (suc n)) → ⟦ x 1∷ xs ⟧ ≡ (2 ^ n) + ⟦ xs ⟧
+splitIndex : ∀ {n A} → (x : BinaryLeafTree A n) → (xs : 0-1-RAL A (suc n)) → ⟦ x 1∷ xs ⟧ ≡ (2 ^ n) + ⟦ xs ⟧
 splitIndex {n} x xs =
     begin
         2 ^ n * suc (2 * ⟦ xs ⟧ₙ)
@@ -65,7 +65,7 @@ splitIndex {n} x xs =
         2 ^ n + (2 * 2 ^ n) * ⟦ xs ⟧ₙ
     ∎
 
-elemAt : ∀ {n A} → (xs : RandomAccessList A n) → Fin ⟦ xs ⟧ → A
+elemAt : ∀ {n A} → (xs : 0-1-RAL A n) → Fin ⟦ xs ⟧ → A
 elemAt {zero}  (     []) ()
 elemAt {suc n} {A} ( []) i  = elemAt {n} ([] {n = n}) (transportFin (⟦[]⟧≡⟦[]⟧ {n} {A}) i)
 elemAt         (  0∷ xs) i  with ⟦ 0∷ xs ⟧ | inspect ⟦_⟧ (0∷ xs)

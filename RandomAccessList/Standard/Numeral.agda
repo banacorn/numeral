@@ -1,4 +1,4 @@
-module RandomAccessList.Numeral where
+module RandomAccessList.Standard.Numeral where
 
 open import Data.List
 open import Data.Nat

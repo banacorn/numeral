@@ -1,4 +1,4 @@
-module ZerolessRAL.Core where
+module RandomAccessList.Zeroless.Core where
 
 open import BuildingBlock.BinaryLeafTree using (BinaryLeafTree; Node; Leaf)
 

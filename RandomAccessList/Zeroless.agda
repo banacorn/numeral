@@ -1,7 +1,7 @@
-module ZerolessRAL where
+module RandomAccessList.Zeroless where
 
-open import ZerolessRAL.Core
-open import ZerolessRAL.Core.Properties
+open import RandomAccessList.Zeroless.Core
+open import RandomAccessList.Zeroless.Core.Properties
 open import BuildingBlock.BinaryLeafTree using (BinaryLeafTree; Node; Leaf; split)
 import BuildingBlock.BinaryLeafTree as BLT
 

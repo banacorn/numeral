@@ -1,8 +1,8 @@
-module ZerolessRAL.Core.Properties where
+module RandomAccessList.Zeroless.Core.Properties where
 
 open import BuildingBlock
 open import BuildingBlock.BinaryLeafTree using (BinaryLeafTree; Node; Leaf)
-open import ZerolessRAL.Core
+open import RandomAccessList.Zeroless.Core
 
 open import Data.Nat
 open import Data.Nat.Etc

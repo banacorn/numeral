@@ -1,12 +1,12 @@
-module RandomAccessList.Properties where
+module RandomAccessList.Standard.Properties where
 
 open import BuildingBlock
 open import BuildingBlock.BinaryLeafTree using (BinaryLeafTree; Node; Leaf)
 import      BuildingBlock.BinaryLeafTree as BLT
 
-open import RandomAccessList
-open import RandomAccessList.Core
-open import RandomAccessList.Core.Properties
+open import RandomAccessList.Standard
+open import RandomAccessList.Standard.Core
+open import RandomAccessList.Standard.Core.Properties
 
 open import Data.Nat
 open import Data.Nat.Etc
@@ -23,7 +23,7 @@ open import Relation.Binary.PropositionalEquality as PropEq
     using (_≡_; _≢_; refl; cong; cong₂; trans; sym; inspect)
 open PropEq.≡-Reasoning
 
-tailₙ-suc : ∀ {n A} → (xs : RandomAccessList A n) → (p : ⟦ xs ⟧ ≢ 0)
+tailₙ-suc : ∀ {n A} → (xs : 0-1-RAL A n) → (p : ⟦ xs ⟧ ≢ 0)
            → suc ⟦ tailₙ xs p ⟧ₙ ≡ ⟦ xs ⟧ₙ
 tailₙ-suc {n} {A} [] p = ⊥-elim (p (⟦[]⟧≡0 ([] {A} {n}) refl))
 tailₙ-suc (  0∷ xs) p =
@@ -36,7 +36,7 @@ tailₙ-suc (  0∷ xs) p =
     ∎
 tailₙ-suc (x 1∷ xs) p = refl
 
-tail-suc : ∀ {A} → (xs : RandomAccessList A 0) → (p : ⟦ xs ⟧ ≢ 0)
+tail-suc : ∀ {A} → (xs : 0-1-RAL A 0) → (p : ⟦ xs ⟧ ≢ 0)
           → suc ⟦ tail xs p ⟧ ≡ ⟦ xs ⟧
 tail-suc {A} [] p = ⊥-elim (p (⟦[]⟧≡0 ([] {A} {0}) refl))
 tail-suc (0∷ xs) p =
@@ -52,7 +52,7 @@ tail-suc (0∷ xs) p =
 tail-suc (x 1∷ xs) p = refl
 
 
-headₙ-tailₙ-consₙ : ∀ {n A} → (xs : RandomAccessList A n) → (p : ⟦ xs ⟧ ≢ 0)
+headₙ-tailₙ-consₙ : ∀ {n A} → (xs : 0-1-RAL A n) → (p : ⟦ xs ⟧ ≢ 0)
                  → consₙ (headₙ xs p) (tailₙ xs p) ≡ xs
 headₙ-tailₙ-consₙ {n} {A} [] p = ⊥-elim (p (⟦[]⟧≡0 ([] {A} {n}) refl))
 headₙ-tailₙ-consₙ (0∷ xs) p = let p' = contraposition (trans (⟦0∷xs⟧≡⟦xs⟧ xs)) p in
@@ -69,7 +69,7 @@ headₙ-tailₙ-consₙ (0∷ xs) p = let p' = contraposition (trans (⟦0∷xs�
     ∎
 headₙ-tailₙ-consₙ (x 1∷ xs) p = refl
 
-head-tail-cons : ∀ {A} → (xs : RandomAccessList A 0) → (p : ⟦ xs ⟧ ≢ 0)
+head-tail-cons : ∀ {A} → (xs : 0-1-RAL A 0) → (p : ⟦ xs ⟧ ≢ 0)
                → cons (head xs p) (tail xs p) ≡ xs
 head-tail-cons {A} [] p = ⊥-elim (p (⟦[]⟧≡0 ([] {A} {0}) refl))
 head-tail-cons (0∷ xs) p = let p' = contraposition (trans (⟦0∷xs⟧≡⟦xs⟧ xs)) p in
