@@ -37,9 +37,9 @@ no-zero-divisor zero    n       p q = contradiction q p
 no-zero-divisor (suc m) zero    p q = refl
 no-zero-divisor (suc m) (suc n) p ()
 
-m^n≢0 : ∀ m n → m ≢ 0 → m ^ n ≢ 0
-m^n≢0 m zero    p = λ ()
-m^n≢0 m (suc n) p = contraposition (no-zero-divisor m (m ^ n) p) (m^n≢0 m n p)
+m^n≢0 : ∀ m n → {m≢0 : m ≢ 0} → m ^ n ≢ 0
+m^n≢0 m zero    {p} = λ ()
+m^n≢0 m (suc n) {p} = contraposition (no-zero-divisor m (m ^ n) p) (m^n≢0 m n {p})
 
 m≰n⇒n<m : (m n : ℕ) → m ≰ n → m > n
 m≰n⇒n<m zero n p = contradiction p (λ z → z z≤n)

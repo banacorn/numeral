@@ -5,6 +5,7 @@ open import BuildingBlock.BinaryLeafTree using (BinaryLeafTree; Node; Leaf)
 open import RandomAccessList.Redundant.Core
 
 open import Data.Nat
+--open import Data.Nat.DivMod
 open import Data.Nat.Etc
 open import Data.Nat.Properties.Simple
 open import Relation.Binary.PropositionalEquality as PropEq
@@ -37,6 +38,50 @@ open PropEq.≡-Reasoning
         ((2 * 2 ^ n) * 2) * ⟦ xs ⟧ₙ
     ≡⟨ cong (λ x → x * ⟦ xs ⟧ₙ) (*-comm (2 * 2 ^ n) 2) ⟩
         (2 * (2 * 2 ^ n)) * ⟦ xs ⟧ₙ
+    ∎
+
+⟦[]⟧≡⟦[]⟧ : ∀ {m n A} → ⟦ [] {A} {m} ⟧ ≡ ⟦ [] {A} {n} ⟧
+⟦[]⟧≡⟦[]⟧ {m} {n} =
+    begin
+        2 ^ m * 0
+    ≡⟨ *-right-zero (2 ^ m) ⟩
+        0
+    ≡⟨ sym (*-right-zero (2 ^ n)) ⟩
+        2 ^ n * 0
+    ∎
+
+splitIndex : ∀ {n A} → (x : BinaryLeafTree A n) → (xs : 0-2-RAL A (suc n)) → ⟦ x 1∷ xs ⟧ ≡ 1 * (2 ^ n) + ⟦ xs ⟧
+splitIndex {n} x xs =
+    begin
+        2 ^ n * suc (2 * ⟦ xs ⟧ₙ)
+    ≡⟨ +-*-suc (2 ^ n) (2 * ⟦ xs ⟧ₙ) ⟩
+        2 ^ n + 2 ^ n * (2 * ⟦ xs ⟧ₙ)
+    ≡⟨ cong (λ w → 2 ^ n + w) (sym (*-assoc (2 ^ n) 2 ⟦ xs ⟧ₙ)) ⟩
+        2 ^ n + (2 ^ n * 2) * ⟦ xs ⟧ₙ
+    ≡⟨ cong (λ w → 2 ^ n + w * ⟦ xs ⟧ₙ) (*-comm (2 ^ n) 2) ⟩
+        2 ^ n + (2 * 2 ^ n) * ⟦ xs ⟧ₙ
+    ≡⟨ cong (λ w → w + (2 * 2 ^ n) * ⟦ xs ⟧ₙ) (sym (+-right-identity (2 ^ n))) ⟩
+        2 ^ n + 0 + (2 * 2 ^ n) * ⟦ xs ⟧ₙ
+    ∎
+
+splitIndex2 : ∀ {n A} → (x : BinaryLeafTree A n) → (y : BinaryLeafTree A n) → (xs : 0-2-RAL A (suc n)) → ⟦ x , y 2∷ xs ⟧ ≡ 2 * (2 ^ n) + ⟦ xs ⟧
+splitIndex2 {n} x y xs =
+    begin
+        2 ^ n * (1 + (1 + (2 * ⟦ xs ⟧ₙ)))
+    ≡⟨ +-*-suc (2 ^ n) ((1 + (2 * ⟦ xs ⟧ₙ))) ⟩
+        2 ^ n + 2 ^ n * (1 + (2 * ⟦ xs ⟧ₙ))
+    ≡⟨ cong (λ w → 2 ^ n + w) (+-*-suc (2 ^ n) (2 * ⟦ xs ⟧ₙ)) ⟩
+        2 ^ n + (2 ^ n + 2 ^ n * (2 * ⟦ xs ⟧ₙ))
+    ≡⟨ sym (+-assoc (2 ^ n) (2 ^ n) (2 ^ n * (2 * ⟦ xs ⟧ₙ))) ⟩
+        2 ^ n + 2 ^ n + 2 ^ n * (2 * ⟦ xs ⟧ₙ)
+    ≡⟨ cong (λ w → 2 ^ n + 2 ^ n + w) (sym (*-assoc (2 ^ n) 2 ⟦ xs ⟧ₙ)) ⟩
+        2 ^ n + 2 ^ n + (2 ^ n * 2) * ⟦ xs ⟧ₙ
+    ≡⟨ cong (λ w → 2 ^ n + 2 ^ n + w * ⟦ xs ⟧ₙ) (*-comm (2 ^ n) 2) ⟩
+        2 ^ n + 2 ^ n + (2 * 2 ^ n) * ⟦ xs ⟧ₙ
+    ≡⟨ cong (λ w → 2 ^ n + w + (2 * 2 ^ n) * ⟦ xs ⟧ₙ) (sym (+-right-identity (2 ^ n))) ⟩
+        2 ^ n + (2 ^ n + 0) + (2 * 2 ^ n) * ⟦ xs ⟧ₙ
+    ≡⟨ refl ⟩
+        2 * 2 ^ n + (2 * 2 ^ n) * ⟦ xs ⟧ₙ
     ∎
 
 {-
