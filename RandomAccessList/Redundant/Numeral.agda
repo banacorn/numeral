@@ -46,28 +46,27 @@ _   ⊙ _   = zero
 Redundant : Set
 Redundant = List Digit
 
-incr : Redundant → Redundant
-incr [] = one ∷ []
-incr (zero ∷ xs) = one ∷ xs
-incr (one ∷ xs) = two ∷ xs
-incr (two ∷ xs) = zero ∷ incr xs
+-- "one-sided"
+incr : Digit → Redundant → Redundant
+incr x [] = x ∷ []
+incr x (y ∷ ys) = x ⊕ y ∷ incr (x ⊙ y) ys
 
-decr : Redundant → Redundant
-decr [] = []
-decr (zero ∷ xs) = two ∷ decr xs
-decr (one ∷ xs) = zero ∷ xs
-decr (two ∷ xs) = one ∷ xs
+decr : Digit → Redundant → Redundant
+decr x [] = []
+decr x (y ∷ ys) = x ⊕ (¬ y) ∷ decr (x ⊙ y) ys
 
+-- "two-sided"
 _+_ : Redundant → Redundant → Redundant
 [] + ys = ys
 xs + [] = xs
-(x ∷ xs) + (y ∷ ys) = x ⊕ y ∷ (x ⊙ y ∷ []) + (xs + ys)
+(x ∷ xs) + (y ∷ ys) = x ⊕ y ∷ incr (x ⊙ y) (xs + ys)
 
 _─_ : Redundant → Redundant → Redundant
 [] ─ ys = []
 xs ─ [] = xs
-(x ∷ xs) ─ (y ∷ ys) = (x ⊕ ¬ y) ∷ (xs ─ ys) ─ (x ⊙ ¬ y ∷ [])
+(x ∷ xs) ─ (y ∷ ys) = (x ⊕ ¬ y) ∷ decr (x ⊙ ¬ y) (xs ─ ys)
 
+-- arithmetic shift
 mul2 : Redundant → Redundant
 mul2 [] = []
 mul2 (x ∷ xs) = zero ∷ x ∷ xs
