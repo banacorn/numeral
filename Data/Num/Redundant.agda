@@ -1,4 +1,4 @@
-module RandomAccessList.Redundant.Numeral where
+module Data.Num.Redundant where
 
 --  Base: 2
 --  Digit: { 0, 1, 2 }
@@ -6,7 +6,10 @@ module RandomAccessList.Redundant.Numeral where
 --  Numeral System which supports efficient addition, substraction
 --  and arithmetic shift.
 
+
 open import Data.List
+-- open import Data.Fin renaming (_+_ to _+Fin_) hiding (toℕ; fromℕ)
+open import Data.Nat renaming (_+_ to _+ℕ_)
 
 --------------------------------------------------------------------------------
 --  Digits
@@ -84,3 +87,19 @@ mul2 (x ∷ xs) = zero ∷ x ∷ xs
 div2 : Redundant → Redundant
 div2 [] = []
 div2 (x ∷ xs) = xs
+
+--------------------------------------------------------------------------------
+--  Conversions
+--------------------------------------------------------------------------------
+
+-- O(lgn)
+toℕ : Redundant → ℕ
+toℕ []          = 0
+toℕ (zero ∷ xs) = 0 +ℕ 2 * toℕ xs
+toℕ (one  ∷ xs) = 1 +ℕ 2 * toℕ xs
+toℕ (two  ∷ xs) = 2 +ℕ 2 * toℕ xs
+
+-- O(n)
+fromℕ : ℕ → Redundant
+fromℕ zero = zero ∷ []
+fromℕ (suc n) = incr one (fromℕ n)

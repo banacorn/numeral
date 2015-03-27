@@ -1,6 +1,6 @@
-module RandomAccessList.Redundant.Numeral.Properties where
+module Data.Num.Redundant.Properties where
 
-open import RandomAccessList.Redundant.Numeral
+open import Data.Num.Redundant
 
 open import Data.List
 open import Relation.Binary.PropositionalEquality as PropEq
