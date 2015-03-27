@@ -17,20 +17,23 @@ data Digit : Set where
     one : Digit
     two : Digit
 
--- add
+-- plus
 _⊕_ : Digit → Digit → Digit
 zero ⊕ y    = y
 x    ⊕ zero = x
 one  ⊕ one  = two
-one  ⊕ two  = zero
-two  ⊕ one  = zero
-two  ⊕ two  = one
+one  ⊕ two  = one
+two  ⊕ one  = one
+two  ⊕ two  = two
 
--- complement
-¬_ : Digit → Digit
-¬ zero = zero
-¬ one = two
-¬ two = one
+-- minus
+_⊝_ : Digit → Digit → Digit
+zero ⊝ y    = zero
+x    ⊝ zero = x
+one  ⊝ one  = zero
+one  ⊝ two  = one
+two  ⊝ one  = one
+two  ⊝ two  = zero
 
 -- carry
 _⊙_ : Digit → Digit → Digit
@@ -38,6 +41,13 @@ one ⊙ two = one
 two ⊙ one = one
 two ⊙ two = one
 _   ⊙ _   = zero
+
+-- borrow
+_⊘_ : Digit → Digit → Digit
+zero ⊘ one = one
+zero ⊘ two = one
+one  ⊘ two = one
+_    ⊘ _   = zero
 
 --------------------------------------------------------------------------------
 --  Sequence of Digits
@@ -53,7 +63,7 @@ incr x (y ∷ ys) = x ⊕ y ∷ incr (x ⊙ y) ys
 
 decr : Digit → Redundant → Redundant
 decr x [] = []
-decr x (y ∷ ys) = x ⊕ (¬ y) ∷ decr (x ⊙ y) ys
+decr x (y ∷ ys) = x ⊝ y ∷ decr (x ⊘ y) ys
 
 -- "two-sided"
 _+_ : Redundant → Redundant → Redundant
@@ -64,7 +74,7 @@ xs + [] = xs
 _─_ : Redundant → Redundant → Redundant
 [] ─ ys = []
 xs ─ [] = xs
-(x ∷ xs) ─ (y ∷ ys) = (x ⊕ ¬ y) ∷ decr (x ⊙ ¬ y) (xs ─ ys)
+(x ∷ xs) ─ (y ∷ ys) = x ⊝ y ∷ decr (x ⊘ y) (xs ─ ys)
 
 -- arithmetic shift
 mul2 : Redundant → Redundant
