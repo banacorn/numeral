@@ -57,7 +57,7 @@ open PropEq.≡-Reasoning
 ⊙-comm two one = refl
 ⊙-comm two two = refl
 
->>0≡0 : ∀ {a} → (a≡0 : a ~ zero ∷ []) → >> a ~ zero ∷ []
+>>0≡0 : ∀ {a} → (a≡0 : a ≈ zero ∷ []) → >> a ≈ zero ∷ []
 >>0≡0 {[]}     (a≡0) = eq refl
 >>0≡0 {x ∷ xs} (eq x∷xs≡0) = eq (
     begin
