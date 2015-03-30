@@ -31,35 +31,28 @@ consₙ a (x , y 2∷ xs) = a 1∷ consₙ (Node x y) xs
 cons : ∀ {A} → A → 0-2-RAL A 0 → 0-2-RAL A 0
 cons a xs = consₙ (Leaf a) xs
 
-headₙ :  ∀ {n A} → (xs : 0-2-RAL A n) → ⟦ xs ⟧ₙ ≁ (zero ∷ []) → BinaryLeafTree A n
+headₙ :  ∀ {n A} → (xs : 0-2-RAL A n) → ⟦ xs ⟧ₙ ≁ zero ∷ [] → BinaryLeafTree A n
 headₙ []            p = contradiction (eq refl) p
 headₙ (      0∷ xs) p = proj₁ (BLT.split (headₙ xs (contraposition >>0≡0 p)))
 headₙ (x     1∷ xs) p = x
 headₙ (x , y 2∷ xs) p = x
-{-
-headₙ :  ∀ {n A} → (xs : 0-2-RAL A n) → ⟦ xs ⟧ ≢ zero ∷ [] → BinaryLeafTree A n
-headₙ {n} {A} []    p = contradiction (⟦[]⟧≡0 ([] {A} {n}) refl) p
-headₙ (      0∷ xs) p = proj₁ (BLT.split (headₙ xs (contraposition (trans (⟦0∷xs⟧≡⟦xs⟧ xs))  p )))
-headₙ (x     1∷ xs) p = x
-headₙ (x , y 2∷ xs) p = x
 
-head : ∀ {A} → (xs : 0-2-RAL A 0) → ⟦ xs ⟧ ≢ 0 → A
+head : ∀ {A} → (xs : 0-2-RAL A 0) → ⟦ xs ⟧ ≁ zero ∷ [] → A
 head xs p = BLT.head (headₙ xs p)
 
 
-tailₙ : ∀ {n A} → (xs : 0-2-RAL A n) → ⟦ xs ⟧ ≢ 0 → 0-2-RAL A n
-tailₙ {n} {A} []    p = contradiction (⟦[]⟧≡0 ([] {A} {n}) refl) p
-tailₙ (      0∷ xs) p = proj₂ (BLT.split (headₙ xs (contraposition (trans (⟦0∷xs⟧≡⟦xs⟧ xs)) p))) 1∷ tailₙ xs (contraposition (trans (⟦0∷xs⟧≡⟦xs⟧ xs)) p)
+tailₙ : ∀ {n A} → (xs : 0-2-RAL A n) → ⟦ xs ⟧ₙ ≁ zero ∷ [] → 0-2-RAL A n
+tailₙ []            p = contradiction (eq refl) p
+tailₙ (      0∷ xs) p = proj₂ (BLT.split (headₙ xs (contraposition >>0≡0 p))) 1∷ tailₙ xs (contraposition >>0≡0 p)
 tailₙ (x     1∷ xs) p = 0∷ xs
 tailₙ (x , y 2∷ xs) p = y 1∷ xs
 
-tail : ∀ {A} → (xs : 0-2-RAL A 0) → ⟦ xs ⟧ ≢ 0 → 0-2-RAL A 0
-tail = tailₙ
 
 --------------------------------------------------------------------------------
 --  Searching
 --------------------------------------------------------------------------------
 
+{-
 -- data Occurrence : Set where
 --    here : ∀ {a n} → a * Fin (2 ^ n) → Occurrence
 --    there : Occurrence
