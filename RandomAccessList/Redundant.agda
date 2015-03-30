@@ -6,6 +6,9 @@ open import BuildingBlock.BinaryLeafTree using (BinaryLeafTree; Node; Leaf)
 import BuildingBlock.BinaryLeafTree as BLT
 
 open import Data.Fin
+open import Data.Num.Redundant
+open import Data.Num.Redundant.Setoid
+open import Data.Num.Redundant.Properties
 open import Data.Nat
 open import Data.Nat.DivMod
 open import Data.Nat.Etc
@@ -28,7 +31,13 @@ consₙ a (x , y 2∷ xs) = a 1∷ consₙ (Node x y) xs
 cons : ∀ {A} → A → 0-2-RAL A 0 → 0-2-RAL A 0
 cons a xs = consₙ (Leaf a) xs
 
-headₙ :  ∀ {n A} → (xs : 0-2-RAL A n) → ⟦ xs ⟧ ≢ 0 → BinaryLeafTree A n
+headₙ :  ∀ {n A} → (xs : 0-2-RAL A n) → ⟦ xs ⟧ₙ ≁ (zero ∷ []) → BinaryLeafTree A n
+headₙ []            p = contradiction (eq refl) p
+headₙ (      0∷ xs) p = proj₁ (BLT.split (headₙ xs (contraposition >>0≡0 p)))
+headₙ (x     1∷ xs) p = x
+headₙ (x , y 2∷ xs) p = x
+{-
+headₙ :  ∀ {n A} → (xs : 0-2-RAL A n) → ⟦ xs ⟧ ≢ zero ∷ [] → BinaryLeafTree A n
 headₙ {n} {A} []    p = contradiction (⟦[]⟧≡0 ([] {A} {n}) refl) p
 headₙ (      0∷ xs) p = proj₁ (BLT.split (headₙ xs (contraposition (trans (⟦0∷xs⟧≡⟦xs⟧ xs))  p )))
 headₙ (x     1∷ xs) p = x
@@ -73,3 +82,4 @@ elemAt     (x , y 2∷ xs) i | yes p rewrite splitIndex2 x y xs = elemAt xs (red
 elemAt {n} (x , y 2∷ xs) i | no ¬p with toℕ i divMod (2 ^ n)
 elemAt (x , y 2∷ xs) i | no ¬p | result zero remainder property = BLT.elemAt x remainder
 elemAt (x , y 2∷ xs) i | no ¬p | result (suc quotient) remainder property = BLT.elemAt y remainder
+-}

@@ -4,8 +4,9 @@ open import BuildingBlock
 open import BuildingBlock.BinaryLeafTree using (BinaryLeafTree; Node; Leaf)
 open import RandomAccessList.Redundant.Core
 
-open import Data.Nat
---open import Data.Nat.DivMod
+open import Data.Num.Redundant
+
+open import Data.Nat using (ℕ; zero; suc)
 open import Data.Nat.Etc
 open import Data.Nat.Properties.Simple
 open import Relation.Binary.PropositionalEquality as PropEq
@@ -15,8 +16,26 @@ open PropEq.≡-Reasoning
 --------------------------------------------------------------------------------
 -- On ⟦_⟧ and ⟦_⟧ₙ
 
+{-
+⟦[]⟧ₙ≡0 : ∀ {A n} → (xs : 0-2-RAL A n) → {xs≣[] : xs ≡ []} → ⟦ xs ⟧ₙ ≡ zero ∷ []
+⟦[]⟧ₙ≡0 []                 = refl
+⟦[]⟧ₙ≡0 (      0∷ xs) {()}
+⟦[]⟧ₙ≡0 (x     1∷ xs) {()}
+⟦[]⟧ₙ≡0 (x , y 2∷ xs) {()}
+
+
+⟦[]⟧≡0 : ∀ {n A} → (xs : 0-2-RAL A n) → {xs≣[] : xs ≡ []} → ⟦ xs ⟧ ≡ zero ∷ []
+⟦[]⟧≡0 {n}    []     {p}  =
+    begin
+        n <<< (zero ∷ [])
+    ≡⟨ {!   !} ⟩
+        zero ∷ []
+    ∎
+⟦[]⟧≡0 (      0∷ xs) {()}
+⟦[]⟧≡0 (x     1∷ xs) {()}
+⟦[]⟧≡0 (x , y 2∷ xs) {()}
 -- identity
-⟦[]⟧ₙ≡0 : ∀ {A n} → (xs : 0-2-RAL A n) → xs ≡ [] → ⟦ xs ⟧ₙ ≡ 0
+⟦[]⟧ₙ≡0 : ∀ {A n} → (xs : 0-2-RAL A n) → xs ≡ [] → ⟦ xs ⟧ₙ ≡ zero
 ⟦[]⟧ₙ≡0 []            p  = refl
 ⟦[]⟧ₙ≡0 (      0∷ xs) ()
 ⟦[]⟧ₙ≡0 (x     1∷ xs) ()
@@ -84,7 +103,6 @@ splitIndex2 {n} x y xs =
         2 * 2 ^ n + (2 * 2 ^ n) * ⟦ xs ⟧ₙ
     ∎
 
-{-
     begin
         {!   !}
     ≡⟨ {!   !} ⟩

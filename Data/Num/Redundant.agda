@@ -7,7 +7,7 @@ module Data.Num.Redundant where
 --  and arithmetic shift.
 
 
-open import Data.List
+open import Data.List using (List ; []; _∷_) public
 -- open import Data.Fin renaming (_+_ to _+Fin_) hiding (toℕ; fromℕ)
 open import Data.Nat renaming (_+_ to _+ℕ_)
 
@@ -80,13 +80,21 @@ xs ─ [] = xs
 (x ∷ xs) ─ (y ∷ ys) = x ⊝ y ∷ decr (x ⊘ y) (xs ─ ys)
 
 -- arithmetic shift
-mul2 : Redundant → Redundant
-mul2 [] = []
-mul2 (x ∷ xs) = zero ∷ x ∷ xs
+>> : Redundant → Redundant
+>> xs = zero ∷ xs
 
-div2 : Redundant → Redundant
-div2 [] = []
-div2 (x ∷ xs) = xs
+<< : Redundant → Redundant
+<< [] = []
+<< (x ∷ xs) = xs
+
+_>>>_ : ℕ → Redundant → Redundant
+zero >>> xs = xs
+suc n >>> xs = zero ∷ n >>> xs
+
+_<<<_ : ℕ → Redundant → Redundant
+zero <<< xs = xs
+suc n <<< [] = []
+suc n <<< (x ∷ xs) = n <<< xs
 
 --------------------------------------------------------------------------------
 --  Conversions
