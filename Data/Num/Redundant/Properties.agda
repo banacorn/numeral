@@ -1,5 +1,6 @@
 module Data.Num.Redundant.Properties where
 
+open import Data.Num.Nat
 open import Data.Num.Redundant
 open import Data.Num.Redundant.Setoid
 
@@ -69,12 +70,25 @@ open PropEq.≡-Reasoning
 >>-zero {[]}     p           = eq refl
 >>-zero {x ∷ xs} (eq x∷xs≈0) = eq (
     begin
-        ⟦ x ∷ xs ⟧ +ℕ (⟦ x ∷ xs ⟧ +ℕ 0)
-    ≡⟨ cong (λ w → w +ℕ (w +ℕ 0)) x∷xs≈0 ⟩
-        0 +ℕ (0 +ℕ 0)
-    ≡⟨ refl ⟩
+        2 * ⟦ x ∷ xs ⟧
+    ≡⟨ cong (λ w → 2 * w) x∷xs≈0 ⟩
         2 * 0
     ≡⟨ *-right-zero 2 ⟩
+        0
+    ∎)
+
+<<-zero : ∀ {a} → a ≈ zero ∷ [] → << a ≈ zero ∷ []
+<<-zero {[]}     p = eq refl
+<<-zero {x ∷ xs} (eq x∷xs≈0) = eq (
+    begin
+        ⟦ xs ⟧
+    ≡⟨ {!   !} ⟩
+        {!   !}
+    ≡⟨ {!   !} ⟩
+        {!   !}
+    ≡⟨ {!   !} ⟩
+        {!   !}
+    ≡⟨ {!   !} ⟩
         0
     ∎)
 
@@ -91,6 +105,13 @@ open PropEq.≡-Reasoning
 <<<-identity a = eq refl
 
 {-
+
+⟦x∷xs⟧≡0⇒⟦xs⟧≡0 : (d : Digit) → (xs : Redundant) → ⟦ d ∷ xs ⟧ ≡ 0 → ⟦ xs ⟧ ≡ 0
+⟦x∷xs⟧≡0⇒⟦xs⟧≡0 _ [] _ = refl
+⟦x∷xs⟧≡0⇒⟦xs⟧≡0 d (zero ∷ xs) p = {!   !}
+⟦x∷xs⟧≡0⇒⟦xs⟧≡0 d (one ∷ xs) p = {!   !}
+⟦x∷xs⟧≡0⇒⟦xs⟧≡0 d (two ∷ xs) p = {!   !}
+
     begin
         {!   !}
     ≈⟨ {!   !} ⟩

@@ -5,7 +5,7 @@ open import RandomAccessList.Redundant.Core.Properties
 open import BuildingBlock.BinaryLeafTree using (BinaryLeafTree; Node; Leaf)
 import BuildingBlock.BinaryLeafTree as BLT
 
-open import Data.Fin
+-- open import Data.Fin
 open import Data.Num.Redundant
 open import Data.Num.Redundant.Setoid
 open import Data.Num.Redundant.Properties
@@ -52,6 +52,15 @@ tail xs p = tailₙ xs p
 --------------------------------------------------------------------------------
 --  Searching
 --------------------------------------------------------------------------------
+
+data Finite : Redundant → Set where
+    finite : ∀ {bound} → (a : Redundant) → {a≲bound : ⟦ a ⟧ < ⟦ bound ⟧} → Finite bound
+
+elemAt : ∀ {n A} → (xs : 0-2-RAL A n) → Finite [ xs ] → A
+elemAt {n} [] (finite a {a≤b}) = {!   !}
+elemAt (      0∷ xs) i = {!   !}
+elemAt (x     1∷ xs) i = {!   !}
+elemAt (x , y 2∷ xs) i = {!   !}
 
 {-
 -- data Occurrence : Set where

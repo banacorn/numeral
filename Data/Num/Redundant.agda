@@ -6,10 +6,9 @@ module Data.Num.Redundant where
 --  Numeral System which supports efficient addition, substraction
 --  and arithmetic shift.
 
-
 open import Data.List using (List ; []; _∷_) public
--- open import Data.Fin renaming (_+_ to _+Fin_) hiding (toℕ; fromℕ)
 open import Data.Nat renaming (_+_ to _+ℕ_)
+open import Data.Num.Nat
 
 --------------------------------------------------------------------------------
 --  Digits
@@ -97,17 +96,20 @@ suc n <<< [] = []
 suc n <<< (x ∷ xs) = n <<< (<< xs)
 
 --------------------------------------------------------------------------------
---  Conversions
+-- instances of Nat
 --------------------------------------------------------------------------------
 
--- to ℕ, O(lgn)
-⟦_⟧ : Redundant → ℕ
-⟦        [] ⟧ = 0
-⟦ zero ∷ xs ⟧ = 0 +ℕ 2 * ⟦ xs ⟧
-⟦ one  ∷ xs ⟧ = 1 +ℕ 2 * ⟦ xs ⟧
-⟦ two  ∷ xs ⟧ = 2 +ℕ 2 * ⟦ xs ⟧
+instance natDigit : Nat Digit
+natDigit = nat [_]
+    where   [_] : Digit → ℕ
+            [ zero ] = 0
+            [ one ] = 1
+            [ two ] = 2
 
--- from ℕ, O(n)
-fromℕ : ℕ → Redundant
-fromℕ zero = zero ∷ []
-fromℕ (suc n) = incr one (fromℕ n)
+instance natRedundant : Nat Redundant
+natRedundant = nat ⟦_⟧'
+    where   ⟦_⟧' : Redundant → ℕ
+            ⟦        [] ⟧' = 0
+            ⟦ zero ∷ xs ⟧' = 0 +ℕ 2 * ⟦ xs ⟧'
+            ⟦ one  ∷ xs ⟧' = 1 +ℕ 2 * ⟦ xs ⟧'
+            ⟦ two  ∷ xs ⟧' = 2 +ℕ 2 * ⟦ xs ⟧'
