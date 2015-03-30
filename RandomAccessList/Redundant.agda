@@ -31,22 +31,23 @@ consₙ a (x , y 2∷ xs) = a 1∷ consₙ (Node x y) xs
 cons : ∀ {A} → A → 0-2-RAL A 0 → 0-2-RAL A 0
 cons a xs = consₙ (Leaf a) xs
 
-headₙ :  ∀ {n A} → (xs : 0-2-RAL A n) → ⟦ xs ⟧ₙ ≉ zero ∷ [] → BinaryLeafTree A n
+headₙ :  ∀ {n A} → (xs : 0-2-RAL A n) → [ xs ]ₙ ≉ zero ∷ [] → BinaryLeafTree A n
 headₙ []            p = contradiction (eq refl) p
-headₙ (      0∷ xs) p = proj₁ (BLT.split (headₙ xs (contraposition >>0≡0 p)))
+headₙ (      0∷ xs) p = proj₁ (BLT.split (headₙ xs (contraposition >>-zero p)))
 headₙ (x     1∷ xs) p = x
 headₙ (x , y 2∷ xs) p = x
 
-head : ∀ {A} → (xs : 0-2-RAL A 0) → ⟦ xs ⟧ ≉ zero ∷ [] → A
+head : ∀ {A} → (xs : 0-2-RAL A 0) → [ xs ] ≉ zero ∷ [] → A
 head xs p = BLT.head (headₙ xs p)
 
-
-tailₙ : ∀ {n A} → (xs : 0-2-RAL A n) → ⟦ xs ⟧ₙ ≉ zero ∷ [] → 0-2-RAL A n
+tailₙ : ∀ {n A} → (xs : 0-2-RAL A n) → [ xs ]ₙ ≉ zero ∷ [] → 0-2-RAL A n
 tailₙ []            p = contradiction (eq refl) p
-tailₙ (      0∷ xs) p = proj₂ (BLT.split (headₙ xs (contraposition >>0≡0 p))) 1∷ tailₙ xs (contraposition >>0≡0 p)
+tailₙ (      0∷ xs) p = proj₂ (BLT.split (headₙ xs (contraposition >>-zero p))) 1∷ tailₙ xs (contraposition >>-zero p)
 tailₙ (x     1∷ xs) p = 0∷ xs
 tailₙ (x , y 2∷ xs) p = y 1∷ xs
 
+tail : ∀ {A} → (xs : 0-2-RAL A 0) → [ xs ] ≉ zero ∷ [] → 0-2-RAL A 0
+tail xs p = tailₙ xs p
 
 --------------------------------------------------------------------------------
 --  Searching

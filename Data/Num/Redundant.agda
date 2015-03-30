@@ -89,25 +89,25 @@ xs ─ [] = xs
 
 _>>>_ : ℕ → Redundant → Redundant
 zero >>> xs = xs
-suc n >>> xs = zero ∷ n >>> xs
+suc n >>> xs = n >>> (>> xs)
 
 _<<<_ : ℕ → Redundant → Redundant
 zero <<< xs = xs
 suc n <<< [] = []
-suc n <<< (x ∷ xs) = n <<< xs
+suc n <<< (x ∷ xs) = n <<< (<< xs)
 
 --------------------------------------------------------------------------------
 --  Conversions
 --------------------------------------------------------------------------------
 
--- O(lgn)
-toℕ : Redundant → ℕ
-toℕ []          = 0
-toℕ (zero ∷ xs) = 0 +ℕ 2 * toℕ xs
-toℕ (one  ∷ xs) = 1 +ℕ 2 * toℕ xs
-toℕ (two  ∷ xs) = 2 +ℕ 2 * toℕ xs
+-- to ℕ, O(lgn)
+⟦_⟧ : Redundant → ℕ
+⟦        [] ⟧ = 0
+⟦ zero ∷ xs ⟧ = 0 +ℕ 2 * ⟦ xs ⟧
+⟦ one  ∷ xs ⟧ = 1 +ℕ 2 * ⟦ xs ⟧
+⟦ two  ∷ xs ⟧ = 2 +ℕ 2 * ⟦ xs ⟧
 
--- O(n)
+-- from ℕ, O(n)
 fromℕ : ℕ → Redundant
 fromℕ zero = zero ∷ []
 fromℕ (suc n) = incr one (fromℕ n)

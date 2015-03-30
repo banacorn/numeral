@@ -10,7 +10,7 @@ open import Relation.Binary.PropositionalEquality as PropEq
 
 infix 4 _≈_ _≉_
 data _≈_ (a b : Redundant) : Set where
-    eq : (toℕ a ≡ toℕ b) → a ≈ b
+    eq : ⟦ a ⟧ ≡ ⟦ b ⟧ → a ≈ b
 
 _≉_ : (a b : Redundant) → Set
 a ≉ b = a ≈ b → ⊥

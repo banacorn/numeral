@@ -12,6 +12,9 @@ open import Relation.Binary.PropositionalEquality as PropEq
 --open import Relation.Binary.SetoidReasoning
 open PropEq.≡-Reasoning
 
+--------------------------------------------------------------------------------
+--  Digits
+--------------------------------------------------------------------------------
 
 ⊕-comm : (a b : Digit) → a ⊕ b ≡ b ⊕ a
 ⊕-comm zero zero = refl
@@ -57,18 +60,35 @@ open PropEq.≡-Reasoning
 ⊙-comm two one = refl
 ⊙-comm two two = refl
 
->>0≡0 : ∀ {a} → (a≡0 : a ≈ zero ∷ []) → >> a ≈ zero ∷ []
->>0≡0 {[]}     (a≡0) = eq refl
->>0≡0 {x ∷ xs} (eq x∷xs≡0) = eq (
+--------------------------------------------------------------------------------
+--  Sequence of Digits
+--------------------------------------------------------------------------------
+
+-- >> 0 ≈ 0
+>>-zero : ∀ {a} → a ≈ zero ∷ [] → >> a ≈ zero ∷ []
+>>-zero {[]}     p           = eq refl
+>>-zero {x ∷ xs} (eq x∷xs≈0) = eq (
     begin
-        toℕ (x ∷ xs) +ℕ (toℕ (x ∷ xs) +ℕ 0)
-    ≡⟨ cong (λ w → w +ℕ (w +ℕ 0)) x∷xs≡0 ⟩
+        ⟦ x ∷ xs ⟧ +ℕ (⟦ x ∷ xs ⟧ +ℕ 0)
+    ≡⟨ cong (λ w → w +ℕ (w +ℕ 0)) x∷xs≈0 ⟩
         0 +ℕ (0 +ℕ 0)
     ≡⟨ refl ⟩
         2 * 0
     ≡⟨ *-right-zero 2 ⟩
         0
     ∎)
+
+-- << (>> xs) ≈ xs
+<<∘>>-id : (xs : Redundant) → << (>> xs) ≈ xs
+<<∘>>-id xs = eq refl
+
+-- 0 >>> xs ≈ xs
+>>>-identity : (a : Redundant) → 0 >>> a ≈ a
+>>>-identity a = eq refl
+
+-- 0 <<< xs ≈ xs
+<<<-identity : (a : Redundant) → 0 <<< a ≈ a
+<<<-identity a = eq refl
 
 {-
     begin
