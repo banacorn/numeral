@@ -5,12 +5,17 @@ open import Data.Num.Redundant
 open import Data.Num.Redundant.Setoid
 
 open import Data.Nat renaming (_+_ to _+ℕ_)
+open import Data.Nat.Etc
 open import Data.Nat.Properties.Simple
 
 open import Data.List
+open import Relation.Nullary.Negation using (contradiction; contraposition)
+open import Relation.Binary.Core
 open import Relation.Binary.PropositionalEquality as PropEq
     using (_≡_; _≢_; refl; cong; cong₂; trans; sym; inspect)
 --open import Relation.Binary.SetoidReasoning
+--    renaming (begin⟨_⟩_ to beginRel⟨_⟩_; _∎ to _∎Rel)
+--    hiding (_≡⟨_⟩_)
 open PropEq.≡-Reasoning
 
 --------------------------------------------------------------------------------
@@ -66,9 +71,9 @@ open PropEq.≡-Reasoning
 --------------------------------------------------------------------------------
 
 -- >> 0 ≈ 0
->>-zero : ∀ {a} → a ≈ zero ∷ [] → >> a ≈ zero ∷ []
->>-zero {[]}     p           = eq refl
->>-zero {x ∷ xs} (eq x∷xs≈0) = eq (
+>>-zero : (a : Redundant) → a ≈ zero ∷ [] → >> a ≈ zero ∷ []
+>>-zero []       p           = eq refl
+>>-zero (x ∷ xs) (eq x∷xs≈0) = eq (
     begin
         2 * ⟦ x ∷ xs ⟧
     ≡⟨ cong (λ w → 2 * w) x∷xs≈0 ⟩
@@ -77,42 +82,20 @@ open PropEq.≡-Reasoning
         0
     ∎)
 
-<<-zero : ∀ {a} → a ≈ zero ∷ [] → << a ≈ zero ∷ []
-<<-zero {[]}     p = eq refl
-<<-zero {x ∷ xs} (eq x∷xs≈0) = eq (
-    begin
-        ⟦ xs ⟧
-    ≡⟨ {!   !} ⟩
-        {!   !}
-    ≡⟨ {!   !} ⟩
-        {!   !}
-    ≡⟨ {!   !} ⟩
-        {!   !}
-    ≡⟨ {!   !} ⟩
-        0
-    ∎)
+-- << 0 ≈ 0
+<<-zero : (a : Redundant) → a ≈ zero ∷ [] → << a ≈ zero ∷ []
+<<-zero []       p           = eq refl
+<<-zero (x ∷ xs) (eq x∷xs≈0) = eq (⟦x∷xs⟧≡0⇒⟦xs⟧≡0 x xs x∷xs≈0)
+    where   ⟦x∷xs⟧≡0⇒⟦xs⟧≡0 : (d : Digit) → (xs : Redundant) → ⟦ d ∷ xs ⟧ ≡ 0 → ⟦ xs ⟧ ≡ 0
+            ⟦x∷xs⟧≡0⇒⟦xs⟧≡0 d []          p = refl
+            ⟦x∷xs⟧≡0⇒⟦xs⟧≡0 zero (x ∷ xs) p = no-zero-divisor 2 (⟦ x ⟧ +ℕ 2 * ⟦ xs ⟧) (λ ()) p
+            ⟦x∷xs⟧≡0⇒⟦xs⟧≡0 one  (x ∷ xs) p = contradiction p (λ ())
+            ⟦x∷xs⟧≡0⇒⟦xs⟧≡0 two  (x ∷ xs) p = contradiction p (λ ())
 
--- << (>> xs) ≈ xs
-<<∘>>-id : (xs : Redundant) → << (>> xs) ≈ xs
-<<∘>>-id xs = eq refl
-
--- 0 >>> xs ≈ xs
->>>-identity : (a : Redundant) → 0 >>> a ≈ a
->>>-identity a = eq refl
-
--- 0 <<< xs ≈ xs
-<<<-identity : (a : Redundant) → 0 <<< a ≈ a
-<<<-identity a = eq refl
 
 {-
 
-⟦x∷xs⟧≡0⇒⟦xs⟧≡0 : (d : Digit) → (xs : Redundant) → ⟦ d ∷ xs ⟧ ≡ 0 → ⟦ xs ⟧ ≡ 0
-⟦x∷xs⟧≡0⇒⟦xs⟧≡0 _ [] _ = refl
-⟦x∷xs⟧≡0⇒⟦xs⟧≡0 d (zero ∷ xs) p = {!   !}
-⟦x∷xs⟧≡0⇒⟦xs⟧≡0 d (one ∷ xs) p = {!   !}
-⟦x∷xs⟧≡0⇒⟦xs⟧≡0 d (two ∷ xs) p = {!   !}
-
-    begin
+    begin⟨ ? ⟩
         {!   !}
     ≈⟨ {!   !} ⟩
         {!   !}

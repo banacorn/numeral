@@ -38,10 +38,3 @@ a ≉ b = a ≈ b → ⊥
 
         ≈-trans : Transitive _≈_
         ≈-trans (eq a≈b) (eq b≈c) = eq (≡-trans a≈b b≈c)
-
---------------------------------------------------------------------------------
---  Ordering on Redundant
---------------------------------------------------------------------------------
-
-open import Level
-data _≲d_ : Rel Digit Level.zero where
