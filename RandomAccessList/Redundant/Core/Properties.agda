@@ -5,6 +5,8 @@ open import BuildingBlock.BinaryLeafTree using (BinaryLeafTree; Node; Leaf)
 open import RandomAccessList.Redundant.Core
 
 open import Data.Num.Redundant
+open import Data.Num.Redundant.Properties
+open import Data.Num.Redundant.Setoid
 
 open import Data.Nat using (ℕ; zero; suc)
 open import Data.Nat.Etc
@@ -12,6 +14,12 @@ open import Data.Nat.Properties.Simple
 open import Relation.Binary.PropositionalEquality as PropEq
     using (_≡_; _≢_; refl; cong; cong₂; trans; sym; inspect)
 open PropEq.≡-Reasoning
+
+[[]]≈zero∷[] : ∀ {n A} → (xs : 0-2-RAL A n) → {xs≣[] : xs ≡ []} → [ xs ] ≈ zero ∷ []
+[[]]≈zero∷[] {n} {A} [] {xs≡[]} = <<<-zero n (zero ∷ []) {eq refl}
+[[]]≈zero∷[] (      0∷ xs) {()}
+[[]]≈zero∷[] (x     1∷ xs) {()}
+[[]]≈zero∷[] (x , y 2∷ xs) {()}
 
 --------------------------------------------------------------------------------
 -- On ⟦_⟧ and ⟦_⟧ₙ

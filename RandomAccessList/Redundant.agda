@@ -6,6 +6,7 @@ open import BuildingBlock.BinaryLeafTree using (BinaryLeafTree; Node; Leaf)
 import BuildingBlock.BinaryLeafTree as BLT
 
 -- open import Data.Fin
+open import Data.Num.Nat
 open import Data.Num.Redundant
 open import Data.Num.Redundant.Setoid
 open import Data.Num.Redundant.Properties
@@ -16,7 +17,7 @@ open import Data.Product
 open import Relation.Nullary using (Dec; yes; no)
 open import Relation.Nullary.Negation using (contradiction; contraposition)
 open import Relation.Binary.PropositionalEquality as PropEq
-    using (_≡_; _≢_; refl; cong; trans; sym; inspect)
+    using (_≡_; _≢_; refl; cong; trans; sym; subst; inspect)
 
 --------------------------------------------------------------------------------
 --  Operations
@@ -33,7 +34,7 @@ cons a xs = consₙ (Leaf a) xs
 
 headₙ :  ∀ {n A} → (xs : 0-2-RAL A n) → [ xs ]ₙ ≉ zero ∷ [] → BinaryLeafTree A n
 headₙ []            p = contradiction (eq refl) p
-headₙ (      0∷ xs) p = proj₁ (BLT.split (headₙ xs (contraposition >>-zero p)))
+headₙ (      0∷ xs) p = proj₁ (BLT.split (headₙ xs (contraposition (>>-zero [ xs ]ₙ) p)))
 headₙ (x     1∷ xs) p = x
 headₙ (x , y 2∷ xs) p = x
 
@@ -42,7 +43,7 @@ head xs p = BLT.head (headₙ xs p)
 
 tailₙ : ∀ {n A} → (xs : 0-2-RAL A n) → [ xs ]ₙ ≉ zero ∷ [] → 0-2-RAL A n
 tailₙ []            p = contradiction (eq refl) p
-tailₙ (      0∷ xs) p = proj₂ (BLT.split (headₙ xs (contraposition >>-zero p))) 1∷ tailₙ xs (contraposition >>-zero p)
+tailₙ (      0∷ xs) p = proj₂ (BLT.split (headₙ xs (contraposition (>>-zero [ xs ]ₙ) p))) 1∷ tailₙ xs (contraposition (>>-zero [ xs ]ₙ) p)
 tailₙ (x     1∷ xs) p = 0∷ xs
 tailₙ (x , y 2∷ xs) p = y 1∷ xs
 
@@ -56,12 +57,21 @@ tail xs p = tailₙ xs p
 data Finite : Redundant → Set where
     finite : ∀ {bound} → (a : Redundant) → {a≲bound : ⟦ a ⟧ < ⟦ bound ⟧} → Finite bound
 
+map-Finite : ∀ {a b} → (a ≡ b) → Finite a → Finite b
+map-Finite refl a = a
+
+inject≤ : ∀ {m n} → Finite m → ⟦ m ⟧ ≤ ⟦ n ⟧ → Finite n
+inject≤ (finite a) m≤n = ?
+
+map-≤ : ∀ {a b c d} → a ≡ c → b ≡ d → a ≤ b → c ≤ d
+map-≤ {zero}  refl refl z≤n       = z≤n
+map-≤ {suc m} refl refl (s≤s a≤b) = s≤s a≤b
+
 elemAt : ∀ {n A} → (xs : 0-2-RAL A n) → Finite [ xs ] → A
-elemAt {n} [] (finite a {a≤b}) = {!   !}
-elemAt (      0∷ xs) i = {!   !}
+elemAt {n} {A} [] (finite a {a<b}) = contradiction a<b (contraposition (map-≤ refl (extract (<<<-zero 0 [ [] {A} {n} ] {[[]]≈zero∷[] ([] {A} {n}) {refl}}))) (λ ()))
+elemAt (0∷ xs) i = elemAt xs (map-Finite {!   !} i)
 elemAt (x     1∷ xs) i = {!   !}
 elemAt (x , y 2∷ xs) i = {!   !}
-
 {-
 -- data Occurrence : Set where
 --    here : ∀ {a n} → a * Fin (2 ^ n) → Occurrence

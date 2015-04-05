@@ -3,12 +3,14 @@ module Data.Num.Redundant.Setoid where
 open import Data.Num.Redundant
 open import Data.Num.Nat
 
+open import Data.Nat
+    renaming (_+_ to _+ℕ_)
 open import Data.Empty
 open import Relation.Binary
 open import Relation.Binary.PropositionalEquality as PropEq
     using (_≡_)
     renaming (refl to ≡-refl; sym to ≡-sym; trans to ≡-trans)
-
+open PropEq.≡-Reasoning
 --------------------------------------------------------------------------------
 --  Equivalence relation on Redundant
 --------------------------------------------------------------------------------
@@ -17,18 +19,22 @@ infix 4 _≈_ _≉_
 data _≈_ (a b : Redundant) : Set where
     eq : ⟦ a ⟧ ≡ ⟦ b ⟧ → a ≈ b
 
+extract : ∀ {a b} → a ≈ b → ⟦ a ⟧ ≡ ⟦ b ⟧
+extract (eq x) = x
+
 _≉_ : (a b : Redundant) → Set
 a ≉ b = a ≈ b → ⊥
 
 ≈-Setoid : Setoid _ _
-≈-Setoid =  record  {   Carrier = Redundant
-                    ;   _≈_ = _≈_
-                    ;   isEquivalence =
-                            record  {   refl = ≈-refl
-                                    ;   sym = ≈-sym
-                                    ;   trans = ≈-trans
-                                    }
-                    }
+≈-Setoid = record
+    {   Carrier = Redundant
+    ;   _≈_ = _≈_
+    ;   isEquivalence = record
+        {   refl = ≈-refl
+        ;   sym = ≈-sym
+        ;   trans = ≈-trans
+        }
+    }
     where
         ≈-refl : Reflexive _≈_
         ≈-refl = eq ≡-refl

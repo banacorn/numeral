@@ -91,9 +91,9 @@ zero >>> xs = xs
 suc n >>> xs = n >>> (>> xs)
 
 _<<<_ : ℕ → Redundant → Redundant
-zero <<< xs = xs
+zero  <<< xs = xs
 suc n <<< [] = []
-suc n <<< (x ∷ xs) = n <<< (<< xs)
+suc n <<< (x ∷ xs) = n <<< xs
 
 --------------------------------------------------------------------------------
 -- instances of Nat
