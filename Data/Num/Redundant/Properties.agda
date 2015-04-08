@@ -7,8 +7,10 @@ open import Data.Nat
 open import Data.Nat.Etc
 open import Data.Nat.Properties.Simple
 
+open import Data.Sum
 open import Data.List hiding ([_])
 open import Relation.Nullary.Negation using (contradiction; contraposition)
+open import Relation.Binary
 open import Relation.Binary.Core
 open import Relation.Binary.PropositionalEquality as PropEq
     using (_≡_; _≢_; refl; cong; cong₂; trans; sym; inspect)
@@ -121,6 +123,94 @@ open PropEq.≡-Reasoning
 <<<-zero (suc n) [] = eq refl
 <<<-zero zero    (x ∷ xs) {x∷xs≈0}    = x∷xs≈0
 <<<-zero (suc n) (x ∷ xs) {eq x∷xs≡0} = <<<-zero n xs {eq ([x∷xs≡0⇒xs≡0] x xs x∷xs≡0)}
+
+--------------------------------------------------------------------------------
+--  Properties of the relations on Redundant
+--------------------------------------------------------------------------------
+
+≈-Setoid : Setoid _ _
+≈-Setoid = record
+    {   Carrier = Redundant
+    ;   _≈_ = _≈_
+    ;   isEquivalence = record
+        {   refl = ≈-refl
+        ;   sym = ≈-sym
+        ;   trans = ≈-trans
+        }
+    }
+    where
+        ≈-refl : Reflexive _≈_
+        ≈-refl = eq refl
+
+        ≈-sym : Symmetric _≈_
+        ≈-sym (eq a≈b) = eq (sym a≈b)
+
+        ≈-trans : Transitive _≈_
+        ≈-trans (eq a≈b) (eq b≈c) = eq (trans a≈b b≈c)
+
+private
+    ℕ-isDecTotalOrder = DecTotalOrder.isDecTotalOrder decTotalOrder
+    ℕ-isTotalOrder = IsDecTotalOrder.isTotalOrder ℕ-isDecTotalOrder
+    ℕ-total = IsTotalOrder.total ℕ-isTotalOrder
+    ℕ-isPartialOrder = IsTotalOrder.isPartialOrder ℕ-isTotalOrder
+    ℕ-antisym =  IsPartialOrder.antisym ℕ-isPartialOrder
+    ℕ-isPreorder = IsPartialOrder.isPreorder ℕ-isPartialOrder
+    ℕ-isEquivalence = IsPreorder.isEquivalence ℕ-isPreorder
+    ℕ-reflexive = IsPreorder.reflexive ℕ-isPreorder
+    ℕ-trans = IsPreorder.trans ℕ-isPreorder
+
+≲-isPreorder : IsPreorder _ _
+≲-isPreorder = record
+    {   isEquivalence = Setoid.isEquivalence ≈-Setoid
+    ;   reflexive     = ≲-refl
+    ;   trans         = ≲-trans
+    }
+    where
+        ≲-refl : _≈_ ⇒ _≲_
+        ≲-refl (eq [x]≡[y]) = le (ℕ-reflexive [x]≡[y])
+
+        ≲-trans : Transitive _≲_
+        ≲-trans (le [a]≤[b]) (le [b]≤[c]) = le (ℕ-trans [a]≤[b] [b]≤[c])
+
+≲-isPartialOrder : IsPartialOrder _ _
+≲-isPartialOrder =  record
+    {   isPreorder = ≲-isPreorder
+    ;   antisym = antisym
+    }
+    where
+        antisym : Antisymmetric _≈_ _≲_
+        antisym (le [x]≤[y]) (le [y]≤[x]) = eq (ℕ-antisym [x]≤[y] [y]≤[x])
+
+≲-isTotalOrder : IsTotalOrder _ _
+≲-isTotalOrder = record
+    {   isPartialOrder = ≲-isPartialOrder
+    ;   total = total
+    }
+    where
+        total : Total _≲_
+        total x y with ℕ-total [ x ] [ y ]
+        total x y | inj₁ [x]≤[y] = inj₁ (le [x]≤[y])
+        total x y | inj₂ [y]≤[x] = inj₂ (le [y]≤[x])
+
+≲-isDecTotalOrder : IsDecTotalOrder _ _
+≲-isDecTotalOrder = record
+    {   isTotalOrder = ≲-isTotalOrder
+    ;   _≟_ = _≈?_
+    ;   _≤?_ = _≲?_
+    }
+
+≲-decTotalOrder : DecTotalOrder _ _ _
+≲-decTotalOrder = record
+    {   Carrier = Redundant
+    ;   _≈_ = _≈_
+    ;   _≤_ = _≲_
+    ;   isDecTotalOrder = ≲-isDecTotalOrder
+    }
+    where
+        antisym : Antisymmetric _≈_ _≲_
+        antisym (le [x]≤[y]) (le [y]≤[x]) = eq (ℕ-antisym [x]≤[y] [y]≤[x])
+
+
 {-
     begin
         {!   !}

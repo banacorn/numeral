@@ -9,14 +9,13 @@ module Data.Num.Redundant where
 open import Data.List using (List ; []; _∷_) public
 open import Data.Nat renaming (_+_ to _+ℕ_)
 open import Data.Num.Nat
-open import Data.Sum
+
 open import Data.Empty
 open import Relation.Nullary
 open import Relation.Nullary.Negation using (contradiction; contraposition)
 open import Relation.Binary
 open import Relation.Binary.PropositionalEquality as PropEq
     using (_≡_; _≢_)
-    renaming (refl to ≡-refl; sym to ≡-sym; trans to ≡-trans)
 import Level
 
 --------------------------------------------------------------------------------
@@ -125,7 +124,8 @@ natRedundant = nat [_]'
 --  Equivalence relation
 --------------------------------------------------------------------------------
 
-infix 4 _≈_ _≉_
+infix 4 _≈_ _≉_ _≈?_
+
 data _≈_ (a b : Redundant) : Set where
     eq : [ a ] ≡ [ b ] → a ≈ b
 
@@ -136,38 +136,18 @@ to≡ (eq x) = x
 _≉_ : (a b : Redundant) → Set
 a ≉ b = a ≈ b → ⊥
 
--- ≈ be setoid
-≈-Setoid : Setoid _ _
-≈-Setoid = record
-    {   Carrier = Redundant
-    ;   _≈_ = _≈_
-    ;   isEquivalence = record
-        {   refl = ≈-refl
-        ;   sym = ≈-sym
-        ;   trans = ≈-trans
-        }
-    }
-    where
-        ≈-refl : Reflexive _≈_
-        ≈-refl = eq ≡-refl
-
-        ≈-sym : Symmetric _≈_
-        ≈-sym (eq a≈b) = eq (≡-sym a≈b)
-
-        ≈-trans : Transitive _≈_
-        ≈-trans (eq a≈b) (eq b≈c) = eq (≡-trans a≈b b≈c)
-
 -- decidable equivalence relation
-infix 4 _≈?_
+
 _≈?_ : Decidable {A = Redundant} _≈_
 a ≈? b with [ a ] ≟ [ b ]
 a ≈? b | yes p = yes (eq p)
 a ≈? b | no ¬p = no (contraposition to≡ ¬p)
 
+--------------------------------------------------------------------------------
+--  Ordering
+--------------------------------------------------------------------------------
 
---------------------------------------------------------------------------------
--- ≲
---------------------------------------------------------------------------------
+infix 4 _≲_ _≲?_
 
 data _≲_ : Rel Redundant Level.zero where
     le : ∀ {a b} ([a]≤[b] : [ a ] ≤ [ b ]) → a ≲ b
@@ -175,54 +155,8 @@ data _≲_ : Rel Redundant Level.zero where
 to≤ : ∀ {a b} → a ≲ b → [ a ] ≤ [ b ]
 to≤ (le [a]≤[b]) = [a]≤[b]
 
+-- decidable
 _≲?_ : Decidable _≲_
 a ≲? b with [ a ] ≤? [ b ]
 a ≲? b | yes p = yes (le p)
 a ≲? b | no ¬p = no (contraposition to≤ ¬p)
-
-≲-decTotalOrder : DecTotalOrder _ _ _
-≲-decTotalOrder = record
-    {   Carrier = Redundant
-    ;   _≈_ = _≈_
-    ;   _≤_ = _≲_
-    ;   isDecTotalOrder = record
-            {   isTotalOrder = record
-                    {   isPartialOrder = record
-                            {   isPreorder = record
-                                    {   isEquivalence = Setoid.isEquivalence ≈-Setoid
-                                    ;   reflexive     = ≲-refl
-                                    ;   trans         = ≲-trans
-                                    }
-                            ;   antisym = antisym
-                            }
-                    ;   total = total
-                    }
-            ;   _≟_ = _≈?_
-            ;   _≤?_ = _≲?_
-            }
-    }
-    where
-
-        ℕ-isDecTotalOrder = DecTotalOrder.isDecTotalOrder decTotalOrder
-        ℕ-isTotalOrder = IsDecTotalOrder.isTotalOrder ℕ-isDecTotalOrder
-        ℕ-total = IsTotalOrder.total ℕ-isTotalOrder
-        ℕ-isPartialOrder = IsTotalOrder.isPartialOrder ℕ-isTotalOrder
-        ℕ-antisym =  IsPartialOrder.antisym ℕ-isPartialOrder
-        ℕ-isPreorder = IsPartialOrder.isPreorder ℕ-isPartialOrder
-        ℕ-isEquivalence = IsPreorder.isEquivalence ℕ-isPreorder
-        ℕ-reflexive = IsPreorder.reflexive ℕ-isPreorder
-        ℕ-trans = IsPreorder.trans ℕ-isPreorder
-
-        ≲-refl : _≈_ ⇒ _≲_
-        ≲-refl (eq [x]≡[y]) = le (ℕ-reflexive [x]≡[y])
-
-        ≲-trans : Transitive _≲_
-        ≲-trans (le [a]≤[b]) (le [b]≤[c]) = le (ℕ-trans [a]≤[b] [b]≤[c])
-
-        antisym : Antisymmetric _≈_ _≲_
-        antisym (le [x]≤[y]) (le [y]≤[x]) = eq (ℕ-antisym [x]≤[y] [y]≤[x])
-
-        total : Total _≲_
-        total x y with ℕ-total [ x ] [ y ]
-        total x y | inj₁ [x]≤[y] = inj₁ (le [x]≤[y])
-        total x y | inj₂ [y]≤[x] = inj₂ (le [y]≤[x])
