@@ -2,7 +2,6 @@ module Data.Num.Redundant.Properties where
 
 open import Data.Num.Nat
 open import Data.Num.Redundant renaming (_+_ to _+R_)
-open import Data.Num.Redundant.Setoid
 
 open import Data.Nat
 open import Data.Nat.Etc

@@ -6,7 +6,6 @@ open import RandomAccessList.Redundant.Core
 
 open import Data.Num.Redundant
 open import Data.Num.Redundant.Properties
-open import Data.Num.Redundant.Setoid
 
 open import Data.Nat using (ℕ; zero; suc)
 open import Data.Nat.Etc

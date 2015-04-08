@@ -8,7 +8,6 @@ import BuildingBlock.BinaryLeafTree as BLT
 -- open import Data.Fin
 open import Data.Num.Nat
 open import Data.Num.Redundant
-open import Data.Num.Redundant.Setoid
 open import Data.Num.Redundant.Properties
 open import Data.Nat
 open import Data.Nat.DivMod
@@ -55,7 +54,7 @@ tail xs p = tailₙ xs p
 --------------------------------------------------------------------------------
 
 data Finite : Redundant → Set where
-    finite : ∀ {bound} → (a : Redundant) → {a≲bound : [ a ] < [ bound ]} → Finite bound
+    finite : ∀ {bound} → (a : Redundant) → {a≲bound : a ≲ bound} → Finite bound
 
 map-Finite : ∀ {a b} → (a ≡ b) → Finite a → Finite b
 map-Finite refl a = a
@@ -63,12 +62,15 @@ map-Finite refl a = a
 inject≤ : ∀ {m n} → Finite m → [ m ] ≤ [ n ] → Finite n
 inject≤ (finite a) m≤n = {!   !}
 
+map-≲ :
+
 map-≤ : ∀ {a b c d} → a ≡ c → b ≡ d → a ≤ b → c ≤ d
 map-≤ {zero}  refl refl z≤n       = z≤n
 map-≤ {suc m} refl refl (s≤s a≤b) = s≤s a≤b
 
 elemAt : ∀ {n A} → (xs : 0-2-RAL A n) → Finite ⟦ xs ⟧ → A
-elemAt {n} {A} [] (finite a {a<b}) = contradiction a<b (contraposition (map-≤ refl (to≡ (<<<-zero 0 ⟦ [] {A} {n} ⟧ {⟦[]⟧≈zero∷[] ([] {A} {n}) {refl}}))) (λ ()))
+elemAt {n} {A} [] (finite a {a≲[]}) = contradiction a≲[] (contraposition {!   !} (λ ()))
+-- elemAt {n} {A} [] (finite a {a<b}) = contradiction a<b (contraposition (map-≤ refl (to≡ (<<<-zero 0 ⟦ [] {A} {n} ⟧ {⟦[]⟧≈zero∷[] ([] {A} {n}) {refl}}))) (λ ()))
 elemAt (0∷ xs) i = elemAt xs (map-Finite {!   !} i)
 elemAt (x     1∷ xs) i = {!   !}
 elemAt (x , y 2∷ xs) i = {!   !}
