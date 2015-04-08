@@ -32,22 +32,22 @@ consₙ a (x , y 2∷ xs) = a 1∷ consₙ (Node x y) xs
 cons : ∀ {A} → A → 0-2-RAL A 0 → 0-2-RAL A 0
 cons a xs = consₙ (Leaf a) xs
 
-headₙ :  ∀ {n A} → (xs : 0-2-RAL A n) → [ xs ]ₙ ≉ zero ∷ [] → BinaryLeafTree A n
+headₙ :  ∀ {n A} → (xs : 0-2-RAL A n) → ⟦ xs ⟧ₙ ≉ zero ∷ [] → BinaryLeafTree A n
 headₙ []            p = contradiction (eq refl) p
-headₙ (      0∷ xs) p = proj₁ (BLT.split (headₙ xs (contraposition (>>-zero [ xs ]ₙ) p)))
+headₙ (      0∷ xs) p = proj₁ (BLT.split (headₙ xs (contraposition (>>-zero ⟦ xs ⟧ₙ) p)))
 headₙ (x     1∷ xs) p = x
 headₙ (x , y 2∷ xs) p = x
 
-head : ∀ {A} → (xs : 0-2-RAL A 0) → [ xs ] ≉ zero ∷ [] → A
+head : ∀ {A} → (xs : 0-2-RAL A 0) → ⟦ xs ⟧ ≉ zero ∷ [] → A
 head xs p = BLT.head (headₙ xs p)
 
-tailₙ : ∀ {n A} → (xs : 0-2-RAL A n) → [ xs ]ₙ ≉ zero ∷ [] → 0-2-RAL A n
+tailₙ : ∀ {n A} → (xs : 0-2-RAL A n) → ⟦ xs ⟧ₙ ≉ zero ∷ [] → 0-2-RAL A n
 tailₙ []            p = contradiction (eq refl) p
-tailₙ (      0∷ xs) p = proj₂ (BLT.split (headₙ xs (contraposition (>>-zero [ xs ]ₙ) p))) 1∷ tailₙ xs (contraposition (>>-zero [ xs ]ₙ) p)
+tailₙ (      0∷ xs) p = proj₂ (BLT.split (headₙ xs (contraposition (>>-zero ⟦ xs ⟧ₙ) p))) 1∷ tailₙ xs (contraposition (>>-zero ⟦ xs ⟧ₙ) p)
 tailₙ (x     1∷ xs) p = 0∷ xs
 tailₙ (x , y 2∷ xs) p = y 1∷ xs
 
-tail : ∀ {A} → (xs : 0-2-RAL A 0) → [ xs ] ≉ zero ∷ [] → 0-2-RAL A 0
+tail : ∀ {A} → (xs : 0-2-RAL A 0) → ⟦ xs ⟧ ≉ zero ∷ [] → 0-2-RAL A 0
 tail xs p = tailₙ xs p
 
 --------------------------------------------------------------------------------
@@ -55,20 +55,20 @@ tail xs p = tailₙ xs p
 --------------------------------------------------------------------------------
 
 data Finite : Redundant → Set where
-    finite : ∀ {bound} → (a : Redundant) → {a≲bound : ⟦ a ⟧ < ⟦ bound ⟧} → Finite bound
+    finite : ∀ {bound} → (a : Redundant) → {a≲bound : [ a ] < [ bound ]} → Finite bound
 
 map-Finite : ∀ {a b} → (a ≡ b) → Finite a → Finite b
 map-Finite refl a = a
 
-inject≤ : ∀ {m n} → Finite m → ⟦ m ⟧ ≤ ⟦ n ⟧ → Finite n
-inject≤ (finite a) m≤n = ?
+inject≤ : ∀ {m n} → Finite m → [ m ] ≤ [ n ] → Finite n
+inject≤ (finite a) m≤n = {!   !}
 
 map-≤ : ∀ {a b c d} → a ≡ c → b ≡ d → a ≤ b → c ≤ d
 map-≤ {zero}  refl refl z≤n       = z≤n
 map-≤ {suc m} refl refl (s≤s a≤b) = s≤s a≤b
 
-elemAt : ∀ {n A} → (xs : 0-2-RAL A n) → Finite [ xs ] → A
-elemAt {n} {A} [] (finite a {a<b}) = contradiction a<b (contraposition (map-≤ refl (extract (<<<-zero 0 [ [] {A} {n} ] {[[]]≈zero∷[] ([] {A} {n}) {refl}}))) (λ ()))
+elemAt : ∀ {n A} → (xs : 0-2-RAL A n) → Finite ⟦ xs ⟧ → A
+elemAt {n} {A} [] (finite a {a<b}) = contradiction a<b (contraposition (map-≤ refl (to≡ (<<<-zero 0 ⟦ [] {A} {n} ⟧ {⟦[]⟧≈zero∷[] ([] {A} {n}) {refl}}))) (λ ()))
 elemAt (0∷ xs) i = elemAt xs (map-Finite {!   !} i)
 elemAt (x     1∷ xs) i = {!   !}
 elemAt (x , y 2∷ xs) i = {!   !}

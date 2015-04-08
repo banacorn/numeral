@@ -9,7 +9,7 @@ open import Data.Nat
 record Nat (t : Set) : Set where
     constructor nat
     field
-        ⟦_⟧ : t → ℕ
+        [_] : t → ℕ
 
-⟦_⟧ : ∀ {t} → {{natT : Nat t}} → t → ℕ
-⟦_⟧ {{natT}} = Nat.⟦ natT ⟧
+[_] : ∀ {t} → {{natT : Nat t}} → t → ℕ
+[_] {{natT}} = Nat.[ natT ]

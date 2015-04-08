@@ -100,14 +100,14 @@ suc n <<< (x ∷ xs) = n <<< xs
 --------------------------------------------------------------------------------
 
 instance natDigit : Nat Digit
-natDigit = nat ⟦_⟧'
-    where   ⟦_⟧' : Digit → ℕ
-            ⟦ zero ⟧' = 0
-            ⟦ one  ⟧' = 1
-            ⟦ two  ⟧' = 2
+natDigit = nat [_]'
+    where   [_]' : Digit → ℕ
+            [ zero ]' = 0
+            [ one  ]' = 1
+            [ two  ]' = 2
 
 instance natRedundant : Nat Redundant
-natRedundant = nat ⟦_⟧'
-    where   ⟦_⟧' : Redundant → ℕ
-            ⟦     [] ⟧' = 0
-            ⟦ x ∷ xs ⟧' = ⟦ x ⟧ +ℕ 2 * ⟦ xs ⟧'
+natRedundant = nat [_]'
+    where   [_]' : Redundant → ℕ
+            [     [] ]' = 0
+            [ x ∷ xs ]' = [ x ] +ℕ 2 * [ xs ]'

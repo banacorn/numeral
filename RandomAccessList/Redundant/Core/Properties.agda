@@ -15,11 +15,11 @@ open import Relation.Binary.PropositionalEquality as PropEq
     using (_≡_; _≢_; refl; cong; cong₂; trans; sym; inspect)
 open PropEq.≡-Reasoning
 
-[[]]≈zero∷[] : ∀ {n A} → (xs : 0-2-RAL A n) → {xs≣[] : xs ≡ []} → [ xs ] ≈ zero ∷ []
-[[]]≈zero∷[] {n} {A} [] {xs≡[]} = <<<-zero n (zero ∷ []) {eq refl}
-[[]]≈zero∷[] (      0∷ xs) {()}
-[[]]≈zero∷[] (x     1∷ xs) {()}
-[[]]≈zero∷[] (x , y 2∷ xs) {()}
+⟦[]⟧≈zero∷[] : ∀ {n A} → (xs : 0-2-RAL A n) → {xs≣[] : xs ≡ []} → ⟦ xs ⟧ ≈ zero ∷ []
+⟦[]⟧≈zero∷[] {n} {A} [] {xs≡[]} = <<<-zero n (zero ∷ []) {eq refl}
+⟦[]⟧≈zero∷[] (      0∷ xs) {()}
+⟦[]⟧≈zero∷[] (x     1∷ xs) {()}
+⟦[]⟧≈zero∷[] (x , y 2∷ xs) {()}
 
 --------------------------------------------------------------------------------
 -- On ⟦_⟧ and ⟦_⟧ₙ

@@ -20,14 +20,14 @@ infixr 2 _,_2∷_
 -- to Redundant Binary Numeral System (2, {0-2})
 --------------------------------------------------------------------------------
 
-[_]ₙ : ∀ {n A} → 0-2-RAL A n → Redundant
-[          [] ]ₙ = zero ∷ []
-[       0∷ xs ]ₙ = zero ∷ [ xs ]ₙ
-[ x     1∷ xs ]ₙ = one  ∷ [ xs ]ₙ
-[ x , y 2∷ xs ]ₙ = two  ∷ [ xs ]ₙ
+⟦_⟧ₙ : ∀ {n A} → 0-2-RAL A n → Redundant
+⟦          [] ⟧ₙ = zero ∷ []
+⟦       0∷ xs ⟧ₙ = zero ∷ ⟦ xs ⟧ₙ
+⟦ x     1∷ xs ⟧ₙ = one  ∷ ⟦ xs ⟧ₙ
+⟦ x , y 2∷ xs ⟧ₙ = two  ∷ ⟦ xs ⟧ₙ
 
-[_] : ∀ {n A} → 0-2-RAL A n → Redundant
-[_] {n} xs = n <<< [ xs ]ₙ
+⟦_⟧ : ∀ {n A} → 0-2-RAL A n → Redundant
+⟦_⟧ {n} xs = n <<< ⟦ xs ⟧ₙ
 
 --------------------------------------------------------------------------------
 -- to ℕ

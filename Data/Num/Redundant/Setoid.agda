@@ -17,10 +17,10 @@ open PropEq.≡-Reasoning
 
 infix 4 _≈_ _≉_
 data _≈_ (a b : Redundant) : Set where
-    eq : ⟦ a ⟧ ≡ ⟦ b ⟧ → a ≈ b
+    eq : [ a ] ≡ [ b ] → a ≈ b
 
-extract : ∀ {a b} → a ≈ b → ⟦ a ⟧ ≡ ⟦ b ⟧
-extract (eq x) = x
+to≡ : ∀ {a b} → a ≈ b → [ a ] ≡ [ b ]
+to≡ (eq x) = x
 
 _≉_ : (a b : Redundant) → Set
 a ≉ b = a ≈ b → ⊥
