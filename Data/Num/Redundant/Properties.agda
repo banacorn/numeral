@@ -149,15 +149,21 @@ open PropEq.≡-Reasoning
         ≈-trans (eq a≈b) (eq b≈c) = eq (trans a≈b b≈c)
 
 private
-    ℕ-isDecTotalOrder = DecTotalOrder.isDecTotalOrder decTotalOrder
-    ℕ-isTotalOrder = IsDecTotalOrder.isTotalOrder ℕ-isDecTotalOrder
-    ℕ-total = IsTotalOrder.total ℕ-isTotalOrder
-    ℕ-isPartialOrder = IsTotalOrder.isPartialOrder ℕ-isTotalOrder
-    ℕ-antisym =  IsPartialOrder.antisym ℕ-isPartialOrder
-    ℕ-isPreorder = IsPartialOrder.isPreorder ℕ-isPartialOrder
-    ℕ-isEquivalence = IsPreorder.isEquivalence ℕ-isPreorder
-    ℕ-reflexive = IsPreorder.reflexive ℕ-isPreorder
-    ℕ-trans = IsPreorder.trans ℕ-isPreorder
+    ≤-isDecTotalOrder = DecTotalOrder.isDecTotalOrder decTotalOrder
+    ≤-isTotalOrder = IsDecTotalOrder.isTotalOrder ≤-isDecTotalOrder
+    ≤-total = IsTotalOrder.total ≤-isTotalOrder
+    ≤-isPartialOrder = IsTotalOrder.isPartialOrder ≤-isTotalOrder
+    ≤-antisym =  IsPartialOrder.antisym ≤-isPartialOrder
+    ≤-isPreorder = IsPartialOrder.isPreorder ≤-isPartialOrder
+    ≤-isEquivalence = IsPreorder.isEquivalence ≤-isPreorder
+    ≤-reflexive = IsPreorder.reflexive ≤-isPreorder
+    ≤-trans = IsPreorder.trans ≤-isPreorder
+
+≲-refl : _≈_ ⇒ _≲_
+≲-refl (eq [x]≡[y]) = le (≤-reflexive [x]≡[y])
+
+≲-trans : Transitive _≲_
+≲-trans (le [a]≤[b]) (le [b]≤[c]) = le (≤-trans [a]≤[b] [b]≤[c])
 
 ≲-isPreorder : IsPreorder _ _
 ≲-isPreorder = record
@@ -165,32 +171,26 @@ private
     ;   reflexive     = ≲-refl
     ;   trans         = ≲-trans
     }
-    where
-        ≲-refl : _≈_ ⇒ _≲_
-        ≲-refl (eq [x]≡[y]) = le (ℕ-reflexive [x]≡[y])
 
-        ≲-trans : Transitive _≲_
-        ≲-trans (le [a]≤[b]) (le [b]≤[c]) = le (ℕ-trans [a]≤[b] [b]≤[c])
+≲-antisym : Antisymmetric _≈_ _≲_
+≲-antisym (le [x]≤[y]) (le [y]≤[x]) = eq (≤-antisym [x]≤[y] [y]≤[x])
 
 ≲-isPartialOrder : IsPartialOrder _ _
 ≲-isPartialOrder =  record
     {   isPreorder = ≲-isPreorder
-    ;   antisym = antisym
+    ;   antisym = ≲-antisym
     }
-    where
-        antisym : Antisymmetric _≈_ _≲_
-        antisym (le [x]≤[y]) (le [y]≤[x]) = eq (ℕ-antisym [x]≤[y] [y]≤[x])
+
+≲-total : Total _≲_
+≲-total x y with ≤-total [ x ] [ y ]
+≲-total x y | inj₁ [x]≤[y] = inj₁ (le [x]≤[y])
+≲-total x y | inj₂ [y]≤[x] = inj₂ (le [y]≤[x])
 
 ≲-isTotalOrder : IsTotalOrder _ _
 ≲-isTotalOrder = record
     {   isPartialOrder = ≲-isPartialOrder
-    ;   total = total
+    ;   total = ≲-total
     }
-    where
-        total : Total _≲_
-        total x y with ℕ-total [ x ] [ y ]
-        total x y | inj₁ [x]≤[y] = inj₁ (le [x]≤[y])
-        total x y | inj₂ [y]≤[x] = inj₂ (le [y]≤[x])
 
 ≲-isDecTotalOrder : IsDecTotalOrder _ _
 ≲-isDecTotalOrder = record
@@ -206,10 +206,6 @@ private
     ;   _≤_ = _≲_
     ;   isDecTotalOrder = ≲-isDecTotalOrder
     }
-    where
-        antisym : Antisymmetric _≈_ _≲_
-        antisym (le [x]≤[y]) (le [y]≤[x]) = eq (ℕ-antisym [x]≤[y] [y]≤[x])
-
 
 {-
     begin
