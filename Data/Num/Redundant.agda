@@ -7,7 +7,7 @@ module Data.Num.Redundant where
 --  and arithmetic shift.
 
 open import Data.List using (List ; []; _∷_) public
-open import Data.Nat renaming (_+_ to _+ℕ_)
+open import Data.Nat renaming (_+_ to _+ℕ_; _<_ to _<ℕ_)
 open import Data.Num.Nat
 
 open import Data.Empty
@@ -104,7 +104,7 @@ suc n <<< [] = []
 suc n <<< (x ∷ xs) = n <<< xs
 
 --------------------------------------------------------------------------------
--- instances of Nat, so that we can convert then to ℕ
+-- instances of Nat, so that we can convert them to ℕ
 --------------------------------------------------------------------------------
 
 instance natDigit : Nat Digit
@@ -127,7 +127,7 @@ natRedundant = nat [_]'
 infix 4 _≈_ _≉_ _≈?_
 
 data _≈_ (a b : Redundant) : Set where
-    eq : [ a ] ≡ [ b ] → a ≈ b
+    eq : ([a]≡[b] : [ a ] ≡ [ b ]) → a ≈ b
 
 -- the inverse of `eq`
 to≡ : ∀ {a b} → a ≈ b → [ a ] ≡ [ b ]
@@ -136,8 +136,7 @@ to≡ (eq x) = x
 _≉_ : (a b : Redundant) → Set
 a ≉ b = a ≈ b → ⊥
 
--- decidable equivalence relation
-
+-- decidable
 _≈?_ : Decidable {A = Redundant} _≈_
 a ≈? b with [ a ] ≟ [ b ]
 a ≈? b | yes p = yes (eq p)
@@ -147,13 +146,18 @@ a ≈? b | no ¬p = no (contraposition to≡ ¬p)
 --  Ordering
 --------------------------------------------------------------------------------
 
-infix 4 _≲_ _≲?_
+infix 4 _≲_ _≲?_ _<_
 
 data _≲_ : Rel Redundant Level.zero where
     le : ∀ {a b} ([a]≤[b] : [ a ] ≤ [ b ]) → a ≲ b
 
+-- the inverse of `le`
 to≤ : ∀ {a b} → a ≲ b → [ a ] ≤ [ b ]
 to≤ (le [a]≤[b]) = [a]≤[b]
+
+_<_ : Rel Redundant Level.zero
+a < b = incr one a ≲ b
+
 
 -- decidable
 _≲?_ : Decidable _≲_

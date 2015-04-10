@@ -15,7 +15,7 @@ open import Relation.Binary.PropositionalEquality as PropEq
 open PropEq.≡-Reasoning
 
 ⟦[]⟧≈zero∷[] : ∀ {n A} → (xs : 0-2-RAL A n) → {xs≣[] : xs ≡ []} → ⟦ xs ⟧ ≈ zero ∷ []
-⟦[]⟧≈zero∷[] {n} {A} [] {xs≡[]} = <<<-zero n (zero ∷ []) {eq refl}
+⟦[]⟧≈zero∷[] {n} {A} [] = <<<-zero n [] {eq refl}
 ⟦[]⟧≈zero∷[] (      0∷ xs) {()}
 ⟦[]⟧≈zero∷[] (x     1∷ xs) {()}
 ⟦[]⟧≈zero∷[] (x , y 2∷ xs) {()}

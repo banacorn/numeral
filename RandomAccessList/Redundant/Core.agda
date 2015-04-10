@@ -6,22 +6,20 @@ open import Data.Num.Redundant
 open import Data.Nat using (ℕ; zero; suc)
 open import Data.Nat.Etc
 
+infixr 2 0∷ _1∷_ _,_2∷_
+
 data 0-2-RAL (A : Set) : ℕ → Set where
     []     : ∀ {n}                                                               → 0-2-RAL A n
     0∷     : ∀ {n}                                           → 0-2-RAL A (suc n) → 0-2-RAL A n
     _1∷_   : ∀ {n} → BinaryLeafTree A n                      → 0-2-RAL A (suc n) → 0-2-RAL A n
     _,_2∷_ : ∀ {n} → BinaryLeafTree A n → BinaryLeafTree A n → 0-2-RAL A (suc n) → 0-2-RAL A n
 
-infixr 2 0∷
-infixr 2 _1∷_
-infixr 2 _,_2∷_
-
 --------------------------------------------------------------------------------
--- to Redundant Binary Numeral System (2, {0-2})
+-- to Redundant Binary Numeral System
 --------------------------------------------------------------------------------
 
 ⟦_⟧ₙ : ∀ {n A} → 0-2-RAL A n → Redundant
-⟦          [] ⟧ₙ = zero ∷ []
+⟦          [] ⟧ₙ = []
 ⟦       0∷ xs ⟧ₙ = zero ∷ ⟦ xs ⟧ₙ
 ⟦ x     1∷ xs ⟧ₙ = one  ∷ ⟦ xs ⟧ₙ
 ⟦ x , y 2∷ xs ⟧ₙ = two  ∷ ⟦ xs ⟧ₙ

@@ -3,12 +3,13 @@ module Data.Num.Redundant.Properties where
 open import Data.Num.Nat
 open import Data.Num.Redundant renaming (_+_ to _+R_)
 
-open import Data.Nat
+open import Data.Nat renaming (_<_ to _<ℕ_)
 open import Data.Nat.Etc
 open import Data.Nat.Properties.Simple
 
 open import Data.Sum
 open import Data.List hiding ([_])
+open import Relation.Nullary
 open import Relation.Nullary.Negation using (contradiction; contraposition)
 open import Relation.Binary
 open import Relation.Binary.Core
@@ -165,15 +166,15 @@ private
 ≲-trans : Transitive _≲_
 ≲-trans (le [a]≤[b]) (le [b]≤[c]) = le (≤-trans [a]≤[b] [b]≤[c])
 
+≲-antisym : Antisymmetric _≈_ _≲_
+≲-antisym (le [x]≤[y]) (le [y]≤[x]) = eq (≤-antisym [x]≤[y] [y]≤[x])
+
 ≲-isPreorder : IsPreorder _ _
 ≲-isPreorder = record
     {   isEquivalence = Setoid.isEquivalence ≈-Setoid
     ;   reflexive     = ≲-refl
     ;   trans         = ≲-trans
     }
-
-≲-antisym : Antisymmetric _≈_ _≲_
-≲-antisym (le [x]≤[y]) (le [y]≤[x]) = eq (≤-antisym [x]≤[y] [y]≤[x])
 
 ≲-isPartialOrder : IsPartialOrder _ _
 ≲-isPartialOrder =  record
@@ -206,6 +207,28 @@ private
     ;   _≤_ = _≲_
     ;   isDecTotalOrder = ≲-isDecTotalOrder
     }
+{-
+a≲a+1 : (a : Redundant) → a ≲ incr one a
+a≲a+1 []       = le z≤n
+a≲a+1 (x ∷ xs) = le {!   !}
+
+<-asym : Asymmetric _<_
+<-asym {[]}     {[]}     (le ())      (le [y]<[[]])
+<-asym {[]}     {y ∷ ys} (le [x]<[y]) (le [y]<[[]]) = {!   !}
+<-asym {x ∷ xs} {[]}     (le [x]<[y]) (le [y]<[x∷xs]) = {!   !}
+<-asym {x ∷ xs} {y ∷ ys} (le [x]<[y]) (le [y]<[x∷xs]) = {!   !}
+
+<-irr : Irreflexive _≈_ _<_ -- goal: ¬ (x < y)
+<-irr {a} {b} (eq [a]≡[b]) (le [a]<[b]) = {!   !}
+
+trichotomous : Trichotomous _≈_ _<_
+trichotomous x y with x ≈? y
+trichotomous x y | yes p = tri≈ {!   !} p {!   !}
+trichotomous x y | no ¬p with incr one x ≲? y
+trichotomous x y | no ¬p | yes q = tri< q ¬p {!   !}
+trichotomous x y | no ¬p | no ¬q = tri> ¬q ¬p {!   !}
+
+-}
 
 {-
     begin
