@@ -9,10 +9,6 @@ module Data.Num.Redundant where
 open import Data.List using (List ; []; _∷_) public
 open import Data.Nat renaming (_+_ to _+ℕ_; _<_ to _<ℕ_)
 open import Data.Num.Bij
-    renaming    (   _⊕_ to _⊕Bij_
-                ;   incr to incrBij
-                ;   _+_ to _+Bij_
-                )
 
 open import Data.Empty
 open import Relation.Nullary
@@ -109,7 +105,7 @@ suc n <<< [] = []
 suc n <<< (x ∷ xs) = n <<< xs
 
 --------------------------------------------------------------------------------
--- instances of Conversion, so that we can convert Redundant to Bij
+-- instances of Conversion, so that we can convert Redundant to B
 --------------------------------------------------------------------------------
 
 instance convRedundant : Conversion Redundant
@@ -153,23 +149,23 @@ a ≈? b with [ a ] ≟ [ b ]
 a ≈? b | yes p = yes (eq p)
 a ≈? b | no ¬p = no (contraposition to≡ ¬p)
 -}
+
 --------------------------------------------------------------------------------
 --  Ordering
 --------------------------------------------------------------------------------
 
-{-
-infix 4 _≲_ _≲?_ _<_
+infix 4 _≲_ _<_
 data _≲_ : Rel Redundant Level.zero where
-    le : ∀ {a b} ([a]≤[b] : [ a ] ≤ [ b ]) → a ≲ b
+    le : ∀ {a b} ([a]≤[b] : [ a ] ≤B [ b ]) → a ≲ b
 
 -- the inverse of `le`
-to≤ : ∀ {a b} → a ≲ b → [ a ] ≤ [ b ]
-to≤ (le [a]≤[b]) = [a]≤[b]
+to≤ : ∀ {a b} → a ≲ b → [ a ] ≤B [ b ]
+to≤ (le [a]≤B[b]) = [a]≤B[b]
 
 _<_ : Rel Redundant Level.zero
 a < b = incr one a ≲ b
 
-
+{-
 -- decidable
 _≲?_ : Decidable _≲_
 a ≲? b with [ a ] ≤? [ b ]

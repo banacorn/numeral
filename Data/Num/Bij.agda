@@ -16,72 +16,68 @@ import Level
 
 -- zeroless binary number
 
-data BijDigit : Set where
-    one : BijDigit
-    two : BijDigit
+infixl 7 _*B_
+infixl 6 _+B_
 
--- BijDigit negation
-¬_ : BijDigit → BijDigit
-¬ one = two
-¬ two = one
-
--- BijDigit addition
-_⊕_ : BijDigit → BijDigit → BijDigit
-one ⊕ b = ¬ b
-two ⊕ b =   b
-
---------------------------------------------------------------------------------
---  Sequence of BijDigits
---------------------------------------------------------------------------------
+data DigitB : Set where
+    one : DigitB
+    two : DigitB
 
 Bij : Set
-Bij = List BijDigit
+Bij = List DigitB
 
-incr : Bij → Bij
-incr []        = one ∷ []
-incr (one ∷ a) = two ∷ a
-incr (two ∷ a) = one ∷ incr a
+incrB : Bij → Bij
+incrB []        = one ∷ []
+incrB (one ∷ a) = two ∷ a
+incrB (two ∷ a) = one ∷ incrB a
 
+-- addition
+_+B_ : Bij → Bij → Bij
+[]         +B b        = b
+a          +B []       = a
+(one ∷ as) +B (one ∷ bs) = two ∷ as +B bs                 -- carry : none
+(one ∷ as) +B (two ∷ bs) = one ∷ incrB (as +B bs)          -- carry : 1
+(two ∷ as) +B (one ∷ bs) = one ∷ incrB (as +B bs)          -- carry : 1
+(two ∷ as) +B (two ∷ bs) = two ∷ incrB (incrB (as +B bs))   -- carry : 2
 
-_+_ : Bij → Bij → Bij
-[]       + b        = b
-a        + []       = a
-(one ∷ as) + (one ∷ bs) = two ∷ as + bs                 -- carry : none
-(one ∷ as) + (two ∷ bs) = one ∷ incr (as + bs)          -- carry : 1
-(two ∷ as) + (one ∷ bs) = one ∷ incr (as + bs)          -- carry : 1
-(two ∷ as) + (two ∷ bs) = two ∷ incr (incr (as + bs))   -- carry : 2
+-- multiplication
+_*B_ : Bij → Bij → Bij
+[]         *B b = []
+(one ∷ as) *B b =      b +B as *B b
+(two ∷ as) *B b = b +B b +B as *B b
 
+-- arithmetic shift
 *2_ : Bij → Bij
-*2 [] = []
+*2 []         = []
 *2 (one ∷ as) = two ∷ *2 as
-*2 (two ∷ as) = two ∷ incr (*2 as)
+*2 (two ∷ as) = two ∷ incrB (*2 as)
 
+--------------------------------------------------------------------------------
+-- Ordering
+--------------------------------------------------------------------------------
 
-infix 4 _≲_
+infix 4 _≤-digitB_ _≤B_ _<B_
 
-data _≲-digit_ : Rel BijDigit Level.zero where
-    1≲1 : one ≲-digit one
-    1≲2 : one ≲-digit two
-    2≲2 : two ≲-digit two
+data _≤-digitB_ : Rel DigitB Level.zero where
+    1≤1 : one ≤-digitB one
+    1≤2 : one ≤-digitB two
+    2≤2 : two ≤-digitB two
 
-data _≲_ : Rel Bij Level.zero where
-    []≲all : ∀ {n} → [] ≲ n
-    ≲here : ∀ {as bs a b}           -- compare the least digit
-          → {a≲b : a ≲-digit b}
-          → {as≡bs : as ≡ bs}
-          → a ∷ as ≲ b ∷ bs
-    ≲there : ∀ {as bs a b}
-           → (as<bs : incr as ≲ bs) -- compare the rest digits
-           → a ∷ as ≲ b ∷ bs
+data _≤B_ : Rel Bij Level.zero where
+    []≤all : ∀ {n} → [] ≤B n
+    ≤here : ∀ {as bs a b}           -- compare the least digit
+            → {a≤b : a ≤-digitB b}
+            → {as≡bs : as ≡ bs}
+            → a ∷ as ≤B b ∷ bs
+    ≤there : ∀ {as bs a b}
+             → (as<bs : incrB as ≤B bs) -- compare the rest digits
+             → a ∷ as ≤B b ∷ bs
+
+_<B_ : Rel Bij Level.zero
+a <B b = incrB a ≤B b
+
 
 {-
-
-to≤ : ∀ {a b} → a ≲ b → [ a ] ≤ [ b ]
-to≤ (le [a]≤[b]) = [a]≤[b]
-
-_<_ : Rel Redundant Level.zero
-a < b = incr one a ≲ b
-
 
 
 decr : Bij → Bij
@@ -107,6 +103,9 @@ record Conversion (t : Set) : Set where
     field
         [_] : t   → Bij
         !_! : Bij → t
+        -- split morphism
+        -- !_! is a section of [_]
+        -- [_] is a retraction of !_!
         [!!]-id : ∀ n → [ ! n ! ] ≡ n
 
 [_] : ∀ {t} → {{convT : Conversion t}} → t → Bij

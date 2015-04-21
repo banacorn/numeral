@@ -1,6 +1,6 @@
 module Data.Num.Redundant.Properties where
 
-open import Data.Num.Nat
+open import Data.Num.Bij
 open import Data.Num.Redundant renaming (_+_ to _+R_)
 
 open import Data.Nat renaming (_<_ to _<ℕ_)
@@ -68,17 +68,20 @@ open PropEq.≡-Reasoning
 --------------------------------------------------------------------------------
 --  Sequence of Digits
 --------------------------------------------------------------------------------
-
+{-
 [x∷xs≡0⇒xs≡0] : (d : Digit) → (xs : Redundant) → [ d ∷ xs ] ≡ [ zero ∷ [] ] → [ xs ] ≡ [ zero ∷ [] ]
-[x∷xs≡0⇒xs≡0] d    []       _ = refl
-[x∷xs≡0⇒xs≡0] zero (x ∷ xs) p = no-zero-divisor 2 ([ x ] + 2 * [ xs ]) (λ ()) p
+[x∷xs≡0⇒xs≡0] d    []          _ = refl
+[x∷xs≡0⇒xs≡0] zero (zero ∷ xs) p = {! no-zero-divisor 2 (0 + 2 * [ xs ]) (λ ()) p  !}
+[x∷xs≡0⇒xs≡0] zero (one  ∷ xs) p = {!   !}
+[x∷xs≡0⇒xs≡0] zero (two  ∷ xs) p = {!   !}
+-- no-zero-divisor 2 ([ x ] + 2 * [ xs ]) (λ ()) p
 [x∷xs≡0⇒xs≡0] one  (x ∷ xs) p = contradiction p (λ ())
 [x∷xs≡0⇒xs≡0] two  (x ∷ xs) p = contradiction p (λ ())
 
-[>>xs]≡2*[xs] : (xs : Redundant) → [ >> xs ] ≡ 2 * [ xs ]
+[>>xs]≡2*[xs] : (xs : Redundant) → [ >> xs ] ≡ *2 [ xs ]
 [>>xs]≡2*[xs] xs = refl
 
-[n>>>xs]≡2^n*[xs] : (n : ℕ) → (xs : Redundant) → [ n >>> xs ] ≡ 2 ^ n * [ xs ]
+[n>>>xs]≡2^n*[xs] : (n : ℕ) → (xs : Redundant) → [ n >>> xs ] ≡ 2 ^ n *Bij [ xs ]
 [n>>>xs]≡2^n*[xs] zero    xs = sym (+-right-identity [ xs ])
 [n>>>xs]≡2^n*[xs] (suc n) xs =
     begin
@@ -95,7 +98,7 @@ open PropEq.≡-Reasoning
 >>-zero : (xs : Redundant) → xs ≈ zero ∷ [] → >> xs ≈ zero ∷ []
 >>-zero []       _           = eq refl
 >>-zero (x ∷ xs) (eq x∷xs≈0) = eq (begin
-        2 * [ x ∷ xs ]
+        *2 [ x ∷ xs ]
     ≡⟨ cong (λ w → 2 * w) x∷xs≈0 ⟩
         2 * 0
     ≡⟨ *-right-zero 2 ⟩
@@ -106,7 +109,8 @@ open PropEq.≡-Reasoning
 <<-zero : (xs : Redundant) → xs ≈ zero ∷ [] → << xs ≈ zero ∷ []
 <<-zero []       _           = eq refl
 <<-zero (x ∷ xs) (eq x∷xs≡0) = eq ([x∷xs≡0⇒xs≡0] x xs x∷xs≡0)
-
+-}
+{-
 >>>-zero : ∀ {n} (xs : Redundant) → {xs≈0 : xs ≈ zero ∷ []} → n >>> xs ≈ zero ∷ []
 >>>-zero {n} xs {eq xs≡0} = eq (
     begin
@@ -124,7 +128,7 @@ open PropEq.≡-Reasoning
 <<<-zero (suc n) [] = eq refl
 <<<-zero zero    (x ∷ xs) {x∷xs≈0}    = x∷xs≈0
 <<<-zero (suc n) (x ∷ xs) {eq x∷xs≡0} = <<<-zero n xs {eq ([x∷xs≡0⇒xs≡0] x xs x∷xs≡0)}
-
+-}
 --------------------------------------------------------------------------------
 --  Properties of the relations on Redundant
 --------------------------------------------------------------------------------
@@ -161,13 +165,13 @@ private
     ≤-trans = IsPreorder.trans ≤-isPreorder
 
 ≲-refl : _≈_ ⇒ _≲_
-≲-refl (eq [x]≡[y]) = le (≤-reflexive [x]≡[y])
+≲-refl (eq [x]≡[y]) = {!   !} -- le (≤-reflexive [x]≡[y])
 
 ≲-trans : Transitive _≲_
-≲-trans (le [a]≤[b]) (le [b]≤[c]) = le (≤-trans [a]≤[b] [b]≤[c])
+≲-trans [a]≤[b] [b]≤[c] = {!   !} -- le (≤-trans [a]≤[b] [b]≤[c])
 
 ≲-antisym : Antisymmetric _≈_ _≲_
-≲-antisym (le [x]≤[y]) (le [y]≤[x]) = eq (≤-antisym [x]≤[y] [y]≤[x])
+≲-antisym [x]≤[y] [y]≤[x] = {!   !} -- eq (≤-antisym [x]≤[y] [y]≤[x])
 
 ≲-isPreorder : IsPreorder _ _
 ≲-isPreorder = record
@@ -181,17 +185,19 @@ private
     {   isPreorder = ≲-isPreorder
     ;   antisym = ≲-antisym
     }
-
+{-
 ≲-total : Total _≲_
 ≲-total x y with ≤-total [ x ] [ y ]
-≲-total x y | inj₁ [x]≤[y] = inj₁ (le [x]≤[y])
-≲-total x y | inj₂ [y]≤[x] = inj₂ (le [y]≤[x])
+≲-total x y | inj₁ [x]≤[y] = inj₁ ? -- (le [x]≤[y])
+≲-total x y | inj₂ [y]≤[x] = inj₂ ? -- (le [y]≤[x])
 
 ≲-isTotalOrder : IsTotalOrder _ _
 ≲-isTotalOrder = record
     {   isPartialOrder = ≲-isPartialOrder
     ;   total = ≲-total
     }
+
+
 
 ≲-isDecTotalOrder : IsDecTotalOrder _ _
 ≲-isDecTotalOrder = record
@@ -207,7 +213,7 @@ private
     ;   _≤_ = _≲_
     ;   isDecTotalOrder = ≲-isDecTotalOrder
     }
-{-
+
 a≲a+1 : (a : Redundant) → a ≲ incr one a
 a≲a+1 []       = le z≤n
 a≲a+1 (x ∷ xs) = le {!   !}
