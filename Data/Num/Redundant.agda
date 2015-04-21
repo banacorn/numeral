@@ -8,7 +8,12 @@ module Data.Num.Redundant where
 
 open import Data.List using (List ; []; _∷_) public
 open import Data.Nat renaming (_+_ to _+ℕ_; _<_ to _<ℕ_)
-open import Data.Num.Nat
+open import Data.Num.Bij
+    renaming    (   _⊕_ to _⊕Bij_
+                ;   incr to incrBij
+                ;   _+_ to _+Bij_
+                ;   >>_ to >>Bij_
+                )
 
 open import Data.Empty
 open import Relation.Nullary
@@ -104,35 +109,37 @@ suc n <<< [] = []
 suc n <<< (x ∷ xs) = n <<< xs
 
 --------------------------------------------------------------------------------
--- instances of Nat, so that we can convert them to ℕ
+-- instances of Conversion, so that we can convert them to Bij
 --------------------------------------------------------------------------------
 
-instance natDigit : Nat Digit
-natDigit = nat [_]' !_!'
-    where   [_]' : Digit → ℕ
-            [ zero ]' = 0
-            [ one  ]' = 1
-            [ two  ]' = 2
-            !_!' : ℕ → Digit
-            ! 0 !' = zero
-            ! 1 !' = one
-            ! 2 !' = two
-            ! _ !' = two
+instance convDigit : Conversion Digit
+convDigit = conversion [_]' !_!'
+    where   [_]' : Digit → Bij
+            [ zero ]' =       []
+            [ one  ]' = one ∷ []
+            [ two  ]' = two ∷ []
 
-instance natRedundant : Nat Redundant
-natRedundant = nat [_]' !_!'
-    where   [_]' : Redundant → ℕ
-            [     [] ]' = 0
-            [ x ∷ xs ]' = [ x ] +ℕ 2 * [ xs ]'
-            !_!' : ℕ → Redundant
-            ! zero !' = zero ∷ []
-            ! suc x !' = incr one ! x !'
+            !_!' : Bij → Digit
+            !       [] !' = zero
+            ! one ∷ [] !' = one
+            ! two ∷ [] !' = two
+            ! _        !' = two
 
+instance convRedundant : Conversion Redundant
+convRedundant = conversion [_]' !_!'
+    where   [_]' : Redundant → Bij
+            [     [] ]' = []
+            [ x ∷ xs ]' = [ x ] +Bij >>Bij [ xs ]'
+            !_!' : Bij → Redundant
+            ! []     !' = []
+            ! one ∷ xs !' = (one ∷ []) + ! xs !'
+            ! two ∷ xs !' = (two ∷ []) + ! xs !'
+            
 --------------------------------------------------------------------------------
 --  Equivalence relation
 --------------------------------------------------------------------------------
 
-infix 4 _≈_ _≉_ _≈?_
+infix 4 _≈_ _≉_
 
 data _≈_ (a b : Redundant) : Set where
     eq : ([a]≡[b] : [ a ] ≡ [ b ]) → a ≈ b
@@ -145,17 +152,18 @@ _≉_ : (a b : Redundant) → Set
 a ≉ b = a ≈ b → ⊥
 
 -- decidable
+{-
 _≈?_ : Decidable {A = Redundant} _≈_
 a ≈? b with [ a ] ≟ [ b ]
 a ≈? b | yes p = yes (eq p)
 a ≈? b | no ¬p = no (contraposition to≡ ¬p)
-
+-}
 --------------------------------------------------------------------------------
 --  Ordering
 --------------------------------------------------------------------------------
 
+{-
 infix 4 _≲_ _≲?_ _<_
-
 data _≲_ : Rel Redundant Level.zero where
     le : ∀ {a b} ([a]≤[b] : [ a ] ≤ [ b ]) → a ≲ b
 
@@ -172,3 +180,4 @@ _≲?_ : Decidable _≲_
 a ≲? b with [ a ] ≤? [ b ]
 a ≲? b | yes p = yes (le p)
 a ≲? b | no ¬p = no (contraposition to≤ ¬p)
+-}

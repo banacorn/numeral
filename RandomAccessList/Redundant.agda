@@ -48,7 +48,6 @@ tailₙ (x , y 2∷ xs) p = y 1∷ xs
 
 tail : ∀ {A} → (xs : 0-2-RAL A 0) → ⟦ xs ⟧ ≉ zero ∷ [] → 0-2-RAL A 0
 tail xs p = tailₙ xs p
-
 --------------------------------------------------------------------------------
 --  Searching
 --------------------------------------------------------------------------------
@@ -56,7 +55,7 @@ tail xs p = tailₙ xs p
 data Finite : Redundant → Set where
     finite  : ∀ {bound}                         -- # of elements
             → (a : Redundant)                   -- inhabitant
-            → {a<bound : a < bound}             
+            → {a<bound : a < bound}
             → Finite bound
 
 elemAt : ∀ {n A} → (xs : 0-2-RAL A n) → Finite ⟦ xs ⟧ → A
@@ -65,13 +64,6 @@ elemAt {n} {A} [] (finite a {a<[]}) = contradiction a<[] {!   !}
 elemAt (0∷ xs) i = elemAt xs {!   !}
 elemAt (x     1∷ xs) i = {!   !}
 elemAt (x , y 2∷ xs) i = {!   !}
-
-
-
-
-
-
-
 
 
 {-
