@@ -51,10 +51,10 @@ a        + []       = a
 (two ∷ as) + (one ∷ bs) = one ∷ incr (as + bs)          -- carry : 1
 (two ∷ as) + (two ∷ bs) = two ∷ incr (incr (as + bs))   -- carry : 2
 
->>_ : Bij → Bij
->> [] = []
->> (one ∷ as) = two ∷ >> as
->> (two ∷ as) = two ∷ incr (>> as)
+*2_ : Bij → Bij
+*2 [] = []
+*2 (one ∷ as) = two ∷ *2 as
+*2 (two ∷ as) = two ∷ incr (*2 as)
 
 
 infix 4 _≲_
@@ -107,9 +107,13 @@ record Conversion (t : Set) : Set where
     field
         [_] : t   → Bij
         !_! : Bij → t
+        [!!]-id : ∀ n → [ ! n ! ] ≡ n
 
 [_] : ∀ {t} → {{convT : Conversion t}} → t → Bij
 [_] {{convT}} = Conversion.[ convT ]
 
 !_! : ∀ {t} → {{convT : Conversion t}} → Bij → t
 !_! {{convT}} = Conversion.! convT !
+
+[!!]-id : ∀ {t} → {{convT : Conversion t}} → (n : Bij) → [ ! n ! ] ≡ n
+[!!]-id {{convT}} = Conversion.[!!]-id convT

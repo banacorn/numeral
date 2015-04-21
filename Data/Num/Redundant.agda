@@ -12,7 +12,6 @@ open import Data.Num.Bij
     renaming    (   _⊕_ to _⊕Bij_
                 ;   incr to incrBij
                 ;   _+_ to _+Bij_
-                ;   >>_ to >>Bij_
                 )
 
 open import Data.Empty
@@ -22,6 +21,7 @@ open import Relation.Binary
 open import Relation.Binary.PropositionalEquality as PropEq
     using (_≡_; _≢_)
 import Level
+open PropEq.≡-Reasoning
 
 --------------------------------------------------------------------------------
 --  Digits
@@ -109,32 +109,27 @@ suc n <<< [] = []
 suc n <<< (x ∷ xs) = n <<< xs
 
 --------------------------------------------------------------------------------
--- instances of Conversion, so that we can convert them to Bij
+-- instances of Conversion, so that we can convert Redundant to Bij
 --------------------------------------------------------------------------------
 
-instance convDigit : Conversion Digit
-convDigit = conversion [_]' !_!'
-    where   [_]' : Digit → Bij
-            [ zero ]' =       []
-            [ one  ]' = one ∷ []
-            [ two  ]' = two ∷ []
-
-            !_!' : Bij → Digit
-            !       [] !' = zero
-            ! one ∷ [] !' = one
-            ! two ∷ [] !' = two
-            ! _        !' = two
-
 instance convRedundant : Conversion Redundant
-convRedundant = conversion [_]' !_!'
+convRedundant = conversion [_]' !_!' [!!]-id'
     where   [_]' : Redundant → Bij
             [     [] ]' = []
-            [ x ∷ xs ]' = [ x ] +Bij >>Bij [ xs ]'
+            [ zero ∷ xs ]' =    *2 [ xs ]'
+            [ one  ∷ xs ]' = one ∷ [ xs ]'
+            [ two  ∷ xs ]' = two ∷ [ xs ]'
+
             !_!' : Bij → Redundant
             ! []     !' = []
-            ! one ∷ xs !' = (one ∷ []) + ! xs !'
-            ! two ∷ xs !' = (two ∷ []) + ! xs !'
-            
+            ! one ∷ xs !' = one ∷ ! xs !'
+            ! two ∷ xs !' = two ∷ ! xs !'
+
+            [!!]-id' : ∀ xs → [ ! xs !' ]' ≡ xs
+            [!!]-id' [] = PropEq.refl
+            [!!]-id' (one ∷ xs) = PropEq.cong (λ x → one ∷ x) ([!!]-id' xs)
+            [!!]-id' (two ∷ xs) = PropEq.cong (λ x → two ∷ x) ([!!]-id' xs)
+
 --------------------------------------------------------------------------------
 --  Equivalence relation
 --------------------------------------------------------------------------------
