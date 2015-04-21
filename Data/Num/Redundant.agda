@@ -108,17 +108,25 @@ suc n <<< (x ∷ xs) = n <<< xs
 --------------------------------------------------------------------------------
 
 instance natDigit : Nat Digit
-natDigit = nat [_]'
+natDigit = nat [_]' !_!'
     where   [_]' : Digit → ℕ
             [ zero ]' = 0
             [ one  ]' = 1
             [ two  ]' = 2
+            !_!' : ℕ → Digit
+            ! 0 !' = zero
+            ! 1 !' = one
+            ! 2 !' = two
+            ! _ !' = two
 
 instance natRedundant : Nat Redundant
-natRedundant = nat [_]'
+natRedundant = nat [_]' !_!'
     where   [_]' : Redundant → ℕ
             [     [] ]' = 0
             [ x ∷ xs ]' = [ x ] +ℕ 2 * [ xs ]'
+            !_!' : ℕ → Redundant
+            ! zero !' = zero ∷ []
+            ! suc x !' = incr one ! x !'
 
 --------------------------------------------------------------------------------
 --  Equivalence relation

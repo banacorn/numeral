@@ -10,6 +10,10 @@ record Nat (t : Set) : Set where
     constructor nat
     field
         [_] : t → ℕ
+        !_! : ℕ → t
 
 [_] : ∀ {t} → {{natT : Nat t}} → t → ℕ
 [_] {{natT}} = Nat.[ natT ]
+
+!_! : ∀ {t} → {{natT : Nat t}} → ℕ → t
+!_! {{natT}} = Nat.! natT !
