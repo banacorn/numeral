@@ -35,22 +35,22 @@ incrB (two ∷ a) = one ∷ incrB a
 _+B_ : Bij → Bij → Bij
 []         +B b        = b
 a          +B []       = a
-(one ∷ as) +B (one ∷ bs) = two ∷ as +B bs                 -- carry : none
-(one ∷ as) +B (two ∷ bs) = one ∷ incrB (as +B bs)          -- carry : 1
-(two ∷ as) +B (one ∷ bs) = one ∷ incrB (as +B bs)          -- carry : 1
-(two ∷ as) +B (two ∷ bs) = two ∷ incrB (incrB (as +B bs))   -- carry : 2
-
--- multiplication
-_*B_ : Bij → Bij → Bij
-[]         *B b = []
-(one ∷ as) *B b =      b +B as *B b
-(two ∷ as) *B b = b +B b +B as *B b
+(one ∷ as) +B (one ∷ bs) = two ∷ as +B bs
+(one ∷ as) +B (two ∷ bs) = one ∷ incrB (as +B bs)
+(two ∷ as) +B (one ∷ bs) = one ∷ incrB (as +B bs)
+(two ∷ as) +B (two ∷ bs) = two ∷ incrB (as +B bs)
 
 -- arithmetic shift
 *2_ : Bij → Bij
 *2 []         = []
 *2 (one ∷ as) = two ∷ *2 as
 *2 (two ∷ as) = two ∷ incrB (*2 as)
+
+-- multiplication
+_*B_ : Bij → Bij → Bij
+[]         *B b = []
+(one ∷ as) *B b =      b +B (*2 (as *B b))
+(two ∷ as) *B b = b +B b +B (*2 (as *B b))
 
 --------------------------------------------------------------------------------
 -- Ordering
