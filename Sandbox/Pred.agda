@@ -1,4 +1,4 @@
-module Pred where
+module Sandbox.Pred where
 
 open import Data.Nat
 open import Data.Fin hiding (_+_)
