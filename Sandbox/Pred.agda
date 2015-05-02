@@ -3,7 +3,7 @@ module Sandbox.Pred where
 open import Data.Nat
 open import Data.Fin hiding (_+_)
 open import Data.Vec
-open import Data.Product
+open import Data.Product hiding (map)
 open import Relation.Binary.PropositionalEquality
 
 data Term : ℕ → Set where
@@ -58,3 +58,31 @@ Sig = Σ[ A ∈ Set ] ((A → A → A) × (A → A → Set))
 {- Goal: to show that
    ∀ p → ⟦ p ⟧ (ℕ , _≡_) [] → ⟦ p ⟧ (Redundant , _≈_) []
 -}
+
+postulate
+  ℕ' : Set
+  _⊕_ : ℕ' → ℕ' → ℕ'
+  _≈_ : ℕ' → ℕ' → Set
+  [_]' : ℕ' → ℕ
+
+   -- naturality of lookup.
+   
+  lookup-map : ∀ {i j} → {A : Set i} {B : Set j}
+               → (f : A → B) →
+               ∀ {n} → (xs : Vec A n) (i : Fin n)
+               → lookup i (map f xs) ≡ f (lookup i xs)
+
+  ⊕-+-hom : ∀ (x y : ℕ') → [ x ⊕ y ]' ≡ [ x ]' + [ y ]'
+
+homTerm : ∀ {n} (t : Term n) (env : Vec ℕ' n)
+          →  ⟦ t ⟧t (ℕ , _+_ , _≡_) (map [_]' env) ≡ [ ⟦ t ⟧t (ℕ' , _⊕_ , _≈_) env ]'
+homTerm (var x) env = lookup-map [_]' env x
+homTerm (t₀ ∔ t₁) env rewrite homTerm t₀ env | homTerm t₁ env = sym (⊕-+-hom _ _)
+
+
+hom : ∀ {n} (p : Pred n) (env : Vec ℕ' n)
+      → ⟦ p ⟧ (ℕ , _+_ , _≡_) (map [_]' env) → ⟦ p ⟧ (ℕ' , _⊕_ , _≈_) env
+hom (x₀ ≋ x₁) env pf = {!!}
+hom (p₀ ⇒ p₁) env pf = {!!}
+hom (All p) env pf = {!!}
+
