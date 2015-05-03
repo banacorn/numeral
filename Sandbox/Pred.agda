@@ -60,10 +60,16 @@ Sig = Σ[ A ∈ Set ] ((A → A → A) × (A → A → Set))
 -}
 
 postulate
-  ℕ' : Set
-  _⊕_ : ℕ' → ℕ' → ℕ'
-  _≈_ : ℕ' → ℕ' → Set
-  [_]' : ℕ' → ℕ
+  ℕ₀ : Set
+  _⊕₀_ : ℕ₀ → ℕ₀ → ℕ₀
+  _≈₀_ : ℕ₀ → ℕ₀ → Set
+  
+  ℕ₁ : Set
+  _⊕₁_ : ℕ₁ → ℕ₁ → ℕ₁
+  _≈₁_ : ℕ₁ → ℕ₁ → Set
+
+  [_]₀₁ : ℕ₀ → ℕ₁
+  [_]₁₀ : ℕ₁ → ℕ₀
 
    -- naturality of lookup.
    
@@ -72,17 +78,33 @@ postulate
                ∀ {n} → (xs : Vec A n) (i : Fin n)
                → lookup i (map f xs) ≡ f (lookup i xs)
 
-  ⊕-+-hom : ∀ (x y : ℕ') → [ x ⊕ y ]' ≡ [ x ]' + [ y ]'
+  ⊕-hom : ∀ (x y : ℕ₁) → [ x ⊕₁ y ]₁₀ ≡ [ x ]₁₀ ⊕₀ [ y ]₁₀
 
-homTerm : ∀ {n} (t : Term n) (env : Vec ℕ' n)
-          →  ⟦ t ⟧t (ℕ , _+_ , _≡_) (map [_]' env) ≡ [ ⟦ t ⟧t (ℕ' , _⊕_ , _≈_) env ]'
-homTerm (var x) env = lookup-map [_]' env x
-homTerm (t₀ ∔ t₁) env rewrite homTerm t₀ env | homTerm t₁ env = sym (⊕-+-hom _ _)
+  ≈-hom₀₁ : ∀ {x y : ℕ₁} → [ x ]₁₀ ≈₀ [ y ]₁₀ → x ≈₁ y
+  ≈-hom₁₀ : ∀ {x y : ℕ₁} →  x ≈₁ y → [ x ]₁₀ ≈₀ [ y ]₁₀
+
+  []₁₀-surjective : ∀ (x : ℕ₀) → ∃ (λ y → [ y ]₁₀ ≡ x)
+
+homTerm : ∀ {n} (t : Term n) (env : Vec ℕ₁ n)
+          →  ⟦ t ⟧t (ℕ₀ , _⊕₀_ , _≈₀_) (map [_]₁₀ env) ≡ [ ⟦ t ⟧t (ℕ₁ , _⊕₁_ , _≈₁_) env ]₁₀
+homTerm (var x) env = lookup-map [_]₁₀ env x
+homTerm (t₀ ∔ t₁) env rewrite homTerm t₀ env | homTerm t₁ env = sym (⊕-hom _ _)
 
 
-hom : ∀ {n} (p : Pred n) (env : Vec ℕ' n)
-      → ⟦ p ⟧ (ℕ , _+_ , _≡_) (map [_]' env) → ⟦ p ⟧ (ℕ' , _⊕_ , _≈_) env
-hom (x₀ ≋ x₁) env pf = {!!}
-hom (p₀ ⇒ p₁) env pf = {!!}
-hom (All p) env pf = {!!}
+mutual
+  hom₀₁ : ∀ {n} (p : Pred n) (env : Vec ℕ₁ n)
+        → ⟦ p ⟧ (ℕ₀ , _⊕₀_ , _≈₀_) (map [_]₁₀ env) → ⟦ p ⟧ (ℕ₁ , _⊕₁_ , _≈₁_) env
+  hom₀₁ (t₀ ≋ t₁) env pf rewrite homTerm t₀ env | homTerm t₁ env = ≈-hom₀₁ pf
+  hom₀₁ (p₀ ⇒ p₁) env pf pf₀ = hom₀₁ p₁ env (pf (hom₁₀ p₀ env pf₀))
+  hom₀₁ (All p) env pf x = hom₀₁ p (x ∷ env) (pf [ x ]₁₀)
 
+  hom₁₀ : ∀ {n} (p : Pred n) (env : Vec ℕ₁ n)
+         →  ⟦ p ⟧ (ℕ₁ , _⊕₁_ , _≈₁_) env → ⟦ p ⟧ (ℕ₀ , _⊕₀_ , _≈₀_) (map [_]₁₀ env)
+  hom₁₀ (t₀ ≋ t₁) env pf rewrite homTerm t₀ env | homTerm t₁ env = ≈-hom₁₀ pf
+  hom₁₀ (p₀ ⇒ p₁) env pf pf₀ = hom₁₀ p₁ env (pf (hom₀₁ p₀ env pf₀))
+  hom₁₀ (All p) env pf x = aux p env pf x
+    where aux : ∀ {n} → (p : Pred (suc n)) → (env : Vec ℕ₁ n)
+                 → (pf : ∀ y → ⟦ p ⟧ (ℕ₁ , _⊕₁_ , _≈₁_) (y ∷ env)) → (x : ℕ₀)
+                 →  ⟦ p ⟧ (ℕ₀ , _⊕₀_ , _≈₀_) (x ∷ map [_]₁₀ env)
+          aux p env pf x  with []₁₀-surjective x
+          aux p env pf ._ | (y , refl) = hom₁₀ p (y ∷ env) (pf y)
