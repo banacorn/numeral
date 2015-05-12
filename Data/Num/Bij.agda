@@ -2,7 +2,6 @@ module Data.Num.Bij where
 
 open import Data.List hiding ([_])
 open import Relation.Binary
-
 open import Relation.Binary.PropositionalEquality as PropEq
     using (_≡_; _≢_)
 import Level
@@ -106,7 +105,7 @@ record Conversion (t : Set) : Set where
         -- split morphism
         -- !_! is a section of [_]
         -- [_] is a retraction of !_!
-        [!!]-id : ∀ n → [ ! n ! ] ≡ n
+        -- [!!]-id : ∀ n → [ ! n ! ] ≡ n
 
 [_] : ∀ {t} → {{convT : Conversion t}} → t → Bij
 [_] {{convT}} = Conversion.[ convT ]
@@ -114,5 +113,10 @@ record Conversion (t : Set) : Set where
 !_! : ∀ {t} → {{convT : Conversion t}} → Bij → t
 !_! {{convT}} = Conversion.! convT !
 
-[!!]-id : ∀ {t} → {{convT : Conversion t}} → (n : Bij) → [ ! n ! ] ≡ n
-[!!]-id {{convT}} = Conversion.[!!]-id convT
+--[!!]-id : ∀ {t} → {{convT : Conversion t}} → (n : Bij) → [ ! n ! ] ≡ n
+--[!!]-id {{convT}} = Conversion.[!!]-id convT
+
+
+-- alias, more meaningful than the forgettable [_] and !_! (replace them some day)
+toBij = [_]
+fromBij = !_!

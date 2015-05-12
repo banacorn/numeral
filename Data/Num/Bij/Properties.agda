@@ -22,6 +22,7 @@ split-∷ one (two ∷ ns) = cong (λ x → one ∷ incrB x) (1∷≡incrB∘*2 
 split-∷ two (one ∷ ns) = cong (λ x → two ∷ x)       (1∷≡incrB∘*2 ns)
 split-∷ two (two ∷ ns) = cong (λ x → two ∷ incrB x) (1∷≡incrB∘*2 ns)
 
+{-
 +B-assoc : ∀ m n o → (m + n) + o ≡ m + (n + o)
 +B-assoc []       _ _ = refl
 +B-assoc (m ∷ ms) n o =
@@ -40,7 +41,6 @@ split-∷ two (two ∷ ns) = cong (λ x → two ∷ incrB x) (1∷≡incrB∘*2 
     ≡⟨ cong (λ x → x + (n + o)) (sym (split-∷ m ms)) ⟩
         (m ∷ ms) + (n + o)
     ∎
-
 +B-right-identity : ∀ n → n + [] ≡ n
 +B-right-identity []       = refl
 +B-right-identity (n ∷ ns) = refl
@@ -194,4 +194,5 @@ split-∷ two (two ∷ ns) = cong (λ x → two ∷ incrB x) (1∷≡incrB∘*2 
     ≡⟨ {!   !} ⟩
         {!   !}
     ∎
+-}
 -}
