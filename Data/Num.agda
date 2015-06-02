@@ -1,19 +1,19 @@
 module Data.Num where
 
-open import Data.List using (List; []; _∷_; foldr)
+open import Data.List using (List; []; _∷_)
 open import Data.Nat as Nat using (ℕ; zero; suc; pred; s≤s; z≤n; ≤-pred; decTotalOrder; _≟_
     ;   compare
     )
-    renaming (_+_ to _N+_; _∸_ to _N-_;
+    renaming (_+_ to _N+_;
               _*_ to _N*_;
               _<_ to _N<_; _≤_ to _N≤_; _≤?_ to _N≤?_; _>_ to _N>_)
 open Nat.≤-Reasoning
 
 open import Data.Nat.DivMod
-open import Data.Nat.Properties using (m≤m+n; _+-mono_)
-open import Data.Nat.Properties.Simple using (+-right-identity; +-suc; +-assoc; +-comm)
+open import Data.Nat.Properties using (m≤m+n; n≤m+n;_+-mono_)
+open import Data.Nat.Properties.Simple using (+-right-identity; +-suc; +-assoc)
 open import Data.Fin.Properties using (bounded)
-open import Data.Fin using (Fin; inject₁; fromℕ≤)
+open import Data.Fin using (Fin; fromℕ≤)
     renaming (toℕ to Fin⇒ℕ; fromℕ to ℕ⇒Fin; zero to Fz; suc to Fs)
 open import Data.Product
 
@@ -65,15 +65,6 @@ Digit⇒ℕ {m = m} (Dn x) = m N+ Fin⇒ℕ x
 ≤-total     = IsTotalOrder.total ℕ-isTotalOrder
 
 
-
---
--- let remainder = sum `mod` base
---     suc Q     = n `div` base
--- in
---    if sum < n
---        then    sum
---        else    base * Q + remainder
-
 private
 
     -- some boring lemmas
@@ -116,52 +107,74 @@ private
     D+sum : ∀ {n} (m : ℕ) → (x y : Fin n) → ℕ
     D+sum m x y = m N+ (Fin⇒ℕ x) N+ (Fin⇒ℕ y)
 
+--  if x D+ y overflown
+--  let x D+ y be the largest digit that is congruent modulo b
+--  for example, redundant binary number (b = 2, m = 0, n = 3)
+--      1 + 2 ≡ 1 mod b
+--      2 + 2 ≡ 2 mod b
+--
+--  Algorithm:
+--  let sum      = x + y
+--      sum%base = sum `mod` base
+--      n%base   = n `mod` base
+--      suc Q    = n `div` base
+--  in
+--      | sum < n = sum
+--      | sum ≥ n, sum%base ≡ 0, n%base ≢ 0 = suc Q * base
+--      | sum ≥ n = Q * base + sum%base
+
 _D+_ : ∀ {b m n} → Digit b m n → Digit b m n → Digit b m n
 _D+_ {zero}                ()     ()
 _D+_ {suc zero}            x      _      = x
-_D+_ {suc (suc b)} {m} {n} (Dn x) (Dn y) with suc (D+sum m x y) N≤? n -- see if: sum < n
+_D+_ {suc (suc b)} {m} {n} (Dn x) (Dn y) with suc (D+sum m x y) N≤? n
 _D+_ {suc (suc b)} {m} {n} (Dn x) (Dn y {b≤n} {bm≤n}) | yes p =
     Dn (fromℕ≤ {D+sum m x y} p) {b≤n} {bm≤n} -- just return the sum
-_D+_ {suc (suc b)} {m} {n} (Dn x) (Dn y {b≤n}) | no ¬p with n divMod (suc (suc b)) | inspect (λ x → _divMod_ n (suc (suc b)) {≢0 = x}) tt -- (D+sum m x y) divMod (suc (suc b))
-_D+_ {suc (suc b)} {m} {n} (Dn x) (Dn y {b≤n}) | no ¬p | result zero remainder prop | PropEq.[ eq ] =
-    -- prop   : n ≡ remainder + 0
-    -- prop'  : n ≤ remainder
-    -- lem₃   : n > remainder
+_D+_ {suc (suc b)} {m} {n} (Dn x) (Dn y) | no ¬p with n divMod (suc (suc b)) | inspect (λ w → _divMod_ n (suc (suc b)) {≢0 = w}) tt
+_D+_ {suc (suc b)} {m} {n} (Dn x) (Dn y {b≤n} {bm≤n}) | no ¬p | result zero n%base prop | PropEq.[ eq ] =
+    -- prop   : n ≡ n%base + 0
+    -- prop'  : n ≤ n%base
+    -- lem₃   : n > n%base
     let base = suc (suc b)
         prop' =
             begin
                 n
-            ≡⟨ trans prop (+-right-identity (Fin⇒ℕ remainder)) ⟩
-                Fin⇒ℕ remainder
+            ≡⟨ prop ⟩
+                Fin⇒ℕ n%base N+ 0
+            ≡⟨ +-right-identity (Fin⇒ℕ n%base) ⟩
+                Fin⇒ℕ n%base
             ≡⟨ cong (λ w → Fin⇒ℕ (DivMod.remainder w)) (sym eq) ⟩
                 Fin⇒ℕ (DivMod.remainder (n divMod suc (suc b)))
             ∎
         ¬lem₃ = >-complement (lem₃ n base b≤n)
     in  contradiction prop' ¬lem₃
-_D+_ {suc (suc b)} {m} {n} (Dn x) (Dn y {b≤n} {bm≤n}) | no ¬p | result (suc Q) n%base n-base-prop | PropEq.[ eq ] =
+_D+_ {suc (suc b)} {m} {n} (Dn x) (Dn y {b≤n} {bm≤n}) | no ¬p | result (suc Q) n%base prop | PropEq.[ eq ] with D+sum m x y divMod (suc (suc b)) | inspect (λ w → _divMod_ (D+sum m x y) (suc (suc b)) {≢0 = w}) tt
+_D+_ {suc (suc b)} {m} {n} (Dn x) (Dn y {b≤n} {bm≤n}) | no ¬p | result (suc Q) (Fs n%base) prop | PropEq.[ eq ] | result _ Fz _ | PropEq.[ eq₁ ] =
+    -- the case when n%base ≢ 0 and sum%base ≡ 0
     let base = suc (suc b)
-        sum = D+sum m x y
-        result _ sum%base _ = _divMod_ sum base {tt}
-        sum' = Fin⇒ℕ sum%base N+ Q N* base
-        sum'≤n = begin
+        sum = suc Q N* base
+        sum<n = begin
+                suc sum
+            ≤⟨ s≤s (n≤m+n (Fin⇒ℕ n%base) sum) ⟩
+                suc (Fin⇒ℕ n%base N+ sum)
+            ≡⟨ sym prop ⟩
+                n
+            ∎
+    in  Dn (fromℕ≤ {sum} sum<n) {b≤n} {bm≤n}
+_D+_ {suc (suc b)} {m} {n} (Dn x) (Dn y {b≤n} {bm≤n}) | no ¬p | result (suc Q) n%base prop | PropEq.[ eq ] | result _ sum%base property | PropEq.[ eq₁ ] =
+    let base = suc (suc b)
+        sum = Fin⇒ℕ sum%base N+ Q N* base
+        sum<n = begin
                 suc (Fin⇒ℕ sum%base N+ Q N* base)
-            ≡⟨ sym (+-suc (Fin⇒ℕ sum%base) (Q N* base)) ⟩
-                Fin⇒ℕ sum%base N+ (1 N+ (Q N* base))
-            ≡⟨ sym (+-assoc (Fin⇒ℕ sum%base) 1 (Q N* base)) ⟩
-                (Fin⇒ℕ sum%base N+ 1) N+ Q N* base
-            ≡⟨ cong (λ w → w N+ Q N* base) (+-comm (Fin⇒ℕ sum%base) 1) ⟩
+            ≡⟨ sym (+-assoc 1 (Fin⇒ℕ sum%base) (Q N* base)) ⟩
                 suc (Fin⇒ℕ sum%base) N+ Q N* base
             ≤⟨ bounded sum%base +-mono ≤-refl refl ⟩
                 base N+ Q N* base
-            ≤⟨ m≤m+n (base N+ Q N* base) (Fin⇒ℕ n%base) ⟩
-                base N+ Q N* base N+ Fin⇒ℕ n%base
-            ≡⟨ +-comm (base N+ Q N* base) (Fin⇒ℕ n%base) ⟩
-                Fin⇒ℕ n%base N+ (suc Q) N* base
-            ≡⟨ sym n-base-prop ⟩
+            ≤⟨ n≤m+n (Fin⇒ℕ n%base) (base N+ Q N* base) ⟩
+                Fin⇒ℕ n%base N+ (base N+ Q N* base)
+            ≡⟨ sym prop ⟩
                 n
             ∎
-    in Dn (fromℕ≤ {sum'} sum'≤n) {b≤n} {bm≤n}
-
+    in  Dn (fromℕ≤ {sum} sum<n) {b≤n} {bm≤n}
 
 {-
     begin
@@ -176,6 +189,10 @@ _D+_ {suc (suc b)} {m} {n} (Dn x) (Dn y {b≤n} {bm≤n}) | no ¬p | result (suc
         {!   !}
     ≤⟨ {!    !} ⟩
         {!    !}
+    ≤⟨ {!    !} ⟩
+        {!   !}
+    ≤⟨ {!    !} ⟩
+        {!   !}
     ≤⟨ {!    !} ⟩
         {!   !}
     ∎
