@@ -1,13 +1,8 @@
 module Data.Num where
 
 open import Data.List using (List; []; _∷_)
-open import Data.Nat as Nat using (ℕ; zero; suc; pred; s≤s; z≤n; ≤-pred; decTotalOrder; _≟_
-    ;   compare
-    )
-    renaming (_+_ to _N+_;
-              _*_ to _N*_;
-              _<_ to _N<_; _≤_ to _N≤_; _≤?_ to _N≤?_; _>_ to _N>_)
-open Nat.≤-Reasoning
+open import Data.Nat
+open ≤-Reasoning
 
 open import Data.Nat.DivMod
 open import Data.Nat.Properties using (m≤m+n; n≤m+n;_+-mono_)
@@ -43,17 +38,17 @@ open import Relation.Binary.PropositionalEquality as PropEq
 data Digit : (base from range : ℕ) → Set where
     D1 : ∀ {  m n}
          → Fin n
-         → {m≤n : m N≤ n}
+         → {m≤n : m ≤ n}
          → Digit 1 m n
     Dn : ∀ {b m n}
          → Fin n
          → let base = suc (suc b) in
-           {b≤n : base N≤ n} → {bm≤n : (base N* m) N≤ n}
+           {b≤n : base ≤ n} → {bm≤n : (base * m) ≤ n}
          → Digit base m n
 
 Digit⇒ℕ : ∀ {b m n} → Digit b m n → ℕ
-Digit⇒ℕ {m = m} (D1 x) = m N+ Fin⇒ℕ x
-Digit⇒ℕ {m = m} (Dn x) = m N+ Fin⇒ℕ x
+Digit⇒ℕ {m = m} (D1 x) = m + Fin⇒ℕ x
+Digit⇒ℕ {m = m} (Dn x) = m + Fin⇒ℕ x
 
 -- alias
 ℕ-isDecTotalOrder   = DecTotalOrder.isDecTotalOrder decTotalOrder
@@ -69,24 +64,24 @@ private
 
     -- some boring lemmas
 
-    >-complement : ∀ {a b} → a N> b → ¬ (a N≤ b)
+    >-complement : ∀ {a b} → a > b → ¬ (a ≤ b)
     >-complement {zero}  ()
     >-complement {suc a} {zero} a>b ()
     >-complement {suc a} {suc b} (s≤s a>b) = contraposition >-complement (λ z → z a>b)
 
-    lem₁ : ∀ m k → suc (m N+ k) N> m
+    lem₁ : ∀ m k → suc (m + k) > m
     lem₁ zero k = s≤s z≤n
     lem₁ (suc m) k = s≤s (lem₁ m k)
 
-    lem₂ : ∀ m n → n N≤ m → {≢0 : False (n ≟ 0)} → 0 N< (_div_ m n {≢0})
+    lem₂ : ∀ m n → n ≤ m → {≢0 : False (n ≟ 0)} → 0 < (_div_ m n {≢0})
     lem₂ m       zero    n≤m {()}
     lem₂ zero    (suc n) ()
     lem₂ (suc m) (suc n) n≤m {≢0} with compare m n
-    lem₂ (suc m) (suc .(suc (m N+ k))) (s≤s n≤m) {tt} | Nat.less .m k    = contradiction n≤m (>-complement (lem₁ m k))
-    lem₂ (suc m) (suc .m)              n≤m            | Nat.equal .m     = s≤s z≤n
-    lem₂ (suc .(suc (n N+ k))) (suc n) n≤m            | Nat.greater .n k = s≤s z≤n
+    lem₂ (suc m) (suc .(suc (m + k))) (s≤s n≤m) {tt} | less .m k    = contradiction n≤m (>-complement (lem₁ m k))
+    lem₂ (suc m) (suc .m)              n≤m           | equal .m     = s≤s z≤n
+    lem₂ (suc .(suc (n + k))) (suc n) n≤m            | greater .n k = s≤s z≤n
 
-    lem₃ : ∀ m n → n N≤ m → {≢0 : False (n ≟ 0)} → m N> Fin⇒ℕ (_mod_ m n {≢0})
+    lem₃ : ∀ m n → n ≤ m → {≢0 : False (n ≟ 0)} → m > Fin⇒ℕ (_mod_ m n {≢0})
     lem₃ m       zero    n≤m {()}
     lem₃ zero    (suc n) ()
     lem₃ (suc m) (suc n) n≤m {≢0} with _divMod_ (suc m) (suc n) {≢0} | inspect (λ x → _divMod_ (suc m) (suc n) {≢0 = x}) ≢0
@@ -95,17 +90,17 @@ private
     lem₃ (suc m) (suc n) n≤m {tt} | result (suc quotient) remainder property | w =
         begin
             suc (Fin⇒ℕ remainder)
-        ≤⟨ s≤s (m≤m+n (Fin⇒ℕ remainder) (n N+ quotient N* suc n)) ⟩
-            suc (Fin⇒ℕ remainder N+ (n N+ quotient N* suc n))
-        ≡⟨ sym (+-suc (Fin⇒ℕ remainder) (n N+ quotient N* suc n)) ⟩
-            Fin⇒ℕ remainder N+ suc (n N+ quotient N* suc n)
+        ≤⟨ s≤s (m≤m+n (Fin⇒ℕ remainder) (n + quotient * suc n)) ⟩
+            suc (Fin⇒ℕ remainder + (n + quotient * suc n))
+        ≡⟨ sym (+-suc (Fin⇒ℕ remainder) (n + quotient * suc n)) ⟩
+            Fin⇒ℕ remainder + suc (n + quotient * suc n)
         ≡⟨ sym property ⟩
             suc m
         ∎
     -- helper function for adding two 'Fin n' with offset 'm'
     -- (m + x) + (m + y) - m = m + x + y
     D+sum : ∀ {n} (m : ℕ) → (x y : Fin n) → ℕ
-    D+sum m x y = m N+ (Fin⇒ℕ x) N+ (Fin⇒ℕ y)
+    D+sum m x y = m + (Fin⇒ℕ x) + (Fin⇒ℕ y)
 
 --  if x D+ y overflown
 --  let x D+ y be the largest digit that is congruent modulo b
@@ -126,7 +121,7 @@ private
 _D+_ : ∀ {b m n} → Digit b m n → Digit b m n → Digit b m n
 _D+_ {zero}                ()     ()
 _D+_ {suc zero}            x      _      = x
-_D+_ {suc (suc b)} {m} {n} (Dn x) (Dn y) with suc (D+sum m x y) N≤? n
+_D+_ {suc (suc b)} {m} {n} (Dn x) (Dn y) with suc (D+sum m x y) ≤? n
 _D+_ {suc (suc b)} {m} {n} (Dn x) (Dn y {b≤n} {bm≤n}) | yes p =
     Dn (fromℕ≤ {D+sum m x y} p) {b≤n} {bm≤n} -- just return the sum
 _D+_ {suc (suc b)} {m} {n} (Dn x) (Dn y) | no ¬p with n divMod (suc (suc b)) | inspect (λ w → _divMod_ n (suc (suc b)) {≢0 = w}) tt
@@ -139,7 +134,7 @@ _D+_ {suc (suc b)} {m} {n} (Dn x) (Dn y {b≤n} {bm≤n}) | no ¬p | result zero
             begin
                 n
             ≡⟨ prop ⟩
-                Fin⇒ℕ n%base N+ 0
+                Fin⇒ℕ n%base + 0
             ≡⟨ +-right-identity (Fin⇒ℕ n%base) ⟩
                 Fin⇒ℕ n%base
             ≡⟨ cong (λ w → Fin⇒ℕ (DivMod.remainder w)) (sym eq) ⟩
@@ -151,26 +146,26 @@ _D+_ {suc (suc b)} {m} {n} (Dn x) (Dn y {b≤n} {bm≤n}) | no ¬p | result (suc
 _D+_ {suc (suc b)} {m} {n} (Dn x) (Dn y {b≤n} {bm≤n}) | no ¬p | result (suc Q) (Fs n%base) prop | PropEq.[ eq ] | result _ Fz _ | PropEq.[ eq₁ ] =
     -- the case when n%base ≢ 0 and sum%base ≡ 0
     let base = suc (suc b)
-        sum = suc Q N* base
+        sum = suc Q * base
         sum<n = begin
                 suc sum
             ≤⟨ s≤s (n≤m+n (Fin⇒ℕ n%base) sum) ⟩
-                suc (Fin⇒ℕ n%base N+ sum)
+                suc (Fin⇒ℕ n%base + sum)
             ≡⟨ sym prop ⟩
                 n
             ∎
     in  Dn (fromℕ≤ {sum} sum<n) {b≤n} {bm≤n}
 _D+_ {suc (suc b)} {m} {n} (Dn x) (Dn y {b≤n} {bm≤n}) | no ¬p | result (suc Q) n%base prop | PropEq.[ eq ] | result _ sum%base property | PropEq.[ eq₁ ] =
     let base = suc (suc b)
-        sum = Fin⇒ℕ sum%base N+ Q N* base
+        sum = Fin⇒ℕ sum%base + Q * base
         sum<n = begin
-                suc (Fin⇒ℕ sum%base N+ Q N* base)
-            ≡⟨ sym (+-assoc 1 (Fin⇒ℕ sum%base) (Q N* base)) ⟩
-                suc (Fin⇒ℕ sum%base) N+ Q N* base
+                suc (Fin⇒ℕ sum%base + Q * base)
+            ≡⟨ sym (+-assoc 1 (Fin⇒ℕ sum%base) (Q * base)) ⟩
+                suc (Fin⇒ℕ sum%base) + Q * base
             ≤⟨ bounded sum%base +-mono ≤-refl refl ⟩
-                base N+ Q N* base
-            ≤⟨ n≤m+n (Fin⇒ℕ n%base) (base N+ Q N* base) ⟩
-                Fin⇒ℕ n%base N+ (base N+ Q N* base)
+                base + Q * base
+            ≤⟨ n≤m+n (Fin⇒ℕ n%base) (base + Q * base) ⟩
+                Fin⇒ℕ n%base + (base + Q * base)
             ≡⟨ sym prop ⟩
                 n
             ∎
