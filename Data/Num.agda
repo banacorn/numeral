@@ -1,6 +1,6 @@
 module Data.Num where
 
-open import Data.List using (List; []; _∷_)
+open import Data.List using (List; []; _∷_; foldr)
 open import Data.Nat
 open ≤-Reasoning
 
@@ -8,9 +8,10 @@ open import Data.Nat.DivMod
 open import Data.Nat.Properties using (m≤m+n; n≤m+n;_+-mono_)
 open import Data.Nat.Properties.Simple using (+-right-identity; +-suc; +-assoc)
 open import Data.Fin.Properties using (bounded)
-open import Data.Fin using (Fin; fromℕ≤)
+open import Data.Fin using (Fin; fromℕ≤; inject≤)
     renaming (toℕ to Fin⇒ℕ; fromℕ to ℕ⇒Fin; zero to Fz; suc to Fs)
 open import Data.Product
+open import Data.Maybe
 
 open import Function
 open import Data.Unit using (tt)
@@ -38,7 +39,7 @@ open import Relation.Binary.PropositionalEquality as PropEq
 data Digit : (base from range : ℕ) → Set where
     D1 : ∀ {  m n}
          → Fin n
-         → {m≤n : m ≤ n}
+         → {m≤n : m ≤ n} → {1≤m : m ≤ 1}
          → Digit 1 m n
     Dn : ∀ {b m n}
          → Fin n
@@ -46,21 +47,26 @@ data Digit : (base from range : ℕ) → Set where
            {b≤n : base ≤ n} → {bm≤n : (base * m) ≤ n}
          → Digit base m n
 
-Digit⇒ℕ : ∀ {b m n} → Digit b m n → ℕ
-Digit⇒ℕ {m = m} (D1 x) = m + Fin⇒ℕ x
-Digit⇒ℕ {m = m} (Dn x) = m + Fin⇒ℕ x
+-- without offset, {0 .. n-1}
+D→F : ∀ {b m n} → Digit b m n → Fin n
+D→F (D1 x) = x
+D→F (Dn x) = x
 
--- alias
-ℕ-isDecTotalOrder   = DecTotalOrder.isDecTotalOrder decTotalOrder
-ℕ-isTotalOrder      = IsDecTotalOrder.isTotalOrder ℕ-isDecTotalOrder
-ℕ-isPartialOrder    = IsTotalOrder.isPartialOrder ℕ-isTotalOrder
-ℕ-isPreorder        = IsPartialOrder.isPreorder ℕ-isPartialOrder
-≤-refl      = IsPreorder.reflexive ℕ-isPreorder
-≤-antisym   = IsPartialOrder.antisym ℕ-isPartialOrder
-≤-total     = IsTotalOrder.total ℕ-isTotalOrder
-
+-- with offset, {m .. m+n-1}
+D→N : ∀ {b m n} → Digit b m n → ℕ
+D→N {m = m} d = m + Fin⇒ℕ (D→F d)
 
 private
+
+    -- alias
+    ℕ-isDecTotalOrder   = DecTotalOrder.isDecTotalOrder decTotalOrder
+    ℕ-isTotalOrder      = IsDecTotalOrder.isTotalOrder ℕ-isDecTotalOrder
+    ℕ-isPartialOrder    = IsTotalOrder.isPartialOrder ℕ-isTotalOrder
+    ℕ-isPreorder        = IsPartialOrder.isPreorder ℕ-isPartialOrder
+    ≤-refl      = IsPreorder.reflexive ℕ-isPreorder
+    ≤-antisym   = IsPartialOrder.antisym ℕ-isPartialOrder
+    ≤-total     = IsTotalOrder.total ℕ-isTotalOrder
+
 
     -- some boring lemmas
 
@@ -118,7 +124,7 @@ private
 --      | sum ≥ n, sum%base ≡ 0, n%base ≢ 0 = suc Q * base
 --      | sum ≥ n = Q * base + sum%base
 
-_D+_ : ∀ {b m n} → Digit b m n → Digit b m n → Digit b m n
+_D+_ : ∀ {b m n} → Digit b m n → Digit b m n →  Digit b m n
 _D+_ {zero}                ()     ()
 _D+_ {suc zero}            x      _      = x
 _D+_ {suc (suc b)} {m} {n} (Dn x) (Dn y) with suc (D+sum m x y) ≤? n
@@ -171,7 +177,20 @@ _D+_ {suc (suc b)} {m} {n} (Dn x) (Dn y {b≤n} {bm≤n}) | no ¬p | result (suc
             ∎
     in  Dn (fromℕ≤ {sum} sum<n) {b≤n} {bm≤n}
 
+
+
 {-
+
+_D⊕_ : ∀ {b m n} → Digit b m n → Digit b m n → Maybe (Digit b m n)
+_D⊕_                       (D1 x) y = just y
+_D⊕_ {suc (suc b)} {m} {n} (Dn x) (Dn y) with suc (D+sum m x y) ≤? n
+_D⊕_ {suc (suc b)} {m} {n} (Dn x) (Dn y) | yes p = nothing
+_D⊕_ {suc (suc b)} {m} {n} (Dn x) (Dn y {b≤n} {bm≤n}) | no ¬p =
+    let base = suc (suc b)
+        sum = D+sum m x y
+        result quotient remainder property = _divMod_ sum base {tt}
+    in  just {!   !}
+
     begin
         {!   !}
     <⟨ {!   !} ⟩
@@ -193,24 +212,21 @@ _D+_ {suc (suc b)} {m} {n} (Dn x) (Dn y {b≤n} {bm≤n}) | no ¬p | result (suc
     ∎
 -}
 
---
---  Numeral System:
---
-{-}
-data System : (basse from range : ℕ) → Set where
-    Sys : ∀ {b m n} → List (Digit m n) → System b m n
+data System : (base from range : ℕ) → Set where
+    Sys : ∀ {b m n} → List (Digit (suc b) m n) → System (suc b) m n
 
-toℕ : ∀ {b m n} → System b m n → ℕ
-toℕ {b} (Sys list) = foldr (shift-then-add b) 0 list
-    where   shift-then-add : ∀ {m n} → (base : ℕ) → Digit m n → ℕ → ℕ
-            shift-then-add b x acc = (Digit⇒ℕ x) ℕ+ (acc ℕ* b)
+_S+_ : ∀ {b m n} → System b m n → System b m n → System b m n
+Sys []       S+ Sys ys = Sys ys
+Sys xs       S+ Sys [] = Sys xs
+Sys (x ∷ xs) S+ Sys (y ∷ ys) = {! x  !}
 
-_+_ : ∀ {b m n} → System b m n → System b m n → System b m n
-Sys []       + Sys ys = Sys ys
-Sys xs       + Sys [] = Sys xs
-Sys (x ∷ xs) + Sys (y ∷ ys) = {! x  !}
 
--}
+S→N : ∀ {b m n} → System b m n → ℕ
+S→N {zero} ()
+S→N {suc b} (Sys list) = foldr (shift-then-add (suc b)) 0 list
+    where   shift-then-add : ∀ {m n} → (b : ℕ) → Digit b m n → ℕ → ℕ
+            shift-then-add b x acc = (D→N x) + (acc * b)
+
 --
 --  Example
 --
@@ -235,5 +251,5 @@ private
     a3 = Dn (Fs (Fs (Fs Fz))) {s≤s (s≤s (s≤s z≤n))} {z≤n}
 
 
-    -- a : System 1 1 2
-    -- a = Sys (one ∷ two ∷ [])
+    a : System 2 1 2
+    a = Sys (one ∷ two ∷ two ∷ [])
