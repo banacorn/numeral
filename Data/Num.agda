@@ -16,7 +16,7 @@ open import Data.Maybe
 open import Function
 open import Data.Unit using (tt)
 open import Relation.Nullary
-open import Relation.Nullary.Decidable using (False)
+open import Relation.Nullary.Decidable using (True; False; toWitness)
 open import Relation.Nullary.Negation using (contradiction; contraposition)
 open import Relation.Binary
 
@@ -38,18 +38,18 @@ open import Relation.Binary.PropositionalEquality as PropEq
 data Digit : (base from range : ℕ) → Set where
     -- unary digit: {0, 1 .. n-1}
     U0 : ∀ {n} → Fin n
-         → {2≤n : 2 ≤ n} -- i.e. must have digit '1'
+         → {2≤n : True (2 ≤? n)} -- i.e. must have digit '1'
          → Digit 1 0 n
     -- unary digit: {m .. m+n-1}
-    U1 : ∀ { m n}
+    U1 : ∀ {m n}
          → Fin n
-         → {m≤n : m ≤ n} → {1≤m : 1 ≤ m}
-         → Digit 1 m n
+         → {m≤n : True (suc m ≤? n)}
+         → Digit 1 (suc m) n
     -- k-adic digit: {m .. m+n-1}
     D  : ∀ {b m n}
          → Fin n
          → let base = suc (suc b) in
-           {b≤n : base ≤ n} → {bm≤n : (base * m) ≤ n}
+           {b≤n : True (base ≤? n)} → {bm≤n : True ((base * m) ≤? n)}
          → Digit base m n
 
 -- without offset, {0 .. n-1}
@@ -93,6 +93,7 @@ private
     lem₂ (suc m) (suc .m)              n≤m           | equal .m     = s≤s z≤n
     lem₂ (suc .(suc (n + k))) (suc n) n≤m            | greater .n k = s≤s z≤n
 
+
     lem₃ : ∀ m n → n ≤ m → {≢0 : False (n ≟ 0)} → m > Fin⇒ℕ (_mod_ m n {≢0})
     lem₃ m       zero    n≤m {()}
     lem₃ zero    (suc n) ()
@@ -113,6 +114,7 @@ private
     -- (m + x) + (m + y) - m = m + x + y
     D+sum : ∀ {n} (m : ℕ) → (x y : Fin n) → ℕ
     D+sum m x y = m + (Fin⇒ℕ x) + (Fin⇒ℕ y)
+
 
 --  if x D+ y overflown
 --  let x D+ y be the largest digit that is congruent modulo b
@@ -152,7 +154,7 @@ _D+_ {suc (suc b)} {m} {n} (D x) (D y {b≤n} {bm≤n}) | no ¬p | result zero n
             ≡⟨ cong (λ w → Fin⇒ℕ (DivMod.remainder w)) (sym eq) ⟩
                 Fin⇒ℕ (DivMod.remainder (n divMod suc (suc b)))
             ∎
-        ¬lem₃ = >-complement (lem₃ n base b≤n)
+        ¬lem₃ = >-complement (lem₃ n base (toWitness b≤n))
     in  contradiction prop' ¬lem₃
 _D+_ {suc (suc b)} {m} {n} (D x) (D y {b≤n} {bm≤n}) | no ¬p | result (suc Q) n%base prop | PropEq.[ eq ] with D+sum m x y divMod (suc (suc b)) | inspect (λ w → _divMod_ (D+sum m x y) (suc (suc b)) {≢0 = w}) tt
 _D+_ {suc (suc b)} {m} {n} (D x) (D y {b≤n} {bm≤n}) | no ¬p | result (suc Q) (Fs n%base) prop | PropEq.[ eq ] | result _ Fz _ | PropEq.[ eq₁ ] =
@@ -182,7 +184,6 @@ _D+_ {suc (suc b)} {m} {n} (D x) (D y {b≤n} {bm≤n}) | no ¬p | result (suc Q
                 n
             ∎
     in  D (fromℕ≤ {sum} sum<n) {b≤n} {bm≤n}
-
 
 
 {-
@@ -239,22 +240,28 @@ S→N {suc b} (Sys list) = foldr (shift-then-add (suc b)) 0 list
 
 private
     one : Digit 2 1 2
-    one = D Fz {s≤s (s≤s z≤n)} {s≤s (s≤s z≤n)}
+    one = D Fz
 
     two : Digit 2 1 2
-    two = D (Fs Fz) {s≤s (s≤s z≤n)} {s≤s (s≤s z≤n)}
+    two = D (Fs Fz)
+
+    u0 : Digit 1 0 2
+    u0 = U0 Fz
+
+    u1 : Digit 1 1 1
+    u1 = U1 Fz
 
     a0 : Digit 3 0 4
-    a0 = D Fz {s≤s (s≤s (s≤s z≤n))} {z≤n}
+    a0 = D Fz
 
     a1 : Digit 3 0 4
-    a1 = D (Fs Fz) {s≤s (s≤s (s≤s z≤n))} {z≤n}
+    a1 = D (Fs Fz)
 
     a2 : Digit 3 0 4
-    a2 = D (Fs (Fs Fz)) {s≤s (s≤s (s≤s z≤n))} {z≤n}
+    a2 = D (Fs (Fs Fz))
 
     a3 : Digit 3 0 4
-    a3 = D (Fs (Fs (Fs Fz))) {s≤s (s≤s (s≤s z≤n))} {z≤n}
+    a3 = D (Fs (Fs (Fs Fz)))
 
 
     a : System 2 1 2
