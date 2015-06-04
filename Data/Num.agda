@@ -35,13 +35,18 @@ open import Relation.Binary.PropositionalEquality as PropEq
 --         Digit 2 1 2 = {1, 2}         for zeroless binary number
 --         Digit 2 0 3 = {0, 1, 2}      for redundant binary number
 --
-
 data Digit : (base from range : ℕ) → Set where
-    D1 : ∀ {  m n}
+    -- unary digit: {0, 1 .. n-1}
+    U0 : ∀ {n} → Fin n
+         → {2≤n : 2 ≤ n} -- i.e. must have digit '1'
+         → Digit 1 0 n
+    -- unary digit: {m .. m+n-1}
+    U1 : ∀ { m n}
          → Fin n
-         → {m≤n : m ≤ n} → {1≤m : m ≤ 1}
+         → {m≤n : m ≤ n} → {1≤m : 1 ≤ m}
          → Digit 1 m n
-    Dn : ∀ {b m n}
+    -- k-adic digit: {m .. m+n-1}
+    D  : ∀ {b m n}
          → Fin n
          → let base = suc (suc b) in
            {b≤n : base ≤ n} → {bm≤n : (base * m) ≤ n}
@@ -49,8 +54,9 @@ data Digit : (base from range : ℕ) → Set where
 
 -- without offset, {0 .. n-1}
 D→F : ∀ {b m n} → Digit b m n → Fin n
-D→F (D1 x) = x
-D→F (Dn x) = x
+D→F (U0 x) = x
+D→F (U1 x) = x
+D→F (D x) = x
 
 -- with offset, {m .. m+n-1}
 D→N : ∀ {b m n} → Digit b m n → ℕ
@@ -127,11 +133,11 @@ private
 _D+_ : ∀ {b m n} → Digit b m n → Digit b m n →  Digit b m n
 _D+_ {zero}                ()     ()
 _D+_ {suc zero}            x      _      = x
-_D+_ {suc (suc b)} {m} {n} (Dn x) (Dn y) with suc (D+sum m x y) ≤? n
-_D+_ {suc (suc b)} {m} {n} (Dn x) (Dn y {b≤n} {bm≤n}) | yes p =
-    Dn (fromℕ≤ {D+sum m x y} p) {b≤n} {bm≤n} -- just return the sum
-_D+_ {suc (suc b)} {m} {n} (Dn x) (Dn y) | no ¬p with n divMod (suc (suc b)) | inspect (λ w → _divMod_ n (suc (suc b)) {≢0 = w}) tt
-_D+_ {suc (suc b)} {m} {n} (Dn x) (Dn y {b≤n} {bm≤n}) | no ¬p | result zero n%base prop | PropEq.[ eq ] =
+_D+_ {suc (suc b)} {m} {n} (D x) (D y) with suc (D+sum m x y) ≤? n
+_D+_ {suc (suc b)} {m} {n} (D x) (D y {b≤n} {bm≤n}) | yes p =
+    D (fromℕ≤ {D+sum m x y} p) {b≤n} {bm≤n} -- just return the sum
+_D+_ {suc (suc b)} {m} {n} (D x) (D y) | no ¬p with n divMod (suc (suc b)) | inspect (λ w → _divMod_ n (suc (suc b)) {≢0 = w}) tt
+_D+_ {suc (suc b)} {m} {n} (D x) (D y {b≤n} {bm≤n}) | no ¬p | result zero n%base prop | PropEq.[ eq ] =
     -- prop   : n ≡ n%base + 0
     -- prop'  : n ≤ n%base
     -- lem₃   : n > n%base
@@ -148,8 +154,8 @@ _D+_ {suc (suc b)} {m} {n} (Dn x) (Dn y {b≤n} {bm≤n}) | no ¬p | result zero
             ∎
         ¬lem₃ = >-complement (lem₃ n base b≤n)
     in  contradiction prop' ¬lem₃
-_D+_ {suc (suc b)} {m} {n} (Dn x) (Dn y {b≤n} {bm≤n}) | no ¬p | result (suc Q) n%base prop | PropEq.[ eq ] with D+sum m x y divMod (suc (suc b)) | inspect (λ w → _divMod_ (D+sum m x y) (suc (suc b)) {≢0 = w}) tt
-_D+_ {suc (suc b)} {m} {n} (Dn x) (Dn y {b≤n} {bm≤n}) | no ¬p | result (suc Q) (Fs n%base) prop | PropEq.[ eq ] | result _ Fz _ | PropEq.[ eq₁ ] =
+_D+_ {suc (suc b)} {m} {n} (D x) (D y {b≤n} {bm≤n}) | no ¬p | result (suc Q) n%base prop | PropEq.[ eq ] with D+sum m x y divMod (suc (suc b)) | inspect (λ w → _divMod_ (D+sum m x y) (suc (suc b)) {≢0 = w}) tt
+_D+_ {suc (suc b)} {m} {n} (D x) (D y {b≤n} {bm≤n}) | no ¬p | result (suc Q) (Fs n%base) prop | PropEq.[ eq ] | result _ Fz _ | PropEq.[ eq₁ ] =
     -- the case when n%base ≢ 0 and sum%base ≡ 0
     let base = suc (suc b)
         sum = suc Q * base
@@ -160,8 +166,8 @@ _D+_ {suc (suc b)} {m} {n} (Dn x) (Dn y {b≤n} {bm≤n}) | no ¬p | result (suc
             ≡⟨ sym prop ⟩
                 n
             ∎
-    in  Dn (fromℕ≤ {sum} sum<n) {b≤n} {bm≤n}
-_D+_ {suc (suc b)} {m} {n} (Dn x) (Dn y {b≤n} {bm≤n}) | no ¬p | result (suc Q) n%base prop | PropEq.[ eq ] | result _ sum%base property | PropEq.[ eq₁ ] =
+    in  D (fromℕ≤ {sum} sum<n) {b≤n} {bm≤n}
+_D+_ {suc (suc b)} {m} {n} (D x) (D y {b≤n} {bm≤n}) | no ¬p | result (suc Q) n%base prop | PropEq.[ eq ] | result _ sum%base property | PropEq.[ eq₁ ] =
     let base = suc (suc b)
         sum = Fin⇒ℕ sum%base + Q * base
         sum<n = begin
@@ -175,7 +181,7 @@ _D+_ {suc (suc b)} {m} {n} (Dn x) (Dn y {b≤n} {bm≤n}) | no ¬p | result (suc
             ≡⟨ sym prop ⟩
                 n
             ∎
-    in  Dn (fromℕ≤ {sum} sum<n) {b≤n} {bm≤n}
+    in  D (fromℕ≤ {sum} sum<n) {b≤n} {bm≤n}
 
 
 
@@ -233,22 +239,22 @@ S→N {suc b} (Sys list) = foldr (shift-then-add (suc b)) 0 list
 
 private
     one : Digit 2 1 2
-    one = Dn Fz {s≤s (s≤s z≤n)} {s≤s (s≤s z≤n)}
+    one = D Fz {s≤s (s≤s z≤n)} {s≤s (s≤s z≤n)}
 
     two : Digit 2 1 2
-    two = Dn (Fs Fz) {s≤s (s≤s z≤n)} {s≤s (s≤s z≤n)}
+    two = D (Fs Fz) {s≤s (s≤s z≤n)} {s≤s (s≤s z≤n)}
 
     a0 : Digit 3 0 4
-    a0 = Dn Fz {s≤s (s≤s (s≤s z≤n))} {z≤n}
+    a0 = D Fz {s≤s (s≤s (s≤s z≤n))} {z≤n}
 
     a1 : Digit 3 0 4
-    a1 = Dn (Fs Fz) {s≤s (s≤s (s≤s z≤n))} {z≤n}
+    a1 = D (Fs Fz) {s≤s (s≤s (s≤s z≤n))} {z≤n}
 
     a2 : Digit 3 0 4
-    a2 = Dn (Fs (Fs Fz)) {s≤s (s≤s (s≤s z≤n))} {z≤n}
+    a2 = D (Fs (Fs Fz)) {s≤s (s≤s (s≤s z≤n))} {z≤n}
 
     a3 : Digit 3 0 4
-    a3 = Dn (Fs (Fs (Fs Fz))) {s≤s (s≤s (s≤s z≤n))} {z≤n}
+    a3 = D (Fs (Fs (Fs Fz))) {s≤s (s≤s (s≤s z≤n))} {z≤n}
 
 
     a : System 2 1 2
