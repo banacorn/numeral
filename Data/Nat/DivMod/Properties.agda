@@ -28,6 +28,21 @@ open PropEq.≡-Reasoning
 ≤-antisym   = IsPartialOrder.antisym ℕ-isPartialOrder
 ≤-total     = IsTotalOrder.total ℕ-isTotalOrder
 
+lem-+-exchange : ∀ a b c d → (a + b) + (c + d) ≡ (a + c) + (b + d)
+lem-+-exchange a b c d = beginEq
+        (a + b) + (c + d)
+    ≡Eq⟨ sym (+-assoc (a + b) c d) ⟩
+        a + b + c + d
+    ≡Eq⟨ cong (λ x → x + d) (+-assoc a b c) ⟩
+        a + (b + c) + d
+    ≡Eq⟨ cong (λ x → a + x + d) (+-comm b c) ⟩
+        a + (c + b) + d
+    ≡Eq⟨ cong (λ x → x + d) (sym (+-assoc a c b)) ⟩
+        a + c + b + d
+    ≡Eq⟨ +-assoc (a + c) b d ⟩
+        (a + c) + (b + d)
+    ∎Eq
+
 _DivMod+_ : ∀ {b m n} → DivMod m b → DivMod n b → DivMod (m + n) b
 _DivMod+_ {zero}          (result q₀ () prop₀) (result q₁ () prop₁)
 _DivMod+_ {suc b}         (result q₀ r₀ prop₀) (result q₁ r₁ prop₁) with ((toℕ r₀ + toℕ r₁) divMod (suc b))
@@ -37,25 +52,13 @@ _DivMod+_ {suc b} {m} {n} (result q₀ r₀ prop₀) (result q₁ r₁ prop₁) 
     in  result q r $
             beginEq
                 m + n
-            ≡Eq⟨ cong (λ x → x + n) prop₀ ⟩
-                toℕ r₀ + q₀ * suc b + n
-            ≡Eq⟨ cong (λ x → toℕ r₀ + q₀ * suc b + x) prop₁ ⟩
+            ≡Eq⟨ cong₂ _+_ prop₀ prop₁ ⟩
                 (toℕ r₀ + q₀ * suc b) + (toℕ r₁ + q₁ * suc b)
-            ≡Eq⟨ sym (+-assoc ((toℕ r₀ + q₀ * suc b)) (toℕ r₁) (q₁ * suc b)) ⟩
-                (toℕ r₀ + q₀ * suc b + toℕ r₁) + q₁ * suc b
-            ≡Eq⟨ cong (λ x → x + q₁ * suc b) (+-assoc (toℕ r₀) (q₀ * suc b) (toℕ r₁)) ⟩
-                toℕ r₀ + (q₀ * suc b + toℕ r₁) + q₁ * suc b
-            ≡Eq⟨ cong (λ x → toℕ r₀ + x + q₁ * suc b) (+-comm (q₀ * suc b) (toℕ r₁)) ⟩
-                toℕ r₀ + (toℕ r₁ + q₀ * suc b) + q₁ * suc b
-            ≡Eq⟨ cong (λ x → x + q₁ * suc b) (sym $ +-assoc (toℕ r₀) (toℕ r₁) (q₀ * suc b)) ⟩
-                toℕ r₀ + toℕ r₁ + q₀ * suc b + q₁ * suc b
-            ≡Eq⟨ cong (λ x → x + q₀ * suc b + q₁ * suc b) propᵣ ⟩
-                toℕ rᵣ + zero + q₀ * suc b + q₁ * suc b
-            ≡Eq⟨ cong (λ x → x + q₀ * suc b + q₁ * suc b) (+-right-identity (toℕ rᵣ)) ⟩
-                toℕ rᵣ + q₀ * suc b + q₁ * suc b
-            ≡Eq⟨ +-assoc (toℕ rᵣ) (q₀ * suc b) (q₁ * suc b) ⟩
-                toℕ rᵣ + (q₀ * suc b + q₁ * suc b)
-            ≡Eq⟨ cong (λ x → toℕ rᵣ + x) (sym $ distribʳ-*-+ (suc b) q₀ q₁) ⟩
+            ≡Eq⟨ lem-+-exchange (toℕ r₀) (q₀ * suc b) (toℕ r₁) (q₁ * suc b) ⟩
+                toℕ r₀ + toℕ r₁ + (q₀ * suc b + q₁ * suc b)
+            ≡Eq⟨ cong₂ _+_ propᵣ (sym (distribʳ-*-+ (suc b) q₀ q₁)) ⟩
+                toℕ rᵣ + zero + q * suc b
+            ≡Eq⟨ cong (λ x → x + q * suc b) (+-right-identity (toℕ rᵣ)) ⟩
                 toℕ r + q * suc b
             ∎Eq
 _DivMod+_ {suc b} {m} {n} (result q₀ r₀ prop₀) (result q₁ r₁ prop₁) | result (suc qᵣ) rᵣ propᵣ =
@@ -64,30 +67,16 @@ _DivMod+_ {suc b} {m} {n} (result q₀ r₀ prop₀) (result q₁ r₁ prop₁) 
     in  result q r $
             beginEq
                 m + n
-            ≡Eq⟨ cong (λ x → x + n) prop₀ ⟩
-                toℕ r₀ + q₀ * suc b + n
-            ≡Eq⟨ cong (λ x → toℕ r₀ + q₀ * suc b + x) prop₁ ⟩
+            ≡Eq⟨ cong₂ _+_ prop₀ prop₁ ⟩
                 (toℕ r₀ + q₀ * suc b) + (toℕ r₁ + q₁ * suc b)
-            ≡Eq⟨ sym (+-assoc ((toℕ r₀ + q₀ * suc b)) (toℕ r₁) (q₁ * suc b)) ⟩
-                (toℕ r₀ + q₀ * suc b + toℕ r₁) + q₁ * suc b
-            ≡Eq⟨ cong (λ x → x + q₁ * suc b) (+-assoc (toℕ r₀) (q₀ * suc b) (toℕ r₁)) ⟩
-                toℕ r₀ + (q₀ * suc b + toℕ r₁) + q₁ * suc b
-            ≡Eq⟨ cong (λ x → toℕ r₀ + x + q₁ * suc b) (+-comm (q₀ * suc b) (toℕ r₁)) ⟩
-                toℕ r₀ + (toℕ r₁ + q₀ * suc b) + q₁ * suc b
-            ≡Eq⟨ cong (λ x → x + q₁ * suc b) (sym $ +-assoc (toℕ r₀) (toℕ r₁) (q₀ * suc b)) ⟩
-                toℕ r₀ + toℕ r₁ + q₀ * suc b + q₁ * suc b
-            ≡Eq⟨ cong (λ x → x + q₀ * suc b + q₁ * suc b) propᵣ ⟩
-                toℕ rᵣ + (suc qᵣ * suc b) + q₀ * suc b + q₁ * suc b
-            ≡Eq⟨ cong (λ x → x + q₁ * suc b) (+-assoc (toℕ rᵣ) ((suc b) + qᵣ * suc b) (q₀ * suc b)) ⟩
-                toℕ rᵣ + ((suc qᵣ) * suc b + q₀ * suc b) + q₁ * suc b
-            ≡Eq⟨ cong (λ x → toℕ rᵣ + x + q₁ * suc b) (sym (distribʳ-*-+ (suc b) (suc qᵣ) q₀)) ⟩
-                toℕ rᵣ + (suc qᵣ + q₀) * suc b + q₁ * suc b
-            ≡Eq⟨ +-assoc (toℕ rᵣ) ((suc qᵣ + q₀) * suc b) (q₁ * suc b) ⟩
-                toℕ rᵣ + ((suc qᵣ + q₀) * suc b + q₁ * suc b)
-            ≡Eq⟨ cong (λ x → toℕ rᵣ + x) (sym (distribʳ-*-+ (suc b) (suc (qᵣ + q₀)) q₁)) ⟩
-                toℕ rᵣ + suc (qᵣ + q₀ + q₁) * suc b
-            ≡Eq⟨ cong (λ x → toℕ rᵣ + suc x * suc b) (+-assoc qᵣ q₀ q₁) ⟩
-                toℕ rᵣ + ((suc qᵣ + (q₀ + q₁)) * suc b)
+            ≡Eq⟨ lem-+-exchange (toℕ r₀) (q₀ * suc b) (toℕ r₁) (q₁ * suc b) ⟩
+                (toℕ r₀ + toℕ r₁) + (q₀ * suc b + q₁ * suc b)
+            ≡Eq⟨ cong₂ _+_ propᵣ (sym (distribʳ-*-+ (suc b) q₀ q₁)) ⟩
+                toℕ rᵣ + suc qᵣ * suc b + (q₀ + q₁) * suc b
+            ≡Eq⟨ +-assoc (toℕ rᵣ) (suc qᵣ * suc b) ((q₀ + q₁) * suc b) ⟩
+                toℕ rᵣ + (suc qᵣ * suc b + (q₀ + q₁) * suc b)
+            ≡Eq⟨ cong (λ x → toℕ rᵣ + x) (sym (distribʳ-*-+ (suc b) (suc qᵣ) (q₀ + q₁))) ⟩
+                toℕ rᵣ + (suc qᵣ + (q₀ + q₁)) * suc b
             ≡Eq⟨ cong (λ x → toℕ rᵣ + x * suc b) (+-comm (suc qᵣ) (q₀ + q₁)) ⟩
                 toℕ rᵣ + (q₀ + q₁ + suc qᵣ) * suc b
             ∎Eq
@@ -168,8 +157,8 @@ div-mono (suc b) ≢0 (s≤s rel) | less m k | result q₀ r₀ prop₀ | PropEq
         {!   !}
     ≤⟨ {!   !} ⟩
         {!   !}
-    ≤⟨ {!   !} ⟩
-        {!   !}
+    ≤⟨ {!    !} ⟩
+        {!    !}
     ≤⟨ {!    !} ⟩
         q₁
     ∎
