@@ -4,6 +4,8 @@ open import Data.Nat
 open import Data.Nat.Properties.Simple
 open import Function
 open import Relation.Nullary.Negation using (contradiction; contraposition)
+open import Relation.Binary
+
 open import Relation.Binary.PropositionalEquality as PropEq
     using (_≡_; _≢_; refl; cong; trans; sym)
 open PropEq.≡-Reasoning
@@ -12,7 +14,6 @@ open PropEq.≡-Reasoning
 _^_ : ℕ → ℕ → ℕ
 a ^ zero  = 1
 a ^ suc b = a * (a ^ b)
-
 
 --------------------------------------------------------------------------------
 -- Properties
@@ -31,7 +32,7 @@ distrib-left-*-+ m n o =
         ≡⟨ cong (_+_ (m * n)) (*-comm o m) ⟩
             m * n + m * o
         ∎
-
+{-
 no-zero-divisor : ∀ m n → m ≢ 0 → m * n ≡ 0 → n ≡ 0
 no-zero-divisor zero    n       p q = contradiction q p
 no-zero-divisor (suc m) zero    p q = refl
@@ -45,7 +46,20 @@ m≰n⇒n<m : (m n : ℕ) → m ≰ n → m > n
 m≰n⇒n<m zero n p = contradiction p (λ z → z z≤n)
 m≰n⇒n<m (suc m) zero p = s≤s z≤n
 m≰n⇒n<m (suc m) (suc n) p = s≤s (m≰n⇒n<m m n (λ z → p (s≤s z)))
+-}
 
+>⇒≰ : _>_ ⇒ _≰_
+>⇒≰ {zero} ()
+>⇒≰ {suc m} {zero} rel ()
+>⇒≰ {suc m} {suc n} (s≤s rel) (s≤s x) = contradiction x (>⇒≰ rel)
+
+{-
+≰⇒> : _≰_ ⇒ _>_
+≰⇒> {zero}          z≰n with z≰n z≤n
+... | ()
+≰⇒> {suc m} {zero}  _   = s≤s z≤n
+≰⇒> {suc m} {suc n} m≰n = s≤s (≰⇒> (m≰n ∘ s≤s))
+-}
 {-
     begin
         {!   !}

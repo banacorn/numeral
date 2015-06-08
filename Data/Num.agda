@@ -1,3 +1,4 @@
+
 module Data.Num where
 
 open import Data.List using (List; []; _∷_; foldr)
@@ -6,10 +7,10 @@ open ≤-Reasoning
 
 open import Data.Nat.DivMod
 open import Data.Nat.Properties using (m≤m+n; n≤m+n;_+-mono_)
-open import Data.Nat.Properties.Simple using (+-right-identity; +-suc; +-assoc)
+open import Data.Nat.Properties.Simple using (+-right-identity; +-suc; +-assoc; +-comm; distribʳ-*-+)
 open import Data.Fin.Properties using (bounded)
 open import Data.Fin using (Fin; fromℕ≤; inject≤)
-    renaming (toℕ to Fin⇒ℕ; fromℕ to ℕ⇒Fin; zero to Fz; suc to Fs)
+    renaming (toℕ to F→N; fromℕ to N→F; zero to Fz; suc to Fs)
 open import Data.Product
 open import Data.Maybe
 
@@ -22,7 +23,8 @@ open import Relation.Binary
 
 open import Relation.Binary.PropositionalEquality as PropEq
     using (_≡_; _≢_; refl; cong; sym; trans; inspect)
-
+open PropEq.≡-Reasoning
+    renaming (begin_ to beginEq_; _≡⟨_⟩_ to _≡Eq⟨_⟩_; _∎ to _∎Eq)
 -- Surjective (ℕm):
 --  base = 1, digits = {m ... (m + n) - 1}, m ≥ 1, n ≥ m
 --  base > 1, digits = {m ... (m + n) - 1}, m ≥ 0, n ≥ max base (base × m)
@@ -60,7 +62,7 @@ D→F (D x) = x
 
 -- with offset, {m .. m+n-1}
 D→N : ∀ {b m n} → Digit b m n → ℕ
-D→N {m = m} d = m + Fin⇒ℕ (D→F d)
+D→N {m = m} d = m + F→N (D→F d)
 
 private
 
@@ -94,7 +96,7 @@ private
     lem₂ (suc .(suc (n + k))) (suc n) n≤m            | greater .n k = s≤s z≤n
 
 
-    lem₃ : ∀ m n → n ≤ m → {≢0 : False (n ≟ 0)} → m > Fin⇒ℕ (_mod_ m n {≢0})
+    lem₃ : ∀ m n → n ≤ m → {≢0 : False (n ≟ 0)} → m > F→N (_mod_ m n {≢0})
     lem₃ m       zero    n≤m {()}
     lem₃ zero    (suc n) ()
     lem₃ (suc m) (suc n) n≤m {≢0} with _divMod_ (suc m) (suc n) {≢0} | inspect (λ x → _divMod_ (suc m) (suc n) {≢0 = x}) ≢0
@@ -102,18 +104,18 @@ private
         contradiction (≤-refl (cong DivMod.quotient eq)) (>-complement (lem₂ (suc m) (suc n) n≤m))
     lem₃ (suc m) (suc n) n≤m {tt} | result (suc quotient) remainder property | w =
         begin
-            suc (Fin⇒ℕ remainder)
-        ≤⟨ s≤s (m≤m+n (Fin⇒ℕ remainder) (n + quotient * suc n)) ⟩
-            suc (Fin⇒ℕ remainder + (n + quotient * suc n))
-        ≡⟨ sym (+-suc (Fin⇒ℕ remainder) (n + quotient * suc n)) ⟩
-            Fin⇒ℕ remainder + suc (n + quotient * suc n)
+            suc (F→N remainder)
+        ≤⟨ s≤s (m≤m+n (F→N remainder) (n + quotient * suc n)) ⟩
+            suc (F→N remainder + (n + quotient * suc n))
+        ≡⟨ sym (+-suc (F→N remainder) (n + quotient * suc n)) ⟩
+            F→N remainder + suc (n + quotient * suc n)
         ≡⟨ sym property ⟩
             suc m
         ∎
     -- helper function for adding two 'Fin n' with offset 'm'
     -- (m + x) + (m + y) - m = m + x + y
     D+sum : ∀ {n} (m : ℕ) → (x y : Fin n) → ℕ
-    D+sum m x y = m + (Fin⇒ℕ x) + (Fin⇒ℕ y)
+    D+sum m x y = m + (F→N x) + (F→N y)
 
 
 --  if x D+ y overflown
@@ -148,11 +150,11 @@ _D+_ {suc (suc b)} {m} {n} (D x) (D y {b≤n} {bm≤n}) | no ¬p | result zero n
             begin
                 n
             ≡⟨ prop ⟩
-                Fin⇒ℕ n%base + 0
-            ≡⟨ +-right-identity (Fin⇒ℕ n%base) ⟩
-                Fin⇒ℕ n%base
-            ≡⟨ cong (λ w → Fin⇒ℕ (DivMod.remainder w)) (sym eq) ⟩
-                Fin⇒ℕ (DivMod.remainder (n divMod suc (suc b)))
+                F→N n%base + 0
+            ≡⟨ +-right-identity (F→N n%base) ⟩
+                F→N n%base
+            ≡⟨ cong (λ w → F→N (DivMod.remainder w)) (sym eq) ⟩
+                F→N (DivMod.remainder (n divMod suc (suc b)))
             ∎
         ¬lem₃ = >-complement (lem₃ n base (toWitness b≤n))
     in  contradiction prop' ¬lem₃
@@ -163,40 +165,71 @@ _D+_ {suc (suc b)} {m} {n} (D x) (D y {b≤n} {bm≤n}) | no ¬p | result (suc Q
         sum = suc Q * base
         sum<n = begin
                 suc sum
-            ≤⟨ s≤s (n≤m+n (Fin⇒ℕ n%base) sum) ⟩
-                suc (Fin⇒ℕ n%base + sum)
+            ≤⟨ s≤s (n≤m+n (F→N n%base) sum) ⟩
+                suc (F→N n%base + sum)
             ≡⟨ sym prop ⟩
                 n
             ∎
     in  D (fromℕ≤ {sum} sum<n) {b≤n} {bm≤n}
 _D+_ {suc (suc b)} {m} {n} (D x) (D y {b≤n} {bm≤n}) | no ¬p | result (suc Q) n%base prop | PropEq.[ eq ] | result _ sum%base property | PropEq.[ eq₁ ] =
     let base = suc (suc b)
-        sum = Fin⇒ℕ sum%base + Q * base
+        sum = F→N sum%base + Q * base
         sum<n = begin
-                suc (Fin⇒ℕ sum%base + Q * base)
-            ≡⟨ sym (+-assoc 1 (Fin⇒ℕ sum%base) (Q * base)) ⟩
-                suc (Fin⇒ℕ sum%base) + Q * base
+                suc (F→N sum%base + Q * base)
+            ≡⟨ sym (+-assoc 1 (F→N sum%base) (Q * base)) ⟩
+                suc (F→N sum%base) + Q * base
             ≤⟨ bounded sum%base +-mono ≤-refl refl ⟩
                 base + Q * base
-            ≤⟨ n≤m+n (Fin⇒ℕ n%base) (base + Q * base) ⟩
-                Fin⇒ℕ n%base + (base + Q * base)
+            ≤⟨ n≤m+n (F→N n%base) (base + Q * base) ⟩
+                F→N n%base + (base + Q * base)
             ≡⟨ sym prop ⟩
                 n
             ∎
     in  D (fromℕ≤ {sum} sum<n) {b≤n} {bm≤n}
 
-
-{-
-
+-- 2 ≤ base
+-- max * 2 ≤ max * base
+-- max * 2 / base ≤ max
 _D⊕_ : ∀ {b m n} → Digit b m n → Digit b m n → Maybe (Digit b m n)
-_D⊕_                       (D1 x) y = just y
-_D⊕_ {suc (suc b)} {m} {n} (Dn x) (Dn y) with suc (D+sum m x y) ≤? n
-_D⊕_ {suc (suc b)} {m} {n} (Dn x) (Dn y) | yes p = nothing
-_D⊕_ {suc (suc b)} {m} {n} (Dn x) (Dn y {b≤n} {bm≤n}) | no ¬p =
+_D⊕_                       (U0 x) y = just y
+_D⊕_                       (U1 x) y = just y
+_D⊕_ {suc (suc b)} {m} {n} (D x) (D y) with suc (D+sum m x y) ≤? n
+_D⊕_ {suc (suc b)} {m} {n} (D x) (D y) | yes p = nothing
+_D⊕_ {suc (suc b)} {m} {n} (D x) (D y {b≤n} {bm≤n}) | no ¬p with D+sum m x y divMod (suc (suc b)) | inspect (λ w → _divMod_ (D+sum m x y) (suc (suc b)) {≢0 = w}) tt
+_D⊕_ {suc (suc b)} {m} {n} (D x) (D y {b≤n} {bm≤n}) | no ¬p | result quotient remainder property | PropEq.[ eq ] =
+    let base = suc (suc b)
+        sum = D+sum m x y
+        quotient<n = begin
+                suc quotient
+            ≤⟨ {!   !} ⟩
+                {!   !}
+            ≤⟨ {!   !} ⟩
+                {!   !}
+            ≤⟨ {!   !} ⟩
+                {!   !}
+            ≤⟨ {!   !} ⟩
+                n
+            ∎
+    in  just (D (fromℕ≤ {quotient} quotient<n) {b≤n} {bm≤n})
+{-
     let base = suc (suc b)
         sum = D+sum m x y
         result quotient remainder property = _divMod_ sum base {tt}
-    in  just {!   !}
+        quotient<n = begin
+                DivMod.quotient (sum divMod {! base  !})
+            ≤⟨ {!   !} ⟩
+                {!   !}
+            ≤⟨ {!   !} ⟩
+                {!   !}
+            ≤⟨ {!   !} ⟩
+                {!   !}
+            ≤⟨ {!   !} ⟩
+                n
+            ∎
+    in  just (D (fromℕ≤ {quotient} quotient<n) {b≤n} {bm≤n})
+-}
+{-
+
 
     begin
         {!   !}
@@ -217,6 +250,17 @@ _D⊕_ {suc (suc b)} {m} {n} (Dn x) (Dn y {b≤n} {bm≤n}) | no ¬p =
     ≤⟨ {!    !} ⟩
         {!   !}
     ∎
+    beginEq
+        {!   !}
+    ≡Eq⟨ {!   !} ⟩
+        {!   !}
+    ≡Eq⟨ {!   !} ⟩
+        {!   !}
+    ≡Eq⟨ {!   !} ⟩
+        {!   !}
+    ≡Eq⟨ {!   !} ⟩
+        {!   !}
+    ∎Eq
 -}
 
 data System : (base from range : ℕ) → Set where
