@@ -83,6 +83,36 @@ _DivMod+_ {suc b} {m} {n} (result q₀ r₀ prop₀) (result q₁ r₁ prop₁) 
 
 {-
 DivMod+-left-identity : ∀ {b m} → (x : DivMod m (suc b)) → (result 0 Fzero refl) DivMod+ x ≡ x
+DivMod+-left-identity {b} {m} (result q r prop) with (toℕ Fzero + toℕ r) divMod (suc b)
+DivMod+-left-identity {b} {m} (result q r prop) | result zero rᵣ propᵣ =
+    -- propᵣ : toℕ r ≡ toℕ rᵣ + 0
+    -- prop  :      m ≡ toℕ r  + q * suc b
+    -- prop  :      m ≡ toℕ rᵣ + q * suc b
+    -- trans (cong₂ _+_ refl prop) (trans (trans (cong (λ z → z + q * suc b) (sym (+-right-identity (toℕ r)))) (trans (+-assoc (toℕ r) zero (q * suc b)) refl)) (trans (cong₂ _+_ propᵣ refl) (trans (cong (λ z → z + q * suc b) (+-right-identity (toℕ rᵣ))) refl))))
+    let prop' = beginEq
+                m
+            ≡Eq⟨ cong₂ _+_ refl prop ⟩
+                toℕ r + q * suc b
+            ≡Eq⟨ cong₂ _+_ propᵣ refl ⟩
+                toℕ rᵣ + 0 + q * suc b
+            ≡Eq⟨ cong₂ _+_ (+-right-identity (toℕ rᵣ)) refl ⟩
+                toℕ rᵣ + q * suc b
+            ∎Eq
+    in  beginEq
+            result q rᵣ prop'
+        ≡Eq⟨ cong (λ x → result q x {! prop'  !}) (sym {! +-right-identity  !}) ⟩
+            {!   !}
+        ≡Eq⟨ {!   !} ⟩
+            {!   !}
+        ≡Eq⟨ {!   !} ⟩
+            {!   !}
+        ≡Eq⟨ {!   !} ⟩
+            result q r prop
+        ∎Eq
+DivMod+-left-identity (result q r prop) | result (suc qᵣ) rᵣ propᵣ = {!   !}
+-}
+{-
+DivMod+-left-identity : ∀ {b m} → (x : DivMod m (suc b)) → (result 0 Fzero refl) DivMod+ x ≡ x
 DivMod+-left-identity {b} {m} (result q r prop) with (toℕ r) divMod (suc b)
 DivMod+-left-identity {b} {m} (result q r prop) | result zero rᵣ propᵣ =
     beginEq
@@ -131,6 +161,14 @@ div-suc-mono zero    (suc b) ≢0 = z≤n
 div-suc-mono (suc n) (suc b) ≢0 = {!   !}
 
 -}
+
+
+postulate
+    div-mono : (base : ℕ) → (≢0 : False (base ≟ 0))
+             → let _/base = λ x → (x div base) {≢0}
+               in  _/base Preserves _≤_ ⟶ _≤_
+
+{-
 div-mono : (base : ℕ) → (≢0 : False (base ≟ 0))
          → let _/base = λ x → (x div base) {≢0}
            in  _/base Preserves _≤_ ⟶ _≤_
@@ -150,13 +188,13 @@ div-mono (suc b) ≢0 (s≤s rel) | less m k | result q₀ r₀ prop₀ | PropEq
     begin
         q₀
     ≤⟨ {!   !} ⟩
-        {!   !}
-    ≤⟨ {!   !} ⟩
-        {!   !}
-    ≤⟨ {!   !} ⟩
-        {!   !}
-    ≤⟨ {!   !} ⟩
-        {!   !}
+        {!    !}
+    ≤⟨ {!    !} ⟩
+        {!    !}
+    ≤⟨ {!    !} ⟩
+        {!    !}
+    ≤⟨ {!    !} ⟩
+        {!    !}
     ≤⟨ {!    !} ⟩
         {!    !}
     ≤⟨ {!    !} ⟩
@@ -165,7 +203,7 @@ div-mono (suc b) ≢0 (s≤s rel) | less m k | result q₀ r₀ prop₀ | PropEq
 div-mono (suc b) ≢0 (s≤s rel) | equal m = ≤-refl refl
 div-mono (suc b) ≢0 (s≤s rel) | greater m k = contradiction rel (>⇒≰ (s≤s (m≤m+n m k)))
 
-{-
+
 
 div-mono (suc b) ≢0 (s≤s {x} {y} rel)   with (x divMod (suc b)) {≢0}
                                         | inspect (λ w → (x divMod (suc b)) {w}) ≢0
