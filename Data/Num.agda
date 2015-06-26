@@ -5,6 +5,7 @@ open import Data.List using (List; []; _∷_; foldr)
 open import Data.Nat
 open ≤-Reasoning
 
+open import Data.Nat.Etc
 open import Data.Nat.DivMod
 open import Data.Nat.Properties using (m≤m+n; n≤m+n;_+-mono_)
 open import Data.Nat.Properties.Simple using (+-right-identity; +-suc; +-assoc; +-comm; distribʳ-*-+)
@@ -77,21 +78,11 @@ private
 
 
     -- some boring lemmas
-
-    >-complement : ∀ {a b} → a > b → ¬ (a ≤ b)
-    >-complement {zero}  ()
-    >-complement {suc a} {zero} a>b ()
-    >-complement {suc a} {suc b} (s≤s a>b) = contraposition >-complement (λ z → z a>b)
-
-    lem₁ : ∀ m k → suc (m + k) > m
-    lem₁ zero k = s≤s z≤n
-    lem₁ (suc m) k = s≤s (lem₁ m k)
-
     lem₂ : ∀ m n → n ≤ m → {≢0 : False (n ≟ 0)} → 0 < (_div_ m n {≢0})
     lem₂ m       zero    n≤m {()}
     lem₂ zero    (suc n) ()
     lem₂ (suc m) (suc n) n≤m {≢0} with compare m n
-    lem₂ (suc m) (suc .(suc (m + k))) (s≤s n≤m) {tt} | less .m k    = contradiction n≤m (>-complement (lem₁ m k))
+    lem₂ (suc m) (suc .(suc (m + k))) (s≤s n≤m) {tt} | less .m k    = contradiction n≤m (>⇒≰ (s≤s (m≤m+n m k)))
     lem₂ (suc m) (suc .m)              n≤m           | equal .m     = s≤s z≤n
     lem₂ (suc .(suc (n + k))) (suc n) n≤m            | greater .n k = s≤s z≤n
 
@@ -101,7 +92,7 @@ private
     lem₃ zero    (suc n) ()
     lem₃ (suc m) (suc n) n≤m {≢0} with _divMod_ (suc m) (suc n) {≢0} | inspect (λ x → _divMod_ (suc m) (suc n) {≢0 = x}) ≢0
     lem₃ (suc m) (suc n) n≤m {tt} | result zero remainder property | PropEq.[ eq ] =
-        contradiction (≤-refl (cong DivMod.quotient eq)) (>-complement (lem₂ (suc m) (suc n) n≤m))
+        contradiction (≤-refl (cong DivMod.quotient eq)) (>⇒≰ (lem₂ (suc m) (suc n) n≤m))
     lem₃ (suc m) (suc n) n≤m {tt} | result (suc quotient) remainder property | w =
         begin
             suc (F→N remainder)
@@ -156,7 +147,7 @@ _D+_ {suc (suc b)} {m} {n} (D x) (D y {b≤n} {bm≤n}) | no ¬p | result zero n
             ≡⟨ cong (λ w → F→N (DivMod.remainder w)) (sym eq) ⟩
                 F→N (DivMod.remainder (n divMod suc (suc b)))
             ∎
-        ¬lem₃ = >-complement (lem₃ n base (toWitness b≤n))
+        ¬lem₃ = >⇒≰ (lem₃ n base (toWitness b≤n))
     in  contradiction prop' ¬lem₃
 _D+_ {suc (suc b)} {m} {n} (D x) (D y {b≤n} {bm≤n}) | no ¬p | result (suc Q) n%base prop | PropEq.[ eq ] with D+sum m x y divMod (suc (suc b)) | inspect (λ w → _divMod_ (D+sum m x y) (suc (suc b)) {≢0 = w}) tt
 _D+_ {suc (suc b)} {m} {n} (D x) (D y {b≤n} {bm≤n}) | no ¬p | result (suc Q) (Fs n%base) prop | PropEq.[ eq ] | result _ Fz _ | PropEq.[ eq₁ ] =
@@ -187,9 +178,9 @@ _D+_ {suc (suc b)} {m} {n} (D x) (D y {b≤n} {bm≤n}) | no ¬p | result (suc Q
             ∎
     in  D (fromℕ≤ {sum} sum<n) {b≤n} {bm≤n}
 
--- 2 ≤ base
--- max * 2 ≤ max * base
--- max * 2 / base ≤ max
+--      2 ≤ base
+--  ⇒  max * 2 ≤ max * base
+--  ⇒  max * 2 / base ≤ max
 _D⊕_ : ∀ {b m n} → Digit b m n → Digit b m n → Maybe (Digit b m n)
 _D⊕_                       (U0 x) y = just y
 _D⊕_                       (U1 x) y = just y

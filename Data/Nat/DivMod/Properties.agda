@@ -9,6 +9,7 @@ open import Data.Nat.Properties using (≰⇒>; m≤m+n)
 open import Data.Nat.Properties.Simple using (+-right-identity; +-suc; +-assoc; +-comm; distribʳ-*-+)
 open import Data.Fin using (Fin; toℕ; fromℕ≤; inject≤)
     renaming (_+_ to _F+_; zero to Fzero; suc to Fsuc)
+open import Data.Fin.Properties using (bounded)
 open import Function
 -- import Level
 
@@ -162,11 +163,36 @@ div-suc-mono (suc n) (suc b) ≢0 = {!   !}
 
 -}
 
-
+--  TODO: proof div monotone
 postulate
     div-mono : (base : ℕ) → (≢0 : False (base ≟ 0))
              → let _/base = λ x → (x div base) {≢0}
                in  _/base Preserves _≤_ ⟶ _≤_
+
+n/n≡1 : ∀ n → (≢0 : False (n ≟ 0)) → (n div n) {≢0} ≡ 1
+n/n≡1 zero ()
+n/n≡1 (suc n) ≢0 with ((suc n) divMod (suc n)) {≢0} | inspect (λ w → ((suc n) divMod (suc n)) {w}) ≢0
+n/n≡1 (suc n) ≢0 | result zero r prop | PropEq.[ eq ] =
+    let prop' : suc n ≡ toℕ r
+        prop' = trans prop (+-right-identity (toℕ r))
+    in  contradiction (≤-refl prop') (>⇒≰ (bounded r))
+n/n≡1 (suc n) ≢0 | result (suc zero) r prop | PropEq.[ eq ] = {!   !}
+n/n≡1 (suc n) ≢0 | result (suc (suc q)) r prop | PropEq.[ eq ] =
+    let prop' : suc n ≡ suc n + toℕ r + suc q * suc n
+        prop' = beginEq
+                suc n
+            ≡Eq⟨ prop ⟩
+                toℕ r + (suc n + suc (n + q * suc n))
+            ≡Eq⟨ sym (+-assoc (toℕ r) (suc n) (suc (n + q * suc n))) ⟩
+                toℕ r + suc n + suc (n + q * suc n)
+            ≡Eq⟨ cong₂ _+_ (+-comm (toℕ r) (suc n)) refl ⟩
+                suc (n + toℕ r + suc (n + q * suc n))
+            ∎Eq
+    in  contradiction (≤-refl prop') (>⇒≰ {!   !})
+
+lem : ∀ m n → n ≤ m → (≢0 : False (n ≟ 0)) → (n div n) {≢0} ≤ (m div n) {≢0}
+lem m zero n≤m ()
+lem m (suc n) n≤m ≢0 = div-mono (suc n) {!   !} n≤m
 
 {-
 div-mono : (base : ℕ) → (≢0 : False (base ≟ 0))
