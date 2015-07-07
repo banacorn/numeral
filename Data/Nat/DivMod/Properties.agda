@@ -7,7 +7,7 @@ open import Data.Nat.DivMod
 open import Data.Nat.Etc
 open import Data.Nat.Properties using (≰⇒>; m≤m+n)
 open import Data.Nat.Properties.Simple using (+-right-identity; +-suc; +-assoc; +-comm; distribʳ-*-+)
-open import Data.Fin using (Fin; toℕ; fromℕ≤; inject≤)
+open import Data.Fin using (Fin; toℕ; fromℕ; fromℕ≤; inject≤; inject₁)
     renaming (_+_ to _F+_; zero to Fzero; suc to Fsuc)
 open import Data.Fin.Properties using (bounded)
 open import Function
@@ -43,8 +43,115 @@ lem-+-exchange a b c d = beginEq
     ≡Eq⟨ +-assoc (a + c) b d ⟩
         (a + c) + (b + d)
     ∎Eq
+{-
+beginEq
+    {!   !}
+≡Eq⟨ {!   !} ⟩
+    {!   !}
+≡Eq⟨ {!   !} ⟩
+    {!   !}
+≡Eq⟨ {!   !} ⟩
+    {!   !}
+≡Eq⟨ {!   !} ⟩
+    {!   !}
+∎Eq
+-}
 
 _DivMod+_ : ∀ {b m n} → DivMod m b → DivMod n b → DivMod (m + n) b
+_DivMod+_ {zero}          (result q₀       ()        prop₀) (result q₁ () prop₁)
+_DivMod+_ {suc b} {m} {n} (result zero     Fzero     prop₀) (result q₁ r₁ prop₁) = result q₁ r₁ $
+    beginEq
+        m + n
+    ≡Eq⟨ cong (λ x → x + n) prop₀ ⟩
+        n
+    ≡Eq⟨ prop₁ ⟩
+        toℕ r₁ + q₁ * suc b
+    ∎Eq
+_DivMod+_ {suc b} {m} {n} (result zero     (Fsuc r₀) prop₀) (result q₁ r₁ prop₁) with ((toℕ (Fsuc r₀) + toℕ r₁) divMod (suc b))
+_DivMod+_ {suc b} {m} {n} (result zero     (Fsuc r₀) prop₀) (result q₁ r₁ prop₁) | result zero rᵣ propᵣ =
+    let q = q₁
+        r = rᵣ
+    in  result q r $
+            beginEq
+                m + n
+            ≡Eq⟨ cong₂ _+_ prop₀ prop₁ ⟩
+                suc (toℕ r₀ + zero + (toℕ r₁ + q₁ * suc b))
+            ≡Eq⟨ lem-+-exchange (suc (toℕ r₀)) zero (toℕ r₁) (q₁ * suc b) ⟩
+                suc (toℕ r₀ + toℕ r₁) + (q₁ * suc b)
+            ≡Eq⟨ cong (λ x → x + q₁ * suc b) propᵣ ⟩
+                toℕ rᵣ + zero + q₁ * suc b
+            ≡Eq⟨ cong (λ x → x + q₁ * suc b) (+-right-identity (toℕ rᵣ)) ⟩
+                toℕ rᵣ + q₁ * suc b
+            ∎Eq
+_DivMod+_ {suc b} {m} {n} (result zero     (Fsuc r₀) prop₀) (result q₁ r₁ prop₁) | result (suc qᵣ) rᵣ propᵣ =
+    let q = suc qᵣ + q₁
+        r = rᵣ
+    in  result q r $
+            beginEq
+                m + n
+            ≡Eq⟨ cong₂ _+_ prop₀ prop₁ ⟩
+                suc (toℕ r₀) + zero + (toℕ r₁ + q₁ * suc b)
+            ≡Eq⟨ lem-+-exchange (suc (toℕ r₀)) zero (toℕ r₁) (q₁ * suc b) ⟩
+                suc (toℕ r₀) + toℕ r₁ + q₁ * suc b
+            ≡Eq⟨ cong (λ x → x + q₁ * suc b) propᵣ ⟩
+                toℕ rᵣ + suc qᵣ * suc b + q₁ * suc b
+            ≡Eq⟨ +-assoc (toℕ rᵣ) (suc qᵣ * suc b) (q₁ * suc b) ⟩
+                toℕ rᵣ + (suc qᵣ * suc b + q₁ * suc b)
+            ≡Eq⟨ cong (λ x → toℕ rᵣ + x) (sym (distribʳ-*-+ (suc b) (suc qᵣ) q₁)) ⟩
+                toℕ rᵣ + (suc qᵣ + q₁) * suc b
+            ∎Eq
+_DivMod+_ {suc b} {m} {n} (result (suc q₀) Fzero     prop₀) (result q₁ r₁ prop₁) = result (suc q₀ + q₁) r₁ $
+    beginEq
+        m + n
+    ≡Eq⟨ cong₂ _+_ prop₀ prop₁ ⟩
+        suc q₀ * suc b + (toℕ r₁ + q₁ * suc b)
+    ≡Eq⟨ sym (+-assoc (suc (b + q₀ * suc b)) (toℕ r₁) (q₁ * suc b)) ⟩
+        suc q₀ * suc b + toℕ r₁ + q₁ * suc b
+    ≡Eq⟨ cong (λ x → x + q₁ * suc b) (+-comm (suc q₀ * suc b) (toℕ r₁)) ⟩
+        toℕ r₁ + suc q₀ * suc b + q₁ * suc b
+    ≡Eq⟨ +-assoc (toℕ r₁) (suc q₀ * suc b) (q₁ * suc b) ⟩
+        toℕ r₁ + (suc q₀ * suc b + q₁ * suc b)
+    ≡Eq⟨ cong (λ x → toℕ r₁ + x) (sym (distribʳ-*-+ (suc b) (suc q₀) q₁)) ⟩
+        toℕ r₁ + (suc q₀ + q₁) * suc b
+    ∎Eq
+_DivMod+_ {suc b} {m} {n} (result (suc q₀) (Fsuc r₀) prop₀) (result q₁ r₁ prop₁) with ((toℕ (Fsuc r₀) + toℕ r₁) divMod (suc b))
+_DivMod+_ {suc b} {m} {n} (result (suc q₀) (Fsuc r₀) prop₀) (result q₁ r₁ prop₁) | result zero     rᵣ propᵣ =
+    let q = suc q₀ + q₁
+        r = rᵣ
+    in  result q r $
+            beginEq
+                m + n
+            ≡Eq⟨ cong₂ _+_ prop₀ prop₁ ⟩
+                (suc (toℕ r₀) + suc q₀ * suc b) + (toℕ r₁ + q₁ * suc b)
+            ≡Eq⟨ lem-+-exchange (suc (toℕ r₀)) (suc (b + q₀ * suc b)) (toℕ r₁) (q₁ * suc b) ⟩
+                (suc (toℕ r₀) + toℕ r₁) + (suc q₀ * suc b + q₁ * suc b)
+            ≡Eq⟨ cong (λ x → (suc (toℕ r₀) + toℕ r₁) + x) (sym (distribʳ-*-+ (suc b) (suc q₀) q₁)) ⟩
+                (suc (toℕ r₀) + toℕ r₁) + (suc q₀ + q₁) * suc b
+            ≡Eq⟨ cong (λ x → x + suc (q₀ + q₁) * suc b) propᵣ ⟩
+                toℕ rᵣ + zero + suc (b + (q₀ + q₁) * suc b)
+            ≡Eq⟨ cong (λ x → x + suc (q₀ + q₁) * suc b) (+-right-identity (toℕ rᵣ)) ⟩
+                toℕ rᵣ + suc (q₀ + q₁) * suc b
+            ∎Eq
+_DivMod+_ {suc b} {m} {n} (result (suc q₀) (Fsuc r₀) prop₀) (result q₁ r₁ prop₁) | result (suc qᵣ) rᵣ propᵣ =
+    let q = suc qᵣ + (suc q₀ + q₁)
+        r = rᵣ
+    in  result q r $
+            beginEq
+                m + n
+            ≡Eq⟨ cong₂ _+_ prop₀ prop₁ ⟩
+                suc (toℕ r₀ + suc q₀ * suc b) + (toℕ r₁ + q₁ * suc b)
+            ≡Eq⟨ lem-+-exchange (suc (toℕ r₀)) (suc (b + q₀ * suc b)) (toℕ r₁) (q₁ * suc b) ⟩
+                suc (toℕ r₀) + toℕ r₁ + ((suc q₀) * suc b + q₁ * suc b)
+            ≡Eq⟨ cong (λ x → suc (toℕ r₀) + toℕ r₁ + x) (sym (distribʳ-*-+ (suc b) (suc q₀) q₁)) ⟩
+                suc (toℕ r₀) + toℕ r₁ + (suc q₀ + q₁) * suc b
+            ≡Eq⟨ cong (λ x → x + (suc q₀ + q₁) * suc b) propᵣ ⟩
+                toℕ rᵣ + suc qᵣ * suc b + (suc q₀ + q₁) * suc b
+            ≡Eq⟨ +-assoc (toℕ rᵣ) (suc qᵣ * suc b) ((suc q₀ + q₁) * suc b) ⟩
+                toℕ rᵣ + (suc qᵣ * suc b + (suc q₀ + q₁) * suc b)
+            ≡Eq⟨ cong (λ x → toℕ rᵣ + x) (sym (distribʳ-*-+ (suc b) (suc qᵣ) (suc (q₀ + q₁)))) ⟩
+                toℕ rᵣ + (suc qᵣ + (suc q₀ + q₁)) * suc b
+            ∎Eq
+{-
 _DivMod+_ {zero}          (result q₀ () prop₀) (result q₁ () prop₁)
 _DivMod+_ {suc b}         (result q₀ r₀ prop₀) (result q₁ r₁ prop₁) with ((toℕ r₀ + toℕ r₁) divMod (suc b))
 _DivMod+_ {suc b} {m} {n} (result q₀ r₀ prop₀) (result q₁ r₁ prop₁) | result zero rᵣ propᵣ =
@@ -81,6 +188,7 @@ _DivMod+_ {suc b} {m} {n} (result q₀ r₀ prop₀) (result q₁ r₁ prop₁) 
             ≡Eq⟨ cong (λ x → toℕ rᵣ + x * suc b) (+-comm (suc qᵣ) (q₀ + q₁)) ⟩
                 toℕ rᵣ + (q₀ + q₁ + suc qᵣ) * suc b
             ∎Eq
+-}
 
 {-
 DivMod+-left-identity : ∀ {b m} → (x : DivMod m (suc b)) → (result 0 Fzero refl) DivMod+ x ≡ x
