@@ -57,16 +57,23 @@ beginEq
 ∎Eq
 -}
 
+record DM (dividend divisor : ℕ) : Set where
+    constructor dm
+    field
+        q : ℕ
+        r : Fin divisor
+{-
+_DM+_ : ∀ {b m n} → DM m b → DM n b → DM (m + n) b
+_DM+_ {zero}          (dm q₀ ()) (dm q₁ ())
+_DM+_ {suc b} (dm zero Fzero) (dm q₁ r₁) = dm q₁ Fzero
+_DM+_ {suc n₁} (dm zero (Fsuc r₀)) (dm q₁ r₁) = {!   !}
+_DM+_ {suc b} (dm (suc q₀) Fzero) (dm q₁ r₁) = {!   !}
+_DM+_ {suc b} (dm (suc q₀) (Fsuc r₀)) (dm q₁ r₁) = {!   !}
+-}
+{-
 _DivMod+_ : ∀ {b m n} → DivMod m b → DivMod n b → DivMod (m + n) b
 _DivMod+_ {zero}          (result q₀       ()        prop₀) (result q₁ () prop₁)
-_DivMod+_ {suc b} {m} {n} (result zero     Fzero     prop₀) (result q₁ r₁ prop₁) = result q₁ r₁ $
-    beginEq
-        m + n
-    ≡Eq⟨ cong (λ x → x + n) prop₀ ⟩
-        n
-    ≡Eq⟨ prop₁ ⟩
-        toℕ r₁ + q₁ * suc b
-    ∎Eq
+_DivMod+_ {suc b} {m} {n} (result zero     Fzero     prop₀) (result q₁ r₁ prop₁) = result q₁ r₁ {! prop₁  !} -- (cong₂ _+_ prop₀ prop₁)
 _DivMod+_ {suc b} {m} {n} (result zero     (Fsuc r₀) prop₀) (result q₁ r₁ prop₁) with ((toℕ (Fsuc r₀) + toℕ r₁) divMod (suc b))
 _DivMod+_ {suc b} {m} {n} (result zero     (Fsuc r₀) prop₀) (result q₁ r₁ prop₁) | result zero rᵣ propᵣ =
     let q = q₁
@@ -151,45 +158,22 @@ _DivMod+_ {suc b} {m} {n} (result (suc q₀) (Fsuc r₀) prop₀) (result q₁ r
             ≡Eq⟨ cong (λ x → toℕ rᵣ + x) (sym (distribʳ-*-+ (suc b) (suc qᵣ) (suc (q₀ + q₁)))) ⟩
                 toℕ rᵣ + (suc qᵣ + (suc q₀ + q₁)) * suc b
             ∎Eq
-{-
-_DivMod+_ {zero}          (result q₀ () prop₀) (result q₁ () prop₁)
-_DivMod+_ {suc b}         (result q₀ r₀ prop₀) (result q₁ r₁ prop₁) with ((toℕ r₀ + toℕ r₁) divMod (suc b))
-_DivMod+_ {suc b} {m} {n} (result q₀ r₀ prop₀) (result q₁ r₁ prop₁) | result zero rᵣ propᵣ =
-    let q = q₀ + q₁
-        r = rᵣ
-    in  result q r $
-            beginEq
-                m + n
-            ≡Eq⟨ cong₂ _+_ prop₀ prop₁ ⟩
-                (toℕ r₀ + q₀ * suc b) + (toℕ r₁ + q₁ * suc b)
-            ≡Eq⟨ lem-+-exchange (toℕ r₀) (q₀ * suc b) (toℕ r₁) (q₁ * suc b) ⟩
-                toℕ r₀ + toℕ r₁ + (q₀ * suc b + q₁ * suc b)
-            ≡Eq⟨ cong₂ _+_ propᵣ (sym (distribʳ-*-+ (suc b) q₀ q₁)) ⟩
-                toℕ rᵣ + zero + q * suc b
-            ≡Eq⟨ cong (λ x → x + q * suc b) (+-right-identity (toℕ rᵣ)) ⟩
-                toℕ r + q * suc b
-            ∎Eq
-_DivMod+_ {suc b} {m} {n} (result q₀ r₀ prop₀) (result q₁ r₁ prop₁) | result (suc qᵣ) rᵣ propᵣ =
-    let q = q₀ + q₁ + suc qᵣ
-        r = rᵣ
-    in  result q r $
-            beginEq
-                m + n
-            ≡Eq⟨ cong₂ _+_ prop₀ prop₁ ⟩
-                (toℕ r₀ + q₀ * suc b) + (toℕ r₁ + q₁ * suc b)
-            ≡Eq⟨ lem-+-exchange (toℕ r₀) (q₀ * suc b) (toℕ r₁) (q₁ * suc b) ⟩
-                (toℕ r₀ + toℕ r₁) + (q₀ * suc b + q₁ * suc b)
-            ≡Eq⟨ cong₂ _+_ propᵣ (sym (distribʳ-*-+ (suc b) q₀ q₁)) ⟩
-                toℕ rᵣ + suc qᵣ * suc b + (q₀ + q₁) * suc b
-            ≡Eq⟨ +-assoc (toℕ rᵣ) (suc qᵣ * suc b) ((q₀ + q₁) * suc b) ⟩
-                toℕ rᵣ + (suc qᵣ * suc b + (q₀ + q₁) * suc b)
-            ≡Eq⟨ cong (λ x → toℕ rᵣ + x) (sym (distribʳ-*-+ (suc b) (suc qᵣ) (q₀ + q₁))) ⟩
-                toℕ rᵣ + (suc qᵣ + (q₀ + q₁)) * suc b
-            ≡Eq⟨ cong (λ x → toℕ rᵣ + x * suc b) (+-comm (suc qᵣ) (q₀ + q₁)) ⟩
-                toℕ rᵣ + (q₀ + q₁ + suc qᵣ) * suc b
-            ∎Eq
 -}
-
+-- DivMod+-left-identity : ∀ {b n} → (x : DivMod n (suc b)) → _DivMod+_ {suc b} {0} {n} (result 0 Fzero refl) x ≡ x
+-- DivMod+-left-identity {b} {n} (result q r prop) = {!   !}
+{-
+    beginEq
+        _DivMod+_ {suc b} {m} {n} (result 0 Fzero p) (result q r prop)
+    ≡Eq⟨ refl ⟩
+        {!   !}
+    ≡Eq⟨ {!   !} ⟩
+        {!   !}
+    ≡Eq⟨ {!   !} ⟩
+        {!   !}
+    ≡Eq⟨ {!   !} ⟩
+        result q r prop
+    ∎Eq -- cong (result q r) {!   !} -- cong (result q r) refl
+-}
 {-
 DivMod+-left-identity : ∀ {b m} → (x : DivMod m (suc b)) → (result 0 Fzero refl) DivMod+ x ≡ x
 DivMod+-left-identity {b} {m} (result q r prop) with (toℕ Fzero + toℕ r) divMod (suc b)
@@ -276,7 +260,7 @@ postulate
     div-mono : (base : ℕ) → (≢0 : False (base ≟ 0))
              → let _/base = λ x → (x div base) {≢0}
                in  _/base Preserves _≤_ ⟶ _≤_
-
+{-
 n/n≡1 : ∀ n → (≢0 : False (n ≟ 0)) → (n div n) {≢0} ≡ 1
 n/n≡1 zero ()
 n/n≡1 (suc n) ≢0 with ((suc n) divMod (suc n)) {≢0} | inspect (λ w → ((suc n) divMod (suc n)) {w}) ≢0
@@ -301,7 +285,7 @@ n/n≡1 (suc n) ≢0 | result (suc (suc q)) r prop | PropEq.[ eq ] =
 lem : ∀ m n → n ≤ m → (≢0 : False (n ≟ 0)) → (n div n) {≢0} ≤ (m div n) {≢0}
 lem m zero n≤m ()
 lem m (suc n) n≤m ≢0 = div-mono (suc n) {!   !} n≤m
-
+-}
 {-
 div-mono : (base : ℕ) → (≢0 : False (base ≟ 0))
          → let _/base = λ x → (x div base) {≢0}

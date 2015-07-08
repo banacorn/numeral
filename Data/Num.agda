@@ -7,18 +7,21 @@ open ≤-Reasoning
 
 open import Data.Nat.Etc
 open import Data.Nat.DivMod
-open import Data.Nat.Properties using (m≤m+n; n≤m+n;_+-mono_)
+open import Data.Nat.DivMod.Properties using (div-mono)
+open import Data.Nat.Properties using (m≤m+n; n≤m+n;_+-mono_; pred-mono; ∸-mono; ≰⇒>; n∸n≡0; +-∸-assoc; m+n∸n≡m)
 open import Data.Nat.Properties.Simple using (+-right-identity; +-suc; +-assoc; +-comm; distribʳ-*-+)
 open import Data.Fin.Properties using (bounded)
-open import Data.Fin using (Fin; fromℕ≤; inject≤)
+open import Data.Fin using (Fin; fromℕ≤; inject≤; #_)
     renaming (toℕ to F→N; fromℕ to N→F; zero to Fz; suc to Fs)
 open import Data.Product
 open import Data.Maybe
 
+open import Induction.Nat using (rec; Rec)
+import Level
 open import Function
 open import Data.Unit using (tt)
 open import Relation.Nullary
-open import Relation.Nullary.Decidable using (True; False; toWitness)
+open import Relation.Nullary.Decidable using (True; False; toWitness; toWitnessFalse; fromWitness; fromWitnessFalse)
 open import Relation.Nullary.Negation using (contradiction; contraposition)
 open import Relation.Binary
 
@@ -65,6 +68,13 @@ D→F (D x) = x
 D→N : ∀ {b m n} → Digit b m n → ℕ
 D→N {m = m} d = m + F→N (D→F d)
 
+-- infix 4 _D≤_ -- _D<_ _≥′_ _>′_
+
+-- data _D≤_ {b m n} (x : Digit b m n) : (y : Digit b m n) → Set where
+--   D≤-refl :                          x D≤ x
+--  D≤-step : ∀ {y} (xD≤y : x D≤ y) → x D≤
+  -- ≤′-step : ∀ {n} (m≤′n : m ≤′ n) → m ≤′ suc n
+
 private
 
     -- alias
@@ -76,111 +86,65 @@ private
     ≤-antisym   = IsPartialOrder.antisym ℕ-isPartialOrder
     ≤-total     = IsTotalOrder.total ℕ-isTotalOrder
 
-
-    -- some boring lemmas
-    lem₂ : ∀ m n → n ≤ m → {≢0 : False (n ≟ 0)} → 0 < (_div_ m n {≢0})
-    lem₂ m       zero    n≤m {()}
-    lem₂ zero    (suc n) ()
-    lem₂ (suc m) (suc n) n≤m {≢0} with compare m n
-    lem₂ (suc m) (suc .(suc (m + k))) (s≤s n≤m) {tt} | less .m k    = contradiction n≤m (>⇒≰ (s≤s (m≤m+n m k)))
-    lem₂ (suc m) (suc .m)              n≤m           | equal .m     = s≤s z≤n
-    lem₂ (suc .(suc (n + k))) (suc n) n≤m            | greater .n k = s≤s z≤n
-
-
-    lem₃ : ∀ m n → n ≤ m → {≢0 : False (n ≟ 0)} → m > F→N (_mod_ m n {≢0})
-    lem₃ m       zero    n≤m {()}
-    lem₃ zero    (suc n) ()
-    lem₃ (suc m) (suc n) n≤m {≢0} with _divMod_ (suc m) (suc n) {≢0} | inspect (λ x → _divMod_ (suc m) (suc n) {≢0 = x}) ≢0
-    lem₃ (suc m) (suc n) n≤m {tt} | result zero remainder property | PropEq.[ eq ] =
-        contradiction (≤-refl (cong DivMod.quotient eq)) (>⇒≰ (lem₂ (suc m) (suc n) n≤m))
-    lem₃ (suc m) (suc n) n≤m {tt} | result (suc quotient) remainder property | w =
-        begin
-            suc (F→N remainder)
-        ≤⟨ s≤s (m≤m+n (F→N remainder) (n + quotient * suc n)) ⟩
-            suc (F→N remainder + (n + quotient * suc n))
-        ≡⟨ sym (+-suc (F→N remainder) (n + quotient * suc n)) ⟩
-            F→N remainder + suc (n + quotient * suc n)
-        ≡⟨ sym property ⟩
-            suc m
-        ∎
     -- helper function for adding two 'Fin n' with offset 'm'
     -- (m + x) + (m + y) - m = m + x + y
     D+sum : ∀ {n} (m : ℕ) → (x y : Fin n) → ℕ
     D+sum m x y = m + (F→N x) + (F→N y)
 
 
---  if x D+ y overflown
---  let x D+ y be the largest digit that is congruent modulo b
---  for example, redundant binary number (b = 2, m = 0, n = 3)
---      1 + 2 ≡ 1 mod b
---      2 + 2 ≡ 2 mod b
---
---  Algorithm:
---  let sum      = x + y
---      sum%base = sum `mod` base
---      n%base   = n `mod` base
---      suc Q    = n `div` base
---  in
---      | sum < n = sum
---      | sum ≥ n, sum%base ≡ 0, n%base ≢ 0 = suc Q * base
---      | sum ≥ n = Q * base + sum%base
+suppress-pred : ℕ → Set
+suppress-pred _ = ℕ → ℕ
 
-_D+_ : ∀ {b m n} → Digit b m n → Digit b m n →  Digit b m n
+suppress-rec-struct : (x : ℕ) → Rec Level.zero suppress-pred x → (bound : ℕ) → ℕ
+suppress-rec-struct zero p bound = 0
+suppress-rec-struct (suc x) p bound with bound ≤? suc (p bound)
+suppress-rec-struct (suc x) p bound | yes q = suc (p bound) ∸ bound
+suppress-rec-struct (suc x) p bound | no ¬q = suc (p bound)
+
+-- if x ≥ bound, then substract bound from x, until x < bound
+suppress : (x bound : ℕ) → ℕ
+suppress = rec suppress-pred suppress-rec-struct
+
+suppressed<bound : (x bound : ℕ) → (≢0 : False (bound ≟ 0)) → suppress x bound < bound
+suppressed<bound zero    zero        ()
+suppressed<bound zero    (suc bound) ≢0 = s≤s z≤n
+suppressed<bound (suc x) zero        ()
+suppressed<bound (suc x) (suc bound) ≢0 with suc bound ≤? suc (suppress x (suc bound))
+suppressed<bound (suc x) (suc bound) ≢0 | yes p =
+    begin
+        suc (suppress x (suc bound) ∸ bound)
+    ≤⟨ ≤-refl (sym (+-∸-assoc 1 p)) ⟩
+        suc (suppress x (suc bound)) ∸ bound
+    ≤⟨ ∸-mono {suc (suppress x (suc bound))} {suc bound} {bound} {bound} (suppressed<bound x (suc bound) tt) (≤-refl refl) ⟩
+        suc bound ∸ bound
+    ≤⟨ ≤-refl (m+n∸n≡m 1 bound) ⟩
+        suc zero
+    ≤⟨ s≤s z≤n ⟩
+        suc bound
+    ∎
+suppressed<bound (suc x) (suc bound) ≢0 | no ¬p = ≰⇒> ¬p
+
+suppress′ : (x bound : ℕ) → (≢0 : False (bound ≟ 0)) → Fin bound
+suppress′ x bound ≢0 = fromℕ≤ {suppress x bound} (suppressed<bound x bound ≢0)
+
+_D+_ : ∀ {b m n} → Digit b m n → Digit b m n → Digit b m n
 _D+_ {zero}                ()     ()
 _D+_ {suc zero}            x      _      = x
-_D+_ {suc (suc b)} {m} {n} (D x) (D y) with suc (D+sum m x y) ≤? n
-_D+_ {suc (suc b)} {m} {n} (D x) (D y {b≤n} {bm≤n}) | yes p =
-    D (fromℕ≤ {D+sum m x y} p) {b≤n} {bm≤n} -- just return the sum
-_D+_ {suc (suc b)} {m} {n} (D x) (D y) | no ¬p with n divMod (suc (suc b)) | inspect (λ w → _divMod_ n (suc (suc b)) {≢0 = w}) tt
-_D+_ {suc (suc b)} {m} {n} (D x) (D y {b≤n} {bm≤n}) | no ¬p | result zero n%base prop | PropEq.[ eq ] =
-    -- prop   : n ≡ n%base + 0
-    -- prop'  : n ≤ n%base
-    -- lem₃   : n > n%base
-    let base = suc (suc b)
-        prop' =
-            begin
-                n
-            ≡⟨ prop ⟩
-                F→N n%base + 0
-            ≡⟨ +-right-identity (F→N n%base) ⟩
-                F→N n%base
-            ≡⟨ cong (λ w → F→N (DivMod.remainder w)) (sym eq) ⟩
-                F→N (DivMod.remainder (n divMod suc (suc b)))
-            ∎
-        ¬lem₃ = >⇒≰ (lem₃ n base (toWitness b≤n))
-    in  contradiction prop' ¬lem₃
-_D+_ {suc (suc b)} {m} {n} (D x) (D y {b≤n} {bm≤n}) | no ¬p | result (suc Q) n%base prop | PropEq.[ eq ] with D+sum m x y divMod (suc (suc b)) | inspect (λ w → _divMod_ (D+sum m x y) (suc (suc b)) {≢0 = w}) tt
-_D+_ {suc (suc b)} {m} {n} (D x) (D y {b≤n} {bm≤n}) | no ¬p | result (suc Q) (Fs n%base) prop | PropEq.[ eq ] | result _ Fz _ | PropEq.[ eq₁ ] =
-    -- the case when n%base ≢ 0 and sum%base ≡ 0
-    let base = suc (suc b)
-        sum = suc Q * base
-        sum<n = begin
-                suc sum
-            ≤⟨ s≤s (n≤m+n (F→N n%base) sum) ⟩
-                suc (F→N n%base + sum)
-            ≡⟨ sym prop ⟩
-                n
-            ∎
-    in  D (fromℕ≤ {sum} sum<n) {b≤n} {bm≤n}
-_D+_ {suc (suc b)} {m} {n} (D x) (D y {b≤n} {bm≤n}) | no ¬p | result (suc Q) n%base prop | PropEq.[ eq ] | result _ sum%base property | PropEq.[ eq₁ ] =
-    let base = suc (suc b)
-        sum = F→N sum%base + Q * base
-        sum<n = begin
-                suc (F→N sum%base + Q * base)
-            ≡⟨ sym (+-assoc 1 (F→N sum%base) (Q * base)) ⟩
-                suc (F→N sum%base) + Q * base
-            ≤⟨ bounded sum%base +-mono ≤-refl refl ⟩
-                base + Q * base
-            ≤⟨ n≤m+n (F→N n%base) (base + Q * base) ⟩
-                F→N n%base + (base + Q * base)
-            ≡⟨ sym prop ⟩
-                n
-            ∎
-    in  D (fromℕ≤ {sum} sum<n) {b≤n} {bm≤n}
+_D+_ {suc (suc b)} {m} {n} (D x) (D y {b≤n} {bm≤n}) = D (suppress′ (D+sum m x y) n n≢0) {b≤n} {bm≤n}
+    where   n≢0 = fromWitnessFalse $ >⇒≢ $
+                begin
+                    suc zero
+                ≤⟨ s≤s z≤n ⟩
+                    suc (suc b)
+                ≤⟨ toWitness b≤n ⟩
+                    n
+                ∎
 
 --      2 ≤ base
 --  ⇒  max * 2 ≤ max * base
 --  ⇒  max * 2 / base ≤ max
+
+{-
 _D⊕_ : ∀ {b m n} → Digit b m n → Digit b m n → Maybe (Digit b m n)
 _D⊕_                       (U0 x) y = just y
 _D⊕_                       (U1 x) y = just y
@@ -192,7 +156,7 @@ _D⊕_ {suc (suc b)} {m} {n} (D x) (D y {b≤n} {bm≤n}) | no ¬p | result quot
         sum = D+sum m x y
         quotient<n = begin
                 suc quotient
-            ≤⟨ {!   !} ⟩
+            ≤⟨ div-mono base tt {!    !} ⟩
                 {!   !}
             ≤⟨ {!   !} ⟩
                 {!   !}
@@ -202,6 +166,7 @@ _D⊕_ {suc (suc b)} {m} {n} (D x) (D y {b≤n} {bm≤n}) | no ¬p | result quot
                 n
             ∎
     in  just (D (fromℕ≤ {quotient} quotient<n) {b≤n} {bm≤n})
+-}
 {-
     let base = suc (suc b)
         sum = D+sum m x y
@@ -256,7 +221,7 @@ _D⊕_ {suc (suc b)} {m} {n} (D x) (D y {b≤n} {bm≤n}) | no ¬p | result quot
 
 data System : (base from range : ℕ) → Set where
     Sys : ∀ {b m n} → List (Digit (suc b) m n) → System (suc b) m n
-
+{-
 _S+_ : ∀ {b m n} → System b m n → System b m n → System b m n
 Sys []       S+ Sys ys = Sys ys
 Sys xs       S+ Sys [] = Sys xs
@@ -268,7 +233,7 @@ S→N {zero} ()
 S→N {suc b} (Sys list) = foldr (shift-then-add (suc b)) 0 list
     where   shift-then-add : ∀ {m n} → (b : ℕ) → Digit b m n → ℕ → ℕ
             shift-then-add b x acc = (D→N x) + (acc * b)
-
+-}
 --
 --  Example
 --

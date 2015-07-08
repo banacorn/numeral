@@ -53,6 +53,11 @@ m≰n⇒n<m (suc m) (suc n) p = s≤s (m≰n⇒n<m m n (λ z → p (s≤s z)))
 >⇒≰ {suc m} {zero} rel ()
 >⇒≰ {suc m} {suc n} (s≤s rel) (s≤s x) = contradiction x (>⇒≰ rel)
 
+>⇒≢ : _>_ ⇒ _≢_
+>⇒≢ {zero}  ()      m≡n
+>⇒≢ {suc m} {zero}   m>n ()
+>⇒≢ {suc m} {suc n} (s≤s m>n) m≡n = >⇒≢ m>n (cong pred m≡n)
+
 {-
 ≰⇒> : _≰_ ⇒ _>_
 ≰⇒> {zero}          z≰n with z≰n z≤n
