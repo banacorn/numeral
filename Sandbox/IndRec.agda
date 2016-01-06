@@ -106,7 +106,7 @@ module Indexed where
 
     ⟦_⟧ : ∀ {I} → Desc I → (I → Set) → (I → Set)
     ⟦ arg A D ⟧ R I = Σ A (λ a → ⟦ D a ⟧ R I)
-    ⟦ rec J D ⟧ R I = R I × ⟦ D ⟧ R I
+    ⟦ rec J D ⟧ R I = R J × ⟦ D ⟧ R I
     ⟦ ret J   ⟧ R I = J ≡ I
 
     data Data {I} (D : Desc I) : I → Set where
@@ -126,22 +126,86 @@ module Indexed where
     suc : ℕ → ℕ
     suc n = ⟨ (true , (n , refl)) ⟩
 
+    indℕ : (P : ℕ → Set)
+         → P zero
+         → ((n : ℕ) → P n → P (suc n))
+         → (x : ℕ)
+         → P x
+    indℕ P base step ⟨ true , n , refl ⟩ = step n (indℕ P base step n)
+    indℕ P base step ⟨ false , refl ⟩ = base
+
+    -- Nat
+    NatDesc : Desc ℕ
+    NatDesc = arg Bool (
+        λ { true → arg ℕ (λ { n → rec n (ret (suc n)) })
+          ; false → ret zero
+          })
+
+    Nat : ℕ → Set
+    Nat n = Data NatDesc n
+
+    zeroNat : Nat zero
+    zeroNat = ⟨ (false , refl) ⟩
+
+    sucNat : ∀ {n} → Nat n → Nat (suc n)
+    sucNat {n} x = ⟨ (true , (n , (x , refl))) ⟩
+
     -- Maybe
-    -- MaybeDesc : (A : Set) → Desc ⊤
-    -- MaybeDesc A = arg Bool (λ { true → {!   !} ; false → ret tt })
-    --
-    -- Maybe : Set → Set
-    -- Maybe A = Data (MaybeDesc A) tt
-    --
-    -- nothing : ∀ {A} → Maybe A
-    -- nothing = ⟨ (false , refl) ⟩
-    --
-    -- just : ∀ {A} → A → Maybe A
-    -- just n = ⟨ (true , ⟨ (false , refl) ⟩ , refl) ⟩
+    MaybeDesc : Set → Desc ⊤
+    MaybeDesc A = arg Bool (λ { true → arg A (λ _ → ret tt) ; false → ret tt })
+
+    Maybe : Set → Set
+    Maybe A = Data (MaybeDesc A) tt
+
+    nothing : ∀ {A} → Maybe A
+    nothing = ⟨ (false , refl) ⟩
+
+    just : ∀ {A} → A → Maybe A
+    just n = ⟨ (true , (n , refl)) ⟩
+
+    -- List
+    ListDesc : Set → Desc ⊤
+    ListDesc A = arg Bool (
+        λ { true  → arg A (λ _ → rec tt (ret tt))
+          ; false → ret tt
+          })
+
+    List : Set → Set
+    List A = Data (ListDesc A) tt
+
+    nil : ∀ {A} → List A
+    nil = ⟨ (false , refl) ⟩
+
+    cons : ∀ {A} → A → List A → List A
+    cons x xs = ⟨ (true , (x , (xs , refl))) ⟩
+
+    indList : ∀ {A} (P : List A → Set)
+            → P nil
+            → ((x : A ) → (xs : List A) → P xs → P (cons x xs))
+            → (xs : List A)
+            → P xs
+    indList P base step ⟨ true , x , xs , refl ⟩ = step x xs (indList P base step xs)
+    indList P base step ⟨ false , refl ⟩ = base
+
+    -- Vec
+    VecDesc : Set → Desc ℕ
+    VecDesc A = arg Bool (
+      λ { true → arg A (λ _ → arg ℕ (λ n → rec n (ret (suc n))))
+        ; false → ret zero
+        })
+
+    Vec : Set → ℕ → Set
+    Vec A n = Data (VecDesc A) n
+
+    nilV : ∀ {A} → Vec A zero
+    nilV = ⟨ false , refl ⟩
+
+    consV : ∀ {A n} → A → Vec A n → Vec A (suc n)
+    consV {n = n} x xs = ⟨ (true , (x , n , (xs , refl))) ⟩
 
 --
 --     ⟦_⟧ : ∀ {I} → Desc I → (I → Set) → I → Set
---     ⟦ arg A D ⟧ R i = Σ A (λ a → ⟦ D a ⟧ R i)
+--     ⟦ arg A D ⟧ R i = Σ A (λ a → ⟦ D a ⟧ R i)d
 --     ⟦ rec h D ⟧ R i = R h × ⟦ D ⟧ R i
 --     ⟦ ret o   ⟧ R i = o ≡ i
 --

@@ -9,9 +9,6 @@ open import Data.Empty using (⊥; ⊥-elim)
 data W (S : Set) (P : S → Set) : Set where
     sup : (s : S) → (f : P s → W S P) → W S P
 
-
-
-
 -- data ℕ : Set where
 --     zero : ℕ             _^0
 --     succ : ℕ → ℕ        ∣ℕ∣
@@ -72,7 +69,7 @@ indW : (S : Set)
           → C (sup s f))                -- C holds for (sup s f)
      → (x : W S P)
      → C x
-indW S P C step (sup s f) = step s f (λ p → indW S P C step (f p))
+indW S P C step (sup s f) = step s f (λ p → {!   !} S P C step (f p))
 
 -- indℕ : (C : ℕ → Set) → C zero → ((n : ℕ) → C n → C (succ n)) → (x : ℕ) → C x
 -- indℕ C base step (sup true f) = step (f tt) (indℕ C base step (f tt))
