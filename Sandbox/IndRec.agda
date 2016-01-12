@@ -9,258 +9,129 @@ open import Data.Bool
 open import Data.Unit
 open import Data.Empty
 open import Relation.Binary.PropositionalEquality
+open ≡-Reasoning
 
-module Plain where
-    data Desc : Set₁ where
-        arg : (A : Set)             -- a bag of tags to choose constructors with
-            → (A → Desc)            -- given a tag, return the description of the constructor it corresponds to
-            → Desc
-        rec : Desc → Desc           -- recursive subnode
-        ret : Desc                  -- stop
+data Desc : Set₁ where
+    arg : (A : Set)             -- a bag of tags to choose constructors with
+        → (A → Desc)            -- given a tag, return the description of the constructor it corresponds to
+        → Desc
+    rec : Desc → Desc           -- recursive subnode
+    ret : Desc                  -- stop
 
+-- the "decoder", "interpreter"
+⟦_⟧ : Desc → Set → Set
+⟦ arg A D ⟧ R = Σ A (λ a → ⟦ D a ⟧ R)
+⟦ rec D   ⟧ R = R × ⟦ D ⟧ R
+⟦ ret     ⟧ R = ⊤
 
-    ⟦_⟧ : Desc → Set → Set
-    ⟦ arg A D ⟧ R = Σ A (λ a → ⟦ D a ⟧ R)
-    ⟦ rec D   ⟧ R = R × ⟦ D ⟧ R
-    ⟦ ret     ⟧ R = ⊤
+-- "μ" or "in" in some other literature
+data Data (D : Desc) : Set where
+    ⟨_⟩ : ⟦ D ⟧ (Data D) → Data D
 
-    data Data (D : Desc) : Set where
-        ⟨_⟩ : ⟦ D ⟧ (Data D) → Data D
+map : ∀ {A B} → (d : Desc) → (A → B) → ⟦ d ⟧ A → ⟦ d ⟧ B
+map (arg A  d) f (a , y) = a , (map (d a) f y)
+map (rec desc) f (a , x) = (f a) , (map desc f x)
+map (ret) f tt = tt
 
-    -- ℕ
-    ℕDesc : Desc
-    ℕDesc = arg Bool λ { false → ret ; true → rec ret }
+--  ⟦ F ⟧ A ─── alg ──➞ A
+--    ∣                  ↑
+--                      fold alg
+--                       |
+--                      Data F ≅ ⟦ F ⟧ (Data F) ≅ ⟦ F ⟧ (⟦ F ⟧ (⟦ F ⟧ ...))
 
-    ℕ : Set
-    ℕ = Data ℕDesc
+-- fold : ∀ {A} → (F : Desc) → (⟦ F ⟧ A → A) → Data F → A
+-- fold F alg ⟨ x ⟩ = alg (map F (fold F alg) x)
 
-    zero : ℕ
-    zero = ⟨ (false , tt) ⟩
+-- mapFold F alg x = map F (fold F alg) x
+-- fold F alg x = alg (mapFold F alg (out x))
+-- mapFold F alg x = map F (λ y → alg (mapFold F alg (out y))) x
 
-    suc : ℕ → ℕ
-    suc n = ⟨ (true , (n , tt)) ⟩
+mapFold : ∀ {A} (F G : Desc) → (⟦ G ⟧ A → A) → ⟦ F ⟧ (Data G) → ⟦ F ⟧ A
+mapFold (arg T decoder) G alg (t , cnstrctr) = t , (mapFold (decoder t) G alg cnstrctr)
+mapFold (rec F) G alg (⟨ x ⟩ , xs) = alg (mapFold G G alg x) , mapFold F G alg xs
+mapFold ret G alg x = tt
 
-    -- induction principle on ℕ
-    indℕ : (P : ℕ → Set)
-         → (P zero)
-         → ((n : ℕ) → (P n) → (P (suc n)))
-         → (x : ℕ)
-         → P x
-    indℕ P base step ⟨ true , n-1 , _ ⟩ = step n-1 (indℕ P base step n-1)
-    indℕ P base step ⟨ false , _ ⟩ = base
+fold : ∀ {A} → (F : Desc) → (⟦ F ⟧ A → A) → Data F → A
+fold F alg ⟨ x ⟩ = alg (mapFold F F alg x)
 
-    _+_ : ℕ → ℕ → ℕ
-    x + y = indℕ (λ _ → ℕ) y (λ n x → suc x) x
+-- ℕ
+ℕDesc : Desc
+ℕDesc = arg Bool λ { false → ret ; true → rec ret }
 
-    -- Maybe
-    MaybeDesc : Set → Desc
-    MaybeDesc A = arg Bool (λ { false → ret ; true → arg A (λ x → ret) })
+ℕ : Set
+ℕ = Data ℕDesc
 
-    Maybe : Set → Set
-    Maybe A = Data (MaybeDesc A)
+zero : ℕ
+zero = ⟨ (false , tt) ⟩
 
-    nothing : ∀ {A} → Maybe A
-    nothing = ⟨ (false , tt) ⟩
+suc : ℕ → ℕ
+suc n = ⟨ (true , (n , tt)) ⟩
 
-    just : ∀ {A} → A → Maybe A
-    just a = ⟨ (true , (a , tt)) ⟩
+-- induction principle on ℕ
+indℕ : (P : ℕ → Set)
+     → (P zero)
+     → ((n : ℕ) → (P n) → (P (suc n)))
+     → (x : ℕ)
+     → P x
+indℕ P base step ⟨ true , n-1 , _ ⟩ = step n-1 (indℕ P base step n-1)
+indℕ P base step ⟨ false , _ ⟩ = base
 
-    mapMaybe : ∀ {A B} → (A → B) → Maybe A → Maybe B
-    mapMaybe f ⟨ true , a , tt ⟩ = ⟨ (true , ((f a) , tt)) ⟩
-    mapMaybe f ⟨ false , tt ⟩ = ⟨ false , tt ⟩
+_+_ : ℕ → ℕ → ℕ
+x + y = indℕ (λ _ → ℕ) y (λ n x → suc x) x
 
-    -- List
-    ListDesc : Set → Desc
-    ListDesc A = arg Bool (λ { false → ret ; true → arg A (λ _ → rec ret )})
+-- Maybe
+MaybeDesc : Set → Desc
+MaybeDesc A = arg Bool (λ { false → ret ; true → arg A (λ x → ret) })
 
-    List : Set → Set
-    List A = Data (ListDesc A)
+Maybe : Set → Set
+Maybe A = Data (MaybeDesc A)
 
-    nil : ∀ {A} → List A
-    nil = ⟨ (false , tt) ⟩
+nothing : ∀ {A} → Maybe A
+nothing = ⟨ (false , tt) ⟩
 
-    cons : ∀ {A} → A → List A → List A
-    cons x xs = ⟨ (true , (x , (xs , tt))) ⟩
+just : ∀ {A} → A → Maybe A
+just a = ⟨ (true , (a , tt)) ⟩
 
-    mapList : ∀ {A B} → (A → B) → List A → List B
-    mapList f ⟨ true , x , xs , tt ⟩ = ⟨ (true , ((f x) , ((mapList f xs) , tt))) ⟩
-    mapList f ⟨ false , tt ⟩ = ⟨ false , tt ⟩
+mapMaybe : ∀ {A B} → (A → B) → Maybe A → Maybe B
+mapMaybe f ⟨ true , a , tt ⟩ = ⟨ (true , ((f a) , tt)) ⟩
+mapMaybe f ⟨ false , tt ⟩ = ⟨ false , tt ⟩
 
-    indList : ∀ {A} (P : List A → Set)
-            → P nil
-            → ((x : A) → (xs : List A) → P xs → P (cons x xs))
-            → (xs : List A)
-            → P xs
-    indList P base step ⟨ true , x , xs , tt ⟩ = step x xs (indList P base step xs)
-    indList P base step ⟨ false , tt ⟩ = base
+-- List
+ListDesc : Set → Desc
+ListDesc A = arg Bool (λ { false → ret ; true → arg A (λ _ → rec ret )})
 
-    foldList : ∀ {A B} (f : A → B → B) → B → List A → B
-    foldList {A} {B} f e xs = indList (λ _ → B) e (λ x _ acc → f x acc) xs
+List : Set → Set
+List A = Data (ListDesc A)
 
+nil : ∀ {A} → List A
+nil = ⟨ (false , tt) ⟩
 
-module Indexed where
-    data Desc (I : Set) : Set₁ where
-        arg : (A : Set) → (A → Desc I) → Desc I
-        rec : I → Desc I → Desc I
-        ret : I → Desc I
+cons : ∀ {A} → A → List A → List A
+cons x xs = ⟨ (true , (x , (xs , tt))) ⟩
 
-    ⟦_⟧ : ∀ {I} → Desc I → (I → Set) → (I → Set)
-    ⟦ arg A D ⟧ R I = Σ A (λ a → ⟦ D a ⟧ R I)
-    ⟦ rec J D ⟧ R I = R J × ⟦ D ⟧ R I
-    ⟦ ret J   ⟧ R I = J ≡ I
+-- mapList : ∀ {A B} → (A → B) → List A → List B
+-- mapList f ⟨ true , x , xs , tt ⟩ = ⟨ (true , ((f x) , ((mapList f xs) , tt))) ⟩
+-- mapList f ⟨ false , tt ⟩ = ⟨ false , tt ⟩
 
-    data Data {I} (D : Desc I) : I → Set where
-        ⟨_⟩ : ∀ {i} → ⟦ D ⟧ (Data D) i → Data D i
+indList : ∀ {A} (P : List A → Set)
+        → P nil
+        → ((x : A) → (xs : List A) → P xs → P (cons x xs))
+        → (xs : List A)
+        → P xs
+indList P base step ⟨ true , x , xs , tt ⟩ = step x xs (indList P base step xs)
+indList P base step ⟨ false , tt ⟩ = base
 
+foldList : ∀ {A B} (f : A → B → B) → B → List A → B
+foldList {A} {B} f e xs = indList (λ _ → B) e (λ x _ acc → f x acc) xs
 
-    -- ℕ
-    ℕDesc : Desc ⊤
-    ℕDesc = arg Bool (λ { true → rec tt (ret tt) ; false → ret tt })
-
-    ℕ : Set
-    ℕ = Data ℕDesc tt
-
-    zero : ℕ
-    zero = ⟨ (false , refl) ⟩
-
-    suc : ℕ → ℕ
-    suc n = ⟨ (true , (n , refl)) ⟩
-
-    indℕ : (P : ℕ → Set)
-         → P zero
-         → ((n : ℕ) → P n → P (suc n))
-         → (x : ℕ)
-         → P x
-    indℕ P base step ⟨ true , n , refl ⟩ = step n (indℕ P base step n)
-    indℕ P base step ⟨ false , refl ⟩ = base
-
-    -- Nat
-    NatDesc : Desc ℕ
-    NatDesc = arg Bool (
-        λ { true → arg ℕ (λ { n → rec n (ret (suc n)) })
-          ; false → ret zero
-          })
-
-    Nat : ℕ → Set
-    Nat n = Data NatDesc n
-
-    zeroNat : Nat zero
-    zeroNat = ⟨ (false , refl) ⟩
-
-    sucNat : ∀ {n} → Nat n → Nat (suc n)
-    sucNat {n} x = ⟨ (true , (n , (x , refl))) ⟩
-
-    -- Maybe
-    MaybeDesc : Set → Desc ⊤
-    MaybeDesc A = arg Bool (λ { true → arg A (λ _ → ret tt) ; false → ret tt })
-
-    Maybe : Set → Set
-    Maybe A = Data (MaybeDesc A) tt
-
-    nothing : ∀ {A} → Maybe A
-    nothing = ⟨ (false , refl) ⟩
-
-    just : ∀ {A} → A → Maybe A
-    just n = ⟨ (true , (n , refl)) ⟩
-
-    -- List
-    ListDesc : Set → Desc ⊤
-    ListDesc A = arg Bool (
-        λ { true  → arg A (λ _ → rec tt (ret tt))
-          ; false → ret tt
-          })
-
-    List : Set → Set
-    List A = Data (ListDesc A) tt
-
-    nil : ∀ {A} → List A
-    nil = ⟨ (false , refl) ⟩
-
-    cons : ∀ {A} → A → List A → List A
-    cons x xs = ⟨ (true , (x , (xs , refl))) ⟩
-
-    indList : ∀ {A} (P : List A → Set)
-            → P nil
-            → ((x : A ) → (xs : List A) → P xs → P (cons x xs))
-            → (xs : List A)
-            → P xs
-    indList P base step ⟨ true , x , xs , refl ⟩ = step x xs (indList P base step xs)
-    indList P base step ⟨ false , refl ⟩ = base
-
-    -- Vec
-    VecDesc : Set → Desc ℕ
-    VecDesc A = arg Bool (
-      λ { true → arg A (λ _ → arg ℕ (λ n → rec n (ret (suc n))))
-        ; false → ret zero
-        })
-
-    Vec : Set → ℕ → Set
-    Vec A n = Data (VecDesc A) n
-
-    nilV : ∀ {A} → Vec A zero
-    nilV = ⟨ false , refl ⟩
-
-    consV : ∀ {A n} → A → Vec A n → Vec A (suc n)
-    consV {n = n} x xs = ⟨ (true , (x , n , (xs , refl))) ⟩
-
+data ListF (A R : Set) : Set where
+    NilF : ListF A R
+    ConsF : A → R → ListF A R
 --
---     ⟦_⟧ : ∀ {I} → Desc I → (I → Set) → I → Set
---     ⟦ arg A D ⟧ R i = Σ A (λ a → ⟦ D a ⟧ R i)d
---     ⟦ rec h D ⟧ R i = R h × ⟦ D ⟧ R i
---     ⟦ ret o   ⟧ R i = o ≡ i
---
---     data Data {I} (D : Desc I) : I → Set where
---         ⟨_⟩ : ∀ {i} → ⟦ D ⟧ (Data D) i → Data D i
---
---     Nat : Set
---     Nat = Data NatDesc tt
---
---     zero : Nat
---     zero = ⟨ z , refl ⟩
---
---     suc : Nat → Nat
---     suc n = ⟨ (s , n , refl) ⟩
---
---     VecDesc : Set → Desc Nat
---     VecDesc X = arg NatTag f
---         where   f : NatTag → Desc Nat
---                 f z = ret zero
---                 f s = arg X (λ x → arg Nat (λ n → rec n (ret (suc n))))
---
---     Vec : Set → Nat → Set
---     Vec X n = Data (VecDesc X) n
---
---     nil : ∀ {X} → Vec X zero
---     nil = ⟨ (z , refl) ⟩
---
---     cons : ∀ {X n} → X → Vec X n → Vec X (suc n)
---     cons {n = n} x xs = ⟨ (s , x , n , xs , refl) ⟩
---
---     -- Conor used _⊆_ here
---     _⇒_ : ∀ {I} → (I → Set) → (I → Set) → Set
---     X ⇒ Y = ∀ i → X i → Y i
---
---
---     -- map : ∀ {I X Y} → (D : Desc I) → X ⇒ Y → ⟦ D ⟧ X ⇒ ⟦ D ⟧ Y
---     -- map : ∀ {I X Y} → (D : Desc I) → (∀ i → X i → Y i) → (∀ i → ⟦ D ⟧ X i → ⟦ D ⟧ Y i)
---     -- map : ∀ {I X Y} → (D : Desc I) → _⇒_ {I} X Y → ⟦ D ⟧ X ⇒ ⟦ D ⟧ Y
---     -- map (arg A D) f i (a , D') = a , (map (D a) f i D')
---     -- map (rec h D) f i (x , D') = f h x , map D f i D'
---     -- map (ret o)   f i x        = x
---     --
---     -- Alg : ∀ {I} → Desc I → (I → Set) → Set
---     -- Alg D X = ⟦ D ⟧ X ⇒ X
---
---     -- `fold` won't pass Agda's termination checking if it's defined like this
---     --      fold : ∀ {I X} → (D : Desc I) → Alg D X → Data D ⇒ X
---     --      fold D φ i ⟨ ds ⟩ = φ i (map D (fold D φ) i ds)
---     -- so instead we will fuse map and fold first
---     --      fold D φ i ⟨ ds ⟩   = φ i (map D (fold D φ) i ds)
---     --                          = φ i (mapFold D D φ i x)
---     --      mapFold F G φ i x   = map F (fold G φ) i x
---     --                          = map F (λ i d → fold G φ i d) i x
---     --                          = map F (λ i d → fold G φ i d) i x
---     --                          = map F (φ i (mapFold F G φ)) i x
---
---     -- mapFold : ∀ {I X} → (D E : Desc I) → Alg D X → I → Data D → E
---     -- mapFold F G φ i x = map F (φ i (mapFold F G φ)) i x
+-- g : {A : Set} → ListF A ℕ → ℕ
+-- g NilF = zero
+-- g (ConsF a n) = n
+
+-- foldListF : {A : Set} {R : Set} → (ListF A R → R) → ListF A R → R
+-- foldListF f NilF = f NilF
+-- foldListF f (ConsF x xs) = f (ConsF x xs)
