@@ -24,20 +24,17 @@ data Desc : Set₁ where
 ⟦ rec D   ⟧ R = R × ⟦ D ⟧ R
 ⟦ ret     ⟧ R = ⊤
 
--- "μ" or "in" in some other literature
+-- "μ" in some other literature
 data Data (D : Desc) : Set where
-    ⟨_⟩ : ⟦ D ⟧ (Data D) → Data D
+    ⟨_⟩ : ⟦ D ⟧ (Data D) → Data D   -- or "in"
+
+out : ∀ {D} → Data D → ⟦ D ⟧ (Data D)
+out ⟨ x ⟩ = x
 
 map : ∀ {A B} → (d : Desc) → (A → B) → ⟦ d ⟧ A → ⟦ d ⟧ B
 map (arg A  d) f (a , y) = a , (map (d a) f y)
 map (rec desc) f (a , x) = (f a) , (map desc f x)
 map (ret) f tt = tt
-
---  ⟦ F ⟧ A ─── alg ──➞ A
---    ∣                  ↑
---                      fold alg
---                       |
---                      Data F ≅ ⟦ F ⟧ (Data F) ≅ ⟦ F ⟧ (⟦ F ⟧ (⟦ F ⟧ ...))
 
 -- fold : ∀ {A} → (F : Desc) → (⟦ F ⟧ A → A) → Data F → A
 -- fold F alg ⟨ x ⟩ = alg (map F (fold F alg) x)
@@ -45,6 +42,7 @@ map (ret) f tt = tt
 -- mapFold F alg x = map F (fold F alg) x
 -- fold F alg x = alg (mapFold F alg (out x))
 -- mapFold F alg x = map F (λ y → alg (mapFold F alg (out y))) x
+
 
 mapFold : ∀ {A} (F G : Desc) → (⟦ G ⟧ A → A) → ⟦ F ⟧ (Data G) → ⟦ F ⟧ A
 mapFold (arg T decoder) G alg (t , cnstrctr) = t , (mapFold (decoder t) G alg cnstrctr)
@@ -113,25 +111,18 @@ cons x xs = ⟨ (true , (x , (xs , tt))) ⟩
 -- mapList f ⟨ true , x , xs , tt ⟩ = ⟨ (true , ((f x) , ((mapList f xs) , tt))) ⟩
 -- mapList f ⟨ false , tt ⟩ = ⟨ false , tt ⟩
 
-indList : ∀ {A} (P : List A → Set)
-        → P nil
-        → ((x : A) → (xs : List A) → P xs → P (cons x xs))
-        → (xs : List A)
-        → P xs
-indList P base step ⟨ true , x , xs , tt ⟩ = step x xs (indList P base step xs)
-indList P base step ⟨ false , tt ⟩ = base
+-- indList : ∀ {A} (P : List A → Set)
+--         → P nil
+--         → ((x : A) → (xs : List A) → P xs → P (cons x xs))
+--         → (xs : List A)
+--         → P xs
+-- indList {A} P base step xs = fold (ListDesc A) f xs
+--     where   f : ⟦ ListDesc A ⟧ (P xs) → P xs
+--             f (true , x , Pxs , tt) = {!   !}
+--             f (false , tt) = {!   !}
 
 foldList : ∀ {A B} (f : A → B → B) → B → List A → B
-foldList {A} {B} f e xs = indList (λ _ → B) e (λ x _ acc → f x acc) xs
-
-data ListF (A R : Set) : Set where
-    NilF : ListF A R
-    ConsF : A → R → ListF A R
---
--- g : {A : Set} → ListF A ℕ → ℕ
--- g NilF = zero
--- g (ConsF a n) = n
-
--- foldListF : {A : Set} {R : Set} → (ListF A R → R) → ListF A R → R
--- foldListF f NilF = f NilF
--- foldListF f (ConsF x xs) = f (ConsF x xs)
+foldList {A} {B} f e xs = fold (ListDesc A) alg xs
+    where   alg : ⟦ ListDesc A ⟧ B → B
+            alg (true , n , acc , tt) = f n acc
+            alg (false , tt) = e

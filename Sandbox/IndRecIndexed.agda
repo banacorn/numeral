@@ -24,6 +24,28 @@ data Desc (I : Set) : Set₁ where
 data Data {I} (D : Desc I) : I → Set where
     ⟨_⟩ : ∀ {i} → ⟦ D ⟧ (Data D) i → Data D i
 
+-- an arrow that respects indices
+_⇒_ : ∀ {I} → (I → Set) → (I → Set) → Set
+_⇒_ {I} X Y = (i : I) → X i → Y i
+
+map : ∀ {I} {A B : I → Set} → (D : Desc I) → (A ⇒ B) → ⟦ D ⟧ A ⇒ ⟦ D ⟧ B
+map (arg T U) f i (t , u) = t     , map (U t) f i u
+map (rec j D) f i (a , u) = f j a , map D     f i u
+map (ret j)   f i i≡j     = i≡j
+
+Alg : ∀ {I} (D : Desc I) → (A : I → Set) → Set
+Alg D A = ⟦ D ⟧ A ⇒ A
+
+-- fold D alg i ⟨ x ⟩ = alg i (map D (fold D alg) i x)
+-- mapFold F G alg i x = map F (fold G alg) i x
+
+mapFold : ∀ {I} {A : I → Set} (F G : Desc I) → Alg G A → ⟦ F ⟧ (Data G) ⇒ ⟦ F ⟧ A
+mapFold (arg Tags decoder) G alg i (tag , subnode) = tag , (mapFold (decoder tag) G alg i subnode)
+mapFold (rec j F)          G alg i (⟨ x ⟩ , xs) = alg j (mapFold G G alg j x) , mapFold F G alg i xs
+mapFold (ret j)            G alg i x = x
+
+fold : ∀ {I} {A : I → Set} (D : Desc I) → Alg D A → Data D ⇒ A
+fold D alg i ⟨ x ⟩ = alg i (mapFold D D alg i x)
 
 -- ℕ
 ℕDesc : Desc ⊤
@@ -38,16 +60,23 @@ zero = ⟨ (false , refl) ⟩
 suc : ℕ → ℕ
 suc n = ⟨ (true , (n , refl)) ⟩
 
-indℕ : (P : ℕ → Set)
-     → P zero
-     → ((n : ℕ) → P n → P (suc n))
-     → (x : ℕ)
-     → P x
-indℕ P base step ⟨ true , n , refl ⟩ = step n (indℕ P base step n)
-indℕ P base step ⟨ false , refl ⟩ = base
+-- indℕ : (P : ℕ → Set)
+--      → P zero
+--      → ((n : ℕ) → P n → P (suc n))
+--      → (x : ℕ)
+--      → P x
+-- indℕ P base step ⟨ true , n , refl ⟩ = step n (indℕ P base step n)
+-- indℕ P base step ⟨ false , refl ⟩ = base
+--
+-- _+_ : ℕ → ℕ → ℕ
+-- x + y = indℕ (λ _ → ℕ) y (λ n prf → suc prf) x
+
++alg : ℕ → Alg ℕDesc (λ _ → ℕ)
++alg y .tt (true , sum , refl) = suc sum
++alg y .tt (false , refl) = y
 
 _+_ : ℕ → ℕ → ℕ
-x + y = indℕ (λ _ → ℕ) y (λ n prf → suc prf) x
+x + y = fold ℕDesc (+alg y) tt x
 
 one : ℕ
 one = suc zero
@@ -55,14 +84,9 @@ one = suc zero
 two : ℕ
 two = suc one
 
-+-left-identity : (n : ℕ) → zero + n ≡ n
-+-left-identity n = indℕ (λ x → zero + x ≡ x) refl (λ n₁ _ → refl) n
-
-+-suc : (m n : ℕ) → m + suc n ≡ suc (m + n)
-+-suc m n = indℕ (λ x → x + suc n ≡ suc (x + n)) refl (λ _ prf → cong suc prf) m
-
-+-right-identity : (n : ℕ) → n + zero ≡ n
-+-right-identity n = indℕ (λ x → x + zero ≡ x) refl (λ _ prf → cong suc prf) n
++-suc-left : (m n : ℕ) → suc m + n ≡ suc (m + n)
++-suc-left ⟨ true , m , refl ⟩ n = refl
++-suc-left ⟨ false , refl ⟩ n = refl
 
 -- Nat
 NatDesc : Desc ℕ
@@ -131,20 +155,30 @@ nilV : ∀ {A} → Vec A zero
 nilV = ⟨ false , refl ⟩
 
 consV : ∀ {A n} → A → Vec A n → Vec A (suc n)
-consV {n = n} x xs = ⟨ (true , (x , n , (xs , refl))) ⟩
+consV {A} {n} x xs = ⟨ true , x , n , xs , refl ⟩
 
-indVec : ∀ {A n} (P : ∀ {m} → Vec A m → Set)
-       → P nilV
-       → ((n : ℕ) → (x : A) → (xs : Vec A n) → P xs → P (consV x xs))
-       → (xs : Vec A n)
-       → P xs
-indVec P base step ⟨ true , A , n , xs , refl ⟩ = step n A xs (indVec P base step xs)
-indVec P base step ⟨ false , refl ⟩ = base
-
-_++'_ : ∀ {A m n} → Vec A m → Vec A n → Vec A (m + n)
-⟨ true , x , m , xs , refl ⟩ ++' ⟨ true , y , n , ys , refl ⟩ = ⟨ true , x , m + suc n , xs ++' consV y ys , refl ⟩
-⟨ true , x , m , xs , refl ⟩ ++' ⟨ false , refl ⟩ = ⟨ true , x , m , xs , sym (+-right-identity (suc m)) ⟩
-⟨ false , refl ⟩ ++' ys = ys
+++alg : ∀ {A n} → Vec A n → Alg (VecDesc A) (λ m → Vec A (m + n))
+++alg {A} {n} ys .(suc o) (true , z , o , zs , refl) = ⟨ true , z , o + n , zs , sym (+-suc-left o n) ⟩
+++alg ys .zero    (false , refl) = ys
 
 _++_ : ∀ {A m n} → Vec A m → Vec A n → Vec A (m + n)
-_++_ {A} {m} {n} xs ys = indVec (λ {m} x → Vec A (m + n)) ys (λ m x xs xs++ys → consV x xs++ys) xs
+_++_ {A} {m} {n} xs ys = fold (VecDesc A) (++alg ys) m xs
+
+data Inv {J I : Set} (e : J → I) : I → Set where
+    inv : (j : J) → Inv e (e j)
+
+data Orn {J I : Set} (e : J → I) : Desc I → Set₁ where
+    arg : (A : Set) → {D : A → Desc I} → ((a : A) → Orn e (D a)) → Orn e (Desc.arg A D)
+    rec : ∀ {h D} → Inv e h → Orn e D → Orn e (rec h D)
+    ret : ∀ {o} → Inv e o → Orn e (ret o)
+    new : ∀ {D} → (A : Set) → ((a : A) → Orn e D) → Orn e D
+
+ListOrn : Set → Orn (λ x → tt) ℕDesc
+ListOrn A = arg Bool (λ { true → Orn.new A (λ a → rec (inv tt) (ret (inv tt)))
+                   ; false → Orn.ret (inv tt)})
+
+orn : ∀ {I J} {D : Desc I} {e : J → I} → Orn e D → Desc J
+orn (arg A O) = arg A (λ x → orn (O x))
+orn (rec (inv j) O) = rec j (orn O)
+orn (ret (inv j)) = ret j
+orn (new A O) = arg A (λ x → orn (O x))
