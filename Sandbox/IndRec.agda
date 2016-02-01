@@ -54,7 +54,8 @@ fold F alg ⟨ x ⟩ = alg (mapFold F F alg x)
 
 -- ℕ
 ℕDesc : Desc
-ℕDesc = arg Bool λ { false → ret ; true → rec ret }
+ℕDesc = arg Bool λ { false → ret
+                    ; true → rec ret }
 
 ℕ : Set
 ℕ = Data ℕDesc
@@ -106,20 +107,6 @@ nil = ⟨ (false , tt) ⟩
 
 cons : ∀ {A} → A → List A → List A
 cons x xs = ⟨ (true , (x , (xs , tt))) ⟩
-
--- mapList : ∀ {A B} → (A → B) → List A → List B
--- mapList f ⟨ true , x , xs , tt ⟩ = ⟨ (true , ((f x) , ((mapList f xs) , tt))) ⟩
--- mapList f ⟨ false , tt ⟩ = ⟨ false , tt ⟩
-
--- indList : ∀ {A} (P : List A → Set)
---         → P nil
---         → ((x : A) → (xs : List A) → P xs → P (cons x xs))
---         → (xs : List A)
---         → P xs
--- indList {A} P base step xs = fold (ListDesc A) f xs
---     where   f : ⟦ ListDesc A ⟧ (P xs) → P xs
---             f (true , x , Pxs , tt) = {!   !}
---             f (false , tt) = {!   !}
 
 foldList : ∀ {A B} (f : A → B → B) → B → List A → B
 foldList {A} {B} f e xs = fold (ListDesc A) alg xs

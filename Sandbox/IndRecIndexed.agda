@@ -4,10 +4,11 @@ module Sandbox.IndRecIndexed where
 -- A Finite Axiomtization of Inductive-Recursion definitions, Peter Dybjer, Anton Setzer
 -- http://www.cse.chalmers.se/~peterd/papers/Finite_IR.pdf
 
-open import Data.Product using (_×_; Σ; _,_)
+open import Data.Product using (_×_; Σ; _,_; proj₁; proj₂)
 open import Data.Bool
 open import Data.Unit
 open import Data.Empty
+open import Function
 open import Relation.Binary.PropositionalEquality
 open ≡-Reasoning
 
@@ -164,6 +165,7 @@ consV {A} {n} x xs = ⟨ true , x , n , xs , refl ⟩
 _++_ : ∀ {A m n} → Vec A m → Vec A n → Vec A (m + n)
 _++_ {A} {m} {n} xs ys = fold (VecDesc A) (++alg ys) m xs
 
+-- inverse image of e : J → I
 data Inv {J I : Set} (e : J → I) : I → Set where
     inv : (j : J) → Inv e (e j)
 
@@ -175,10 +177,30 @@ data Orn {J I : Set} (e : J → I) : Desc I → Set₁ where
 
 ListOrn : Set → Orn (λ x → tt) ℕDesc
 ListOrn A = arg Bool (λ { true → Orn.new A (λ a → rec (inv tt) (ret (inv tt)))
-                   ; false → Orn.ret (inv tt)})
+                        ; false → Orn.ret (inv tt)})
 
 orn : ∀ {I J} {D : Desc I} {e : J → I} → Orn e D → Desc J
-orn (arg A O) = arg A (λ x → orn (O x))
+orn (arg A O)       = arg A (λ x → orn (O x))
 orn (rec (inv j) O) = rec j (orn O)
-orn (ret (inv j)) = ret j
-orn (new A O) = arg A (λ x → orn (O x))
+orn (ret (inv j))   = ret j
+orn (new A O)       = arg A (λ x → orn (O x))
+
+ListDesc' : Set → Desc ⊤
+ListDesc' A = orn (ListOrn A)
+
+erase : ∀ {I J} {R : I → Set} {e : J → I} {D : Desc I} → (O : Orn e D) → ⟦ orn O ⟧ (R ∘ e) ⇒ (⟦ D ⟧ R ∘ e)
+erase (arg A O) i (a , os) = a , (erase (O a) i os)
+erase (rec (inv i) O) j (r , os) = r , erase O j os
+erase (ret (inv j)) .j refl = refl
+erase (new A O) j (a , os) = erase (O a) j os
+
+ornament-algebra : ∀ {I J} {e : J → I} {D : Desc I} → (O : Orn e D) → Alg (orn O) (λ j → Data D (e j))
+ornament-algebra O j x = ⟨ erase O j x ⟩
+
+forget : ∀ {I J} {e : J → I} {D : Desc I} {O : Orn e D} {j : J} → Data (orn O) j → Data D (e j)
+forget {I} {J} {e} {D} {O} {j} = fold (orn O) (ornament-algebra O) j
+
+algo : ∀ {I A} → (D : Desc I) → Alg D A → Orn {Σ I {! A  !}} proj₁ D
+algo (arg A x) alg = arg A (λ a → algo (x a) (λ j ds → alg j (a , ds)))
+algo {I} {A} (rec i D) alg = new (A i) (λ a → rec (inv (i , a)) (algo D (λ j ds → alg i (a , {! ds  !}))))
+algo (ret i) alg = ret (inv (i , alg i refl))

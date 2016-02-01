@@ -16,8 +16,8 @@ data W (S : Set) (P : S → Set) : Set where
 ℕ : Set
 ℕ = W Bool f
     where   f : Bool → Set
-            f true = ⊤
-            f false = ⊥
+            f true = ⊤ -- 1
+            f false = ⊥ -- 0
 
 zero : ℕ
 zero = sup false ⊥-elim
@@ -49,7 +49,8 @@ data LW (S : Set) (LP : S → Set × Set) : Set where
      lsup : (s : Σ S (proj₁ ∘ LP)) → (proj₂ (LP (proj₁ s)) → LW S LP) → LW S LP
 
 List : (X : Set) → Set
-List X = LW Bool (λ { true → X , ⊤ ; false → ⊤ , ⊥ })
+List X = LW Bool (λ { true → X , ⊤      -- cons
+                    ; false → ⊤ , ⊥ })  -- nil
 
 nil : {X : Set} → List X
 nil = lsup (false , tt) ⊥-elim
@@ -71,6 +72,6 @@ indW : (S : Set)
      → C x
 indW S P C step (sup s f) = step s f (λ p → {!   !} S P C step (f p))
 
--- indℕ : (C : ℕ → Set) → C zero → ((n : ℕ) → C n → C (succ n)) → (x : ℕ) → C x
--- indℕ C base step (sup true f) = step (f tt) (indℕ C base step (f tt))
--- indℕ C base step (sup false f) = {! base  !}
+indℕ : (C : ℕ → Set) → C zero → ((n : ℕ) → C n → C (succ n)) → (x : ℕ) → C x
+indℕ C base step (sup true f) = step (f tt) (indℕ C base step (f tt))
+indℕ C base step (sup false f) = {! base  !}
