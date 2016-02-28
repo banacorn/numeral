@@ -3,11 +3,14 @@ module Data.Num.Bijective where
 -- open import Data.Nat using (ℕ; suc; zero; _≤?_; s≤s)
 open import Data.Nat
 open import Data.Fin as Fin using (Fin; #_; fromℕ≤)
-    renaming (toℕ to F→N)
+open import Data.Fin.Properties using (bounded)
+
 
 open import Data.Product
+open ≤-Reasoning
 open import Level using () renaming (suc to lsuc)
 open import Function
+open import Relation.Nullary.Negation
 open import Relation.Nullary.Decidable
 open import Relation.Nullary
 open import Relation.Binary.PropositionalEquality as PropEq
@@ -48,82 +51,38 @@ module _/_-Examples where
     八 : Num 3
     八 = 2 / 2 / ∙
 
-
-
+open import Data.Nat.DivMod
+open import Data.Nat.Properties using (≰⇒>)
+open import Relation.Binary
+-- open DecTotalOrder decTotalOrder hiding (_≤?_; _≤_; _≟_; refl)
 
 toℕ : ∀ {b} → Num b → ℕ
-toℕ ∙ = zero
-toℕ ([ x ] xs) = digit→ℕ x + toℕ xs
-    where
-            digit→ℕ : ∀ {b} → Fin b → ℕ
-            digit→ℕ i = suc (F→N i)
+toℕ ∙         = zero
+toℕ {b} ([ x ] xs) = suc (Fin.toℕ x) + (toℕ xs * b)
 
+digit+1-lemma : ∀ a b → a < suc b → a ≢ b → a < b
+digit+1-lemma zero    zero    a<1+b a≢b = contradiction refl a≢b
+digit+1-lemma zero    (suc b) a<1+b a≢b = s≤s z≤n
+digit+1-lemma (suc a) zero    (s≤s ()) a≢b
+digit+1-lemma (suc a) (suc b) (s≤s a<1+b) a≢b = s≤s (digit+1-lemma a b a<1+b (λ z → a≢b (cong suc z)))
 
-open import Induction.Nat
-open import Data.Nat.DivMod
-open import Data.Nat.Properties
-open import Data.Nat.Properties.Simple
-open import Relation.Binary
-open DecTotalOrder decTotalOrder
-open ≤-Reasoning
-open PropEq.≡-Reasoning
-    renaming (begin_ to beginEq_; _≡⟨_⟩_ to _≡Eq⟨_⟩_; _∎ to _∎Eq)
+digit+1 : ∀ {b} → (x : Fin (suc b)) → Fin.toℕ x ≢ b → Fin (suc b)
+digit+1 {b} x ¬p = fromℕ≤ {suc (Fin.toℕ x)} (s≤s (digit+1-lemma (Fin.toℕ x) b (bounded x) ¬p))
+
++1 : ∀ {b} → Num (suc b) → Num (suc b)
++1 ∙ = [ Fin.zero ] ∙
++1 {b} ([ x ] xs) with Fin.toℕ x ≟ b
++1 {b} ([ x ] xs) | yes p = [ Fin.zero ] +1 xs
++1 {b} ([ x ] xs) | no ¬p = [ digit+1 x ¬p ] xs
 
 fromℕ : ∀ {b} → ℕ → Num (suc b)
-fromℕ {b} = <-rec _ go
-    where
-            prf0 : ∀ n Q → suc n ≡ suc (b + Q * suc b) → suc Q ≤′ suc n
-            prf0 n Q prop = ≤⇒≤′ $ begin
-                    suc Q
-                ≤⟨ m≤m+n (suc Q) (b + Q * b) ⟩
-                    suc Q + suc Q * b
-                ≤⟨ reflexive $ sym $
-                    beginEq
-                        suc n
-                    ≡Eq⟨ prop ⟩
-                        suc Q * suc b
-                    ≡Eq⟨ (+-*-suc (suc Q) b) ⟩
-                        suc Q + (suc Q * b)
-                    ∎Eq  ⟩
-                    suc n
-                ∎
-            prf1 : ∀ n R Q → suc n ≡ suc (F→N R + Q * suc b) → suc Q ≤′ suc n
-            prf1 n R Q prop = ≤⇒≤′ $ begin
-                    suc Q
-                ≤⟨ s≤s (m≤m+n Q (Q * b)) ⟩
-                    suc (Q + Q * b)
-                ≤⟨ s≤s (reflexive (sym (+-*-suc Q b))) ⟩
-                    suc (Q * suc b)
-                ≤⟨ s≤s (n≤m+n (F→N R) (Q * suc b)) ⟩
-                    suc (F→N R + Q * suc b)
-                ≤⟨ reflexive $ sym $
-                    beginEq
-                        suc n
-                    ≡Eq⟨ prop ⟩
-                        suc (F→N R + Q * suc b)
-                    ∎Eq  ⟩
-                    suc n
-                ∎
-
-            go : (x : ℕ) → ((y : ℕ) → suc y ≤′ x → Num (suc b)) → Num (suc b)
-            go zero    _ = ∙
-            go (suc n) rec with (suc n) divMod (suc b)
-            go (suc n) rec | result zero Fin.zero prop = ∙
-            go (suc n) rec | result (suc Q) Fin.zero    prop = [ Fin.fromℕ b ] rec Q (prf0 n Q prop)
-            go (suc n) rec | result Q       (Fin.suc R) prop = [ Fin.inject₁ R ] rec Q (prf1 n R Q prop)
-
-
-carry : ∀ {b} → ℕ → Num b → Num b
-carry {zero} n ([ () ] xs)
-carry {suc b} n ∙ = fromℕ n
-carry {suc b} n ([ x ] xs) with (n + F→N x) divMod (suc b)
-carry {suc b} n ([ x ] xs) | result zero    R prop = [ R ] xs
-carry {suc b} n ([ x ] xs) | result (suc Q) R prop = [ R ] carry (suc Q) xs
+fromℕ zero = ∙
+fromℕ (suc n) = +1 (fromℕ n)
 
 add : ∀ {b} → Num b → Num b → Num b
 add ∙ ys = ys
 add xs ∙ = xs
 add {zero} ([ () ] xs) ([ y ] ys)
-add {suc b} ([ x ] xs) ([ y ] ys) with (suc (F→N x + F→N y)) divMod (suc b)
+add {suc b} ([ x ] xs) ([ y ] ys) with (suc (Fin.toℕ x + Fin.toℕ y)) divMod (suc b)
 add {suc b} ([ x ] xs) ([ y ] ys) | result zero R prop = [ R ] (add xs ys)
-add {suc b} ([ x ] xs) ([ y ] ys) | result (suc Q) R prop = [ R ] carry (suc Q) (add xs ys)
+add {suc b} ([ x ] xs) ([ y ] ys) | result (suc Q) R prop = [ R ] +1 (add xs ys)
