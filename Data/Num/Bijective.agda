@@ -4,9 +4,9 @@ module Data.Num.Bijective where
 open import Data.Nat
 open import Data.Fin as Fin using (Fin; #_; fromℕ≤)
 open import Data.Fin.Properties using (bounded)
-
-
 open import Data.Product
+open import Data.Unit using (⊤; tt)
+open import Data.Empty using (⊥)
 open ≤-Reasoning
 open import Level using () renaming (suc to lsuc)
 open import Function
@@ -86,3 +86,11 @@ add {zero} ([ () ] xs) ([ y ] ys)
 add {suc b} ([ x ] xs) ([ y ] ys) with (suc (Fin.toℕ x + Fin.toℕ y)) divMod (suc b)
 add {suc b} ([ x ] xs) ([ y ] ys) | result zero R prop = [ R ] (add xs ys)
 add {suc b} ([ x ] xs) ([ y ] ys) | result (suc Q) R prop = [ R ] +1 (add xs ys)
+
+_≈_ : ∀ {b} → Num b → Num b → Set
+∙          ≈ ∙          = ⊤
+∙          ≈ ([ y ] ys) = ⊥
+([ x ] xs) ≈ ∙          = ⊥
+([ x ] xs) ≈ ([ y ] ys) with Fin.toℕ x ≟ Fin.toℕ y
+([ x ] xs) ≈ ([ y ] ys) | yes p = xs ≈ ys
+([ x ] xs) ≈ ([ y ] ys) | no ¬p = ⊥
