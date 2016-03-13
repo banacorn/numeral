@@ -51,14 +51,21 @@ module _/_-Examples where
     八 : Num 3
     八 = 2 / 2 / ∙
 
+八 : Num 3
+八 = 2 / 2 / ∙
+
 open import Data.Nat.DivMod
 open import Data.Nat.Properties using (≰⇒>)
 open import Relation.Binary
 -- open DecTotalOrder decTotalOrder hiding (_≤?_; _≤_; _≟_; refl)
 
+
+digit-toℕ : ∀ {b} → Fin b → ℕ
+digit-toℕ x = suc (Fin.toℕ x)
+
 toℕ : ∀ {b} → Num b → ℕ
-toℕ ∙         = zero
-toℕ {b} ([ x ] xs) = suc (Fin.toℕ x) + (toℕ xs * b)
+toℕ ∙              = zero
+toℕ {b} ([ x ] xs) = digit-toℕ x + (toℕ xs * b)
 
 digit+1-lemma : ∀ a b → a < suc b → a ≢ b → a < b
 digit+1-lemma zero    zero    a<1+b a≢b = contradiction refl a≢b
@@ -67,7 +74,9 @@ digit+1-lemma (suc a) zero    (s≤s ()) a≢b
 digit+1-lemma (suc a) (suc b) (s≤s a<1+b) a≢b = s≤s (digit+1-lemma a b a<1+b (λ z → a≢b (cong suc z)))
 
 digit+1 : ∀ {b} → (x : Fin (suc b)) → Fin.toℕ x ≢ b → Fin (suc b)
-digit+1 {b} x ¬p = fromℕ≤ {suc (Fin.toℕ x)} (s≤s (digit+1-lemma (Fin.toℕ x) b (bounded x) ¬p))
+digit+1 {b} x ¬p = fromℕ≤ {digit-toℕ x} (s≤s (digit+1-lemma (Fin.toℕ x) b (bounded x) ¬p))
+
+
 
 +1 : ∀ {b} → Num (suc b) → Num (suc b)
 +1 ∙ = [ Fin.zero ] ∙
@@ -76,7 +85,7 @@ digit+1 {b} x ¬p = fromℕ≤ {suc (Fin.toℕ x)} (s≤s (digit+1-lemma (Fin.to
 +1 {b} ([ x ] xs) | no ¬p = [ digit+1 x ¬p ] xs
 
 fromℕ : ∀ {b} → ℕ → Num (suc b)
-fromℕ zero = ∙
+fromℕ zero    = ∙
 fromℕ (suc n) = +1 (fromℕ n)
 
 add : ∀ {b} → Num b → Num b → Num b
@@ -84,7 +93,7 @@ add ∙ ys = ys
 add xs ∙ = xs
 add {zero} ([ () ] xs) ([ y ] ys)
 add {suc b} ([ x ] xs) ([ y ] ys) with (suc (Fin.toℕ x + Fin.toℕ y)) divMod (suc b)
-add {suc b} ([ x ] xs) ([ y ] ys) | result zero R prop = [ R ] (add xs ys)
+add {suc b} ([ x ] xs) ([ y ] ys) | result zero    R prop = [ R ] (add xs ys)
 add {suc b} ([ x ] xs) ([ y ] ys) | result (suc Q) R prop = [ R ] +1 (add xs ys)
 
 _≈_ : ∀ {b} → Num b → Num b → Set
