@@ -4,6 +4,7 @@ open import Data.Num.Bijective
 
 open import Data.Nat
 open import Data.Fin as Fin using (Fin)
+open import Data.Product
 open import Function
 open import Relation.Nullary
 open import Relation.Nullary.Negation using (contradiction)
@@ -28,95 +29,13 @@ toℕ-injective b ∙ ∙ prop = refl
 toℕ-injective b ∙ ([ x ] ys) ()
 toℕ-injective b ([ x ] xs) ∙ ()
 toℕ-injective b ([ x ] xs) ([ y ] ys) prop =
-    cong₂ [_]_ x≡y (toℕ-injective b xs ys toℕxs≡toℕys)
+    cong₂ [_]_ (proj₁ ind) (toℕ-injective b xs ys (proj₂ ind))
     where
-            open import Data.Product
-            open import Data.Nat.Properties
-            open import Data.Nat.Properties.Simple
-            open import Data.Fin.Properties as FinProp using ()
+            open import Data.Fin.Properties.Extra
+            open import Data.Nat.Properties.Extra as ℕProp
+            ind : x ≡ y × toℕ xs ≡ toℕ ys
+            ind = some-lemma b x y (toℕ xs) (toℕ ys) (ℕProp.suc-injective prop)
 
-            suc-injective : ∀ {x y} → suc x ≡ suc y → x ≡ y
-            suc-injective {x} {.x} refl = refl
-
-            cancel-+-right : ∀ k {i j} → i + k ≡ j + k → i ≡ j
-            cancel-+-right zero {i} {j} p  =
-                begin
-                    i
-                ≡⟨ sym (+-right-identity i) ⟩
-                    i + zero
-                ≡⟨ p ⟩
-                    j + zero
-                ≡⟨ +-right-identity j ⟩
-                    j
-                ∎
-            cancel-+-right (suc k) {i} {j} p = cancel-+-right k lemma
-                where   lemma : i + k ≡ j + k
-                        lemma = suc-injective $
-                            begin
-                                suc (i + k)
-                            ≡⟨ sym (+-suc i k) ⟩
-                                i + suc k
-                            ≡⟨ p ⟩
-                                j + suc k
-                            ≡⟨ +-suc j k ⟩
-                                suc (j + k)
-                            ∎
-
-            mutual
-
-                xs≡ys : ∀ b x y xs ys
-                    → Fin.toℕ {suc b} x + xs * suc b ≡ Fin.toℕ {suc b} y + ys * suc b
-                    → xs ≡ ys
-                xs≡ys b Fin.zero    Fin.zero    zero     zero     p = refl
-                xs≡ys b Fin.zero    Fin.zero    zero     (suc ys) ()
-                xs≡ys b Fin.zero    Fin.zero    (suc xs) zero     ()
-                xs≡ys b Fin.zero    Fin.zero    (suc xs) (suc ys) p = cong suc (xs≡ys b Fin.zero Fin.zero xs ys (cancel-+-left (suc b) p))
-                xs≡ys b Fin.zero    (Fin.suc y) zero     zero     p = refl
-                xs≡ys b₁ Fin.zero (Fin.suc y₁) zero (suc ys₁) ()
-                xs≡ys b Fin.zero    (Fin.suc y) (suc xs) zero     p = {!   !}
-                    -- where   suc (Fin.toℕ y + zero) < suc b
-                    --         suc (b + xs * suc b) ≡ suc xs * suc b
-                xs≡ys b Fin.zero    (Fin.suc y) (suc xs) (suc ys) p = {!   !}
-                xs≡ys b (Fin.suc x) Fin.zero    zero     zero     p = refl
-                xs≡ys b (Fin.suc x) Fin.zero    zero     (suc ys) p = {!   !}
-                xs≡ys b (Fin.suc x) Fin.zero    (suc xs) zero     p = {!   !}
-                xs≡ys b (Fin.suc x) Fin.zero    (suc xs) (suc ys) p = {!   !}
-                xs≡ys b (Fin.suc x) (Fin.suc y) zero     zero     p = refl
-                xs≡ys b (Fin.suc x) (Fin.suc y) zero     (suc ys) p = {!   !}
-                xs≡ys b (Fin.suc x) (Fin.suc y) (suc xs) zero     p = {!   !}
-                xs≡ys b (Fin.suc x) (Fin.suc y) (suc xs) (suc ys) p = {!   !}
-
-                -- A = Fin.toℕ x + xs * suc b
-                --
-                --
-                -- B = Fin.toℕ y + ys * suc b
-                --
-                -- xs * suc b ≤ A ≤ suc xs * suc b
-                -- ys * suc b ≤ B ≤ suc ys * suc b
-
-
-
-                toℕxs≡toℕys : toℕ xs ≡ toℕ ys
-                toℕxs≡toℕys = {!   !}
-                -- toℕxs≡toℕys = cancel-*-right (toℕ xs) (toℕ ys) {b} (cancel-+-left (Fin.toℕ x) (suc-injective {!   !}))
-
-
-
-
-                x≡y : x ≡ y
-                x≡y = FinProp.toℕ-injective (cancel-+-right (toℕ xs * suc b) (suc-injective {!   !}))
-
--- begin
---     {!   !}
--- ≡⟨ {!   !} ⟩
---     {!   !}
--- ≡⟨ {!   !} ⟩
---     {!   !}
--- ≡⟨ {!   !} ⟩
---     {!   !}
--- ≡⟨ {!   !} ⟩
---     {!   !}
--- ∎
 --
 --      xs ── +1 ──➞ xs'
 --      |              |
