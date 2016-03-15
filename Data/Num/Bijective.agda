@@ -16,7 +16,7 @@ open import Relation.Nullary
 open import Relation.Binary.PropositionalEquality as PropEq
     using (_≡_; _≢_; refl; cong; sym; trans; inspect)
 
-infixr 2 [_]_
+infixr 5 _∷_
 
 -- For a system to be bijective wrt ℕ:
 --  * base ≥ 1
@@ -27,7 +27,7 @@ data Num : ℕ → Set where
         → Num (suc b)   -- base ≥ 1
 
     -- successors
-    [_]_ : ∀ {b}
+    _∷_ : ∀ {b}
         → Fin b         -- digit = {1 .. b}
         → Num b → Num b
 
@@ -38,7 +38,7 @@ _/_ : ∀ {b} → (n : ℕ)
     → {upper-bound : True (n        ≤? b)}      -- digit ≤ base
     → Num b → Num b
 _/_ {b} zero    {()} {ub} ns
-_/_ {b} (suc n) {lb} {ub} ns = [ (# n) {b} {ub} ] ns
+_/_ {b} (suc n) {lb} {ub} ns = (# n) {b} {ub} ∷ ns
 
 module _/_-Examples where
 
@@ -57,15 +57,13 @@ module _/_-Examples where
 open import Data.Nat.DivMod
 open import Data.Nat.Properties using (≰⇒>)
 open import Relation.Binary
--- open DecTotalOrder decTotalOrder hiding (_≤?_; _≤_; _≟_; refl)
-
 
 digit-toℕ : ∀ {b} → Fin b → ℕ
 digit-toℕ x = suc (Fin.toℕ x)
 
 toℕ : ∀ {b} → Num b → ℕ
 toℕ ∙              = zero
-toℕ {b} ([ x ] xs) = digit-toℕ x + (toℕ xs * b)
+toℕ {b} (x ∷ xs) = digit-toℕ x + (toℕ xs * b)
 
 digit+1-lemma : ∀ a b → a < suc b → a ≢ b → a < b
 digit+1-lemma zero    zero    a<1+b a≢b = contradiction refl a≢b
@@ -79,10 +77,10 @@ digit+1 {b} x ¬p = fromℕ≤ {digit-toℕ x} (s≤s (digit+1-lemma (Fin.toℕ 
 
 
 1+ : ∀ {b} → Num (suc b) → Num (suc b)
-1+ ∙ = [ Fin.zero ] ∙
-1+ {b} ([ x ] xs) with Fin.toℕ x ≟ b
-1+ {b} ([ x ] xs) | yes p = [ Fin.zero ] 1+ xs
-1+ {b} ([ x ] xs) | no ¬p = [ digit+1 x ¬p ] xs
+1+ ∙ = Fin.zero ∷ ∙
+1+ {b} (x ∷ xs) with Fin.toℕ x ≟ b
+1+ {b} (x ∷ xs) | yes p = Fin.zero ∷ 1+ xs
+1+ {b} (x ∷ xs) | no ¬p = digit+1 x ¬p ∷ xs
 
 fromℕ : ∀ {b} → ℕ → Num (suc b)
 fromℕ zero    = ∙
@@ -91,15 +89,15 @@ fromℕ (suc n) = 1+ (fromℕ n)
 add : ∀ {b} → Num b → Num b → Num b
 add ∙ ys = ys
 add xs ∙ = xs
-add {zero} ([ () ] xs) ([ y ] ys)
-add {suc b} ([ x ] xs) ([ y ] ys) with (suc (Fin.toℕ x + Fin.toℕ y)) divMod (suc b)
-add {suc b} ([ x ] xs) ([ y ] ys) | result zero    R prop = [ R ] (add xs ys)
-add {suc b} ([ x ] xs) ([ y ] ys) | result (suc Q) R prop = [ R ] 1+ (add xs ys)
+add {zero} (() ∷ xs) (y ∷ ys)
+add {suc b} (x ∷ xs) (y ∷ ys) with (suc (Fin.toℕ x + Fin.toℕ y)) divMod (suc b)
+add {suc b} (x ∷ xs) (y ∷ ys) | result zero    R prop = R ∷ (add xs ys)
+add {suc b} (x ∷ xs) (y ∷ ys) | result (suc Q) R prop = R ∷ 1+ (add xs ys)
 
 _≈_ : ∀ {b} → Num b → Num b → Set
 ∙          ≈ ∙          = ⊤
-∙          ≈ ([ y ] ys) = ⊥
-([ x ] xs) ≈ ∙          = ⊥
-([ x ] xs) ≈ ([ y ] ys) with Fin.toℕ x ≟ Fin.toℕ y
-([ x ] xs) ≈ ([ y ] ys) | yes p = xs ≈ ys
-([ x ] xs) ≈ ([ y ] ys) | no ¬p = ⊥
+∙          ≈ (y ∷ ys) = ⊥
+(x ∷ xs) ≈ ∙          = ⊥
+(x ∷ xs) ≈ (y ∷ ys) with Fin.toℕ x ≟ Fin.toℕ y
+(x ∷ xs) ≈ (y ∷ ys) | yes p = xs ≈ ys
+(x ∷ xs) ≈ (y ∷ ys) | no ¬p = ⊥
