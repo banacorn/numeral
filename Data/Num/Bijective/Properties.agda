@@ -125,7 +125,7 @@ fromℕ-injective : ∀ b m n → fromℕ {b} m ≡ fromℕ {b} n → m ≡ n
 fromℕ-injective b zero    zero    eq = refl
 fromℕ-injective b zero    (suc n) eq = contradiction (sym eq) (1+-never-∙ (fromℕ n))
 fromℕ-injective b (suc m) zero    eq = contradiction eq       (1+-never-∙ (fromℕ m))
-fromℕ-injective b (suc m) (suc n) eq = {!   !}
+fromℕ-injective b (suc m) (suc n) eq = cong suc (fromℕ-injective b m n (1+-injective b (fromℕ m) (fromℕ n) eq))
 
 --
 --      xs ── 1+ ──➞ xs'
