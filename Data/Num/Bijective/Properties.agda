@@ -106,7 +106,7 @@ digit+1-injective {suc b} (Fin.suc x)  (Fin.suc y) ¬p ¬q eq = cong Fin.suc (di
             xs≡ys = 1+-injective b xs ys (proj₂ (∷-injective eq))
 1+-injective b (x ∷ xs) (y ∷ ys) eq | yes p | no ¬q = contradiction (sym (proj₁ (∷-injective eq))) (digit+1-never-0 y ¬q)
 1+-injective b (x ∷ xs) (y ∷ ys) eq | no ¬p | yes q = contradiction (proj₁ (∷-injective eq))       (digit+1-never-0 x ¬p)
-1+-injective b (x ∷ xs) (y ∷ ys) eq | no ¬p | no ¬q = {!   !}
+1+-injective b (x ∷ xs) (y ∷ ys) eq | no ¬p | no ¬q = cong₂ _∷_ (digit+1-injective x y ¬p ¬q (proj₁ (∷-injective eq))) (proj₂ (∷-injective eq))
 
 
 toℕ-injective : ∀ b → (xs ys : Num (suc b)) → toℕ xs ≡ toℕ ys → xs ≡ ys
