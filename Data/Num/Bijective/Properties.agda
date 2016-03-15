@@ -31,11 +31,11 @@ open ≡-Reasoning
     → x ≡ y × xs ≡ ys
 []-injective refl = refl , refl
 
-+1-never-∙ : ∀ {b} xs → +1 {b} xs ≢ ∙
-+1-never-∙ ∙ ()
-+1-never-∙ {b} ([ x ] xs) +1xs≡∙ with Fin.toℕ x ≟ b
-+1-never-∙ ([ x ] xs) () | yes p
-+1-never-∙ ([ x ] xs) () | no ¬p
+1+-never-∙ : ∀ {b} xs → 1+ {b} xs ≢ ∙
+1+-never-∙ ∙ ()
+1+-never-∙ {b} ([ x ] xs) +1xs≡∙ with Fin.toℕ x ≟ b
+1+-never-∙ ([ x ] xs) () | yes p
+1+-never-∙ ([ x ] xs) () | no ¬p
 
 digit+1-never-0 : ∀ {b} (x : Fin (suc b)) → (¬p : Fin.toℕ x ≢ b) → digit+1 x ¬p ≢ Fin.zero
 digit+1-never-0 {b}     x            ¬p eq with Fin.toℕ x ≟ b
@@ -44,14 +44,6 @@ digit+1-never-0 {zero}  Fin.zero     ¬p eq | no ¬q = contradiction refl ¬p
 digit+1-never-0 {suc b} Fin.zero     ¬p eq | no ¬q = contradiction eq (λ ())
 digit+1-never-0 {zero}  (Fin.suc ()) ¬p eq | no ¬q
 digit+1-never-0 {suc b} (Fin.suc x)  ¬p () | no ¬q
-
--- digit+1-suc : ∀ {b}
---     → (x : Fin (suc b))
---     → (¬p : Fin.toℕ (Fin.suc x) ≢ suc b)
---     → digit+1 (Fin.suc x) ¬p ≡ Fin.suc (digit+1 x (¬p ∘ cong suc))
--- digit+1-suc x ¬p = refl
--- digit+1-suc Fin.zero ¬p = refl
--- digit+1-suc (Fin.suc x) ¬p = refl
 
 digit+1-injective :  ∀ {b} (x y : Fin (suc b))
     → (¬p : Fin.toℕ x ≢ b)
@@ -98,24 +90,24 @@ digit+1-injective {suc b} (Fin.suc x)  (Fin.suc y) ¬p ¬q eq = cong Fin.suc (di
 -- ≡⟨ {!   !} ⟩
 --     {!   !}
 -- ∎
-+1-injective : ∀ b → (xs ys : Num (suc b)) → +1 xs ≡ +1 ys → xs ≡ ys
-+1-injective b ∙          ∙          eq = refl
-+1-injective b ∙          ([ x ] ys) eq with Fin.toℕ x ≟ b
-+1-injective b ∙          ([ x ] ys) eq | yes p = contradiction (proj₂ ([]-injective (sym eq))) (+1-never-∙ ys)
-+1-injective b ∙          ([ x ] ys) eq | no ¬p = contradiction (proj₁ ([]-injective (sym eq))) (digit+1-never-0 x ¬p)
-+1-injective b ([ x ] xs) ∙          eq with Fin.toℕ x ≟ b
-+1-injective b ([ x ] xs) ∙          eq | yes p = contradiction (proj₂ ([]-injective eq)) (+1-never-∙ xs)
-+1-injective b ([ x ] xs) ∙          eq | no ¬p = contradiction (proj₁ ([]-injective eq)) (digit+1-never-0 x ¬p)
-+1-injective b ([ x ] xs) ([ y ] ys) eq with Fin.toℕ x ≟ b | Fin.toℕ y ≟ b
-+1-injective b ([ x ] xs) ([ y ] ys) eq | yes p | yes q = cong₂ [_]_ x≡y xs≡ys
+1+-injective : ∀ b → (xs ys : Num (suc b)) → 1+ xs ≡ 1+ ys → xs ≡ ys
+1+-injective b ∙          ∙          eq = refl
+1+-injective b ∙          ([ x ] ys) eq with Fin.toℕ x ≟ b
+1+-injective b ∙          ([ x ] ys) eq | yes p = contradiction (proj₂ ([]-injective (sym eq))) (1+-never-∙ ys)
+1+-injective b ∙          ([ x ] ys) eq | no ¬p = contradiction (proj₁ ([]-injective (sym eq))) (digit+1-never-0 x ¬p)
+1+-injective b ([ x ] xs) ∙          eq with Fin.toℕ x ≟ b
+1+-injective b ([ x ] xs) ∙          eq | yes p = contradiction (proj₂ ([]-injective eq)) (1+-never-∙ xs)
+1+-injective b ([ x ] xs) ∙          eq | no ¬p = contradiction (proj₁ ([]-injective eq)) (digit+1-never-0 x ¬p)
+1+-injective b ([ x ] xs) ([ y ] ys) eq with Fin.toℕ x ≟ b | Fin.toℕ y ≟ b
+1+-injective b ([ x ] xs) ([ y ] ys) eq | yes p | yes q = cong₂ [_]_ x≡y xs≡ys
     where   open import Data.Fin.Properties
             x≡y : x ≡ y
             x≡y = toℕ-injective (trans p (sym q))
             xs≡ys : xs ≡ ys
-            xs≡ys = +1-injective b xs ys (proj₂ ([]-injective eq))
-+1-injective b ([ x ] xs) ([ y ] ys) eq | yes p | no ¬q = contradiction (sym (proj₁ ([]-injective eq))) (digit+1-never-0 y ¬q)
-+1-injective b ([ x ] xs) ([ y ] ys) eq | no ¬p | yes q = contradiction (proj₁ ([]-injective eq))       (digit+1-never-0 x ¬p)
-+1-injective b ([ x ] xs) ([ y ] ys) eq | no ¬p | no ¬q = {!   !}
+            xs≡ys = 1+-injective b xs ys (proj₂ ([]-injective eq))
+1+-injective b ([ x ] xs) ([ y ] ys) eq | yes p | no ¬q = contradiction (sym (proj₁ ([]-injective eq))) (digit+1-never-0 y ¬q)
+1+-injective b ([ x ] xs) ([ y ] ys) eq | no ¬p | yes q = contradiction (proj₁ ([]-injective eq))       (digit+1-never-0 x ¬p)
+1+-injective b ([ x ] xs) ([ y ] ys) eq | no ¬p | no ¬q = {!   !}
 
 
 toℕ-injective : ∀ b → (xs ys : Num (suc b)) → toℕ xs ≡ toℕ ys → xs ≡ ys
@@ -132,36 +124,36 @@ toℕ-injective b ([ x ] xs) ([ y ] ys) eq =
 
 fromℕ-injective : ∀ b m n → fromℕ {b} m ≡ fromℕ {b} n → m ≡ n
 fromℕ-injective b zero    zero    eq = refl
-fromℕ-injective b zero    (suc n) eq = contradiction (sym eq) (+1-never-∙ (fromℕ n))
-fromℕ-injective b (suc m) zero    eq = contradiction eq       (+1-never-∙ (fromℕ m))
+fromℕ-injective b zero    (suc n) eq = contradiction (sym eq) (1+-never-∙ (fromℕ n))
+fromℕ-injective b (suc m) zero    eq = contradiction eq       (1+-never-∙ (fromℕ m))
 fromℕ-injective b (suc m) (suc n) eq = {!   !}
 
 --
---      xs ── +1 ──➞ xs'
+--      xs ── 1+ ──➞ xs'
 --      |              |
 --     toℕ           toℕ
 --      ↓              ↓
 --      n ── suc ─➞ suc n
 --
-+1-toℕ-suc : ∀ b xs → toℕ {suc b} (+1 xs) ≡ suc (toℕ xs)
-+1-toℕ-suc b ∙ = refl
-+1-toℕ-suc b ([ x ] xs) with Fin.toℕ x ≟ b
-+1-toℕ-suc b ([ x ] xs) | yes p =
+1+-toℕ-suc : ∀ b xs → toℕ {suc b} (1+ xs) ≡ suc (toℕ xs)
+1+-toℕ-suc b ∙ = refl
+1+-toℕ-suc b ([ x ] xs) with Fin.toℕ x ≟ b
+1+-toℕ-suc b ([ x ] xs) | yes p =
     begin
-        toℕ ([ Fin.zero ] +1 xs)
-    ≡⟨ cong (λ w → suc (w * suc b)) (+1-toℕ-suc b xs) ⟩
+        toℕ ([ Fin.zero ] 1+ xs)
+    ≡⟨ cong (λ w → suc (w * suc b)) (1+-toℕ-suc b xs) ⟩
         suc (suc (b + toℕ xs * suc b))
     ≡⟨ cong (λ w → suc (suc (w + toℕ xs * suc b))) (sym p) ⟩
         suc (toℕ ([ x ] xs))
     ∎
-+1-toℕ-suc b ([ x ] xs) | no ¬p =
+1+-toℕ-suc b ([ x ] xs) | no ¬p =
     cong (λ w → suc w + toℕ xs * suc b) (toℕ-fromℕ≤ (s≤s (digit+1-lemma (Fin.toℕ x) b (bounded x) ¬p)))
     where   open import Data.Fin.Properties using (toℕ-fromℕ≤; bounded)
 
 
 fromℕ-∙-0 : ∀ {b} n → fromℕ {b} n ≡ ∙ → n ≡ 0
 fromℕ-∙-0 zero    p = refl
-fromℕ-∙-0 (suc n) p = contradiction p (+1-never-∙ (fromℕ n))
+fromℕ-∙-0 (suc n) p = contradiction p (1+-never-∙ (fromℕ n))
     where   open import Relation.Nullary.Negation
 
 toℕ-∙-0 : ∀ {b} xs → toℕ {suc b} xs ≡ 0 → xs ≡ ∙
@@ -181,10 +173,10 @@ toℕ-fromℕ b (suc n) | ∙ | PropEq.[ eq ] = cong suc (sym (fromℕ-∙-0 n e
 toℕ-fromℕ b (suc n) | [ x ] xs | PropEq.[ eq ] with Fin.toℕ x ≟ b
 toℕ-fromℕ b (suc n) | [ x ] xs | PropEq.[ eq ] | yes p =
     begin
-        toℕ ([ Fin.zero ] +1 xs)
+        toℕ ([ Fin.zero ] 1+ xs)
     ≡⟨ refl ⟩
-        suc (toℕ (+1 xs) * suc b)
-    ≡⟨ cong (λ w → suc (w * suc b)) (+1-toℕ-suc b xs) ⟩
+        suc (toℕ (1+ xs) * suc b)
+    ≡⟨ cong (λ w → suc (w * suc b)) (1+-toℕ-suc b xs) ⟩
         suc (suc (b + toℕ xs * suc b))
     ≡⟨ cong (λ w → suc (suc (w + toℕ xs * suc b))) (sym p) ⟩
         suc (suc (Fin.toℕ x) + toℕ xs * suc b)
@@ -213,7 +205,7 @@ toℕ-fromℕ b (suc n) | [ x ] xs | PropEq.[ eq ] | no ¬p =
 --      ↓                    ↓
 --      xs ── [ x ]_ ──➞ [ x ] xs
 --
--- +1-toℕ-suc : ∀ b xs → toℕ {suc b} (+1 xs) ≡ suc (toℕ xs)
+-- 1+-toℕ-suc : ∀ b xs → toℕ {suc b} (1+ xs) ≡ suc (toℕ xs)
 *+-[]-coherence : ∀ b ns n → fromℕ ((suc n) + ns * suc b) ≡ ([ Fin.fromℕ n ] (fromℕ ns))
 *+-[]-coherence b ns n = {! ns  !}
 
@@ -263,9 +255,9 @@ fromℕ-digit-toℕ b Fin.zero = refl
 fromℕ-digit-toℕ zero (Fin.suc ())
 fromℕ-digit-toℕ (suc b) (Fin.suc x) =
     begin
-        +1 (fromℕ {suc b} (digit-toℕ {suc b} x))
-    ≡⟨ cong (+1 ∘ fromℕ) (digit-toℕ-inject₁-base b x) ⟩
-        +1 (fromℕ {suc b} (digit-toℕ {suc (suc b)} (Fin.inject₁ x)))
+        1+ (fromℕ {suc b} (digit-toℕ {suc b} x))
+    ≡⟨ cong (1+ ∘ fromℕ) (digit-toℕ-inject₁-base b x) ⟩
+        1+ (fromℕ {suc b} (digit-toℕ {suc (suc b)} (Fin.inject₁ x)))
     ≡⟨ {!   !} ⟩
         {!   !}
     ≡⟨ {!   !} ⟩
@@ -283,13 +275,13 @@ lemma (suc b) (Fin.suc x) ∙ =
     begin
         fromℕ {suc b} (digit-toℕ {suc (suc b)} (Fin.suc x) + 0)
     ≡⟨ refl ⟩
-        +1 (fromℕ {suc b} (digit-toℕ {suc b} x + 0))
-    ≡⟨ cong (λ w → +1 (fromℕ (w + 0))) (digit-toℕ-inject₁-base b x) ⟩
-        +1 (fromℕ {suc b} (digit-toℕ {suc (suc b)} (Fin.inject₁ x) + 0))
+        1+ (fromℕ {suc b} (digit-toℕ {suc b} x + 0))
+    ≡⟨ cong (λ w → 1+ (fromℕ (w + 0))) (digit-toℕ-inject₁-base b x) ⟩
+        1+ (fromℕ {suc b} (digit-toℕ {suc (suc b)} (Fin.inject₁ x) + 0))
     ≡⟨ refl ⟩
-        +1 (fromℕ {suc b} (suc (Fin.toℕ (Fin.inject₁ x)) + 0))
-    ≡⟨ cong (λ w → +1 (fromℕ (suc w + 0))) (inject₁-lemma x) ⟩
-        +1 (fromℕ {suc b} (digit-toℕ {suc b} x + 0))
+        1+ (fromℕ {suc b} (suc (Fin.toℕ (Fin.inject₁ x)) + 0))
+    ≡⟨ cong (λ w → 1+ (fromℕ (suc w + 0))) (inject₁-lemma x) ⟩
+        1+ (fromℕ {suc b} (digit-toℕ {suc b} x + 0))
     ≡⟨ {!   !} ⟩
         {!   !}
     ≡⟨ {!   !} ⟩
@@ -302,9 +294,9 @@ lemma (suc b) (Fin.suc x) ∙ =
     where
             open import Data.Fin.Properties
     -- begin
-    --     +1 (fromℕ (digit-toℕ {suc b} x + 0))
-    -- ≡⟨ cong (λ w → +1 (fromℕ (w + zero))) (digit-toℕ-inject₁-base b x) ⟩
-    --     +1 (fromℕ (digit-toℕ {suc (suc b)} (Fin.inject₁ x) + 0))
+    --     1+ (fromℕ (digit-toℕ {suc b} x + 0))
+    -- ≡⟨ cong (λ w → 1+ (fromℕ (w + zero))) (digit-toℕ-inject₁-base b x) ⟩
+    --     1+ (fromℕ (digit-toℕ {suc (suc b)} (Fin.inject₁ x) + 0))
     -- ≡⟨ {!   !} ⟩
     --     {!   !}
     -- ≡⟨ {!   !} ⟩
@@ -318,15 +310,15 @@ lemma (suc b) (Fin.suc x) ∙ =
     --         lemma1 Fin.zero = refl
     --         lemma1 (Fin.suc x) =
     --             begin
-    --                 +1 (+1 (fromℕ (Fin.toℕ (Fin.inject₁ x) + zero)))
-    --             ≡⟨ cong (λ w → +1 (+1 (fromℕ (w + zero)))) (inject₁-lemma x) ⟩
-    --                 +1 (+1 (fromℕ (Fin.toℕ x + zero)))
+    --                 1+ (1+ (fromℕ (Fin.toℕ (Fin.inject₁ x) + zero)))
+    --             ≡⟨ cong (λ w → 1+ (1+ (fromℕ (w + zero)))) (inject₁-lemma x) ⟩
+    --                 1+ (1+ (fromℕ (Fin.toℕ x + zero)))
     --             ≡⟨ {!   !} ⟩
     --                 {!   !}
     --             ≡⟨ {!   !} ⟩
     --                 {!   !}
     --             ≡⟨ refl ⟩
-    --                 raise-base b (+1 (+1 (fromℕ (Fin.toℕ x + zero))))
+    --                 raise-base b (1+ (1+ (fromℕ (Fin.toℕ x + zero))))
     --             ∎
 lemma b x ([ x' ] xs') =
     begin
@@ -349,7 +341,7 @@ lemma b x ([ x' ] xs') =
 -- fromℕ-toℕ b ([ x ] xs) | [ x' ] xs' | PropEq.[ eq ] with Fin.toℕ x' ≟ b
 -- fromℕ-toℕ b ([ Fin.zero ] xs) | [ x' ] xs' | PropEq.[ eq ] | yes p = cong (λ w → [ Fin.zero ] w) $
 --     begin
---         +1 xs'
+--         1+ xs'
 --     ≡⟨ {!   !} ⟩
 --         {!   !}
 --     ≡⟨ {!   !} ⟩
@@ -361,7 +353,7 @@ lemma b x ([ x' ] xs') =
 --     ∎
 -- fromℕ-toℕ b ([ Fin.suc x ] xs) | [ x' ] xs' | PropEq.[ eq ] | yes p =
 --     begin
---         ([ Fin.zero ] +1 xs')
+--         ([ Fin.zero ] 1+ xs')
 --     ≡⟨ {!   !} ⟩
 --         {!   !}
 --     ≡⟨ {!   !} ⟩
@@ -375,7 +367,7 @@ lemma b x ([ x' ] xs') =
 
 
     -- begin
-    --     ([ Fin.zero ] +1 xs')
+    --     ([ Fin.zero ] 1+ xs')
     -- ≡⟨ {!    !} ⟩
     --     {!   !}
     -- ≡⟨ {!   !} ⟩
@@ -425,9 +417,9 @@ lemma b x ([ x' ] xs') =
 --
 -- fromℕ-toℕ b ([ x ] xs) | suc n | PropEq.[ eq ] =
 --     begin
---         +1 (+1 (fromℕ n))
+--         1+ (1+ (fromℕ n))
 --     ≡⟨ refl ⟩
---         +1 (fromℕ (suc n))
+--         1+ (fromℕ (suc n))
 --     ≡⟨ refl ⟩
 --         fromℕ (suc (suc n))
 --     ≡⟨ cong (λ w → fromℕ (suc w)) (sym eq) ⟩

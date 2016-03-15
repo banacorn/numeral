@@ -78,15 +78,15 @@ digit+1 {b} x ¬p = fromℕ≤ {digit-toℕ x} (s≤s (digit+1-lemma (Fin.toℕ 
 
 
 
-+1 : ∀ {b} → Num (suc b) → Num (suc b)
-+1 ∙ = [ Fin.zero ] ∙
-+1 {b} ([ x ] xs) with Fin.toℕ x ≟ b
-+1 {b} ([ x ] xs) | yes p = [ Fin.zero ] +1 xs
-+1 {b} ([ x ] xs) | no ¬p = [ digit+1 x ¬p ] xs
+1+ : ∀ {b} → Num (suc b) → Num (suc b)
+1+ ∙ = [ Fin.zero ] ∙
+1+ {b} ([ x ] xs) with Fin.toℕ x ≟ b
+1+ {b} ([ x ] xs) | yes p = [ Fin.zero ] 1+ xs
+1+ {b} ([ x ] xs) | no ¬p = [ digit+1 x ¬p ] xs
 
 fromℕ : ∀ {b} → ℕ → Num (suc b)
 fromℕ zero    = ∙
-fromℕ (suc n) = +1 (fromℕ n)
+fromℕ (suc n) = 1+ (fromℕ n)
 
 add : ∀ {b} → Num b → Num b → Num b
 add ∙ ys = ys
@@ -94,7 +94,7 @@ add xs ∙ = xs
 add {zero} ([ () ] xs) ([ y ] ys)
 add {suc b} ([ x ] xs) ([ y ] ys) with (suc (Fin.toℕ x + Fin.toℕ y)) divMod (suc b)
 add {suc b} ([ x ] xs) ([ y ] ys) | result zero    R prop = [ R ] (add xs ys)
-add {suc b} ([ x ] xs) ([ y ] ys) | result (suc Q) R prop = [ R ] +1 (add xs ys)
+add {suc b} ([ x ] xs) ([ y ] ys) | result (suc Q) R prop = [ R ] 1+ (add xs ys)
 
 _≈_ : ∀ {b} → Num b → Num b → Set
 ∙          ≈ ∙          = ⊤
