@@ -16,6 +16,7 @@ open import Relation.Binary
 open import Relation.Binary.PropositionalEquality
 open ≡-Reasoning
 open DecTotalOrder decTotalOrder renaming (refl to ≤-refl)
+
 -- start
 --     {!   !}
 -- ≤⟨ {!   !} ⟩
@@ -170,66 +171,3 @@ some-lemma b (suc m) (suc n) (S ms) (S ns) p = (proj₁ ind) , (cong S (proj₂ 
                 ∎
             ind : suc m ≡ suc n × ms ≡ ns
             ind = some-lemma b (suc m) (suc n) ms ns (cancel-+-left (S b) p')
-
--- start
---     {!   !}
--- ≤⟨ {!   !} ⟩
---     {!   !}
--- ≤⟨ {!   !} ⟩
---     {!   !}
--- ≤⟨ {!   !} ⟩
---     {!   !}
--- □
-    -- HAVE     p  : toℕ (suc m) ℕ+ S ms ℕ* S b ≡ toℕ (suc n) ℕ+ S ns ℕ* S b
-    -- GOAL        : suc m ≡ suc n
-
-
-    -- cong suc (suc-injective (proj₁ ind))
-    -- , cong S (proj₂ ind)
-    --         lemma : ∀ b m n ms ns
-    --             → S (toℕ {S b} m ℕ+ S (b ℕ+ ms ℕ* S b)) ≡ S (toℕ {S b} n ℕ+ S (b ℕ+ ns ℕ* S b))
-    --             → S (toℕ {S b} m ℕ+ ms ℕ* S b) ≡ S (toℕ {S b} n ℕ+ ns ℕ* S b)
-    --         lemma c zero zero xs ys prop = {!   !}
-    --         lemma c zero (suc y) xs ys prop = {!   !}
-    --         lemma c (suc x) y xs ys prop = {!   !}
-    --         ind : suc m ≡ suc n × ms ≡ ns
-    -- -- Goal : toℕ (suc m) ℕ+ ms ℕ* S b ≡ toℕ (suc n) ℕ+ ns ℕ* S b
-    --         ind = some-lemma b (suc m) (suc n) ms ns {!   !}
-    --         -- ind = some-lemma b (suc m) (suc n) ms ns (cong S (cong (λ w → w ℕ+ {!   !} ℕ* S b) {!   !}))
-
--- p : S (toℕ m + S ms * S b) ≡ S (toℕ n + S ns * S b)
--- goal : S (toℕ m + ms * S b) ≡ S (toℕ n + ns * S b)
-
--- begin
---     {!   !}
--- ≡⟨ {!   !} ⟩
---     {!   !}
--- ≡⟨ {!   !} ⟩
---     {!   !}
--- ≡⟨ {!   !} ⟩
---     {!   !}
--- ≡⟨ {!   !} ⟩
---     {!   !}
--- ∎
-
--- some-lemma : ∀ b x y xs ys
---     → Fin.toℕ {suc b} x + xs * suc b ≡ Fin.toℕ {suc b} y + ys * suc b
---     → xs ≡ ys
--- xs≡ys b Fin.zero    Fin.zero    zero     zero     p = refl
--- xs≡ys b Fin.zero    Fin.zero    zero     (suc ys) ()
--- xs≡ys b Fin.zero    Fin.zero    (suc xs) zero     ()
--- xs≡ys b Fin.zero    Fin.zero    (suc xs) (suc ys) p = cong suc (xs≡ys b Fin.zero Fin.zero xs ys (cancel-+-left (suc b) p))
--- xs≡ys b Fin.zero    (Fin.suc y) zero     zero     p = refl
--- xs≡ys b₁ Fin.zero (Fin.suc y₁) zero (suc ys₁) ()
--- xs≡ys b Fin.zero    (Fin.suc y) (suc xs) zero     p = {!   !}
---     -- where   suc (Fin.toℕ y + zero) < suc b
---     --         suc (b + xs * suc b) ≡ suc xs * suc b
--- xs≡ys b Fin.zero    (Fin.suc y) (suc xs) (suc ys) p = {!   !}
--- xs≡ys b (Fin.suc x) Fin.zero    zero     zero     p = refl
--- xs≡ys b (Fin.suc x) Fin.zero    zero     (suc ys) p = {!   !}
--- xs≡ys b (Fin.suc x) Fin.zero    (suc xs) zero     p = {!   !}
--- xs≡ys b (Fin.suc x) Fin.zero    (suc xs) (suc ys) p = {!   !}
--- xs≡ys b (Fin.suc x) (Fin.suc y) zero     zero     p = refl
--- xs≡ys b (Fin.suc x) (Fin.suc y) zero     (suc ys) p = {!   !}
--- xs≡ys b (Fin.suc x) (Fin.suc y) (suc xs) zero     p = {!   !}
--- xs≡ys b (Fin.suc x) (Fin.suc y) (suc xs) (suc ys) p = {!   !}
