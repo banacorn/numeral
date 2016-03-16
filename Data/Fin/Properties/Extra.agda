@@ -38,8 +38,22 @@ open DecTotalOrder decTotalOrder renaming (refl to ≤-refl)
 --     {!   !}
 -- ∎
 
+inject-1 : ∀ {n} → (i : Fin (S n)) → toℕ i ≢ n → Fin n
+inject-1 {Z} zero p = contradiction refl p
+inject-1 {Z} (suc i) p = i
+inject-1 {S n} zero p = zero
+inject-1 {S n} (suc i) p = suc (inject-1 i (p ∘ cong S))
+
+inject-1-lemma : ∀ {n} → (i : Fin (S n)) → (¬p : toℕ i ≢ n) → toℕ (inject-1 i ¬p) ≡ toℕ i
+inject-1-lemma {Z}   zero     ¬p = contradiction refl ¬p
+inject-1-lemma {Z}   (suc ()) ¬p
+inject-1-lemma {S n} zero     ¬p = refl
+inject-1-lemma {S n} (suc i)  ¬p = cong S (inject-1-lemma i (¬p ∘ cong S))
+
 suc-injective : ∀ {b} {x y : Fin b} → suc x ≡ suc y → x ≡ y
 suc-injective {b} {x} {.x} refl = refl
+
+
 
 some-lemma : ∀ b x y xs ys
     → toℕ {S b} x ℕ+ xs ℕ* S b ≡ toℕ {S b} y ℕ+ ys ℕ* S b

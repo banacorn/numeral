@@ -1,11 +1,14 @@
 module Data.Nat.Properties.Extra where
 
 open import Data.Nat
+open import Data.Nat.Properties
 open import Data.Nat.Properties.Simple
 open import Function
 open import Relation.Binary.Core
+open import Relation.Nullary.Negation
 open import Relation.Binary.PropositionalEquality
 open ≡-Reasoning
+
 
 >⇒≢ : _>_ ⇒ _≢_
 >⇒≢ {zero} () refl
@@ -14,6 +17,13 @@ open ≡-Reasoning
 <⇒≢ : _<_ ⇒ _≢_
 <⇒≢ {zero} () refl
 <⇒≢ {suc m} (s≤s m<n) refl = <⇒≢ m<n refl
+
+≤∧≢⇒< : ∀ {m n} → m ≤ n → m ≢ n → m < n
+≤∧≢⇒< {zero}  {zero}  p       q = contradiction refl q
+≤∧≢⇒< {zero}  {suc n} p       q = s≤s z≤n
+≤∧≢⇒< {suc m} {zero}  ()      q
+≤∧≢⇒< {suc m} {suc n} (s≤s p) q = s≤s (≤∧≢⇒< p (q ∘ cong suc))
+
 
 suc-injective : ∀ {x y} → suc x ≡ suc y → x ≡ y
 suc-injective {x} {.x} refl = refl

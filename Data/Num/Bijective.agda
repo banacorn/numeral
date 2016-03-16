@@ -75,10 +75,13 @@ digit+1 : ∀ {b} → (x : Fin (suc b)) → Fin.toℕ x ≢ b → Fin (suc b)
 digit+1 {b} x ¬p = fromℕ≤ {digit-toℕ x} (s≤s (digit+1-lemma (Fin.toℕ x) b (bounded x) ¬p))
 
 
+-- a digit at its largest
+full : ∀ {b} (x : Fin (suc b)) → Dec (Fin.toℕ {suc b} x ≡ b)
+full {b} x = Fin.toℕ x ≟ b
 
 1+ : ∀ {b} → Num (suc b) → Num (suc b)
 1+ ∙ = Fin.zero ∷ ∙
-1+ {b} (x ∷ xs) with Fin.toℕ x ≟ b
+1+ {b} (x ∷ xs) with full x
 1+ {b} (x ∷ xs) | yes p = Fin.zero ∷ 1+ xs
 1+ {b} (x ∷ xs) | no ¬p = digit+1 x ¬p ∷ xs
 
