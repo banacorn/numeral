@@ -356,76 +356,34 @@ increase-base b (x ∷ xs) | y ∷ ys , ⟦xs⟧≡⟦ys⟧ | z ∷ zs | [ eq ] 
             open import Data.Nat.Properties.Simple
             proof : suc (Fin.toℕ x + toℕ xs * suc b) ≡ suc (Fin.toℕ remainder + toℕ ((n+ (suc quotient) zs)) * suc (suc b))
             proof = cong suc $ begin
-                    {!   !}
-                ≡⟨ {!   !} ⟩
-                    {!   !}
-                ≡⟨ {!   !} ⟩
-                    {!   !}
-                ≡⟨ {!   !} ⟩
-                    {!   !}
-                ≡⟨ {!   !} ⟩
-                    {!   !}
-                ≡⟨ {!   !} ⟩
-                    {!   !}
-                ≡⟨ {!   !} ⟩
-                    {!   !}
-                ≡⟨ {!   !} ⟩
-                    {!   !}
-                ≡⟨ {!   !} ⟩
-                    Fin.toℕ remainder + suc (suc (b + toℕ (n+ quotient zs) * suc (suc b)))
+                    Fin.toℕ x + toℕ xs * suc b
+                ≡⟨ cong (λ w → Fin.toℕ x + w * suc b) ⟦xs⟧≡⟦ys⟧ ⟩
+                    Fin.toℕ x + suc (b + (Fin.toℕ y + toℕ ys * suc (suc b)) * suc b)
+                ≡⟨ cong (λ w → Fin.toℕ x + suc w) (sym (toℕ-fromℕ (suc b) (b + (Fin.toℕ y + toℕ ys * suc (suc b)) * suc b))) ⟩
+                    Fin.toℕ x + suc (toℕ (fromℕ (b + (Fin.toℕ y + toℕ ys * suc (suc b)) * suc b)))
+                ≡⟨ cong (λ w → Fin.toℕ x + w) (sym (toℕ-1+ (suc b) (fromℕ (b + (Fin.toℕ y + toℕ ys * suc (suc b)) * suc b)))) ⟩
+                    Fin.toℕ x + toℕ (1+ (fromℕ (b + (Fin.toℕ y + toℕ ys * suc (suc b)) * suc b)))
+                ≡⟨ cong (λ w → Fin.toℕ x + w) (cong toℕ eq) ⟩
+                    Fin.toℕ x + suc (Fin.toℕ z + toℕ zs * suc (suc b))
+                ≡⟨ +-suc (Fin.toℕ x) (Fin.toℕ z + toℕ zs * suc (suc b)) ⟩
+                    suc (Fin.toℕ x + (Fin.toℕ z + toℕ zs * suc (suc b)))
+                ≡⟨ cong suc (sym (+-assoc (Fin.toℕ x) (Fin.toℕ z) (toℕ zs * suc (suc b)))) ⟩
+                    suc (Fin.toℕ x + Fin.toℕ z + toℕ zs * suc (suc b))
+                ≡⟨ cong (λ w → w + toℕ zs * suc (suc b)) property ⟩
+                    Fin.toℕ remainder + suc (suc (b + quotient * suc (suc b))) + toℕ zs * suc (suc b)
+                ≡⟨ +-assoc (Fin.toℕ remainder) (suc (suc (b + quotient * suc (suc b)))) (toℕ zs * suc (suc b)) ⟩
+                    Fin.toℕ remainder + (suc (suc (b + quotient * suc (suc b))) + toℕ zs * suc (suc b))
+                ≡⟨ cong (λ w → Fin.toℕ remainder + w) (+-assoc (suc (suc b)) (quotient * suc (suc b)) (toℕ zs * suc (suc b))) ⟩
+                    Fin.toℕ remainder + suc (suc (b + (quotient * suc (suc b) + toℕ zs * suc (suc b))))
+                ≡⟨ cong (λ w → Fin.toℕ remainder + suc (suc (b + w))) (sym (distribʳ-*-+ (suc (suc b)) quotient (toℕ zs))) ⟩
+                    Fin.toℕ remainder + suc (suc (b + (quotient + toℕ zs) * suc (suc b)))
+                ≡⟨ cong (λ w → Fin.toℕ remainder + suc (suc (b + w * suc (suc b)))) (sym (toℕ-n+ (suc b) quotient zs)) ⟩
+                     Fin.toℕ remainder + suc (suc (b + toℕ (n+ quotient zs) * suc (suc b)))
                 ≡⟨ cong (λ w → Fin.toℕ remainder + w * suc (suc b)) (sym (toℕ-1+ (suc b) (n+ quotient zs))) ⟩
                     Fin.toℕ remainder + toℕ (1+ (n+ quotient zs)) * suc (suc b)
                 ≡⟨ refl ⟩
                     Fin.toℕ remainder + toℕ ((n+ (suc quotient) zs)) * suc (suc b)
                 ∎
-            -- proof = cong suc $ begin
-            --         Fin.toℕ x + toℕ xs * suc b
-            --     ≡⟨ cong (λ w → Fin.toℕ x + w * suc b) ⟦xs⟧≡⟦ys⟧ ⟩
-            --         Fin.toℕ x + suc (b + (Fin.toℕ y + toℕ ys * suc (suc b)) * suc b)
-            --     ≡⟨ {!   !} ⟩
-            --         {!   !}
-            --     ≡⟨ {!   !} ⟩
-            --         {!   !}
-            --     ≡⟨ {!   !} ⟩
-            --         {!   !}
-            --     ≡⟨ {!   !} ⟩
-            --         Fin.toℕ remainder + suc (suc (b + toℕ zs * suc (suc b)))
-            --     ≡⟨ cong (λ w → Fin.toℕ remainder + w * suc (suc b)) (sym (toℕ-1+ (suc b) zs)) ⟩
-            --         Fin.toℕ remainder + toℕ (1+ zs) * suc (suc b)
-            --     ∎
--- increase-base b (x ∷ xs) | y ∷ ys , ⟦ys⟧≡⟦ys⟧ | ∙ =
---     (Fin.inject₁ x ∷ ∙) , {!   !}
--- increase-base b (x ∷ xs) | y ∷ ys , ⟦ys⟧≡⟦ys⟧ | z ∷ zs = {!   !}
--- increase-base b (x ∷ xs) | z ∷ zs , ⟦xs⟧≡⟦zs⟧ with (suc (Fin.toℕ x + Fin.toℕ z)) divMod (suc (suc b))
--- increase-base b (x ∷ xs) | z ∷ zs , ⟦xs⟧≡⟦zs⟧ | result zero remainder property =
---     remainder ∷ zs , proof
---     where   open import Data.Fin.Properties
---             open import Data.Nat.Properties.Simple
---             proof : suc (Fin.toℕ x + toℕ xs * suc b) ≡ suc (Fin.toℕ remainder + toℕ zs * suc (suc b))
---             proof = cong suc $
---                 begin
---                     Fin.toℕ x + toℕ xs * suc b
---                 ≡⟨ {!   !} ⟩
---                     {!   !}
---                 ≡⟨ {!   !} ⟩
---                     {!   !}
---                 ≡⟨ {!   !} ⟩
---                     {!   !}
---                 ≡⟨ {!   !} ⟩
---                     Fin.toℕ x + toℕ xs
---                 ≡⟨ cong (λ w → Fin.toℕ x + w) ⟦xs⟧≡⟦zs⟧ ⟩
---                     Fin.toℕ x + suc (Fin.toℕ z + toℕ zs * suc (suc b))
---                 ≡⟨ +-suc (Fin.toℕ x) (Fin.toℕ z + toℕ zs * suc (suc b)) ⟩
---                     suc (Fin.toℕ x + (Fin.toℕ z + toℕ zs * suc (suc b)))
---                 ≡⟨ cong suc (sym (+-assoc (Fin.toℕ x) (Fin.toℕ z) (toℕ zs * suc (suc b)))) ⟩
---                     suc ((Fin.toℕ x + Fin.toℕ z) + toℕ zs * suc (suc b))
---                 ≡⟨ cong (λ w → w + toℕ zs * suc (suc b)) property ⟩
---                     Fin.toℕ remainder + zero + toℕ zs * suc (suc b)
---                 ≡⟨ cong (λ w → w + toℕ zs * suc (suc b)) (+-right-identity (Fin.toℕ remainder)) ⟩
---                     Fin.toℕ remainder + toℕ zs * suc (suc b)
---                 ∎
--- increase-base b (x ∷ xs) | z ∷ zs , ⟦xs⟧≡⟦zs⟧ | result (suc quotient) remainder property = {!   !}
---
 -- lemma : ∀ b x xs
 --       → fromℕ {b} (digit-toℕ {suc b} x + toℕ {suc b} xs * suc b) ≡ x ∷ xs
 -- lemma b        Fin.zero    ∙ = refl
