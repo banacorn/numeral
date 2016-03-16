@@ -82,6 +82,10 @@ digit+1 {b} x ¬p = fromℕ≤ {digit-toℕ x} (s≤s (digit+1-lemma (Fin.toℕ 
 1+ {b} (x ∷ xs) | yes p = Fin.zero ∷ 1+ xs
 1+ {b} (x ∷ xs) | no ¬p = digit+1 x ¬p ∷ xs
 
+n+ : ∀ {b} → ℕ → Num (suc b) → Num (suc b)
+n+ zero xs = xs
+n+ (suc n) xs = 1+ (n+ n xs)
+
 fromℕ : ∀ {b} → ℕ → Num (suc b)
 fromℕ zero    = ∙
 fromℕ (suc n) = 1+ (fromℕ n)
