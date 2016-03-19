@@ -216,6 +216,17 @@ toℕ-fromℕ b (suc n) | x ∷ xs | [ eq ] | no ¬p =
     where   open import Data.Fin.Properties using (toℕ-fromℕ≤; bounded)
 
 
+toℕ-fromℕ-inverse : ∀ b {m} {n} → toℕ (fromℕ {b} m) ≡ n → m ≡ n
+toℕ-fromℕ-inverse b {m} {n} eq =
+    begin
+        m
+    ≡⟨ sym (toℕ-fromℕ b m) ⟩
+        toℕ (fromℕ m)
+    ≡⟨ eq ⟩
+        n
+    ∎
+
+
 --
 --      ns  ──  .....  ─➞ toℕ x + toℕ xs * base
 --      |                    |
@@ -278,116 +289,134 @@ digit-toℕ-inject₁-base b (Fin.suc x) = cong (suc ∘ suc) (sym (inject₁-le
 --     {!   !}
 -- ∎
 
--- induction on "decrease-base b xs", to avoid having to use fromℕ-toℕ
+
+-- induction on "increase-base-primitive b xs", to avoid having to use fromℕ-toℕ
 
 -- old base = suc b
 -- new base = suc (suc b)
-increase-base : ∀ b
+increase-base-primitive : ∀ b
     → (xs : Num (suc b))
     → Σ[ ys ∈ Num (suc (suc b)) ] toℕ xs ≡ toℕ ys
-increase-base b ∙        = ∙ , refl
-increase-base b (x ∷ xs) with increase-base b xs
-increase-base b (x ∷ xs) | ∙      , ⟦xs⟧≡⟦ys⟧ = (Fin.inject₁ x ∷ ∙) , proof
+increase-base-primitive b ∙ = ∙ , refl
+increase-base-primitive b (x ∷ xs) with fromℕ {suc b} (toℕ (proj₁ (increase-base-primitive b xs)) * suc b) | inspect (λ ws → fromℕ {suc b} (toℕ ws * suc b)) (proj₁ (increase-base-primitive b xs))
+increase-base-primitive b (x ∷ xs) | ∙ | [ eq ] = (Fin.inject₁ x ∷ ∙) , proof
     where   open import Data.Fin.Properties
+
+            eq' : toℕ (proj₁ (increase-base-primitive b xs)) * suc b ≡ 0
+            eq' = toℕ-fromℕ-inverse (suc b) (cong toℕ eq)
+
             proof : suc (Fin.toℕ x + toℕ xs * suc b) ≡ suc (Fin.toℕ (Fin.inject₁ x) + 0)
-            proof = cong suc $
-                begin
+            proof = cong suc $ begin
                     Fin.toℕ x + toℕ xs * suc b
-                ≡⟨ cong (λ w → Fin.toℕ x + w * suc b) ⟦xs⟧≡⟦ys⟧ ⟩
-                    Fin.toℕ x + zero
+                ≡⟨ cong (λ w → Fin.toℕ x + w * suc b) (proj₂ (increase-base-primitive b xs)) ⟩
+                    Fin.toℕ x + toℕ (proj₁ (increase-base-primitive b xs)) * suc b
+                ≡⟨ cong (λ w → Fin.toℕ x + w) eq' ⟩
+                    Fin.toℕ x + 0
                 ≡⟨ cong (λ w → w + 0) (sym (inject₁-lemma x)) ⟩
                     Fin.toℕ (Fin.inject₁ x) + 0
                 ∎
-increase-base b (x ∷ xs) | y ∷ ys , ⟦xs⟧≡⟦ys⟧ with fromℕ {suc b} (toℕ (y ∷ ys) * suc b) | inspect (λ ws → fromℕ {suc b} (toℕ ws * suc b)) (y ∷ ys)
-increase-base b (x ∷ xs) | y ∷ ys , ⟦xs⟧≡⟦ys⟧ | ∙      | [ eq ] =
-    contradiction eq (1+-never-∙ (fromℕ (b + (Fin.toℕ y + toℕ ys * suc (suc b)) * suc b)))
-increase-base b (x ∷ xs) | y ∷ ys , ⟦xs⟧≡⟦ys⟧ | z ∷ zs | [ eq ] with (suc (Fin.toℕ x + Fin.toℕ z)) divMod (suc (suc b))
-increase-base b (x ∷ xs) | y ∷ ys , ⟦xs⟧≡⟦ys⟧ | z ∷ zs | [ eq ] | result quotient remainder property =
-    (remainder ∷ n+ quotient zs) , proof
+increase-base-primitive b (x ∷ xs) | y ∷ ys | [ eq ] with (suc (Fin.toℕ x + Fin.toℕ y)) divMod (suc (suc b))
+increase-base-primitive b (x ∷ xs) | y ∷ ys | [ eq ] | result quotient remainder property =
+    (remainder ∷ n+ quotient ys) , proof
     where   open import Data.Fin.Properties
             open import Data.Nat.Properties.Simple
 
-            proof : suc (Fin.toℕ x + toℕ xs * suc b) ≡ suc (Fin.toℕ remainder + toℕ (n+ quotient zs) * suc (suc b))
+            eq' : toℕ (proj₁ (increase-base-primitive b xs)) * suc b ≡ toℕ (y ∷ ys)
+            eq' = toℕ-fromℕ-inverse (suc b) (cong toℕ eq)
+
+            proof : suc (Fin.toℕ x + toℕ xs * suc b) ≡ suc (Fin.toℕ remainder + toℕ (n+ quotient ys) * suc (suc b))
             proof = cong suc $ begin
                     Fin.toℕ x + toℕ xs * suc b
-                ≡⟨ cong (λ w → Fin.toℕ x + w * suc b) ⟦xs⟧≡⟦ys⟧ ⟩
-                    Fin.toℕ x + suc (b + (Fin.toℕ y + toℕ ys * suc (suc b)) * suc b)
-                ≡⟨ cong (λ w → Fin.toℕ x + suc w) (sym (toℕ-fromℕ (suc b) (b + (Fin.toℕ y + toℕ ys * suc (suc b)) * suc b))) ⟩
-                    Fin.toℕ x + suc (toℕ (fromℕ (b + (Fin.toℕ y + toℕ ys * suc (suc b)) * suc b)))
-                ≡⟨ cong (λ w → Fin.toℕ x + w) (sym (toℕ-n+ (suc b) 1 (fromℕ (b + (Fin.toℕ y + toℕ ys * suc (suc b)) * suc b)))) ⟩
-                    Fin.toℕ x + toℕ (1+ (fromℕ (b + (Fin.toℕ y + toℕ ys * suc (suc b)) * suc b)))
-                ≡⟨ cong (λ w → Fin.toℕ x + w) (cong toℕ eq) ⟩
-                    Fin.toℕ x + suc (Fin.toℕ z + toℕ zs * suc (suc b))
-                ≡⟨ +-suc (Fin.toℕ x) (Fin.toℕ z + toℕ zs * suc (suc b)) ⟩
-                    suc (Fin.toℕ x + (Fin.toℕ z + toℕ zs * suc (suc b)))
-                ≡⟨ cong suc (sym (+-assoc (Fin.toℕ x) (Fin.toℕ z) (toℕ zs * suc (suc b)))) ⟩
-                    suc ((Fin.toℕ x + Fin.toℕ z) + toℕ zs * suc (suc b))
-                ≡⟨ cong (λ w → w + toℕ zs * suc (suc b)) property ⟩
-                    Fin.toℕ remainder + quotient * suc (suc b) + toℕ zs * suc (suc b)
-                ≡⟨ +-assoc (Fin.toℕ remainder) (quotient * suc (suc b)) (toℕ zs * suc (suc b)) ⟩
-                    Fin.toℕ remainder + (quotient * suc (suc b) + toℕ zs * suc (suc b))
-                ≡⟨ cong (λ w → Fin.toℕ remainder + w) (sym (distribʳ-*-+ (suc (suc b)) quotient (toℕ zs))) ⟩
-                    Fin.toℕ remainder + (quotient + toℕ zs) * suc (suc b)
-                ≡⟨ cong (λ w → Fin.toℕ remainder + w * suc (suc b)) (sym (toℕ-n+ (suc b) quotient zs)) ⟩
-                    Fin.toℕ remainder + toℕ (n+ quotient zs) * suc (suc b)
+                ≡⟨ cong (λ w → Fin.toℕ x + w * suc b) (proj₂ (increase-base-primitive b xs)) ⟩
+                    Fin.toℕ x + toℕ (proj₁ (increase-base-primitive b xs)) * suc b
+                ≡⟨ cong (λ w → Fin.toℕ x + w) eq' ⟩
+                    Fin.toℕ x + toℕ (y ∷ ys)
+                ≡⟨ +-suc (Fin.toℕ x) (Fin.toℕ y + toℕ ys * suc (suc b)) ⟩
+                    suc (Fin.toℕ x + (Fin.toℕ y + toℕ ys * suc (suc b)))
+                ≡⟨ cong suc (sym (+-assoc (Fin.toℕ x) (Fin.toℕ y) (toℕ ys * suc (suc b)))) ⟩
+                    suc (Fin.toℕ x + Fin.toℕ y + toℕ ys * suc (suc b))
+                ≡⟨ cong (λ w → w + toℕ ys * suc (suc b)) property ⟩
+                    Fin.toℕ remainder + quotient * suc (suc b) + toℕ ys * suc (suc b)
+                ≡⟨ +-assoc (Fin.toℕ remainder) (quotient * suc (suc b)) (toℕ ys * suc (suc b)) ⟩
+                    Fin.toℕ remainder + (quotient * suc (suc b) + toℕ ys * suc (suc b))
+                ≡⟨ cong (λ w → Fin.toℕ remainder + w) (sym (distribʳ-*-+ (suc (suc b)) quotient (toℕ ys))) ⟩
+                    Fin.toℕ remainder + (quotient + toℕ ys) * suc (suc b)
+                ≡⟨ cong (λ w → Fin.toℕ remainder + w * suc (suc b)) (sym (toℕ-n+ (suc b) quotient ys)) ⟩
+                    Fin.toℕ remainder + toℕ (n+ quotient ys) * suc (suc b)
                 ∎
+
+increase-base : ∀ {b} → Num (suc b) → Num (suc (suc b))
+increase-base {b} xs = proj₁ (increase-base-primitive b xs)
+
+increase-base-lemma : ∀ {b} → (xs : Num (suc b)) → toℕ (increase-base xs) ≡ toℕ xs
+increase-base-lemma {b} xs = sym (proj₂ (increase-base-primitive b xs))
 
 -- old base = suc (suc b)
 -- new base = suc b
-decrease-base : ∀ b
+decrease-base-primitive : ∀ b
     → (xs : Num (suc (suc b)))
     → Σ[ ys ∈ Num (suc b) ] toℕ xs ≡ toℕ ys
-decrease-base b ∙ = ∙ , refl
-decrease-base b (x ∷ xs) with decrease-base b xs
-decrease-base b (x ∷ xs) | ∙ , ⟦xs⟧≡⟦ys⟧ with full x
-decrease-base b (x ∷ xs) | ∙ , ⟦xs⟧≡⟦ys⟧ | yes p =
+decrease-base-primitive b ∙ = ∙ , refl
+decrease-base-primitive b (x ∷ xs) with fromℕ {b} (toℕ (proj₁ (decrease-base-primitive b xs)) * suc (suc b)) | inspect (λ ws → fromℕ {b} (toℕ ws * suc (suc b))) (proj₁ (decrease-base-primitive b xs))
+decrease-base-primitive b (x ∷ xs) | ∙      | [ eq ] with full x
+decrease-base-primitive b (x ∷ xs) | ∙      | [ eq ] | yes p =
     (Fin.zero ∷ Fin.zero ∷ ∙) , proof
-    where   proof : suc (Fin.toℕ x + toℕ xs * suc (suc b)) ≡ suc (suc (b + zero))
-            proof = cong suc $ cong₂ (λ v w → v + w * suc (suc b)) p ⟦xs⟧≡⟦ys⟧
-decrease-base b (x ∷ xs) | ∙ , ⟦xs⟧≡⟦ys⟧ | no ¬p =
-    inject-1 x ¬p ∷ ∙ , proof
-    where   open import Data.Fin.Properties.Extra
-            proof : suc (Fin.toℕ x + toℕ xs * suc (suc b)) ≡ suc (Fin.toℕ (inject-1 x ¬p) + zero)
+    where   proof : suc (Fin.toℕ x + toℕ xs * suc (suc b)) ≡ suc (suc (b + 0))
             proof = cong suc $ begin
                     Fin.toℕ x + toℕ xs * suc (suc b)
-                ≡⟨ cong (λ w → Fin.toℕ x + w * suc (suc b)) ⟦xs⟧≡⟦ys⟧ ⟩
+                ≡⟨ cong (λ w → Fin.toℕ x + w * suc (suc b)) (proj₂ (decrease-base-primitive b xs)) ⟩
+                    Fin.toℕ x + toℕ (proj₁ (decrease-base-primitive b xs)) * suc (suc b)
+                ≡⟨ cong (λ w → Fin.toℕ x + w) (toℕ-fromℕ-inverse b (cong toℕ eq)) ⟩
+                    Fin.toℕ x + 0
+                ≡⟨ cong (λ w → w + 0) p ⟩
+                    suc (b + 0)
+                ∎
+decrease-base-primitive b (x ∷ xs) | ∙      | [ eq ] | no ¬p =
+    inject-1 x ¬p ∷ ∙ , proof
+    where   open import Data.Fin.Properties
+            open import Data.Fin.Properties.Extra
+            proof : suc (Fin.toℕ x + toℕ xs * suc (suc b)) ≡ suc (Fin.toℕ (inject-1 x ¬p) + 0)
+            proof = cong suc $ begin
+                    Fin.toℕ x + toℕ xs * suc (suc b)
+                ≡⟨ cong (λ w → Fin.toℕ x + w * suc (suc b)) (proj₂ (decrease-base-primitive b xs)) ⟩
+                    Fin.toℕ x + toℕ (proj₁ (decrease-base-primitive b xs)) * suc (suc b)
+                ≡⟨ cong (λ w → Fin.toℕ x + w) (toℕ-fromℕ-inverse b {toℕ (proj₁ (decrease-base-primitive b xs)) * suc (suc b)} {0} (cong toℕ eq)) ⟩
                     Fin.toℕ x + zero
                 ≡⟨ cong (λ w → w + 0) (sym (inject-1-lemma x ¬p)) ⟩
-                    Fin.toℕ (inject-1 x ¬p) + zero
+                    Fin.toℕ (inject-1 x ¬p) + 0
                 ∎
-decrease-base b (x ∷ xs) | y ∷ ys , ⟦xs⟧≡⟦ys⟧ with fromℕ {b} (toℕ (y ∷ ys) * suc (suc b)) | inspect (λ ws → fromℕ {b} (toℕ ws * suc (suc b))) (y ∷ ys)
-decrease-base b (x ∷ xs) | y ∷ ys , ⟦xs⟧≡⟦ys⟧ | ∙      | [ eq ] =
-    contradiction eq (1+-never-∙ (1+ (fromℕ (b + (Fin.toℕ y + toℕ ys * suc b) * suc (suc b)))))
-decrease-base b (x ∷ xs) | y ∷ ys , ⟦xs⟧≡⟦ys⟧ | z ∷ zs | [ eq ] with (suc (Fin.toℕ x + Fin.toℕ z)) divMod (suc b)
-decrease-base b (x ∷ xs) | y ∷ ys , ⟦xs⟧≡⟦ys⟧ | z ∷ zs | [ eq ] | result quotient remainder property =
-    remainder ∷ n+ quotient zs , proof
+decrease-base-primitive b (x ∷ xs) | y ∷ ys | [ eq ] with (suc (Fin.toℕ x + Fin.toℕ y)) divMod (suc b)
+decrease-base-primitive b (x ∷ xs) | y ∷ ys | [ eq ] | result quotient remainder property =
+    remainder ∷ n+ quotient ys , proof
     where   open import Data.Fin.Properties
             open import Data.Nat.Properties.Simple
-            proof : suc (Fin.toℕ x + toℕ xs * suc (suc b)) ≡ suc (Fin.toℕ remainder + toℕ (n+ quotient zs) * suc b)
+            proof : suc (Fin.toℕ x + toℕ xs * suc (suc b)) ≡ suc (Fin.toℕ remainder + toℕ (n+ quotient ys) * suc b)
             proof = cong suc $
                 begin
                     Fin.toℕ x + toℕ xs * suc (suc b)
-                ≡⟨ cong (λ w → Fin.toℕ x + w * suc (suc b)) ⟦xs⟧≡⟦ys⟧ ⟩
-                    Fin.toℕ x + suc (suc (b + (Fin.toℕ y + toℕ ys * suc b) * suc (suc b)))
-                ≡⟨ cong (λ w → Fin.toℕ x + suc (suc w)) (sym (toℕ-fromℕ b (b + (Fin.toℕ y + toℕ ys * suc b) * suc (suc b)))) ⟩
-                    Fin.toℕ x + suc (suc (toℕ (fromℕ (b + (Fin.toℕ y + toℕ ys * suc b) * suc (suc b)))))
-                ≡⟨ cong (λ w → Fin.toℕ x + w) (sym (toℕ-n+ b 2 (fromℕ (b + (Fin.toℕ y + toℕ ys * suc b) * suc (suc b))))) ⟩
-                    Fin.toℕ x + toℕ (n+ 2 (fromℕ (b + (Fin.toℕ y + toℕ ys * suc b) * suc (suc b))))
-                ≡⟨ cong (λ w → Fin.toℕ x + w) (cong toℕ eq) ⟩
-                    Fin.toℕ x + suc (Fin.toℕ z + toℕ zs * suc b)
-                ≡⟨ +-suc (Fin.toℕ x) (Fin.toℕ z + toℕ zs * suc b) ⟩
-                    suc (Fin.toℕ x + (Fin.toℕ z + toℕ zs * suc b))
-                ≡⟨ cong suc (sym (+-assoc (Fin.toℕ x) (Fin.toℕ z) (toℕ zs * suc b))) ⟩
-                    suc (Fin.toℕ x + Fin.toℕ z + toℕ zs * suc b)
-                ≡⟨ cong (λ w → w + toℕ zs * suc b) property ⟩
-                    Fin.toℕ remainder + quotient * suc b + toℕ zs * suc b
-                ≡⟨ +-assoc (Fin.toℕ remainder) (quotient * suc b) (toℕ zs * suc b) ⟩
-                    Fin.toℕ remainder + (quotient * suc b + toℕ zs * suc b)
-                ≡⟨ cong (λ w → Fin.toℕ remainder + w) (sym (distribʳ-*-+ (suc b) quotient (toℕ zs))) ⟩
-                    Fin.toℕ remainder + (quotient + toℕ zs) * suc b
-                ≡⟨ cong (λ w → Fin.toℕ remainder + w * suc b) (sym (toℕ-n+ b quotient zs)) ⟩
-                    Fin.toℕ remainder + toℕ (n+ quotient zs) * suc b
+                ≡⟨ cong (λ w → Fin.toℕ x + w * suc (suc b)) (proj₂ (decrease-base-primitive b xs)) ⟩
+                    Fin.toℕ x + toℕ (proj₁ (decrease-base-primitive b xs)) * suc (suc b)
+                ≡⟨ cong (λ w → Fin.toℕ x + w) (toℕ-fromℕ-inverse b (cong toℕ eq)) ⟩
+                    Fin.toℕ x + (suc (Fin.toℕ y) + toℕ ys * suc b)
+                ≡⟨ sym (+-assoc (Fin.toℕ x) (suc (Fin.toℕ y)) (toℕ ys * suc b)) ⟩
+                    Fin.toℕ x + suc (Fin.toℕ y) + toℕ ys * suc b
+                ≡⟨ cong (λ w → w + toℕ ys * suc b) (+-suc (Fin.toℕ x) (Fin.toℕ y)) ⟩
+                    suc (Fin.toℕ x + Fin.toℕ y) + toℕ ys * suc b
+                ≡⟨ cong (λ w → w + toℕ ys * suc b) property ⟩
+                    Fin.toℕ remainder + quotient * suc b + toℕ ys * suc b
+                ≡⟨ +-assoc (Fin.toℕ remainder) (quotient * suc b) (toℕ ys * suc b) ⟩
+                    Fin.toℕ remainder + (quotient * suc b + toℕ ys * suc b)
+                ≡⟨ cong (λ w → Fin.toℕ remainder + w) (sym (distribʳ-*-+ (suc b) quotient (toℕ ys))) ⟩
+                    Fin.toℕ remainder + (quotient + toℕ ys) * suc b
+                ≡⟨ cong (λ w → Fin.toℕ remainder + w * suc b) (sym (toℕ-n+ b quotient ys)) ⟩
+                    Fin.toℕ remainder + toℕ (n+ quotient ys) * suc b
                 ∎
+
+decrease-base : ∀ {b} → Num (suc (suc b)) → Num (suc b)
+decrease-base {b} xs = proj₁ (decrease-base-primitive b xs)
+
+decrease-base-lemma : ∀ {b} → (xs : Num (suc (suc b))) → toℕ (decrease-base xs) ≡ toℕ xs
+decrease-base-lemma {b} xs = sym (proj₂ (decrease-base-primitive b xs))
 
     -- begin
     --     {!   !}
@@ -400,71 +429,7 @@ decrease-base b (x ∷ xs) | y ∷ ys , ⟦xs⟧≡⟦ys⟧ | z ∷ zs | [ eq ] 
     -- ≡⟨ {!   !} ⟩
     --     {!   !}
     -- ∎
--- b = 0
--- old base = 2
--- new base = 1
--- x = 1 → x = 2
 
--- old base = suc (suc b)
--- new base = suc b
-
--- induction on "decrease-base b xs" first, to avoid having to use fromℕ-toℕ
--- decrease-base : ∀ b
---     → (xs : Num (suc (suc b)))
---     → Σ[ ys ∈ Num (suc b) ] toℕ xs ≡ toℕ ys
--- decrease-base b ∙ = ∙ , refl
--- decrease-base b (x ∷ xs) with decrease-base b xs
--- decrease-base b (x ∷ xs) | ∙ , ⟦xs⟧≡⟦ys⟧ with full x
--- decrease-base b (x ∷ xs) | ∙ , ⟦xs⟧≡⟦ys⟧ | yes p = (Fin.zero ∷ Fin.zero ∷ ∙) , proof
---     where   proof : suc (Fin.toℕ x + toℕ xs * suc (suc b)) ≡ suc (suc (b + zero))
---             proof = cong suc $ cong₂ (λ v w → v + w * suc (suc b)) p ⟦xs⟧≡⟦ys⟧
--- decrease-base b (x ∷ xs) | ∙ , ⟦xs⟧≡⟦ys⟧ | no ¬p = {!   !} , {!   !}
--- decrease-base b (x ∷ xs) | y ∷ ys , ⟦xs⟧≡⟦ys⟧ = {!   !}
--- decrease-base b (x ∷ xs) with fromℕ {suc b} (toℕ (proj₁ (decrease-base b xs)) * suc (suc b)) | inspect (λ ws → fromℕ {suc b} (toℕ ws * suc (suc b))) (proj₁ (decrease-base b xs))
--- decrease-base b (x ∷ xs) | ∙      | [ eq ] with full x
--- decrease-base b (x ∷ xs) | ∙      | [ eq ] | yes p =  -- the digit is too large, shrink it down
---     (Fin.zero ∷ Fin.zero ∷ ∙) , proof
---     where
---             eq1 : toℕ xs ≡ toℕ (proj₁ (decrease-base b xs))
---             eq1 = {!   !}
---
---             proof : suc (Fin.toℕ x + toℕ xs * suc (suc b)) ≡ suc (suc (b + zero))
---             proof = cong suc $ begin
---                     Fin.toℕ x + toℕ xs * suc (suc b)
---                 ≡⟨ cong (λ w → Fin.toℕ x + w * suc (suc b)) (proj₂ (decrease-base b xs)) ⟩
---                     Fin.toℕ x + toℕ (proj₁ (decrease-base b xs)) * suc (suc b)
---                 ≡⟨ {!   !} ⟩
---                     {!   !}
---                 ≡⟨ {!   !} ⟩
---                     {!   !}
---                 ≡⟨ {!   !} ⟩
---                     suc (b + zero)
---                 ∎
--- decrease-base b (x ∷ xs) | ∙      | [ eq ] | no ¬p = {!   !}
--- decrease-base b (x ∷ xs) | y ∷ ys | [ eq ] = {!   !}
--- decrease-base b (x ∷ xs) with Fin.toℕ x ≟ suc b
--- decrease-base b (x ∷ xs) | yes p = (Fin.fromℕ b ∷ {!   !}) , {!   !}
--- decrease-base b (x ∷ xs) | no ¬p = {!   !}
--- decrease-base b (x ∷ xs) with decrease-base b xs
--- decrease-base b (x ∷ xs) | ∙      , ⟦xs⟧≡⟦ys⟧ with toℕ x ≟ suc b
--- ... | ws = ?
--- decrease-base b (x ∷ xs) | y ∷ ys , ⟦xs⟧≡⟦ys⟧ = {!   !}
-
---
--- increase-base' b (x ∷ xs) | ∙      , ⟦xs⟧≡⟦ys⟧ = (Fin.inject₁ x ∷ ∙) , proof
---     where   open import Data.Fin.Properties
---             proof : suc (Fin.toℕ x + toℕ xs * suc b) ≡ suc (Fin.toℕ (Fin.inject₁ x) + 0)
---             proof = cong suc $
---                 begin
---                     Fin.toℕ x + toℕ xs * suc b
---                 ≡⟨ cong (λ w → Fin.toℕ x + w * suc b) ⟦xs⟧≡⟦ys⟧ ⟩
---                     Fin.toℕ x + zero
---                 ≡⟨ cong (λ w → w + 0) (sym (inject₁-lemma x)) ⟩
---                     Fin.toℕ (Fin.inject₁ x) + 0
---                 ∎
--- increase-base' b (x ∷ xs) | y ∷ ys , ⟦xs⟧≡⟦ys⟧ with fromℕ {suc b} (toℕ (y ∷ ys) * suc b) | inspect (λ ws → fromℕ {suc b} (toℕ ws * suc b)) (y ∷ ys)
---
---
 --
 -- lemma : ∀ b x xs
 --       → fromℕ {b} (digit-toℕ {suc b} x + toℕ {suc b} xs * suc b) ≡ x ∷ xs
