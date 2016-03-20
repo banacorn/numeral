@@ -58,12 +58,16 @@ open import Data.Nat.DivMod
 open import Data.Nat.Properties using (≰⇒>)
 open import Relation.Binary
 
+-- a digit at its largest
+full : ∀ {b} (x : Fin (suc b)) → Dec (Fin.toℕ {suc b} x ≡ b)
+full {b} x = Fin.toℕ x ≟ b
+
+------------------------------------------------------------------------
+-- Digit
+------------------------------------------------------------------------
+
 digit-toℕ : ∀ {b} → Fin b → ℕ
 digit-toℕ x = suc (Fin.toℕ x)
-
-toℕ : ∀ {b} → Num b → ℕ
-toℕ ∙              = zero
-toℕ {b} (x ∷ xs) = digit-toℕ x + (toℕ xs * b)
 
 digit+1-lemma : ∀ a b → a < suc b → a ≢ b → a < b
 digit+1-lemma zero    zero    a<1+b a≢b = contradiction refl a≢b
@@ -74,35 +78,46 @@ digit+1-lemma (suc a) (suc b) (s≤s a<1+b) a≢b = s≤s (digit+1-lemma a b a<1
 digit+1 : ∀ {b} → (x : Fin (suc b)) → Fin.toℕ x ≢ b → Fin (suc b)
 digit+1 {b} x ¬p = fromℕ≤ {digit-toℕ x} (s≤s (digit+1-lemma (Fin.toℕ x) b (bounded x) ¬p))
 
-
--- a digit at its largest
-full : ∀ {b} (x : Fin (suc b)) → Dec (Fin.toℕ {suc b} x ≡ b)
-full {b} x = Fin.toℕ x ≟ b
+------------------------------------------------------------------------
+-- Num
+------------------------------------------------------------------------
 
 1+ : ∀ {b} → Num (suc b) → Num (suc b)
-1+ ∙ = Fin.zero ∷ ∙
+1+     ∙        = Fin.zero ∷ ∙
 1+ {b} (x ∷ xs) with full x
 1+ {b} (x ∷ xs) | yes p = Fin.zero ∷ 1+ xs
 1+ {b} (x ∷ xs) | no ¬p = digit+1 x ¬p ∷ xs
 
 n+ : ∀ {b} → ℕ → Num (suc b) → Num (suc b)
-n+ zero xs = xs
+n+ zero    xs = xs
 n+ (suc n) xs = 1+ (n+ n xs)
+
+------------------------------------------------------------------------
+-- From and to ℕ
+------------------------------------------------------------------------
+
+toℕ : ∀ {b} → Num b → ℕ
+toℕ ∙              = zero
+toℕ {b} (x ∷ xs) = digit-toℕ x + (toℕ xs * b)
 
 fromℕ : ∀ {b} → ℕ → Num (suc b)
 fromℕ zero    = ∙
 fromℕ (suc n) = 1+ (fromℕ n)
 
+------------------------------------------------------------------------
+-- Functions on Num
+------------------------------------------------------------------------
+
 add : ∀ {b} → Num b → Num b → Num b
-add ∙ ys = ys
-add xs ∙ = xs
+add         ∙       ys        = ys
+add         xs       ∙        = xs
 add {zero} (() ∷ xs) (y ∷ ys)
 add {suc b} (x ∷ xs) (y ∷ ys) with (suc (Fin.toℕ x + Fin.toℕ y)) divMod (suc b)
 add {suc b} (x ∷ xs) (y ∷ ys) | result zero    R prop = R ∷ (add xs ys)
 add {suc b} (x ∷ xs) (y ∷ ys) | result (suc Q) R prop = R ∷ 1+ (add xs ys)
 
 _≈_ : ∀ {b} → Num b → Num b → Set
-∙          ≈ ∙          = ⊤
+∙          ≈ ∙        = ⊤
 ∙          ≈ (y ∷ ys) = ⊥
 (x ∷ xs) ≈ ∙          = ⊥
 (x ∷ xs) ≈ (y ∷ ys) with Fin.toℕ x ≟ Fin.toℕ y
