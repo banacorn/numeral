@@ -55,18 +55,18 @@ suc-injective {b} {x} {.x} refl = refl
 
 
 
-some-lemma : ∀ b x y xs ys
+some-lemma : ∀ {b} (x y : Fin (S b)) (xs ys : ℕ)
     → toℕ {S b} x ℕ+ xs ℕ* S b ≡ toℕ {S b} y ℕ+ ys ℕ* S b
     → x ≡ y × xs ≡ ys
-some-lemma b zero    zero    Z      Z      p = refl , refl
-some-lemma b zero    (suc n) Z      Z      ()
-some-lemma b (suc m) zero    Z      Z      ()
-some-lemma b (suc m) (suc n) Z      Z      p =
+some-lemma zero    zero    Z      Z      p = refl , refl
+some-lemma zero    (suc n) Z      Z      ()
+some-lemma (suc m) zero    Z      Z      ()
+some-lemma (suc m) (suc n) Z      Z      p =
     cong suc (toℕ-injective (cancel-+-right Z (S-injective p)))
     , refl
-some-lemma b zero    zero    Z      (S ns) ()
-some-lemma b zero    (suc n) Z      (S ns) ()
-some-lemma b (suc m) zero    Z      (S ns) p = contradiction p ¬p
+some-lemma zero    zero    Z      (S ns) ()
+some-lemma zero    (suc n) Z      (S ns) ()
+some-lemma {b} (suc m) zero    Z      (S ns) p = contradiction p ¬p
     where
             ¬p : S (toℕ m ℕ+ Z) ≢ S (b ℕ+ ns ℕ* S b)
             ¬p = <⇒≢ $ s≤s $
@@ -79,7 +79,7 @@ some-lemma b (suc m) zero    Z      (S ns) p = contradiction p ¬p
                 ≤⟨ m≤m+n b (ns ℕ* S b) ⟩
                     b ℕ+ ns ℕ* S b
                 □
-some-lemma b (suc m) (suc n) Z      (S ns) p = contradiction p ¬p
+some-lemma {b} (suc m) (suc n) Z      (S ns) p = contradiction p ¬p
     where
             ¬p : S (toℕ m ℕ+ Z) ≢ S (toℕ n ℕ+ S (b ℕ+ ns ℕ* S b))
             ¬p = <⇒≢ $ s≤s $
@@ -96,8 +96,8 @@ some-lemma b (suc m) (suc n) Z      (S ns) p = contradiction p ¬p
                 ≤⟨ n≤m+n (toℕ n) (S (b ℕ+ ns ℕ* S b)) ⟩
                     toℕ n ℕ+ S (b ℕ+ ns ℕ* S b)
                 □
-some-lemma b zero    zero    (S ms) Z      ()
-some-lemma b zero    (suc n) (S ms) Z      p = contradiction p ¬p
+some-lemma {b} zero    zero    (S ms) Z      ()
+some-lemma {b} zero    (suc n) (S ms) Z      p = contradiction p ¬p
     where
             ¬p : S (b ℕ+ ms ℕ* S b) ≢ S (toℕ n ℕ+ Z)
             ¬p = >⇒≢ $ s≤s $
@@ -110,8 +110,8 @@ some-lemma b zero    (suc n) (S ms) Z      p = contradiction p ¬p
                 ≤⟨ m≤m+n b (ms ℕ* S b) ⟩
                     b ℕ+ ms ℕ* S b
                 □
-some-lemma b (suc m) zero    (S ms) Z     ()
-some-lemma b (suc m) (suc n) (S ms) Z     p = contradiction p ¬p
+some-lemma {b} (suc m) zero    (S ms) Z     ()
+some-lemma {b} (suc m) (suc n) (S ms) Z     p = contradiction p ¬p
     where
             ¬p : S (toℕ m ℕ+ S (b ℕ+ ms ℕ* S b)) ≢ S (toℕ n ℕ+ Z)
             ¬p = >⇒≢ $ s≤s $
@@ -128,10 +128,10 @@ some-lemma b (suc m) (suc n) (S ms) Z     p = contradiction p ¬p
                 ≤⟨ n≤m+n (toℕ m) (S (b ℕ+ ms ℕ* S b)) ⟩
                     toℕ m ℕ+ S (b ℕ+ ms ℕ* S b)
                 □
-some-lemma b zero    zero    (S ms) (S ns) p =
+some-lemma {b} zero    zero    (S ms) (S ns) p =
     refl
     , (cong S (cancel-*-right ms ns {b} (cancel-+-left b (S-injective p))))
-some-lemma b zero    (suc n) (S ms) (S ns) p = (proj₁ ind) , cong S (proj₂ ind)
+some-lemma {b} zero    (suc n) (S ms) (S ns) p = (proj₁ ind) , cong S (proj₂ ind)
     where
             p' : S b ℕ+ ms ℕ* S b ≡ S b ℕ+ S (toℕ n ℕ+ ns ℕ* S b)
             p' = begin
@@ -146,8 +146,8 @@ some-lemma b zero    (suc n) (S ms) (S ns) p = (proj₁ ind) , cong S (proj₂ i
                     S (b ℕ+ S (toℕ n ℕ+ ns ℕ* S b))
                 ∎
             ind : zero ≡ suc n × ms ≡ ns
-            ind = some-lemma b zero (suc n) ms ns (cancel-+-left (S b) p')
-some-lemma b (suc m) zero    (S ms) (S ns) p = (proj₁ ind) , (cong S (proj₂ ind))
+            ind = some-lemma {b} zero (suc n) ms ns (cancel-+-left (S b) p')
+some-lemma {b} (suc m) zero    (S ms) (S ns) p = (proj₁ ind) , (cong S (proj₂ ind))
     where
             p' : S b ℕ+ (S (toℕ m) ℕ+ ms ℕ* S b) ≡ S b ℕ+ ns ℕ* S b
             p' = begin
@@ -162,8 +162,8 @@ some-lemma b (suc m) zero    (S ms) (S ns) p = (proj₁ ind) , (cong S (proj₂ 
                     S (b ℕ+ ns ℕ* S b)
                 ∎
             ind : suc m ≡ zero × ms ≡ ns
-            ind = some-lemma b (suc m) zero ms ns (cancel-+-left (S b) p')
-some-lemma b (suc m) (suc n) (S ms) (S ns) p = (proj₁ ind) , (cong S (proj₂ ind))
+            ind = some-lemma {b} (suc m) zero ms ns (cancel-+-left (S b) p')
+some-lemma {b} (suc m) (suc n) (S ms) (S ns) p = (proj₁ ind) , (cong S (proj₂ ind))
     where
             p' : S (b ℕ+ S (toℕ m ℕ+ ms ℕ* S b)) ≡ S (b ℕ+ S (toℕ n ℕ+ ns ℕ* S b))
             p' = begin
@@ -184,4 +184,4 @@ some-lemma b (suc m) (suc n) (S ms) (S ns) p = (proj₁ ind) , (cong S (proj₂ 
                     S (b ℕ+ S (toℕ n ℕ+ ns ℕ* S b))
                 ∎
             ind : suc m ≡ suc n × ms ≡ ns
-            ind = some-lemma b (suc m) (suc n) ms ns (cancel-+-left (S b) p')
+            ind = some-lemma {b} (suc m) (suc n) ms ns (cancel-+-left (S b) p')

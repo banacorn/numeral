@@ -5,16 +5,16 @@ open import Data.Nat
 open import Data.Fin as Fin using (Fin; #_; fromℕ≤)
 open import Data.Fin.Properties using (bounded)
 open import Data.Product
-open import Data.Unit using (⊤; tt)
-open import Data.Empty using (⊥)
-open ≤-Reasoning
+-- open import Data.Unit using (⊤; tt)
+-- open import Data.Empty using (⊥)
+open ≤-Reasoning renaming (begin_ to start_; _∎ to _□; _≡⟨_⟩_ to _≈⟨_⟩_)
 open import Level using () renaming (suc to lsuc)
 open import Function
 open import Relation.Nullary.Negation
 open import Relation.Nullary.Decidable
 open import Relation.Nullary
 open import Relation.Binary.PropositionalEquality as PropEq
-    using (_≡_; _≢_; refl; cong; sym; trans; inspect)
+open ≡-Reasoning
 
 infixr 5 _∷_
 
@@ -54,13 +54,17 @@ module _/_-Examples where
 八 : Num 3
 八 = 2 / 2 / ∙
 
-open import Data.Nat.DivMod
+open import Data.Nat.DM
 open import Data.Nat.Properties using (≰⇒>)
 open import Relation.Binary
 
 -- a digit at its largest
 full : ∀ {b} (x : Fin (suc b)) → Dec (Fin.toℕ {suc b} x ≡ b)
 full {b} x = Fin.toℕ x ≟ b
+
+-- a digit at its largest (for ℕ)
+full-ℕ : ∀ b n → Dec (n ≡ b)
+full-ℕ b n = n ≟ b
 
 ------------------------------------------------------------------------
 -- Digit
@@ -108,18 +112,12 @@ fromℕ (suc n) = 1+ (fromℕ n)
 -- Functions on Num
 ------------------------------------------------------------------------
 
-add : ∀ {b} → Num b → Num b → Num b
-add         ∙       ys        = ys
-add         xs       ∙        = xs
-add {zero} (() ∷ xs) (y ∷ ys)
-add {suc b} (x ∷ xs) (y ∷ ys) with (suc (Fin.toℕ x + Fin.toℕ y)) divMod (suc b)
-add {suc b} (x ∷ xs) (y ∷ ys) | result zero    R prop = R ∷ (add xs ys)
-add {suc b} (x ∷ xs) (y ∷ ys) | result (suc Q) R prop = R ∷ 1+ (add xs ys)
+infixl 6 _⊹_
 
-_≈_ : ∀ {b} → Num b → Num b → Set
-∙          ≈ ∙        = ⊤
-∙          ≈ (y ∷ ys) = ⊥
-(x ∷ xs) ≈ ∙          = ⊥
-(x ∷ xs) ≈ (y ∷ ys) with Fin.toℕ x ≟ Fin.toℕ y
-(x ∷ xs) ≈ (y ∷ ys) | yes p = xs ≈ ys
-(x ∷ xs) ≈ (y ∷ ys) | no ¬p = ⊥
+_⊹_ : ∀ {b} → Num b → Num b → Num b
+_⊹_         ∙       ys        = ys
+_⊹_         xs       ∙        = xs
+_⊹_ {zero} (() ∷ xs) (y ∷ ys)
+_⊹_ {suc b} (x ∷ xs) (y ∷ ys) with (suc (Fin.toℕ x + Fin.toℕ y)) divMod (suc b)
+_⊹_ {suc b} (x ∷ xs) (y ∷ ys) | result quotient remainder property div-eq mod-eq =
+    remainder ∷ n+ quotient (xs ⊹ ys)

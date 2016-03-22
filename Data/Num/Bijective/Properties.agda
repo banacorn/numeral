@@ -3,8 +3,16 @@ module Data.Num.Bijective.Properties where
 open import Data.Num.Bijective
 
 open import Data.Nat
-open import Data.Nat.DivMod
-open import Data.Fin as Fin using (Fin)
+open import Data.Nat.DM
+open import Data.Nat.Properties
+open import Data.Nat.Properties.Simple
+open import Data.Nat.Properties.Extra
+open import Data.Fin                    as Fin using (Fin)
+open import Data.Fin.Properties         as FinP hiding (_≟_)
+    renaming (toℕ-injective to Fin-toℕ-injective)
+open import Data.Fin.Properties.Extra   as FinPX
+    renaming (suc-injective to Fin-suc-injective)
+
 open import Data.Product
 open import Function
 open import Function.Injection hiding (_∘_)
@@ -39,7 +47,6 @@ open ≡-Reasoning
 fromℕ-∙-0 : ∀ {b} n → fromℕ {b} n ≡ ∙ → n ≡ 0
 fromℕ-∙-0 zero    p = refl
 fromℕ-∙-0 (suc n) p = contradiction p (1+-never-∙ (fromℕ n))
-    where   open import Relation.Nullary.Negation
 
 toℕ-∙-0 : ∀ {b} xs → toℕ {suc b} xs ≡ 0 → xs ≡ ∙
 toℕ-∙-0 ∙ p = refl
@@ -52,6 +59,12 @@ digit+1-never-0 {zero}  Fin.zero     ¬p eq | no ¬q = contradiction refl ¬p
 digit+1-never-0 {suc b} Fin.zero     ¬p eq | no ¬q = contradiction eq (λ ())
 digit+1-never-0 {zero}  (Fin.suc ()) ¬p eq | no ¬q
 digit+1-never-0 {suc b} (Fin.suc x)  ¬p () | no ¬q
+
+Fin⇒ℕ-digit+1 : ∀ {b}
+    → (x : Fin (suc b))
+    → (¬p : Fin.toℕ x ≢ b)
+    → Fin.toℕ (digit+1 x ¬p) ≡ suc (Fin.toℕ x)
+Fin⇒ℕ-digit+1 {b} x ¬p = toℕ-fromℕ≤ (s≤s (digit+1-lemma (Fin.toℕ x) b (bounded x) ¬p))
 
 ------------------------------------------------------------------------
 -- injectivity
@@ -71,10 +84,8 @@ digit+1-injective :  ∀ {b} (x y : Fin (suc b))
     → x ≡ y
 digit+1-injective         Fin.zero     Fin.zero     ¬p ¬q eq = refl
 digit+1-injective {zero}  Fin.zero     (Fin.suc ()) ¬p ¬q eq
-digit+1-injective {suc b} Fin.zero     (Fin.suc y)  ¬p ¬q eq = toℕ-injective (suc-injective eq')
-    where   open import Data.Fin.Properties
-            open import Data.Nat.Properties.Extra
-            eq' : Fin.toℕ {suc (suc b)} (digit+1 Fin.zero ¬p) ≡ suc (Fin.toℕ {suc (suc b)} (Fin.suc y))
+digit+1-injective {suc b} Fin.zero     (Fin.suc y)  ¬p ¬q eq = Fin-toℕ-injective (suc-injective eq')
+    where   eq' : Fin.toℕ {suc (suc b)} (digit+1 Fin.zero ¬p) ≡ suc (Fin.toℕ {suc (suc b)} (Fin.suc y))
             eq' = begin
                     Fin.toℕ {suc (suc b)} (Fin.suc Fin.zero)
                 ≡⟨ cong Fin.toℕ eq ⟩
@@ -83,10 +94,8 @@ digit+1-injective {suc b} Fin.zero     (Fin.suc y)  ¬p ¬q eq = toℕ-injective
                     suc (Fin.toℕ {suc (suc b)} (Fin.suc y))
                 ∎
 digit+1-injective {zero}  (Fin.suc ()) Fin.zero    ¬p ¬q eq
-digit+1-injective {suc b} (Fin.suc x)  Fin.zero    ¬p ¬q eq = toℕ-injective (suc-injective eq')
-    where   open import Data.Fin.Properties
-            open import Data.Nat.Properties.Extra
-            eq' : suc (Fin.toℕ {suc (suc b)} (Fin.suc x)) ≡ Fin.toℕ {suc (suc b)} (digit+1 Fin.zero ¬q)
+digit+1-injective {suc b} (Fin.suc x)  Fin.zero    ¬p ¬q eq = Fin-toℕ-injective (suc-injective eq')
+    where   eq' : suc (Fin.toℕ {suc (suc b)} (Fin.suc x)) ≡ Fin.toℕ {suc (suc b)} (digit+1 Fin.zero ¬q)
             eq' = begin
                     suc (Fin.toℕ {suc (suc b)} (Fin.suc x))
                 ≡⟨ cong suc (sym (toℕ-fromℕ≤ (s≤s (digit+1-lemma (Fin.toℕ x) b (bounded x) (¬p ∘ cong suc))))) ⟩
@@ -95,7 +104,7 @@ digit+1-injective {suc b} (Fin.suc x)  Fin.zero    ¬p ¬q eq = toℕ-injective 
                     Fin.toℕ {suc (suc b)} (Fin.suc Fin.zero)
                 ∎
 digit+1-injective {zero}  (Fin.suc ()) (Fin.suc y) ¬p ¬q eq
-digit+1-injective {suc b} (Fin.suc x)  (Fin.suc y) ¬p ¬q eq = cong Fin.suc (digit+1-injective x y (¬p ∘ cong suc) (¬q ∘ cong suc) (suc-injective eq))
+digit+1-injective {suc b} (Fin.suc x)  (Fin.suc y) ¬p ¬q eq = cong Fin.suc (digit+1-injective x y (¬p ∘ cong suc) (¬q ∘ cong suc) (Fin-suc-injective eq))
     where   open import Data.Fin.Properties.Extra
 
 1+-injective : ∀ b → (xs ys : Num (suc b)) → 1+ xs ≡ 1+ ys → xs ≡ ys
@@ -108,9 +117,9 @@ digit+1-injective {suc b} (Fin.suc x)  (Fin.suc y) ¬p ¬q eq = cong Fin.suc (di
 1+-injective b (x ∷ xs) ∙        eq | no ¬p = contradiction (proj₁ (∷-injective eq)) (digit+1-never-0 x ¬p)
 1+-injective b (x ∷ xs) (y ∷ ys) eq with full x | full y
 1+-injective b (x ∷ xs) (y ∷ ys) eq | yes p | yes q = cong₂ _∷_ x≡y xs≡ys
-    where   open import Data.Fin.Properties
+    where
             x≡y : x ≡ y
-            x≡y = toℕ-injective (trans p (sym q))
+            x≡y = Fin-toℕ-injective (trans p (sym q))
             xs≡ys : xs ≡ ys
             xs≡ys = 1+-injective b xs ys (proj₂ (∷-injective eq))
 1+-injective b (x ∷ xs) (y ∷ ys) eq | yes p | no ¬q = contradiction (sym (proj₁ (∷-injective eq))) (digit+1-never-0 y ¬q)
@@ -118,17 +127,15 @@ digit+1-injective {suc b} (Fin.suc x)  (Fin.suc y) ¬p ¬q eq = cong Fin.suc (di
 1+-injective b (x ∷ xs) (y ∷ ys) eq | no ¬p | no ¬q = cong₂ _∷_ (digit+1-injective x y ¬p ¬q (proj₁ (∷-injective eq))) (proj₂ (∷-injective eq))
 
 
-toℕ-injective : ∀ b → (xs ys : Num (suc b)) → toℕ xs ≡ toℕ ys → xs ≡ ys
-toℕ-injective b ∙        ∙        eq = refl
-toℕ-injective b ∙        (y ∷ ys) ()
-toℕ-injective b (x ∷ xs) ∙        ()
-toℕ-injective b (x ∷ xs) (y ∷ ys) eq =
-    cong₂ _∷_ (proj₁ ind) (toℕ-injective b xs ys (proj₂ ind))
+toℕ-injective : ∀ {b} → (xs ys : Num (suc b)) → toℕ xs ≡ toℕ ys → xs ≡ ys
+toℕ-injective ∙        ∙        eq = refl
+toℕ-injective ∙        (y ∷ ys) ()
+toℕ-injective (x ∷ xs) ∙        ()
+toℕ-injective (x ∷ xs) (y ∷ ys) eq =
+    cong₂ _∷_ (proj₁ ind) (toℕ-injective xs ys (proj₂ ind))
     where
-            open import Data.Fin.Properties.Extra
-            open import Data.Nat.Properties.Extra as ℕProp
             ind : x ≡ y × toℕ xs ≡ toℕ ys
-            ind = some-lemma b x y (toℕ xs) (toℕ ys) (ℕProp.suc-injective eq)
+            ind = some-lemma x y (toℕ xs) (toℕ ys) (suc-injective eq)
 
 fromℕ-injective : ∀ b m n → fromℕ {b} m ≡ fromℕ {b} n → m ≡ n
 fromℕ-injective b zero    zero    eq = refl
@@ -156,7 +163,6 @@ toℕ-1+ b (x ∷ xs) | yes p =
     ∎
 toℕ-1+ b (x ∷ xs) | no ¬p =
     cong (λ w → suc w + toℕ xs * suc b) (toℕ-fromℕ≤ (s≤s (digit+1-lemma (Fin.toℕ x) b (bounded x) ¬p)))
-    where   open import Data.Fin.Properties using (toℕ-fromℕ≤; bounded)
 
 --
 --      xs ── n+ n ──➞ n+ n xs
@@ -207,10 +213,9 @@ toℕ-fromℕ b (suc n) | x ∷ xs | [ eq ] | no ¬p =
     ≡⟨ cong suc (toℕ-fromℕ b n) ⟩
         suc n
     ∎
-    where   open import Data.Fin.Properties using (toℕ-fromℕ≤; bounded)
 
 fromℕ-toℕ : ∀ b xs → fromℕ {b} (toℕ {suc b} xs) ≡ xs
-fromℕ-toℕ b xs = toℕ-injective b (fromℕ (toℕ xs)) xs (toℕ-fromℕ b (toℕ xs))
+fromℕ-toℕ b xs = toℕ-injective (fromℕ (toℕ xs)) xs (toℕ-fromℕ b (toℕ xs))
 
 
 toℕ-fromℕ-reverse : ∀ b {m} {n} → toℕ (fromℕ {b} m) ≡ n → m ≡ n
@@ -231,8 +236,92 @@ fromℕ-toℕ-reverse b {xs} {ys} eq = begin
         ys
     ∎
 
+------------------------------------------------------------------------
+-- _⊹_
+------------------------------------------------------------------------
 
--- induction on "increase-base-primitive b xs", to avoid having to use fromℕ-toℕ
+
+toℕ-⊹-homo : ∀ {b} (xs ys : Num (suc b)) → toℕ (xs ⊹ ys) ≡ toℕ xs + toℕ ys
+toℕ-⊹-homo {b} ∙        ys       = refl
+toℕ-⊹-homo {b} (x ∷ xs) ∙        = sym (+-right-identity (suc (Fin.toℕ x + toℕ xs * suc b)))
+toℕ-⊹-homo {b} (x ∷ xs) (y ∷ ys) with suc (Fin.toℕ x + Fin.toℕ y) divMod (suc b)
+toℕ-⊹-homo {b} (x ∷ xs) (y ∷ ys) | result quotient remainder property div-eq mod-eq
+    rewrite div-eq | mod-eq
+    = begin
+            suc (Fin.toℕ remainder + toℕ (n+ quotient (xs ⊹ ys)) * suc b)
+        -- apply "toℕ-n+" to remove "n+"
+        ≡⟨ cong (λ w → suc (Fin.toℕ remainder + w * suc b)) (toℕ-n+ b quotient (xs ⊹ ys)) ⟩
+            suc (Fin.toℕ remainder + (quotient + toℕ (xs ⊹ ys)) * suc b)
+        -- the induction hypothesis
+        ≡⟨ cong (λ w → suc (Fin.toℕ remainder + (quotient + w) * suc b)) (toℕ-⊹-homo xs ys) ⟩
+            suc (Fin.toℕ remainder + (quotient + (toℕ xs + toℕ ys)) * suc b)
+        ≡⟨ cong (λ w → suc (Fin.toℕ remainder) + w) (distribʳ-*-+ (suc b) quotient (toℕ xs + toℕ ys)) ⟩
+            suc (Fin.toℕ remainder + (quotient * suc b + (toℕ xs + toℕ ys) * suc b))
+        ≡⟨ cong suc (sym (+-assoc (Fin.toℕ remainder) (quotient * suc b) ((toℕ xs + toℕ ys) * suc b))) ⟩
+            suc (Fin.toℕ remainder + quotient * suc b + (toℕ xs + toℕ ys) * suc b)
+        -- apply "property"
+        ≡⟨ cong (λ w → suc (w + (toℕ xs + toℕ ys) * suc b)) (sym property) ⟩
+            suc (suc (Fin.toℕ x + Fin.toℕ y + (toℕ xs + toℕ ys) * suc b))
+        ≡⟨ cong (λ w → suc (suc (Fin.toℕ x + Fin.toℕ y + w))) (distribʳ-*-+ (suc b) (toℕ xs) (toℕ ys)) ⟩
+            suc (suc (Fin.toℕ x + Fin.toℕ y + (toℕ xs * suc b + toℕ ys * suc b)))
+        ≡⟨ cong (λ w → suc (suc w)) (+-assoc (Fin.toℕ x) (Fin.toℕ y) (toℕ xs * suc b + toℕ ys * suc b)) ⟩
+            suc (suc (Fin.toℕ x + (Fin.toℕ y + (toℕ xs * suc b + toℕ ys * suc b))))
+        ≡⟨ cong (λ w → suc (suc (Fin.toℕ x + w))) (sym (+-assoc (Fin.toℕ y) (toℕ xs * suc b) (toℕ ys * suc b))) ⟩
+            suc (suc (Fin.toℕ x + (Fin.toℕ y + toℕ xs * suc b + toℕ ys * suc b)))
+        ≡⟨ cong (λ w → suc (suc (Fin.toℕ x + (w + toℕ ys * suc b)))) (+-comm (Fin.toℕ y) (toℕ xs * suc b)) ⟩
+            suc (suc (Fin.toℕ x + (toℕ xs * suc b + Fin.toℕ y + toℕ ys * suc b)))
+        ≡⟨ cong (λ w → suc (suc (Fin.toℕ x + w))) (+-assoc (toℕ xs * suc b) (Fin.toℕ y) (toℕ ys * suc b)) ⟩
+            suc (suc (Fin.toℕ x + (toℕ xs * suc b + (Fin.toℕ y + toℕ ys * suc b))))
+        ≡⟨ cong (λ w → suc (suc w)) (sym (+-assoc (Fin.toℕ x) (toℕ xs * suc b) (Fin.toℕ y + toℕ ys * suc b))) ⟩
+            suc (suc ((Fin.toℕ x + toℕ xs * suc b) + (Fin.toℕ y + toℕ ys * suc b)))
+        ≡⟨ cong suc (sym (+-suc (Fin.toℕ x + toℕ xs * suc b) (Fin.toℕ y + toℕ ys * suc b))) ⟩
+            suc (Fin.toℕ x + toℕ xs * suc b + suc (Fin.toℕ y + toℕ ys * suc b))
+        ≡⟨ refl ⟩
+            toℕ (x ∷ xs) + toℕ (y ∷ ys)
+        ∎
+
+⊹-1+ : ∀ {b} (xs ys : Num (suc b)) → (1+ xs) ⊹ ys ≡ 1+ (xs ⊹ ys)
+⊹-1+ {b} xs ys = toℕ-injective (1+ xs ⊹ ys) (1+ (xs ⊹ ys)) $
+    begin
+        toℕ (1+ xs ⊹ ys)
+    ≡⟨ toℕ-⊹-homo (1+ xs) ys ⟩
+        toℕ (1+ xs) + toℕ ys
+    ≡⟨ cong (λ w → w + toℕ ys) (toℕ-1+ b xs) ⟩
+        suc (toℕ xs + toℕ ys)
+    ≡⟨ cong suc (sym (toℕ-⊹-homo xs ys)) ⟩
+        suc (toℕ (xs ⊹ ys))
+    ≡⟨ sym (toℕ-1+ b (xs ⊹ ys)) ⟩
+        toℕ (1+ (xs ⊹ ys))
+    ∎
+
+⊹-assoc : ∀ {b} (xs ys zs : Num (suc b)) → xs ⊹ ys ⊹ zs ≡ xs ⊹ (ys ⊹ zs)
+⊹-assoc xs ys zs = toℕ-injective (xs ⊹ ys ⊹ zs) (xs ⊹ (ys ⊹ zs)) $
+    begin
+        toℕ (xs ⊹ ys ⊹ zs)
+    ≡⟨ toℕ-⊹-homo (xs ⊹ ys) zs ⟩
+        toℕ (xs ⊹ ys) + toℕ zs
+    ≡⟨ cong (λ w → w + toℕ zs) (toℕ-⊹-homo xs ys) ⟩
+        toℕ xs + toℕ ys + toℕ zs
+    ≡⟨ +-assoc (toℕ xs) (toℕ ys) (toℕ zs) ⟩
+        toℕ xs + (toℕ ys + toℕ zs)
+    ≡⟨ cong (λ w → toℕ xs + w) (sym (toℕ-⊹-homo ys zs)) ⟩
+        toℕ xs + toℕ (ys ⊹ zs)
+    ≡⟨ sym (toℕ-⊹-homo xs (ys ⊹ zs)) ⟩
+        toℕ (xs ⊹ (ys ⊹ zs))
+    ∎
+
+⊹-comm : ∀ {b} (xs ys : Num (suc b)) → xs ⊹ ys ≡ ys ⊹ xs
+⊹-comm xs ys = toℕ-injective (xs ⊹ ys) (ys ⊹ xs) $
+    begin
+        toℕ (xs ⊹ ys)
+    ≡⟨ toℕ-⊹-homo xs ys ⟩
+        toℕ xs + toℕ ys
+    ≡⟨ +-comm (toℕ xs) (toℕ ys) ⟩
+        toℕ ys + toℕ xs
+    ≡⟨ sym (toℕ-⊹-homo ys xs) ⟩
+        toℕ (ys ⊹ xs)
+    ∎
+
 
 -- old base = suc b
 -- new base = suc (suc b)
@@ -242,9 +331,7 @@ increase-base-primitive : ∀ b
 increase-base-primitive b ∙ = ∙ , refl
 increase-base-primitive b (x ∷ xs) with fromℕ {suc b} (toℕ (proj₁ (increase-base-primitive b xs)) * suc b) | inspect (λ ws → fromℕ {suc b} (toℕ ws * suc b)) (proj₁ (increase-base-primitive b xs))
 increase-base-primitive b (x ∷ xs) | ∙ | [ eq ] = (Fin.inject₁ x ∷ ∙) , proof
-    where   open import Data.Fin.Properties
-
-            eq' : toℕ (proj₁ (increase-base-primitive b xs)) * suc b ≡ 0
+    where   eq' : toℕ (proj₁ (increase-base-primitive b xs)) * suc b ≡ 0
             eq' = toℕ-fromℕ-reverse (suc b) (cong toℕ eq)
 
             proof : suc (Fin.toℕ x + toℕ xs * suc b) ≡ suc (Fin.toℕ (Fin.inject₁ x) + 0)
@@ -258,12 +345,9 @@ increase-base-primitive b (x ∷ xs) | ∙ | [ eq ] = (Fin.inject₁ x ∷ ∙) 
                     Fin.toℕ (Fin.inject₁ x) + 0
                 ∎
 increase-base-primitive b (x ∷ xs) | y ∷ ys | [ eq ] with (suc (Fin.toℕ x + Fin.toℕ y)) divMod (suc (suc b))
-increase-base-primitive b (x ∷ xs) | y ∷ ys | [ eq ] | result quotient remainder property =
+increase-base-primitive b (x ∷ xs) | y ∷ ys | [ eq ] | result quotient remainder property div-eq mod-eq =
     (remainder ∷ n+ quotient ys) , proof
-    where   open import Data.Fin.Properties
-            open import Data.Nat.Properties.Simple
-
-            eq' : toℕ (proj₁ (increase-base-primitive b xs)) * suc b ≡ toℕ (y ∷ ys)
+    where   eq' : toℕ (proj₁ (increase-base-primitive b xs)) * suc b ≡ toℕ (y ∷ ys)
             eq' = toℕ-fromℕ-reverse (suc b) (cong toℕ eq)
 
             proof : suc (Fin.toℕ x + toℕ xs * suc b) ≡ suc (Fin.toℕ remainder + toℕ (n+ quotient ys) * suc (suc b))
@@ -315,9 +399,7 @@ decrease-base-primitive b (x ∷ xs) | ∙      | [ eq ] | yes p =
                 ∎
 decrease-base-primitive b (x ∷ xs) | ∙      | [ eq ] | no ¬p =
     inject-1 x ¬p ∷ ∙ , proof
-    where   open import Data.Fin.Properties
-            open import Data.Fin.Properties.Extra
-            proof : suc (Fin.toℕ x + toℕ xs * suc (suc b)) ≡ suc (Fin.toℕ (inject-1 x ¬p) + 0)
+    where   proof : suc (Fin.toℕ x + toℕ xs * suc (suc b)) ≡ suc (Fin.toℕ (inject-1 x ¬p) + 0)
             proof = cong suc $ begin
                     Fin.toℕ x + toℕ xs * suc (suc b)
                 ≡⟨ cong (λ w → Fin.toℕ x + w * suc (suc b)) (proj₂ (decrease-base-primitive b xs)) ⟩
@@ -328,11 +410,9 @@ decrease-base-primitive b (x ∷ xs) | ∙      | [ eq ] | no ¬p =
                     Fin.toℕ (inject-1 x ¬p) + 0
                 ∎
 decrease-base-primitive b (x ∷ xs) | y ∷ ys | [ eq ] with (suc (Fin.toℕ x + Fin.toℕ y)) divMod (suc b)
-decrease-base-primitive b (x ∷ xs) | y ∷ ys | [ eq ] | result quotient remainder property =
+decrease-base-primitive b (x ∷ xs) | y ∷ ys | [ eq ] | result quotient remainder property div-eq mod-eq =
     remainder ∷ n+ quotient ys , proof
-    where   open import Data.Fin.Properties
-            open import Data.Nat.Properties.Simple
-            proof : suc (Fin.toℕ x + toℕ xs * suc (suc b)) ≡ suc (Fin.toℕ remainder + toℕ (n+ quotient ys) * suc b)
+    where   proof : suc (Fin.toℕ x + toℕ xs * suc (suc b)) ≡ suc (Fin.toℕ remainder + toℕ (n+ quotient ys) * suc b)
             proof = cong suc $
                 begin
                     Fin.toℕ x + toℕ xs * suc (suc b)
