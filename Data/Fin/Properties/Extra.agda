@@ -7,6 +7,7 @@ open import Data.Nat.Properties
 open import Data.Nat.Properties.Extra renaming (suc-injective to S-injective)
 open import Data.Nat.Properties.Simple
 open import Data.Fin
+open import Data.Fin.Extra
 open import Data.Fin.Properties
 open import Data.Product
 
@@ -37,12 +38,6 @@ open DecTotalOrder decTotalOrder renaming (refl to ≤-refl)
 -- ≡⟨ {!   !} ⟩
 --     {!   !}
 -- ∎
-
-inject-1 : ∀ {n} → (i : Fin (S n)) → toℕ i ≢ n → Fin n
-inject-1 {Z} zero p = contradiction refl p
-inject-1 {Z} (suc i) p = i
-inject-1 {S n} zero p = zero
-inject-1 {S n} (suc i) p = suc (inject-1 i (p ∘ cong S))
 
 inject-1-lemma : ∀ {n} → (i : Fin (S n)) → (¬p : toℕ i ≢ n) → toℕ (inject-1 i ¬p) ≡ toℕ i
 inject-1-lemma {Z}   zero     ¬p = contradiction refl ¬p

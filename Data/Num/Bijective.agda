@@ -1,12 +1,9 @@
 module Data.Num.Bijective where
 
--- open import Data.Nat using (ℕ; suc; zero; _≤?_; s≤s)
 open import Data.Nat
 open import Data.Fin as Fin using (Fin; #_; fromℕ≤)
+open import Data.Fin.Extra
 open import Data.Fin.Properties using (bounded)
-open import Data.Product
--- open import Data.Unit using (⊤; tt)
--- open import Data.Empty using (⊥)
 open ≤-Reasoning renaming (begin_ to start_; _∎ to _□; _≡⟨_⟩_ to _≈⟨_⟩_)
 open import Level using () renaming (suc to lsuc)
 open import Function
@@ -14,7 +11,6 @@ open import Relation.Nullary.Negation
 open import Relation.Nullary.Decidable
 open import Relation.Nullary
 open import Relation.Binary.PropositionalEquality as PropEq
-open ≡-Reasoning
 
 infixr 5 _∷_
 
@@ -121,3 +117,31 @@ _⊹_ {zero} (() ∷ xs) (y ∷ ys)
 _⊹_ {suc b} (x ∷ xs) (y ∷ ys) with (suc (Fin.toℕ x + Fin.toℕ y)) divMod (suc b)
 _⊹_ {suc b} (x ∷ xs) (y ∷ ys) | result quotient remainder property div-eq mod-eq =
     remainder ∷ n+ quotient (xs ⊹ ys)
+
+
+-- old base = suc b
+-- new base = suc (suc b)
+increase-base : ∀ {b} → Num (suc b) → Num (suc (suc b))
+increase-base {b} ∙        = ∙
+increase-base {b} (x ∷ xs) with fromℕ {suc b} (toℕ (increase-base xs) * suc b)
+    | inspect (λ ws → fromℕ {suc b} (toℕ ws * suc b)) (increase-base xs)
+increase-base {b} (x ∷ xs) | ∙      | [ eq ] = Fin.inject₁ x ∷ ∙
+increase-base {b} (x ∷ xs) | y ∷ ys | [ eq ]
+    with suc (Fin.toℕ x + Fin.toℕ y) divMod (suc (suc b))
+increase-base {b} (x ∷ xs) | y ∷ ys | [ eq ]
+    | result quotient remainder property div-eq mod-eq =
+    remainder ∷ n+ quotient ys
+
+
+-- old base = suc (suc b)
+-- new base = suc b
+decrease-base : ∀ {b} → Num (suc (suc b)) → Num (suc b)
+decrease-base {b} ∙ = ∙
+decrease-base {b} (x ∷ xs) with fromℕ {b} (toℕ (decrease-base xs) * suc (suc b))
+              | inspect (λ ws → fromℕ {b} (toℕ ws * suc (suc b))) (decrease-base xs)
+decrease-base {b} (x ∷ xs) | ∙      | [ eq ] with full x
+decrease-base {b} (x ∷ xs) | ∙      | [ eq ] | yes p = Fin.zero ∷ Fin.zero ∷ ∙
+decrease-base {b} (x ∷ xs) | ∙      | [ eq ] | no ¬p = inject-1 x ¬p ∷ ∙
+decrease-base {b} (x ∷ xs) | y ∷ ys | [ eq ] with (suc (Fin.toℕ x + Fin.toℕ y)) divMod (suc b)
+decrease-base (x ∷ xs) | y ∷ ys | [ eq ] | result quotient remainder property div-eq mod-eq
+    = remainder ∷ n+ quotient ys
