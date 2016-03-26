@@ -73,7 +73,7 @@ Fin⇒ℕ-digit+1 {b} x ¬p = toℕ-fromℕ≤ (s≤s (digit+1-lemma (Fin.toℕ 
 
 ∷-injective : ∀ {b}
     → {x y : Fin (suc b)}
-    → {xs ys : Num (suc b)}
+    → {xs ys : Bij (suc b)}
     → x ∷ xs ≡ y ∷ ys
     → x ≡ y × xs ≡ ys
 ∷-injective refl = refl , refl
@@ -108,7 +108,7 @@ digit+1-injective {zero}  (Fin.suc ()) (Fin.suc y) ¬p ¬q eq
 digit+1-injective {suc b} (Fin.suc x)  (Fin.suc y) ¬p ¬q eq = cong Fin.suc (digit+1-injective x y (¬p ∘ cong suc) (¬q ∘ cong suc) (Fin-suc-injective eq))
     where   open import Data.Fin.Properties.Extra
 
-1+-injective : ∀ b → (xs ys : Num (suc b)) → 1+ xs ≡ 1+ ys → xs ≡ ys
+1+-injective : ∀ b → (xs ys : Bij (suc b)) → 1+ xs ≡ 1+ ys → xs ≡ ys
 1+-injective b ∙        ∙        eq = refl
 1+-injective b ∙        (y ∷ ys) eq with full y
 1+-injective b ∙        (y ∷ ys) eq | yes p = contradiction (proj₂ (∷-injective (sym eq))) (1+-never-∙ ys)
@@ -128,7 +128,7 @@ digit+1-injective {suc b} (Fin.suc x)  (Fin.suc y) ¬p ¬q eq = cong Fin.suc (di
 1+-injective b (x ∷ xs) (y ∷ ys) eq | no ¬p | no ¬q = cong₂ _∷_ (digit+1-injective x y ¬p ¬q (proj₁ (∷-injective eq))) (proj₂ (∷-injective eq))
 
 
-toℕ-injective : ∀ {b} → (xs ys : Num (suc b)) → toℕ xs ≡ toℕ ys → xs ≡ ys
+toℕ-injective : ∀ {b} → (xs ys : Bij (suc b)) → toℕ xs ≡ toℕ ys → xs ≡ ys
 toℕ-injective ∙        ∙        eq = refl
 toℕ-injective ∙        (y ∷ ys) ()
 toℕ-injective (x ∷ xs) ∙        ()
@@ -242,7 +242,7 @@ fromℕ-toℕ-reverse b {xs} {ys} eq = begin
 ------------------------------------------------------------------------
 
 
-toℕ-⊹-homo : ∀ {b} (xs ys : Num (suc b)) → toℕ (xs ⊹ ys) ≡ toℕ xs + toℕ ys
+toℕ-⊹-homo : ∀ {b} (xs ys : Bij (suc b)) → toℕ (xs ⊹ ys) ≡ toℕ xs + toℕ ys
 toℕ-⊹-homo {b} ∙        ys       = refl
 toℕ-⊹-homo {b} (x ∷ xs) ∙        = sym (+-right-identity (suc (Fin.toℕ x + toℕ xs * suc b)))
 toℕ-⊹-homo {b} (x ∷ xs) (y ∷ ys) with suc (Fin.toℕ x + Fin.toℕ y) divMod (suc b)
@@ -281,7 +281,7 @@ toℕ-⊹-homo {b} (x ∷ xs) (y ∷ ys) | result quotient remainder property di
             toℕ (x ∷ xs) + toℕ (y ∷ ys)
         ∎
 
-⊹-1+ : ∀ {b} (xs ys : Num (suc b)) → (1+ xs) ⊹ ys ≡ 1+ (xs ⊹ ys)
+⊹-1+ : ∀ {b} (xs ys : Bij (suc b)) → (1+ xs) ⊹ ys ≡ 1+ (xs ⊹ ys)
 ⊹-1+ {b} xs ys = toℕ-injective (1+ xs ⊹ ys) (1+ (xs ⊹ ys)) $
     begin
         toℕ (1+ xs ⊹ ys)
@@ -295,7 +295,7 @@ toℕ-⊹-homo {b} (x ∷ xs) (y ∷ ys) | result quotient remainder property di
         toℕ (1+ (xs ⊹ ys))
     ∎
 
-⊹-assoc : ∀ {b} (xs ys zs : Num (suc b)) → xs ⊹ ys ⊹ zs ≡ xs ⊹ (ys ⊹ zs)
+⊹-assoc : ∀ {b} (xs ys zs : Bij (suc b)) → xs ⊹ ys ⊹ zs ≡ xs ⊹ (ys ⊹ zs)
 ⊹-assoc xs ys zs = toℕ-injective (xs ⊹ ys ⊹ zs) (xs ⊹ (ys ⊹ zs)) $
     begin
         toℕ (xs ⊹ ys ⊹ zs)
@@ -311,7 +311,7 @@ toℕ-⊹-homo {b} (x ∷ xs) (y ∷ ys) | result quotient remainder property di
         toℕ (xs ⊹ (ys ⊹ zs))
     ∎
 
-⊹-comm : ∀ {b} (xs ys : Num (suc b)) → xs ⊹ ys ≡ ys ⊹ xs
+⊹-comm : ∀ {b} (xs ys : Bij (suc b)) → xs ⊹ ys ≡ ys ⊹ xs
 ⊹-comm xs ys = toℕ-injective (xs ⊹ ys) (ys ⊹ xs) $
     begin
         toℕ (xs ⊹ ys)
@@ -326,7 +326,7 @@ toℕ-⊹-homo {b} (x ∷ xs) (y ∷ ys) | result quotient remainder property di
 
 
 increase-base-lemma : ∀ b
-    → (xs : Num (suc b))
+    → (xs : Bij (suc b))
     → toℕ (increase-base xs) ≡ toℕ xs
 increase-base-lemma b ∙ = refl
 increase-base-lemma b (x ∷ xs) with fromℕ {suc b} (toℕ (increase-base xs) * suc b) | inspect (λ ws → fromℕ {suc b} (toℕ ws * suc b)) (increase-base xs)
@@ -372,7 +372,7 @@ increase-base-lemma b (x ∷ xs) | y ∷ ys | [ eq ] | result quotient remainder
             Fin.toℕ x + toℕ xs * suc b
         ∎
 
-decrease-base-lemma : ∀ b → (xs : Num (suc (suc b))) → toℕ (decrease-base xs) ≡ toℕ xs
+decrease-base-lemma : ∀ b → (xs : Bij (suc (suc b))) → toℕ (decrease-base xs) ≡ toℕ xs
 decrease-base-lemma b ∙ = refl
 decrease-base-lemma b (x ∷ xs) with fromℕ {b} (toℕ (decrease-base xs) * suc (suc b))
               | inspect (λ ws → fromℕ {b} (toℕ ws * suc (suc b))) (decrease-base xs)

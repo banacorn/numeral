@@ -17,37 +17,37 @@ infixr 5 _∷_
 -- For a system to be bijective wrt ℕ:
 --  * base ≥ 1
 --  * digits = {1 .. base}
-data Num : ℕ → Set where
+data Bij : ℕ → Set where
     -- from the terminal object, which represents 0
     ∙ : ∀ {b}           -- base
-        → Num (suc b)   -- base ≥ 1
+        → Bij (suc b)   -- base ≥ 1
 
     -- successors
     _∷_ : ∀ {b}
         → Fin b         -- digit = {1 .. b}
-        → Num b → Num b
+        → Bij b → Bij b
 
 infixr 9 _/_
 -- syntax sugar for chaining digits with ℕ
 _/_ : ∀ {b} → (n : ℕ)
     → {lower-bound : True (suc zero ≤? n)}      -- digit ≥ 1
     → {upper-bound : True (n        ≤? b)}      -- digit ≤ base
-    → Num b → Num b
+    → Bij b → Bij b
 _/_ {b} zero    {()} {ub} ns
 _/_ {b} (suc n) {lb} {ub} ns = (# n) {b} {ub} ∷ ns
 
 module _/_-Examples where
 
-    零 : Num 2
+    零 : Bij 2
     零 = ∙
 
-    一 : Num 2
+    一 : Bij 2
     一 = 1 / ∙
 
-    八 : Num 3
+    八 : Bij 3
     八 = 2 / 2 / ∙
 
-八 : Num 3
+八 : Bij 3
 八 = 2 / 2 / ∙
 
 open import Data.Nat.DM
@@ -79,16 +79,16 @@ digit+1 : ∀ {b} → (x : Fin (suc b)) → Fin.toℕ x ≢ b → Fin (suc b)
 digit+1 {b} x ¬p = fromℕ≤ {digit-toℕ x} (s≤s (digit+1-lemma (Fin.toℕ x) b (bounded x) ¬p))
 
 ------------------------------------------------------------------------
--- Num
+-- Bij
 ------------------------------------------------------------------------
 
-1+ : ∀ {b} → Num (suc b) → Num (suc b)
+1+ : ∀ {b} → Bij (suc b) → Bij (suc b)
 1+     ∙        = Fin.zero ∷ ∙
 1+ {b} (x ∷ xs) with full x
 1+ {b} (x ∷ xs) | yes p = Fin.zero ∷ 1+ xs
 1+ {b} (x ∷ xs) | no ¬p = digit+1 x ¬p ∷ xs
 
-n+ : ∀ {b} → ℕ → Num (suc b) → Num (suc b)
+n+ : ∀ {b} → ℕ → Bij (suc b) → Bij (suc b)
 n+ zero    xs = xs
 n+ (suc n) xs = 1+ (n+ n xs)
 
@@ -96,21 +96,21 @@ n+ (suc n) xs = 1+ (n+ n xs)
 -- From and to ℕ
 ------------------------------------------------------------------------
 
-toℕ : ∀ {b} → Num b → ℕ
+toℕ : ∀ {b} → Bij b → ℕ
 toℕ ∙              = zero
 toℕ {b} (x ∷ xs) = digit-toℕ x + (toℕ xs * b)
 
-fromℕ : ∀ {b} → ℕ → Num (suc b)
+fromℕ : ∀ {b} → ℕ → Bij (suc b)
 fromℕ zero    = ∙
 fromℕ (suc n) = 1+ (fromℕ n)
 
 ------------------------------------------------------------------------
--- Functions on Num
+-- Functions on Bij
 ------------------------------------------------------------------------
 
 infixl 6 _⊹_
 
-_⊹_ : ∀ {b} → Num b → Num b → Num b
+_⊹_ : ∀ {b} → Bij b → Bij b → Bij b
 _⊹_         ∙       ys        = ys
 _⊹_         xs       ∙        = xs
 _⊹_ {zero} (() ∷ xs) (y ∷ ys)
@@ -121,7 +121,7 @@ _⊹_ {suc b} (x ∷ xs) (y ∷ ys) | result quotient remainder property div-eq 
 
 -- old base = suc b
 -- new base = suc (suc b)
-increase-base : ∀ {b} → Num (suc b) → Num (suc (suc b))
+increase-base : ∀ {b} → Bij (suc b) → Bij (suc (suc b))
 increase-base {b} ∙        = ∙
 increase-base {b} (x ∷ xs) with fromℕ {suc b} (toℕ (increase-base xs) * suc b)
     | inspect (λ ws → fromℕ {suc b} (toℕ ws * suc b)) (increase-base xs)
@@ -135,7 +135,7 @@ increase-base {b} (x ∷ xs) | y ∷ ys | [ eq ]
 
 -- old base = suc (suc b)
 -- new base = suc b
-decrease-base : ∀ {b} → Num (suc (suc b)) → Num (suc b)
+decrease-base : ∀ {b} → Bij (suc (suc b)) → Bij (suc b)
 decrease-base {b} ∙ = ∙
 decrease-base {b} (x ∷ xs) with fromℕ {b} (toℕ (decrease-base xs) * suc (suc b))
               | inspect (λ ws → fromℕ {b} (toℕ ws * suc (suc b))) (decrease-base xs)
