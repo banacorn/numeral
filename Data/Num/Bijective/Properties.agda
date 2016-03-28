@@ -144,6 +144,7 @@ fromℕ-injective b zero    (suc n) eq = contradiction (sym eq) (1+-never-∙ (f
 fromℕ-injective b (suc m) zero    eq = contradiction eq       (1+-never-∙ (fromℕ m))
 fromℕ-injective b (suc m) (suc n) eq = cong suc (fromℕ-injective b m n (1+-injective b (fromℕ m) (fromℕ n) eq))
 
+
 --
 --      xs ─── 1+ ──➞ 1+ xs
 --      |                |
@@ -215,8 +216,8 @@ toℕ-fromℕ b (suc n) | x ∷ xs | [ eq ] | no ¬p =
         suc n
     ∎
 
-fromℕ-toℕ : ∀ b xs → fromℕ {b} (toℕ {suc b} xs) ≡ xs
-fromℕ-toℕ b xs = toℕ-injective (fromℕ (toℕ xs)) xs (toℕ-fromℕ b (toℕ xs))
+fromℕ-toℕ : ∀ {b} xs → fromℕ {b} (toℕ {suc b} xs) ≡ xs
+fromℕ-toℕ {b} xs = toℕ-injective (fromℕ (toℕ xs)) xs (toℕ-fromℕ b (toℕ xs))
 
 
 toℕ-fromℕ-reverse : ∀ b {m} {n} → toℕ (fromℕ {b} m) ≡ n → m ≡ n
@@ -231,11 +232,25 @@ toℕ-fromℕ-reverse b {m} {n} eq = begin
 fromℕ-toℕ-reverse : ∀ b {xs} {ys} → fromℕ {b} (toℕ {suc b} xs) ≡ ys → xs ≡ ys
 fromℕ-toℕ-reverse b {xs} {ys} eq = begin
         xs
-    ≡⟨ sym (fromℕ-toℕ b xs) ⟩
+    ≡⟨ sym (fromℕ-toℕ xs) ⟩
         fromℕ (toℕ xs)
     ≡⟨ eq ⟩
         ys
     ∎
+
+------------------------------------------------------------------------
+-- surjectivity
+------------------------------------------------------------------------
+
+toℕ-surjective : ∀ b n → Σ[ xs ∈ Bij (suc b) ] toℕ xs ≡ n
+toℕ-surjective b zero    = ∙               , refl
+toℕ-surjective b (suc n) = (fromℕ (suc n)) , toℕ-fromℕ b (suc n)
+
+
+fromℕ-surjective : ∀ {b} (xs : Bij (suc b)) → Σ[ n ∈ ℕ ] fromℕ n ≡ xs
+fromℕ-surjective ∙ = zero , refl
+fromℕ-surjective (x ∷ xs) = toℕ (x ∷ xs) , fromℕ-toℕ (x ∷ xs)
+
 
 ------------------------------------------------------------------------
 -- _⊹_
