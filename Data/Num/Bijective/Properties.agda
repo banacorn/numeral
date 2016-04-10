@@ -296,6 +296,18 @@ toℕ-⊹-homo {b} (x ∷ xs) (y ∷ ys) | result quotient remainder property di
             toℕ (x ∷ xs) + toℕ (y ∷ ys)
         ∎
 
+fromℕ-⊹-homo : ∀ {b} (m n : ℕ) → fromℕ {b} (m + n) ≡ fromℕ m ⊹ fromℕ n
+fromℕ-⊹-homo {b} m n = toℕ-injective (fromℕ (m + n)) (fromℕ m ⊹ fromℕ n) $
+    begin
+        toℕ (fromℕ (m + n))
+    ≡⟨ toℕ-fromℕ b (m + n) ⟩
+        m + n
+    ≡⟨ sym (cong₂ _+_ (toℕ-fromℕ b m) (toℕ-fromℕ b n)) ⟩
+        toℕ (fromℕ m) + toℕ (fromℕ n)
+    ≡⟨ sym (toℕ-⊹-homo (fromℕ m) (fromℕ n)) ⟩
+        toℕ (fromℕ m ⊹ fromℕ n)
+    ∎
+
 ⊹-1+ : ∀ {b} (xs ys : Bij (suc b)) → (1+ xs) ⊹ ys ≡ 1+ (xs ⊹ ys)
 ⊹-1+ {b} xs ys = toℕ-injective (1+ xs ⊹ ys) (1+ (xs ⊹ ys)) $
     begin
@@ -310,7 +322,7 @@ toℕ-⊹-homo {b} (x ∷ xs) (y ∷ ys) | result quotient remainder property di
         toℕ (1+ (xs ⊹ ys))
     ∎
 
-⊹-assoc : ∀ {b} (xs ys zs : Bij (suc b)) → xs ⊹ ys ⊹ zs ≡ xs ⊹ (ys ⊹ zs)
+⊹-assoc : ∀ {b} (xs ys zs : Bij (suc b)) → (xs ⊹ ys) ⊹ zs ≡ xs ⊹ (ys ⊹ zs)
 ⊹-assoc xs ys zs = toℕ-injective (xs ⊹ ys ⊹ zs) (xs ⊹ (ys ⊹ zs)) $
     begin
         toℕ (xs ⊹ ys ⊹ zs)

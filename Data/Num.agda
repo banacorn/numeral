@@ -1,11 +1,12 @@
 module Data.Num where
 
 open import Data.Nat
-open ≤-Reasoning renaming (begin_ to start_; _∎ to _□; _≡⟨_⟩_ to _≈⟨_⟩_)
 open import Data.Fin as Fin
     using (Fin; #_; fromℕ≤; inject≤)
     renaming (zero to z; suc to s)
 open import Relation.Nullary
+open import Relation.Nullary.Decidable
+open import Relation.Nullary.Negation
 open import Function
 open import Relation.Binary
 open import Relation.Binary.PropositionalEquality
@@ -77,8 +78,8 @@ Num-Setoid b d o = record
     }
 
 data SurjectionView : ℕ → ℕ → ℕ → Set where
-    WithZero : ∀ {b d} → (d≥2 : d ≥ 2) → SurjectionView b d 0
-    Zeroless : ∀ {b d} → (d≥1 : d ≥ 1) → SurjectionView b d 1
+    WithZero : ∀ {b d} → (b≥1 : b ≥ 1) → (d≥2 : d ≥ 2) → (b≤d : b ≤ d) → SurjectionView b d 0
+    Zeroless : ∀ {b d} → (b≥1 : b ≥ 1) → (d≥1 : d ≥ 1) → (b≤d : b ≤ d) → SurjectionView b d 1
     Spurious  : ∀ {b d o} → SurjectionView b d o
 
 surjectionView : (b d o : ℕ) → SurjectionView b d o
@@ -89,16 +90,21 @@ surjectionView (suc b)       0             o = Spurious
 --      # starts from 0 (offset = 0)
 surjectionView (suc b)       (suc d)       0 with suc b ≤? suc d
 surjectionView (suc b)       1             0 | yes p = Spurious     -- Unary number that possesses only 1 digit: { 0 }
-surjectionView 1             (suc (suc d)) 0 | yes p = WithZero (s≤s (s≤s z≤n))
-surjectionView (suc (suc b)) (suc (suc d)) 0 | yes p = WithZero (≤-trans (s≤s (s≤s z≤n)) p)
+surjectionView 1             (suc (suc d)) 0 | yes p = WithZero (s≤s z≤n) (s≤s (s≤s z≤n)) p
+surjectionView (suc (suc b)) (suc (suc d)) 0 | yes p = WithZero (s≤s z≤n) (≤-trans (s≤s (s≤s z≤n)) p) p
     where   open import Data.Nat.Properties.Extra using (≤-trans)
 surjectionView (suc b)       (suc d)       0 | no ¬p = Spurious         -- not enough digits
 --      # starts from 1 (offset = 1)
 surjectionView (suc b)       (suc d)       1 with suc b ≤? suc d
-surjectionView (suc b)       (suc d)       1 | yes p = Zeroless (s≤s z≤n)
+surjectionView (suc b)       (suc d)       1 | yes p = Zeroless (s≤s z≤n) (s≤s z≤n) p
 surjectionView (suc b)       (suc d)       1 | no ¬p = Spurious         -- not enough digits
 
 surjectionView (suc b)       (suc d)       (suc (suc o)) = Spurious     -- offset ≥ 2
+
+notSpurious? : ∀ {b d o} → (view : SurjectionView b d o) → Dec (view ≢ Spurious)
+notSpurious? (WithZero b≥1 d≥2 b≤d) = yes (λ ())
+notSpurious? (Zeroless b≥1 d≥1 b≤d) = yes (λ ())
+notSpurious? Spurious       = no (λ x → contradiction refl x)
 
 ------------------------------------------------------------------------
 -- Operations on Num
@@ -108,187 +114,50 @@ open import Data.Nat.Properties using (≤⇒pred≤)
 open import Data.Nat.Properties.Extra using (≤∧≢⇒<)
 open import Data.Fin.Properties using (bounded)
 
-1+ : ∀ {b d o} → (view : SurjectionView b d o) → Num b d o → Num b d o
-1+ (WithZero d≥2) ∙        = fromℕ≤ {1} d≥2 ∷ ∙                                              -- 0 ⇒ 1
-1+ (WithZero d≥2) (x ∷ xs) with full x
-1+ (WithZero d≥2) (x ∷ xs) | yes p = fromℕ≤ {0} (≤⇒pred≤ 2 _ d≥2) ∷ 1+ (WithZero d≥2) xs    -- 9 ⇒ 10
-1+ (WithZero d≥2) (x ∷ xs) | no ¬p = fromℕ≤ {suc (Fin.toℕ x)} (≤∧≢⇒< (bounded x) ¬p) ∷ xs   -- 8 ⇒ 9
-1+ (Zeroless d≥1) ∙        = fromℕ≤ {0} d≥1 ∷ ∙ -- ∙ ⇒ 1
-1+ (Zeroless d≥1) (x ∷ xs) with full x
-1+ (Zeroless d≥1) (x ∷ xs) | yes p = fromℕ≤ {0} d≥1 ∷ 1+ (Zeroless d≥1) xs                    -- A ⇒ 11
-1+ (Zeroless d≥1) (x ∷ xs) | no ¬p = fromℕ≤ {suc (Fin.toℕ x)} (≤∧≢⇒< (bounded x) ¬p) ∷ xs   -- 8 ⇒ 9
-1+ Spurious       xs       = xs -- stays the same (this is completely arbitrary), since we have no idea if there exists a successor  
+
+digit+1-b-lemma : ∀ {b d} → (x : Digit d)
+    → b ≥ 1 → suc (Fin.toℕ x) ≡ d
+    → suc (Fin.toℕ x) ∸ b < d
+digit+1-b-lemma {b} {d} x b≥1 p =
+    start
+        suc (suc (Fin.toℕ x) ∸ b)
+    ≤⟨ s≤s (∸-mono ≤-refl b≥1) ⟩
+        suc (Fin.toℕ x)
+    ≤⟨ reflexive p ⟩
+        d
+    □
+    where   open ≤-Reasoning renaming (begin_ to start_; _∎ to _□; _≡⟨_⟩_ to _≈⟨_⟩_)
+            open DecTotalOrder decTotalOrder using (reflexive) renaming (refl to ≤-refl)
+            open import Data.Nat.Properties using (∸-mono)
+
+digit+1-b : ∀ {b d} → (x : Digit d)
+    → b ≥ 1 → suc (Fin.toℕ x) ≡ d
+    → Fin d
+digit+1-b {b} {d} x b≥1 p =
+    fromℕ≤ {suc (Fin.toℕ x) ∸ b} (digit+1-b-lemma x b≥1 p)
+
+1+ : ∀ {b d o}
+    → (view : SurjectionView b d o)
+    → {notSpurious : True (notSpurious? view)}
+    → Num b d o
+    → Num b d o
+1+ (WithZero b≥1 d≥2 b≤d) ∙        = fromℕ≤ {1} d≥2 ∷ ∙     -- 0 ⇒ 1
+1+ (WithZero b≥1 d≥2 b≤d) (x ∷ xs) with full x
+1+ (WithZero b≥1 d≥2 b≤d) (x ∷ xs) | yes p =
+    digit+1-b x b≥1 p ∷ 1+ (WithZero b≥1 d≥2 b≤d) xs         -- n ⇒ n + 1 - b
+1+ (WithZero b≥1 d≥2 b≤d) (x ∷ xs) | no ¬p =
+    fromℕ≤ {suc (Fin.toℕ x)} (≤∧≢⇒< (bounded x) ¬p) ∷ xs   -- 8 ⇒ 9
+1+ (Zeroless b≥1 d≥1 b≤d) ∙        = fromℕ≤ {0} d≥1 ∷ ∙     -- ∙ ⇒ 1
+1+ (Zeroless b≥1 d≥1 b≤d) (x ∷ xs) with full x
+1+ (Zeroless b≥1 d≥1 b≤d) (x ∷ xs) | yes p =
+    digit+1-b x b≥1 p ∷ 1+ (Zeroless b≥1 d≥1 b≤d) xs         -- n ⇒ n + 1 - b
+1+ (Zeroless b≥1 d≥1 b≤d) (x ∷ xs) | no ¬p =
+    fromℕ≤ {suc (Fin.toℕ x)} (≤∧≢⇒< (bounded x) ¬p) ∷ xs   -- 8 ⇒ 9
+1+ Spurious          {()} xs
 
 
+-- fromℕ : ∀ {b d o} → (view : SurjectionView b d o) → ℕ → Num b d o
 
-
--- open import Relation.Binary.PropositionalEquality.Core as PropEqCore
--- open import Relation.Nullary.Negation
--- open import Relation.Nullary.Decidable
--- open import Relation.Binary
--- open import Function
--- open import Function.Equality as FunEq hiding (setoid; id; _∘_; cong)
--- open import Function.Surjection hiding (id; _∘_)
--- open import Data.Unit using (⊤; tt)
--- open import Data.Empty using (⊥)
-
--- ------------------------------------------------------------------------
--- -- Surjectivity
--- ------------------------------------------------------------------------
---
--- _≲_ : ∀ {b d o} → Num b d o → Num b d o → Set
--- xs ≲ ys = toℕ xs ≤ toℕ ys
---
---
---
---
--- _≋_ : ∀ {b d o} → Num b d o → Num b d o → Set
--- xs ≋ ys = toℕ xs ≡ toℕ ys
---
--- ≋-isEquivalence : ∀ {b d o} → IsEquivalence {A = Num b d o} _≋_
--- ≋-isEquivalence = record
---     { refl = λ {x} → refl
---     ; sym = sym
---     ; trans = trans
---     }
---
--- Num-Setoid : ∀ b d o → Setoid _ _
--- Num-Setoid b d o = record
---     { Carrier = Num b d o
---     ; _≈_ = _≋_
---     ; isEquivalence = ≋-isEquivalence
---     }
---
--- Num⟶ℕ : ∀ b d o → Num-Setoid b d o ⟶ setoid ℕ
--- Num⟶ℕ b d o = record
---     { _⟨$⟩_ = toℕ
---     ; cong = id }
---
---
---
---
--- data SurjectionView : ℕ → ℕ → ℕ → Set where
---     WithZero : ∀ {b d} → (#digit≥2 : d ≥ 2) → SurjectionView b d 0
---     Zeroless : ∀ {b d} → (#digit≥1 : d ≥ 1) → SurjectionView b d 1
---     Spurious  : ∀ {b d o} → SurjectionView b d o
---
--- surjectionView : (b d o : ℕ) → SurjectionView b d o
--- surjectionView 0             _             _ = Spurious
--- surjectionView (suc b)       0             _ = Spurious
--- -- starts from 0
--- surjectionView (suc b)       (suc d)       0 with b ≤? d
--- surjectionView 1 1 0 | yes p = Spurious
--- surjectionView (suc zero) (suc (suc d)) zero | yes p = WithZero (s≤s (s≤s z≤n))
--- surjectionView (suc (suc b)) (suc d) zero | yes p = WithZero (s≤s {!    !})
--- surjectionView (suc b)       (suc d)       0 | no ¬p = Spurious
--- -- surjectionView 1             1             0 = Spurious -- Unary number that possesses only a digit 0
--- -- surjectionView 1             (suc (suc d)) 0 = WithZero (s≤s (s≤s z≤n))
--- -- surjectionView (suc (suc b)) (suc d)       0 with suc b ≤? d
--- -- surjectionView (suc (suc b)) (suc d)       0 | yes p = WithZero $ start
--- --         2
--- --     ≤⟨ s≤s (s≤s z≤n) ⟩
--- --         2 + b
--- --     ≤⟨ s≤s p ⟩
--- --         1 + d
--- --     □
--- -- surjectionView (suc (suc b)) (suc d)       0 | no ¬p = Spurious
--- -- starts from 1
--- surjectionView (suc b)       (suc d)       1 with suc b ≤? suc d
--- surjectionView (suc b)       (suc d)       1 | yes p = Zeroless (s≤s z≤n)
--- surjectionView (suc b)       (suc d)       1 | no ¬p = Spurious
--- -- offset ≥ 2
--- surjectionView (suc b)       (suc d)  (suc (suc o)) = Spurious
---
---
--- 1+ : ∀ {b d o} → (view : SurjectionView b d o) → Num b d o → Num b d o
--- 1+ (WithZero #digit≥2) ∙        = fromℕ≤ {1} #digit≥2 ∷ ∙
--- 1+ (WithZero #digit≥2) (x ∷ xs) = {!   !}
--- -- 1+ (WithZero #digit≥2) (x ∷ xs) with full x
--- -- 1+ (WithZero #digit≥2) (x ∷ xs) | yes p = fromℕ≤ {0}                (≤⇒pred≤ 2 _ #digit≥2) ∷ 1+ (WithZero #digit≥2) xs
--- -- 1+ (WithZero #digit≥2) (x ∷ xs) | no ¬p = fromℕ≤ {suc (Fin.toℕ x)} (≤∧≢⇒< (bounded x) ¬p) ∷ xs
--- 1+ (Zeroless #digit≥1) ∙        = fromℕ≤ #digit≥1 ∷ ∙
--- 1+ (Zeroless #digit≥1) (x ∷ xs) with full x
--- 1+ (Zeroless #digit≥1) (x ∷ xs) | yes p = fromℕ≤ #digit≥1 ∷ 1+ (Zeroless #digit≥1) xs
--- 1+ (Zeroless #digit≥1) (x ∷ xs) | no ¬p = fromℕ≤ {suc (Fin.toℕ x)} (≤∧≢⇒< (bounded x) ¬p) ∷ xs
--- 1+ Spurious xs = xs
--- -- 1+ : ∀ {b d o} → Num b d o → Num b d o
--- -- 1+ {b} {d} {o} xs with surjectionView b d o
--- -- 1+ ∙        | WithZero  #digit≥1 = fromℕ≤ #digit≥1 ∷ ∙
--- -- 1+ (x ∷ xs) | WithZero  _        with full x
--- -- 1+ (x ∷ xs) | WithZero  #digit≥1 | yes p = fromℕ≤ #digit≥1 ∷ 1+ xs
--- -- 1+ (x ∷ xs) | WithZero  _        | no ¬p = (fromℕ≤ {suc (Fin.toℕ x)} (≤∧≢⇒< (bounded x) ¬p)) ∷ xs
--- -- 1+ ∙        | Zeroless #digit≥1 = fromℕ≤ #digit≥1 ∷ ∙
--- -- 1+ (x ∷ xs) | Zeroless _        with full x
--- -- 1+ (x ∷ xs) | Zeroless #digit≥1 | yes p = fromℕ≤ #digit≥1 ∷ 1+ xs
--- -- 1+ (x ∷ xs) | Zeroless _        | no ¬p = (fromℕ≤ {suc (Fin.toℕ x)} (≤∧≢⇒< (bounded x) ¬p)) ∷ xs
--- -- 1+ xs       | Spurious = xs
---
--- -- begin
--- --     {!   !}
--- -- ≡⟨ {!   !} ⟩
--- --     {!   !}
--- -- ≡⟨ {!   !} ⟩
--- --     {!   !}
--- -- ≡⟨ {!   !} ⟩
--- --     {!   !}
--- -- ≡⟨ {!   !} ⟩
--- --     {!   !}
--- -- ∎
---
--- toℕ-1+ : ∀ {b d o} → (view : SurjectionView b d o) → (xs : Num b d o) → toℕ (1+ view xs) ≡ suc (toℕ xs)
--- toℕ-1+ {b} (WithZero #digit≥2) ∙ =
---     begin
---         Fin.toℕ (fromℕ≤ #digit≥2) + b * zero
---     ≡⟨ cong (λ x → Fin.toℕ (fromℕ≤ #digit≥2) + x) (*-right-zero b) ⟩
---         Fin.toℕ (fromℕ≤ #digit≥2) + zero
---     ≡⟨ +-right-identity (Fin.toℕ (fromℕ≤ #digit≥2)) ⟩
---         Fin.toℕ (fromℕ≤ #digit≥2)
---     ≡⟨ toℕ-fromℕ≤ #digit≥2 ⟩
---         suc zero
---     ∎
--- toℕ-1+ {zero} (WithZero #digit≥2) (x ∷ xs) = {!   !}
--- toℕ-1+ {suc b} (WithZero #digit≥2) (x ∷ xs) = {!   !}
--- -- toℕ-1+ {b} {d} (WithZero #digit≥2) (x ∷ xs) | yes p =
--- --     begin
--- --         Fin.toℕ (fromℕ≤ (≤⇒pred≤ 2 _ #digit≥2)) + b * toℕ (1+ (WithZero #digit≥2) xs)
--- --     ≡⟨ cong (λ w → w + b * toℕ (1+ (WithZero #digit≥2) xs)) (toℕ-fromℕ≤ (≤⇒pred≤ 2 _ #digit≥2)) ⟩
--- --         b * toℕ (1+ (WithZero #digit≥2) xs)
--- --     ≡⟨ cong (λ w → b * w) (toℕ-1+ (WithZero #digit≥2) xs) ⟩
--- --         b * suc (toℕ xs)
--- --     ≡⟨ {!   !} ⟩
--- --         {!   !}
--- --     ≡⟨ {!   !} ⟩
--- --         {!   !}
--- --     ≡⟨ {!   !} ⟩
--- --         d + b * toℕ xs
--- --     ≡⟨ cong (λ w → w + b * toℕ xs) (sym p) ⟩
--- --         suc (Fin.toℕ x + b * toℕ xs)
--- --     ∎
---     -- begin
---     --     Fin.toℕ (fromℕ≤ #digit≥2) + b * toℕ (1+ (WithZero #digit≥2) xs)
---     -- ≡⟨ cong (λ w → w + b * toℕ (1+ (WithZero #digit≥2) xs)) (toℕ-fromℕ≤ #digit≥2) ⟩
---     --     suc (b * toℕ (1+ (WithZero #digit≥2) xs))
---     -- ≡⟨ cong (λ w → suc (b * w)) (toℕ-1+ (WithZero #digit≥2) xs) ⟩
---     --     suc (b * suc (toℕ xs)) -- suc (b + b * toℕ xs)
---     -- ≡⟨ {!   !} ⟩
---     --     {!   !}
---     -- ≡⟨ {!   !} ⟩
---     --     {!   !}
---     -- ≡⟨ {!   !} ⟩
---     --     d + b * toℕ xs
---     -- ≡⟨ cong (λ w → w + b * toℕ xs) (sym p) ⟩
---     --     suc (Fin.toℕ x + b * toℕ xs)
---     -- ∎
--- -- toℕ-1+ {b} (WithZero #digit≥2) (x ∷ xs) | no ¬p = {!   !}
--- toℕ-1+ (Zeroless #digit≥1) xs = {!   !}
--- toℕ-1+ Spurious xs = {!   !}
---
--- fromℕ : ∀ {b d o} → SurjectionView b d o → ℕ → Num b d o
--- fromℕ (WithZero _       ) zero = ∙
--- fromℕ (WithZero p) (suc n) = 1+ (WithZero p) (fromℕ (WithZero p) n)
--- fromℕ (Zeroless _       ) zero = ∙
--- fromℕ (Zeroless p) (suc n) = 1+ (Zeroless p) (fromℕ (Zeroless p) n)
--- fromℕ Spurious n = ∙
 -- --
 -- 1+-fromℕ : ∀ {b d o} → (view : SurjectionView b d o) → (n : ℕ) → 1+ view (fromℕ view n) ≡ fromℕ view (suc n)
 -- 1+-fromℕ (WithZero _) n = refl
