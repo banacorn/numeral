@@ -44,7 +44,8 @@ open DecTotalOrder decTotalOrder using (reflexive) renaming (refl to ≤-refl)
 -- ∎
 
 
-toℕ-digit+1-b : ∀ {d b} (x : Digit d) → (b≥1 : b ≥ 1) → (p : suc (Fin.toℕ x) ≡ d) → Fin.toℕ (digit+1-b x b≥1 p) ≡ suc (Fin.toℕ x) ∸ b
+toℕ-digit+1-b : ∀ {d b} (x : Digit d) → (b≥1 : b ≥ 1) → (p : suc (Fin.toℕ x) ≡ d)
+    → Fin.toℕ (digit+1-b x b≥1 p) ≡ suc (Fin.toℕ x) ∸ b
 toℕ-digit+1-b {d} {b} x b≥1 p = toℕ-fromℕ≤ $ start
         suc (suc (Fin.toℕ x) ∸ b)
     ≤⟨ s≤s (∸-mono ≤-refl b≥1) ⟩
@@ -54,7 +55,10 @@ toℕ-digit+1-b {d} {b} x b≥1 p = toℕ-fromℕ≤ $ start
     □
 
 
-toℕ-1+ : ∀ {b d o} → (view : SurjectionView b d o) → {notSpurious : True (notSpurious? view)} → (xs : Num b d o)
+toℕ-1+ : ∀ {b d o}
+    → (view : SurjectionView b d o)
+    → {notSpurious : True (notSpurious? view)}
+    → (xs : Num b d o)
     → toℕ (1+ view {notSpurious} xs) ≡ suc (toℕ xs)
 toℕ-1+ (WithZero {b} b≥1 d≥2 b≤d) ∙ =
     begin
@@ -131,6 +135,15 @@ toℕ-1+ (Zeroless {b} {d} b≥1 d≥1 b≤d) (x ∷ xs) | yes p =
 toℕ-1+ (Zeroless {b} {d} b≥1 d≥1 b≤d) (x ∷ xs) | no ¬p =
     cong (λ w → suc w + b * toℕ xs) (toℕ-fromℕ≤ (≤∧≢⇒< (bounded x) ¬p))
 toℕ-1+ Spurious       {()} xs -- die!!!!!
+
+1+-fromℕ : ∀ {b d o}
+    → (view : SurjectionView b d o)
+    → {✓ : True (notSpurious? view)}
+    → (n : ℕ)
+    → 1+ view {✓} (fromℕ view {✓} n) ≡ fromℕ view {✓} (suc n)
+1+-fromℕ (WithZero b≥1 d≥2 b≤d) n = refl
+1+-fromℕ (Zeroless b≥1 d≥1 b≤d) n = refl
+1+-fromℕ Spurious {()} n
 
 -- begin
 --     {!   !}

@@ -156,14 +156,17 @@ digit+1-b {b} {d} x b≥1 p =
 1+ Spurious          {()} xs
 
 
--- fromℕ : ∀ {b d o} → (view : SurjectionView b d o) → ℕ → Num b d o
+fromℕ : ∀ {b d o}
+    → (view : SurjectionView b d o)
+    → {notSpurious : True (notSpurious? view)}
+    → ℕ
+    → Num b d o
+fromℕ (WithZero b≥1 d≥2 b≤d) zero = ∙
+fromℕ (WithZero b≥1 d≥2 b≤d) (suc n) = 1+ (WithZero b≥1 d≥2 b≤d) (fromℕ (WithZero b≥1 d≥2 b≤d) n)
+fromℕ (Zeroless b≥1 d≥1 b≤d) zero = ∙
+fromℕ (Zeroless b≥1 d≥1 b≤d) (suc n) = 1+ (Zeroless b≥1 d≥1 b≤d) (fromℕ (Zeroless b≥1 d≥1 b≤d) n)
+fromℕ Spurious {()} n
 
--- --
--- 1+-fromℕ : ∀ {b d o} → (view : SurjectionView b d o) → (n : ℕ) → 1+ view (fromℕ view n) ≡ fromℕ view (suc n)
--- 1+-fromℕ (WithZero _) n = refl
--- 1+-fromℕ (Zeroless _) n = refl
--- 1+-fromℕ Spurious n = refl
---
 --
 -- -- fromℕ b d  o n       with surjectionView b d o
 -- -- fromℕ b d .0 zero    | WithZero #digit≥1 = ∙
