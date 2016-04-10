@@ -77,8 +77,8 @@ Num-Setoid b d o = record
     }
 
 data SurjectionView : ℕ → ℕ → ℕ → Set where
-    WithZero : ∀ {b d} → (#digit≥2 : d ≥ 2) → SurjectionView b d 0
-    Zeroless : ∀ {b d} → (#digit≥1 : d ≥ 1) → SurjectionView b d 1
+    WithZero : ∀ {b d} → (d≥2 : d ≥ 2) → SurjectionView b d 0
+    Zeroless : ∀ {b d} → (d≥1 : d ≥ 1) → SurjectionView b d 1
     Spurious  : ∀ {b d o} → SurjectionView b d o
 
 surjectionView : (b d o : ℕ) → SurjectionView b d o
@@ -99,6 +99,27 @@ surjectionView (suc b)       (suc d)       1 | yes p = Zeroless (s≤s z≤n)
 surjectionView (suc b)       (suc d)       1 | no ¬p = Spurious         -- not enough digits
 
 surjectionView (suc b)       (suc d)       (suc (suc o)) = Spurious     -- offset ≥ 2
+
+------------------------------------------------------------------------
+-- Operations on Num
+------------------------------------------------------------------------
+
+open import Data.Nat.Properties using (≤⇒pred≤)
+open import Data.Nat.Properties.Extra using (≤∧≢⇒<)
+open import Data.Fin.Properties using (bounded)
+
+1+ : ∀ {b d o} → (view : SurjectionView b d o) → Num b d o → Num b d o
+1+ (WithZero d≥2) ∙        = fromℕ≤ {1} d≥2 ∷ ∙                                              -- 0 ⇒ 1
+1+ (WithZero d≥2) (x ∷ xs) with full x
+1+ (WithZero d≥2) (x ∷ xs) | yes p = fromℕ≤ {0} (≤⇒pred≤ 2 _ d≥2) ∷ 1+ (WithZero d≥2) xs    -- 9 ⇒ 10
+1+ (WithZero d≥2) (x ∷ xs) | no ¬p = fromℕ≤ {suc (Fin.toℕ x)} (≤∧≢⇒< (bounded x) ¬p) ∷ xs   -- 8 ⇒ 9
+1+ (Zeroless d≥1) ∙        = fromℕ≤ {0} d≥1 ∷ ∙ -- ∙ ⇒ 1
+1+ (Zeroless d≥1) (x ∷ xs) with full x
+1+ (Zeroless d≥1) (x ∷ xs) | yes p = fromℕ≤ {0} d≥1 ∷ 1+ (Zeroless d≥1) xs                    -- A ⇒ 11
+1+ (Zeroless d≥1) (x ∷ xs) | no ¬p = fromℕ≤ {suc (Fin.toℕ x)} (≤∧≢⇒< (bounded x) ¬p) ∷ xs   -- 8 ⇒ 9
+1+ Spurious       xs       = xs -- stays the same (this is completely arbitrary), since we have no idea if there exists a successor  
+
+
 
 
 -- open import Relation.Binary.PropositionalEquality.Core as PropEqCore
