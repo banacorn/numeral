@@ -6,7 +6,7 @@ open import Data.Nat
 open import Data.Nat.Properties
 open import Data.Nat.Properties.Simple
 open import Data.Nat.Properties.Extra
-open import Data.Fin.Properties
+open import Data.Fin.Properties hiding (setoid)
 open import Data.Fin as Fin
     using (Fin; #_; fromℕ≤; inject≤)
     renaming (zero to z; suc to s)
@@ -144,6 +144,72 @@ toℕ-1+ Spurious       {()} xs -- die!!!!!
 1+-fromℕ (WithZero b≥1 d≥2 b≤d) n = refl
 1+-fromℕ (Zeroless b≥1 d≥1 b≤d) n = refl
 1+-fromℕ Spurious {()} n
+
+toℕ-fromℕ : ∀ {b d o}
+    → (view : SurjectionView b d o)
+    → {✓ : True (notSpurious? view)}
+    → (n : ℕ)
+    → toℕ (fromℕ view {✓} n) ≡ n
+toℕ-fromℕ (WithZero b≥1 d≥2 b≤d) zero = refl
+toℕ-fromℕ (WithZero b≥1 d≥2 b≤d) (suc n) =
+    begin
+        toℕ (1+ (WithZero b≥1 d≥2 b≤d) (fromℕ (WithZero b≥1 d≥2 b≤d) n))
+    ≡⟨ toℕ-1+ (WithZero b≥1 d≥2 b≤d) (fromℕ (WithZero b≥1 d≥2 b≤d) n) ⟩
+        suc (toℕ (fromℕ (WithZero b≥1 d≥2 b≤d) n))
+    ≡⟨ cong suc (toℕ-fromℕ (WithZero b≥1 d≥2 b≤d) n) ⟩
+        suc n
+    ∎
+toℕ-fromℕ (Zeroless b≥1 d≥1 b≤d) zero = refl
+toℕ-fromℕ (Zeroless b≥1 d≥1 b≤d) (suc n) =
+    begin
+        toℕ (1+ (Zeroless b≥1 d≥1 b≤d) (fromℕ (Zeroless b≥1 d≥1 b≤d) n))
+    ≡⟨ toℕ-1+ (Zeroless b≥1 d≥1 b≤d) (fromℕ (Zeroless b≥1 d≥1 b≤d) n) ⟩
+        suc (toℕ (fromℕ (Zeroless b≥1 d≥1 b≤d) n))
+    ≡⟨ cong suc (toℕ-fromℕ (Zeroless b≥1 d≥1 b≤d) n) ⟩
+        suc n
+    ∎
+toℕ-fromℕ Spurious {()} n
+
+open import Function.Equality hiding (setoid; cong; _∘_; id)
+open import Function.Surjection hiding (id; _∘_)
+
+-- fromℕ that preserve equality
+ℕ⟶Num : ∀ {b d o}
+    → (view : SurjectionView b d o)
+    → {✓ : True (notSpurious? view)}
+    → setoid ℕ ⟶ Num-Setoid b d o
+ℕ⟶Num (WithZero b≥1 d≥2 b≤d) = record
+    { _⟨$⟩_ = fromℕ (WithZero b≥1 d≥2 b≤d)
+    ; cong = cong (toℕ ∘ fromℕ (WithZero b≥1 d≥2 b≤d)) }
+ℕ⟶Num (Zeroless b≥1 d≥1 b≤d) = record
+    { _⟨$⟩_ = fromℕ (Zeroless b≥1 d≥1 b≤d)
+    ; cong = cong (toℕ ∘ fromℕ (Zeroless b≥1 d≥1 b≤d)) }
+ℕ⟶Num Spurious {()}
+
+Num⟶ℕ : ∀ {b d o}
+    → (view : SurjectionView b d o)
+    → {✓ : True (notSpurious? view)}
+    → Num-Setoid b d o ⟶ setoid ℕ
+Num⟶ℕ (WithZero b≥1 d≥2 b≤d) = record
+    { _⟨$⟩_ = toℕ
+    ; cong = id }
+Num⟶ℕ (Zeroless b≥1 d≥1 b≤d) = record
+    { _⟨$⟩_ = toℕ
+    ; cong = id }
+Num⟶ℕ Spurious {()}
+
+Surjective? : ∀ {b d o}
+    → (view : SurjectionView b d o)
+    → {✓ : True (notSpurious? view)}
+    → Dec (Surjective {From = Num-Setoid b d o} {To = setoid ℕ} (Num⟶ℕ view {✓}))
+Surjective? (WithZero b≥1 d≥2 b≤d) = yes (record
+    { from = ℕ⟶Num (WithZero b≥1 d≥2 b≤d)
+    ; right-inverse-of = toℕ-fromℕ (WithZero b≥1 d≥2 b≤d) })
+Surjective? (Zeroless b≥1 d≥1 b≤d) = yes (record
+    { from = ℕ⟶Num (Zeroless b≥1 d≥1 b≤d)
+    ; right-inverse-of = toℕ-fromℕ (Zeroless b≥1 d≥1 b≤d) })
+Surjective? Spurious {()}
+
 
 -- begin
 --     {!   !}

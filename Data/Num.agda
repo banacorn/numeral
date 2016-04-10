@@ -10,14 +10,6 @@ open import Relation.Nullary.Negation
 open import Function
 open import Relation.Binary
 open import Relation.Binary.PropositionalEquality
--- open ≡-Reasoning
-
--- open import Data.Fin.Properties using (bounded; toℕ-fromℕ≤)
--- open import Data.Nat.Properties
--- open import Data.Nat.Properties.Extra
--- open import Data.Nat.Properties.Simple
-
--- open import Data.Fin.Properties renaming (_≟_ to _F≟_)
 
 -- For a system to be surjective with respect to ℕ:
 -- * has zero
@@ -158,7 +150,7 @@ digit+1-b {b} {d} x b≥1 p =
 
 fromℕ : ∀ {b d o}
     → (view : SurjectionView b d o)
-    → {notSpurious : True (notSpurious? view)}
+    → {✓ : True (notSpurious? view)}
     → ℕ
     → Num b d o
 fromℕ (WithZero b≥1 d≥2 b≤d) zero = ∙
