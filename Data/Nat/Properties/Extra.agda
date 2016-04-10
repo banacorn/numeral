@@ -4,11 +4,26 @@ open import Data.Nat
 open import Data.Nat.Properties
 open import Data.Nat.Properties.Simple
 open import Function
+open import Relation.Binary
 open import Relation.Binary.Core
 open import Relation.Nullary.Negation
-open import Relation.Binary.PropositionalEquality
+open import Relation.Binary.PropositionalEquality hiding (isPreorder)
 open ≡-Reasoning
 
+isDecTotalOrder : IsDecTotalOrder {A = ℕ} _≡_ _≤_
+isDecTotalOrder = DecTotalOrder.isDecTotalOrder decTotalOrder
+
+isTotalOrder : IsTotalOrder {A = ℕ} _≡_ _≤_
+isTotalOrder = IsDecTotalOrder.isTotalOrder isDecTotalOrder
+
+isPartialOrder : IsPartialOrder {A = ℕ} _≡_ _≤_
+isPartialOrder = IsTotalOrder.isPartialOrder isTotalOrder
+
+isPreorder : IsPreorder {A = ℕ} _≡_ _≤_
+isPreorder = IsPartialOrder.isPreorder isPartialOrder
+
+≤-trans :  Transitive _≤_
+≤-trans = IsPreorder.trans isPreorder
 
 >⇒≢ : _>_ ⇒ _≢_
 >⇒≢ {zero} () refl
@@ -24,6 +39,9 @@ open ≡-Reasoning
 ≤∧≢⇒< {suc m} {zero}  ()      q
 ≤∧≢⇒< {suc m} {suc n} (s≤s p) q = s≤s (≤∧≢⇒< p (q ∘ cong suc))
 
+≤-suc : ∀ {m n} → m ≤ n → suc m ≤ suc n
+≤-suc z≤n = s≤s z≤n
+≤-suc (s≤s rel) = s≤s (s≤s rel)
 
 suc-injective : ∀ {x y} → suc x ≡ suc y → x ≡ y
 suc-injective {x} {.x} refl = refl
@@ -51,3 +69,15 @@ cancel-+-right (suc k) {i} {j} p = cancel-+-right k lemma
                 ≡⟨ +-suc j k ⟩
                     suc (j + k)
                 ∎
+
+distrib-left-*-+ : ∀ m n o → m * (n + o) ≡ m * n + m * o
+distrib-left-*-+ m n o =
+    begin
+        m * (n + o)
+    ≡⟨ *-comm m (n + o) ⟩
+        (n + o) * m
+    ≡⟨ distribʳ-*-+ m n o ⟩
+        n * m + o * m
+    ≡⟨ cong₂ _+_ (*-comm n m) (*-comm o m) ⟩
+        m * n + m * o
+    ∎
