@@ -43,18 +43,19 @@ open DecTotalOrder decTotalOrder using (reflexive) renaming (refl to ≤-refl)
 --     {!   !}
 -- ∎
 
-WithZero≢Spurious : ∀ {b d o} → b ≥ 1 → d ≥ 2 → d ≥ b → o ≱ 2 → notSpurious b d o
-WithZero≢Spurious ()  d≥2 b≤d o≱2 (Base≡0 refl)
-WithZero≢Spurious b≥1 ()  b≤d o≱2 (NoDigits refl)
-WithZero≢Spurious b≥1 d≥2 b≤d o≱2 (Offset≥2 p) = contradiction p o≱2
-WithZero≢Spurious b≥1 (s≤s ()) b≤d o≱2 (UnaryWithOnly0s p refl)
-WithZero≢Spurious b≥1 d≥2 b≤d o≱2 (NotEnoughDigits p) = contradiction b≤d p
 
--- WithZero≢Spurious : ∀ {b d p q r s} → {view : SurjectionView b d _} → view ≡ WithZero p q r → view ≢ Spurious s
--- WithZero≢Spurious refl ()
---
--- Zeroless≢Spurious : ∀ {b d p q r s} → {view : SurjectionView b d _} → view ≡ Zeroless p q r → view ≢ Spurious s
--- Zeroless≢Spurious refl ()
+WithZero≢Spurious : ∀ {b d} → b ≥ 1 → d ≥ 2 → d ≥ b → notSpurious b d 0
+WithZero≢Spurious ()  d≥2      b≤d Base≡0
+WithZero≢Spurious b≥1 ()       b≤d NoDigits
+WithZero≢Spurious b≥1 d≥2      b≤d (Offset≥2 ())
+WithZero≢Spurious b≥1 (s≤s ()) b≤d (UnaryWithOnly0s p)
+WithZero≢Spurious b≥1 d≥2      b≤d (NotEnoughDigits p) = contradiction b≤d p
+
+Zeroless≢Spurious : ∀ {b d} → b ≥ 1 → d ≥ 1 → d ≥ b → notSpurious b d 1
+Zeroless≢Spurious ()  d≥1 b≤d Base≡0
+Zeroless≢Spurious b≥1 ()  b≤d NoDigits
+Zeroless≢Spurious b≥1 d≥1 b≤d (Offset≥2 (s≤s ()))
+Zeroless≢Spurious b≥1 d≥1 b≤d (NotEnoughDigits p) = contradiction b≤d p
 
 toℕ-digit+1-b : ∀ {d b} (x : Digit d) → (b≥1 : b ≥ 1) → (p : suc (Fin.toℕ x) ≡ d)
     → Fin.toℕ (digit+1-b x b≥1 p) ≡ suc (Fin.toℕ x) ∸ b
@@ -70,8 +71,8 @@ toℕ-1+ : ∀ {b d o}
     → {✓ : notSpurious b d o}
     → (xs : Num b d o)
     → toℕ (1+ xs) ≡ suc (toℕ xs)
-toℕ-1+ {b} {d} {o} xs   with surjectionView b d o | inspect (surjectionView b d) o
-toℕ-1+ {b} {d}     ∙    | WithZero b≥1 d≥2 b≤d | [ eq ] =
+toℕ-1+ {b} {d} {o} xs   with surjectionView b d o
+toℕ-1+ {b} {d}     ∙    | WithZero b≥1 d≥2 b≤d  =
     begin
         Fin.toℕ (fromℕ≤ d≥2) + b * zero
     ≡⟨ cong (λ x → Fin.toℕ (fromℕ≤ d≥2) + x) (*-right-zero b) ⟩
@@ -81,13 +82,13 @@ toℕ-1+ {b} {d}     ∙    | WithZero b≥1 d≥2 b≤d | [ eq ] =
     ≡⟨ toℕ-fromℕ≤ d≥2 ⟩
         suc zero
     ∎
-toℕ-1+ {b} {d} (x ∷ xs) | WithZero b≥1 d≥2 b≤d | [ eq ] with full x
-toℕ-1+ {b} {d} (x ∷ xs) | WithZero b≥1 d≥2 b≤d | [ eq ] | yes p =
+toℕ-1+ {b} {d} (x ∷ xs) | WithZero b≥1 d≥2 b≤d with full x
+toℕ-1+ {b} {d} (x ∷ xs) | WithZero b≥1 d≥2 b≤d | yes p =
     begin
         Fin.toℕ {d} (digit+1-b x b≥1 p) + b * toℕ (1+ xs)
     ≡⟨ cong (λ w → w + b * toℕ (1+ xs)) (toℕ-fromℕ≤ (digit+1-b-lemma x b≥1 p)) ⟩    -- toℕ-fromℕ≤
         suc (Fin.toℕ x) ∸ b + b * toℕ (1+ xs)
-    ≡⟨ cong (λ w → suc (Fin.toℕ x) ∸ b + b * w) (toℕ-1+ {✓ = WithZero≢Spurious b≥1 d≥2 b≤d (λ ())} xs) ⟩        -- induction
+    ≡⟨ cong (λ w → suc (Fin.toℕ x) ∸ b + b * w) (toℕ-1+ {✓ = WithZero≢Spurious b≥1 d≥2 b≤d} xs) ⟩        -- induction
         suc (Fin.toℕ x) ∸ b + b * suc (toℕ xs)
     ≡⟨ cong (λ w → suc (Fin.toℕ x) ∸ b + w) (*-comm b (suc (toℕ xs))) ⟩
         suc (Fin.toℕ x) ∸ b + (b + toℕ xs * b)
@@ -107,9 +108,9 @@ toℕ-1+ {b} {d} (x ∷ xs) | WithZero b≥1 d≥2 b≤d | [ eq ] | yes p =
     ≡⟨ cong (λ w → suc (Fin.toℕ x) + w) (*-comm (toℕ xs) b) ⟩
         suc (Fin.toℕ x + b * toℕ xs)
     ∎
-toℕ-1+ {b} {d} (x ∷ xs) | WithZero b≥1 d≥2 b≤d | [ eq ] | no ¬p =
+toℕ-1+ {b} {d} (x ∷ xs) | WithZero b≥1 d≥2 b≤d | no ¬p =
     cong (λ w → w + b * toℕ xs) (toℕ-fromℕ≤ (≤∧≢⇒< (bounded x) ¬p))
-toℕ-1+ {b} {d} ∙        | Zeroless b≥1 d≥1 b≤d | [ eq ] =
+toℕ-1+ {b} {d} ∙        | Zeroless b≥1 d≥1 b≤d =
     begin
         suc (Fin.toℕ (fromℕ≤ d≥1) + b * zero)
     ≡⟨ cong (λ x → suc (Fin.toℕ (fromℕ≤ d≥1)) + x) (*-right-zero b) ⟩
@@ -117,13 +118,13 @@ toℕ-1+ {b} {d} ∙        | Zeroless b≥1 d≥1 b≤d | [ eq ] =
     ≡⟨ cong (λ x → suc x + 0) (toℕ-fromℕ≤ d≥1) ⟩
         suc zero
     ∎
-toℕ-1+ {b} {d} (x ∷ xs) | Zeroless b≥1 d≥1 b≤d | [ eq ] with full x
-toℕ-1+ {b} {d} (x ∷ xs) | Zeroless b≥1 d≥1 b≤d | [ eq ] | yes p =
+toℕ-1+ {b} {d} (x ∷ xs) | Zeroless b≥1 d≥1 b≤d with full x
+toℕ-1+ {b} {d} (x ∷ xs) | Zeroless b≥1 d≥1 b≤d | yes p =
     begin
         suc (Fin.toℕ (digit+1-b x b≥1 p)) + b * toℕ (1+ xs)
     ≡⟨ cong (λ w → suc w + b * toℕ (1+ xs)) (toℕ-fromℕ≤ (digit+1-b-lemma x b≥1 p)) ⟩    -- toℕ-fromℕ≤
         suc (suc (Fin.toℕ x) ∸ b) + b * toℕ (1+ xs)
-    ≡⟨ cong (λ w → suc (suc (Fin.toℕ x) ∸ b) + b * w) (toℕ-1+ {✓ = {!   !}} xs) ⟩      -- induction
+    ≡⟨ cong (λ w → suc (suc (Fin.toℕ x) ∸ b) + b * w) (toℕ-1+ {✓ = Zeroless≢Spurious b≥1 d≥1 b≤d} xs) ⟩      -- induction
         suc (suc (Fin.toℕ x) ∸ b + b * suc (toℕ xs))
     ≡⟨ cong (λ w → suc (suc (Fin.toℕ x) ∸ b + w)) (*-comm b (suc (toℕ xs))) ⟩
         suc (suc (Fin.toℕ x) ∸ b + (b + toℕ xs * b))
@@ -143,44 +144,45 @@ toℕ-1+ {b} {d} (x ∷ xs) | Zeroless b≥1 d≥1 b≤d | [ eq ] | yes p =
     ≡⟨ cong (λ w → suc (suc (Fin.toℕ x + w))) (*-comm (toℕ xs) b) ⟩
         suc (suc (Fin.toℕ x + b * toℕ xs))
     ∎
-toℕ-1+ {b} {d} (x ∷ xs) | Zeroless b≥1 d≥1 b≤d | [ eq ] | no ¬p =
+toℕ-1+ {b} {d} (x ∷ xs) | Zeroless b≥1 d≥1 b≤d | no ¬p =
     cong (λ w → suc w + b * toℕ xs) (toℕ-fromℕ≤ (≤∧≢⇒< (bounded x) ¬p))
-toℕ-1+ {✓ = ok} xs      | Spurious _ | [ eq ] = {!   !}
+toℕ-1+ {✓ = claim} xs      | Spurious reason = contradiction refl (claim reason)
 
 
--- 1+-fromℕ : ∀ {b d o}
---     → {✓ : True (notSpurious? (surjectionView b d o))}
---     → (n : ℕ)
---     → 1+ (fromℕ {b} {d} {o} n) ≡ fromℕ (suc n)
--- 1+-fromℕ {b} {d} {o} n with surjectionView b d o | inspect (surjectionView b d) o
--- 1+-fromℕ             n | WithZero b≥1 d≥2 b≤d | [ eq ] rewrite eq = refl
--- 1+-fromℕ             n | Zeroless b≥1 d≥1 b≤d | [ eq ] rewrite eq = refl
--- 1+-fromℕ {✓ = ()}   n | Spurious _            | [ eq ]
---
--- toℕ-fromℕ : ∀ {b d o}
---     → {✓ : True (notSpurious? (surjectionView b d o))}
---     → (n : ℕ)
---     → toℕ (fromℕ {b} {d} {o} n) ≡ n
--- toℕ-fromℕ {b} {d} {o} n       with surjectionView b d o | inspect (surjectionView b d) o
--- toℕ-fromℕ {b} {d}     zero    | WithZero b≥1 d≥2 b≤d | [ eq ] = refl
--- toℕ-fromℕ {b} {d}     (suc n) | WithZero b≥1 d≥2 b≤d | [ eq ] =
---     begin
---         toℕ (1+ (fromℕ {b} {d} n))
---     ≡⟨ toℕ-1+ {✓ = fromWitness ?} (fromℕ {b} {d} n) ⟩
---         suc (toℕ (fromℕ {b} {d} n))
---     ≡⟨ cong suc (toℕ-fromℕ {b} {d} {✓ = ?} n) ⟩
---         suc n
---     ∎
--- toℕ-fromℕ {b} {d}     zero    | Zeroless b≥1 d≥1 b≤d | [ eq ] = refl
--- toℕ-fromℕ {b} {d}     (suc n) | Zeroless b≥1 d≥1 b≤d | [ eq ] =
---     begin
---         toℕ (1+ (fromℕ {b} {d} n))
---     ≡⟨ toℕ-1+ {✓ = ?} (fromℕ {b} {d} n) ⟩
---         suc (toℕ (fromℕ {b} {d} n))
---     ≡⟨ cong suc (toℕ-fromℕ {b} {d} {✓ = ?} n) ⟩
---         suc n
---     ∎
--- toℕ-fromℕ {✓ = ()}   n       | Spurious | [ eq ]
+1+-fromℕ : ∀ {b d o}
+    → {✓ : notSpurious b d o}
+    → (n : ℕ)
+    → 1+ (fromℕ {b} {d} {o} n) ≡ fromℕ (suc n)
+1+-fromℕ {b} {d} {o} n with surjectionView b d o | inspect (surjectionView b d) o
+1+-fromℕ             n | WithZero b≥1 d≥2 b≤d | [ eq ] rewrite eq = refl
+1+-fromℕ             n | Zeroless b≥1 d≥1 b≤d | [ eq ] rewrite eq = refl
+1+-fromℕ {✓ = claim} n | Spurious reason      | [ eq ] = contradiction refl (claim reason)
+
+toℕ-fromℕ : ∀ {b d o}
+    → {✓ : notSpurious b d o}
+    → (n : ℕ)
+    → toℕ (fromℕ {b} {d} {o} n) ≡ n
+toℕ-fromℕ {b} {d} {o} n       with surjectionView b d o
+toℕ-fromℕ {b} {d}     zero    | WithZero b≥1 d≥2 b≤d = refl
+toℕ-fromℕ {b} {d}     (suc n) | WithZero b≥1 d≥2 b≤d =
+    begin
+        toℕ (1+ (fromℕ {b} {d} n))
+    ≡⟨ toℕ-1+ {✓ = WithZero≢Spurious b≥1 d≥2 b≤d} (fromℕ {b} {d} n) ⟩
+        suc (toℕ (fromℕ {b} {d} n))
+    ≡⟨ cong suc (toℕ-fromℕ {b} {d} {✓ = WithZero≢Spurious b≥1 d≥2 b≤d} n) ⟩
+        suc n
+    ∎
+toℕ-fromℕ {b} {d}     zero    | Zeroless b≥1 d≥1 b≤d = refl
+toℕ-fromℕ {b} {d}     (suc n) | Zeroless b≥1 d≥1 b≤d =
+    begin
+        toℕ (1+ (fromℕ {b} {d} n))
+    ≡⟨ toℕ-1+ {✓ = Zeroless≢Spurious b≥1 d≥1 b≤d} (fromℕ {b} {d} n) ⟩
+        suc (toℕ (fromℕ {b} {d} n))
+    ≡⟨ cong suc (toℕ-fromℕ {b} {d} {✓ = Zeroless≢Spurious b≥1 d≥1 b≤d} n) ⟩
+        suc n
+    ∎
+toℕ-fromℕ {✓ = claim}   n     | Spurious reason = contradiction refl (claim reason)
+
 --
 -- open import Function.Equality hiding (setoid; cong; _∘_; id)
 -- open import Function.Surjection hiding (id; _∘_)

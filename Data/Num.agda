@@ -70,11 +70,11 @@ Num-Setoid b d o = record
     }
 
 data WhySpurious : ℕ → ℕ → ℕ → Set where
-    Base≡0          : ∀ {b d o} → b ≡ 0             → WhySpurious b d o
-    NoDigits        : ∀ {b d o} → d ≡ 0             → WhySpurious b d o
-    Offset≥2        : ∀ {b d o} → o ≥ 2             → WhySpurious b d o
-    UnaryWithOnly0s : ∀ {b d o} → b ≤ d → d ≡ 1     → WhySpurious b d o
-    NotEnoughDigits : ∀ {b d o} → b ≰ d             → WhySpurious b d o
+    Base≡0          : ∀ {  d o}          → WhySpurious 0 d o
+    NoDigits        : ∀ {b   o}          → WhySpurious b 0 o
+    Offset≥2        : ∀ {b d o} → o ≥ 2 → WhySpurious b d o
+    UnaryWithOnly0s : ∀ {b    } → b ≤ 1 → WhySpurious b 1 0
+    NotEnoughDigits : ∀ {b d o} → b ≰ d → WhySpurious b d o
 
 data SurjectionView : ℕ → ℕ → ℕ → Set where
     WithZero : ∀ {b d} → (b≥1 : b ≥ 1) → (d≥2 : d ≥ 2) → (b≤d : b ≤ d) → SurjectionView b d 0
@@ -83,12 +83,12 @@ data SurjectionView : ℕ → ℕ → ℕ → Set where
 
 surjectionView : (b d o : ℕ) → SurjectionView b d o
 -- # base = 0
-surjectionView 0             d             o = Spurious (Base≡0 refl)
+surjectionView 0             d             o = Spurious Base≡0
 -- # base ≥ 1
-surjectionView (suc b)       0             o = Spurious (NoDigits refl)
+surjectionView (suc b)       0             o = Spurious NoDigits
 --      # starts from 0 (offset = 0)
 surjectionView (suc b)       (suc d)       0 with suc b ≤? suc d
-surjectionView (suc b)       1             0 | yes p = Spurious (UnaryWithOnly0s p refl)    -- Unary number that possesses only 1 digit: { 0 }
+surjectionView (suc b)       1             0 | yes p = Spurious (UnaryWithOnly0s p)    -- Unary number that possesses only 1 digit: { 0 }
 surjectionView 1             (suc (suc d)) 0 | yes p = WithZero (s≤s z≤n) (s≤s (s≤s z≤n)) p
 surjectionView (suc (suc b)) (suc (suc d)) 0 | yes p = WithZero (s≤s z≤n) (≤-trans (s≤s (s≤s z≤n)) p) p
     where   open import Data.Nat.Properties.Extra using (≤-trans)
@@ -103,16 +103,6 @@ surjectionView (suc b)       (suc d)       (suc (suc o)) = Spurious (Offset≥2 
 
 notSpurious : ℕ → ℕ → ℕ → Set
 notSpurious b d o = ∀ reason → surjectionView b d o ≢ Spurious reason
-
--- notSpurious : ∀ {b d o} → (view : SurjectionView b d o) → ∀ reason → view ≡ Spurious reason
--- notSpurious (WithZero b≥1 d≥2 b≤d) reason ()
--- notSpurious (Zeroless b≥1 d≥1 b≤d) reason ()
--- notSpurious (Spurious r) .r refl = {!   !}
-
-notSpurious? : ∀ {b d o} → (view : SurjectionView b d o) → Dec (∀ reason → view ≢ Spurious reason)
-notSpurious? (WithZero b≥1 d≥2 b≤d) = yes (λ r → λ ())
-notSpurious? (Zeroless b≥1 d≥1 b≤d) = yes (λ r → λ ())
-notSpurious? (Spurious r)           = no (λ x → x r refl)
 
 ------------------------------------------------------------------------
 -- Operations on Num
