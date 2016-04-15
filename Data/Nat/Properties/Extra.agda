@@ -9,6 +9,7 @@ open import Relation.Binary.Core
 open import Relation.Nullary.Negation
 open import Relation.Binary.PropositionalEquality hiding (isPreorder)
 open ≡-Reasoning
+open DecTotalOrder decTotalOrder using (reflexive) renaming (refl to ≤-refl)
 
 isDecTotalOrder : IsDecTotalOrder {A = ℕ} _≡_ _≤_
 isDecTotalOrder = DecTotalOrder.isDecTotalOrder decTotalOrder
@@ -22,8 +23,24 @@ isPartialOrder = IsTotalOrder.isPartialOrder isTotalOrder
 isPreorder : IsPreorder {A = ℕ} _≡_ _≤_
 isPreorder = IsPartialOrder.isPreorder isPartialOrder
 
+<-sucs : ∀ {m n} l → m < n → l + m < l + n
+<-sucs zero    m<n = m<n
+<-sucs (suc l) m<n = s≤s (<-sucs l m<n)
+
+<-preds : ∀ {m n} l → l + m < l + n → m < n
+<-preds zero    m<n       = m<n
+<-preds (suc l) (s≤s m<n) = <-preds l m<n
+
+
 ≤-trans :  Transitive _≤_
 ≤-trans = IsPreorder.trans isPreorder
+
+≤-sucs : ∀ {m n} l → m ≤ n → l + m ≤ l + n
+≤-sucs {m} {n} l m≤n = _+-mono_ {l} {l} {m} {n} ≤-refl m≤n
+
+≤-preds : ∀ {m n} l → l + m ≤ l + n → m ≤ n
+≤-preds zero    m≤n       = m≤n
+≤-preds (suc l) (s≤s m≤n) = ≤-preds l m≤n
 
 >⇒≢ : _>_ ⇒ _≢_
 >⇒≢ {zero} () refl
