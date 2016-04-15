@@ -73,8 +73,8 @@ data WhySpurious : ℕ → ℕ → ℕ → Set where
     Base≡0          : ∀ {  d o}          → WhySpurious 0 d o
     NoDigits        : ∀ {b   o}          → WhySpurious b 0 o
     Offset≥2        : ∀ {b d o} → o ≥ 2 → WhySpurious b d o
-    UnaryWithOnly0s : ∀ {b    } → b ≤ 1 → WhySpurious b 1 0
-    NotEnoughDigits : ∀ {b d o} → b ≰ d → WhySpurious b d o
+    UnaryWithOnly0s :                      WhySpurious 1 1 0
+    NotEnoughDigits : ∀ {b d o} → b ≥ 1 → d ≥ 1 → o < 2 → b ≰ d → WhySpurious b d o
 
 data SurjectionView : ℕ → ℕ → ℕ → Set where
     WithZero : ∀ {b d} → (b≥1 : b ≥ 1) → (d≥2 : d ≥ 2) → (b≤d : b ≤ d) → SurjectionView b d 0
@@ -88,18 +88,18 @@ surjectionView 0             d             o = Spurious Base≡0
 surjectionView (suc b)       0             o = Spurious NoDigits
 --      # starts from 0 (offset = 0)
 surjectionView (suc b)       (suc d)       0 with suc b ≤? suc d
-surjectionView (suc b)       1             0 | yes p = Spurious (UnaryWithOnly0s p)    -- Unary number that possesses only 1 digit: { 0 }
+surjectionView 1             1             0 | yes p = Spurious UnaryWithOnly0s
+surjectionView (suc (suc b)) 1             0 | yes (s≤s ())
 surjectionView 1             (suc (suc d)) 0 | yes p = WithZero (s≤s z≤n) (s≤s (s≤s z≤n)) p
 surjectionView (suc (suc b)) (suc (suc d)) 0 | yes p = WithZero (s≤s z≤n) (≤-trans (s≤s (s≤s z≤n)) p) p
     where   open import Data.Nat.Properties.Extra using (≤-trans)
-surjectionView (suc b)       (suc d)       0 | no ¬p = Spurious (NotEnoughDigits ¬p)        -- not enough digits
+surjectionView (suc b)       (suc d)       0 | no ¬p = Spurious (NotEnoughDigits (s≤s z≤n) (s≤s z≤n) (s≤s z≤n) ¬p)        -- not enough digits
 --      # starts from 1 (offset = 1)
 surjectionView (suc b)       (suc d)       1 with suc b ≤? suc d
 surjectionView (suc b)       (suc d)       1 | yes p = Zeroless (s≤s z≤n) (s≤s z≤n) p
-surjectionView (suc b)       (suc d)       1 | no ¬p = Spurious (NotEnoughDigits ¬p)        -- not enough digits
+surjectionView (suc b)       (suc d)       1 | no ¬p = Spurious (NotEnoughDigits (s≤s z≤n) (s≤s z≤n) (s≤s (s≤s z≤n)) ¬p)        -- not enough digits
 
 surjectionView (suc b)       (suc d)       (suc (suc o)) = Spurious (Offset≥2 (s≤s (s≤s z≤n)))    -- offset ≥ 2
-
 
 notSpurious : ℕ → ℕ → ℕ → Set
 notSpurious b d o = ∀ reason → surjectionView b d o ≢ Spurious reason

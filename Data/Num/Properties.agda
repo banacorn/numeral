@@ -48,14 +48,14 @@ WithZero≢Spurious : ∀ {b d} → b ≥ 1 → d ≥ 2 → d ≥ b → notSpuri
 WithZero≢Spurious ()  d≥2      b≤d Base≡0
 WithZero≢Spurious b≥1 ()       b≤d NoDigits
 WithZero≢Spurious b≥1 d≥2      b≤d (Offset≥2 ())
-WithZero≢Spurious b≥1 (s≤s ()) b≤d (UnaryWithOnly0s p)
-WithZero≢Spurious b≥1 d≥2      b≤d (NotEnoughDigits p) = contradiction b≤d p
+WithZero≢Spurious b≥1 (s≤s ()) b≤d UnaryWithOnly0s
+WithZero≢Spurious b≥1 d≥2      b≤d (NotEnoughDigits _ _ _ p) = contradiction b≤d p
 
 Zeroless≢Spurious : ∀ {b d} → b ≥ 1 → d ≥ 1 → d ≥ b → notSpurious b d 1
 Zeroless≢Spurious ()  d≥1 b≤d Base≡0
 Zeroless≢Spurious b≥1 ()  b≤d NoDigits
 Zeroless≢Spurious b≥1 d≥1 b≤d (Offset≥2 (s≤s ()))
-Zeroless≢Spurious b≥1 d≥1 b≤d (NotEnoughDigits p) = contradiction b≤d p
+Zeroless≢Spurious b≥1 d≥1 b≤d (NotEnoughDigits _ _ _ p) = contradiction b≤d p
 
 toℕ-digit+1-b : ∀ {d b} (x : Digit d) → (b≥1 : b ≥ 1) → (p : suc (Fin.toℕ x) ≡ d)
     → Fin.toℕ (digit+1-b x b≥1 p) ≡ suc (Fin.toℕ x) ∸ b
@@ -183,86 +183,167 @@ toℕ-fromℕ {b} {d}     (suc n) | Zeroless b≥1 d≥1 b≤d =
     ∎
 toℕ-fromℕ {✓ = claim}   n     | Spurious reason = contradiction refl (claim reason)
 
---
--- open import Function.Equality hiding (setoid; cong; _∘_; id)
--- open import Function.Surjection hiding (id; _∘_)
---
--- -- fromℕ that preserves equality
--- ℕ⟶Num : ∀ {b d o} → setoid ℕ ⟶ Num-Setoid b d o
--- ℕ⟶Num {b} {d} {o} = record
---     { _⟨$⟩_ = fromℕ
---     ; cong = cong (toℕ ∘ fromℕ {b} {d} {o})
---     }
---
--- -- toℕ that preserves equality
--- Num⟶ℕ : ∀ {b d o} → Num-Setoid b d o ⟶ setoid ℕ
--- Num⟶ℕ {b} {d} {o} = record { _⟨$⟩_ = toℕ ; cong = id }
---
--- Surjective? : ∀ {b d o}
---     → Dec (Surjective {From = Num-Setoid b d o} {To = setoid ℕ} Num⟶ℕ)
--- Surjective? {b} {d} {o} with surjectionView b d o | inspect (surjectionView b d) o
--- Surjective? {b} {d} | WithZero b≥1 d≥2 b≤d | [ eq ] = yes (record
---     { from = ℕ⟶Num
---     ; right-inverse-of = toℕ-fromℕ {b} {d} {✓ = fromWitness (WithZero≢Spurious eq)}
---     })
--- Surjective? {b} {d} | Zeroless b≥1 d≥1 b≤d | [ eq ] = yes (record
---     { from = ℕ⟶Num
---     ; right-inverse-of = toℕ-fromℕ {b} {d} {✓ = fromWitness (Zeroless≢Spurious eq)}
---     })
--- Surjective? {b} {d} {o} | Spurious | [ eq ] = no reason
---     where   reason : ¬ Surjective (Num⟶ℕ {b} {d} {o})
---             reason surj = {! Surjective.right-inverse-of surj 1  !}
---                 where   test : toℕ (Surjective.from surj ⟨$⟩ 1) ≡ 0
---                         test =
---                             begin
---                                 toℕ {b} {d} {o} (Surjective.from surj ⟨$⟩ 1)
---                             ≡⟨ refl ⟩
---                                 toℕ {b} {d} {o} {! fromℕ 1  !}
---                             ≡⟨ {!   !} ⟩
---                                 {!   !}
---                             ≡⟨ {!   !} ⟩
---                                 {!   !}
---                             ≡⟨ {!   !} ⟩
---                                 {!   !}
---                             ∎
 
+open import Function.Equality hiding (setoid; cong; _∘_; id)
+open import Function.Surjection hiding (id; _∘_)
+open Surjective
 
--- ℕ⟶Num : ∀ {b d o}
---     → (view : SurjectionView b d o)
---     → {✓ : True (notSpurious? view)}
---     → setoid ℕ ⟶ Num-Setoid b d o
--- ℕ⟶Num (WithZero b≥1 d≥2 b≤d) = record
---     { _⟨$⟩_ = fromℕ
---     ; cong = cong (toℕ ∘ fromℕ) }
--- ℕ⟶Num (Zeroless b≥1 d≥1 b≤d) = record
---     { _⟨$⟩_ = fromℕ
---     ; cong = cong (toℕ ∘ fromℕ) }
--- ℕ⟶Num Spurious {()}
---
--- Num⟶ℕ : ∀ {b d o}
---     → (view : SurjectionView b d o)
---     → {✓ : True (notSpurious? view)}
---     → Num-Setoid b d o ⟶ setoid ℕ
--- Num⟶ℕ (WithZero b≥1 d≥2 b≤d) = record
---     { _⟨$⟩_ = toℕ
---     ; cong = id }
--- Num⟶ℕ (Zeroless b≥1 d≥1 b≤d) = record
---     { _⟨$⟩_ = toℕ
---     ; cong = id }
--- Num⟶ℕ Spurious {()}
+-- fromℕ that preserves equality
+ℕ⟶Num : ∀ b d o → setoid ℕ ⟶ Num-Setoid b d o
+ℕ⟶Num b d o = record
+    { _⟨$⟩_ = fromℕ
+    ; cong = cong (toℕ ∘ fromℕ {b} {d} {o})
+    }
 
--- Surjective? : ∀ {b d o}
---     → (view : SurjectionView b d o)
---     → {✓ : True (notSpurious? view)}
---     → Dec (Surjective {From = Num-Setoid b d o} {To = setoid ℕ} (Num⟶ℕ view {✓}))
--- Surjective? (WithZero b≥1 d≥2 b≤d) = yes (record
---     { from = ℕ⟶Num (WithZero b≥1 d≥2 b≤d)
---     ; right-inverse-of = toℕ-fromℕ (WithZero b≥1 d≥2 b≤d) })
--- Surjective? (Zeroless b≥1 d≥1 b≤d) = yes (record
---     { from = ℕ⟶Num (Zeroless b≥1 d≥1 b≤d)
---     ; right-inverse-of = toℕ-fromℕ (Zeroless b≥1 d≥1 b≤d) })
--- Surjective? Spurious {()}
+-- toℕ that preserves equality
+Num⟶ℕ : ∀ b d o → Num-Setoid b d o ⟶ setoid ℕ
+Num⟶ℕ b d o = record { _⟨$⟩_ = toℕ ; cong = id }
 
+lemma1 : ∀ {d o} → (xs : Num 0 d o) → toℕ xs ≤ o + d
+lemma1 {d} {o} ∙        = z≤n
+lemma1 {d} {o} (x ∷ xs) =
+    start
+        o + Fin.toℕ x + zero
+    ≤⟨ reflexive (+-right-identity (o + Fin.toℕ x)) ⟩
+        o + Fin.toℕ x
+    ≤⟨ _+-mono_ {o} {o} {Fin.toℕ x} {d} ≤-refl (
+        start
+            Fin.toℕ x
+        ≤⟨ n≤1+n (Fin.toℕ x) ⟩
+            suc (Fin.toℕ x)
+        ≤⟨ bounded x ⟩
+            d
+        □
+    ) ⟩
+        o + d
+    □
+
+lemma2 : ∀ {b o} → (xs : Num b 0 o) → toℕ xs ≢ 1
+lemma2 ∙ = λ ()
+lemma2 (() ∷ xs)
+
+lemma3 : ∀ {b d o} → (xs : Num b d o) → o ≥ 2 → toℕ xs ≢ 1
+lemma3 ∙        o≥2 = λ ()
+lemma3 {o = zero} (x ∷ xs) () p
+lemma3 {o = suc zero} (x ∷ xs) (s≤s ()) p
+lemma3 {o = suc (suc o)} (x ∷ xs) o≥2 ()
+
+lemma4 : (xs : Num 1 1 0) → toℕ xs ≢ 1
+lemma4 ∙ ()
+lemma4 (z ∷ xs) p = contradiction (begin
+        toℕ xs
+    ≡⟨ sym (+-right-identity (toℕ xs)) ⟩
+        toℕ xs + zero
+    ≡⟨ p ⟩
+        suc zero
+    ∎) (lemma4 xs)
+lemma4 (s () ∷ xs)
+
+lemma5-0 : ∀ {b d} → (xs : Num b d 0) → b ≥ 1 → d ≥ 1 → b ≰ d → toℕ xs ≢ d
+lemma5-0 ∙        b≥1 () b≰d refl
+lemma5-0 (x ∷ xs) b≥1 d≥1 b≰d p with toℕ xs ≤? 0
+lemma5-0 {b} {d} (x ∷ xs) b≥1 d≥1 b≰d p | yes q =
+    contradiction p (<⇒≢ ⟦x∷xs⟧>d)
+    where
+        ⟦xs⟧≡0 : toℕ xs ≡ 0
+        ⟦xs⟧≡0 = ≤0⇒≡0 (toℕ xs) q
+        ⟦x∷xs⟧>d : Fin.toℕ x + b * toℕ xs < d
+        ⟦x∷xs⟧>d =
+            start
+                suc (Fin.toℕ x + b * toℕ xs)
+            ≤⟨ reflexive (cong (λ w → suc (Fin.toℕ x + b * w)) ⟦xs⟧≡0) ⟩
+                suc (Fin.toℕ x + b * zero)
+            ≤⟨ reflexive (cong (λ w → suc (Fin.toℕ x + w)) (*-right-zero b)) ⟩
+                suc (Fin.toℕ x + zero)
+            ≤⟨ reflexive (+-right-identity (suc (Fin.toℕ x))) ⟩
+                suc (Fin.toℕ x)
+            ≤⟨ bounded x ⟩
+                d
+            □
+lemma5-0 {b} {d} (x ∷ xs) b≥1 d≥1 b≰d p | no ¬q =
+    contradiction p (>⇒≢ ⟦x∷xs⟧>d)
+    where
+        ⟦x∷xs⟧>d : Fin.toℕ x + b * toℕ xs > d
+        ⟦x∷xs⟧>d =
+            start
+                suc d
+            ≤⟨ ≰⇒> b≰d ⟩
+                b
+            ≤⟨ reflexive (sym (*-right-identity b)) ⟩
+                b * 1
+            ≤⟨ _*-mono_ {b} {b} {1} {toℕ xs} ≤-refl (≰⇒> ¬q) ⟩
+                b * toℕ xs
+            ≤⟨ n≤m+n (Fin.toℕ x) (b * toℕ xs) ⟩
+                Fin.toℕ x + b * toℕ xs
+            □
+
+lemma5-1 : ∀ {b d} → (xs : Num b d 1) → b ≰ d → toℕ xs ≢ suc d
+lemma5-1 ∙        b≰d = (λ ())
+lemma5-1 (x ∷ xs) b≰d p with toℕ xs ≤? 0
+lemma5-1 {b} {d} (x ∷ xs) b≰d p | yes q =
+    contradiction p (<⇒≢ (s≤s ⟦x∷xs⟧>d))
+    where
+        ⟦xs⟧≡0 : toℕ xs ≡ 0
+        ⟦xs⟧≡0 = ≤0⇒≡0 (toℕ xs) q
+        ⟦x∷xs⟧>d : Fin.toℕ x + b * toℕ xs < d
+        ⟦x∷xs⟧>d =
+            start
+                suc (Fin.toℕ x + b * toℕ xs)
+            ≤⟨ reflexive (cong (λ w → suc (Fin.toℕ x + b * w)) ⟦xs⟧≡0) ⟩
+                suc (Fin.toℕ x + b * zero)
+            ≤⟨ reflexive (cong (λ w → suc (Fin.toℕ x + w)) (*-right-zero b)) ⟩
+                suc (Fin.toℕ x + zero)
+            ≤⟨ reflexive (+-right-identity (suc (Fin.toℕ x))) ⟩
+                suc (Fin.toℕ x)
+            ≤⟨ bounded x ⟩
+                d
+            □
+lemma5-1 {b} {d} (x ∷ xs) b≰d p | no ¬q =
+    contradiction p (>⇒≢ (s≤s ⟦x∷xs⟧>d))
+    where
+        ⟦x∷xs⟧>d : Fin.toℕ x + b * toℕ xs > d
+        ⟦x∷xs⟧>d =
+            start
+                suc d
+            ≤⟨ ≰⇒> b≰d ⟩
+                b
+            ≤⟨ reflexive (sym (*-right-identity b)) ⟩
+                b * 1
+            ≤⟨ _*-mono_ {b} {b} {1} {toℕ xs} ≤-refl (≰⇒> ¬q) ⟩
+                b * toℕ xs
+            ≤⟨ n≤m+n (Fin.toℕ x) (b * toℕ xs) ⟩
+                Fin.toℕ x + b * toℕ xs
+            □
+
+Spurious⇏Surjective : ∀ {b} {d} {o} → WhySpurious b d o → ¬ (Surjective (Num⟶ℕ b d o))
+Spurious⇏Surjective {_} {d} {o} Base≡0              claim =
+    contradiction ≡1+o+d (<⇒≢ <1+o+d)
+    where
+        ≡1+o+d : toℕ (from claim ⟨$⟩ suc (o + d)) ≡ suc (o + d)
+        ≡1+o+d = right-inverse-of claim (suc o + d)
+        <1+o+d : toℕ (from claim ⟨$⟩ suc (o + d)) < suc (o + d)
+        <1+o+d = s≤s (lemma1 (from claim ⟨$⟩ suc o + d))
+Spurious⇏Surjective NoDigits            claim =
+    contradiction (right-inverse-of claim 1) (lemma2 (from claim ⟨$⟩ 1))
+Spurious⇏Surjective (Offset≥2 p)        claim =
+    contradiction (right-inverse-of claim 1) (lemma3 (_⟨$⟩_ (from claim) 1) p)
+Spurious⇏Surjective UnaryWithOnly0s     claim =
+    contradiction (right-inverse-of claim 1) (lemma4 (_⟨$⟩_ (from claim) 1))
+Spurious⇏Surjective {_} {d} {0} (NotEnoughDigits p q r t) claim = lemma5-0 (_⟨$⟩_ (from claim) d) p q t (right-inverse-of claim d)
+Spurious⇏Surjective {_} {d} {1} (NotEnoughDigits p q r t) claim = lemma5-1 (_⟨$⟩_ (from claim) (suc d)) t (right-inverse-of claim (suc d))
+Spurious⇏Surjective {_} {_} {suc (suc o)} (NotEnoughDigits b≥1 d≥1 (s≤s (s≤s ())) b≰d) claim
+
+Surjective? : ∀ b d o → Dec (Surjective (Num⟶ℕ b d o))
+Surjective? b d o with surjectionView b d o
+Surjective? b d 0 | WithZero b≥1 d≥2 b≤d = yes (record
+    { from = ℕ⟶Num b d 0
+    ; right-inverse-of = toℕ-fromℕ {b} {d} {✓ = WithZero≢Spurious b≥1 d≥2 b≤d}
+    })
+Surjective? b d 1 | Zeroless b≥1 d≥1 b≤d = yes (record
+    { from = ℕ⟶Num b d 1
+    ; right-inverse-of = toℕ-fromℕ {b} {d} {✓ = Zeroless≢Spurious b≥1 d≥1 b≤d}
+    })
+Surjective? b d _ | Spurious reason = no (Spurious⇏Surjective reason)
 
 -- begin
 --     {!   !}
@@ -275,3 +356,12 @@ toℕ-fromℕ {✓ = claim}   n     | Spurious reason = contradiction refl (clai
 -- ≡⟨ {!   !} ⟩
 --     {!   !}
 -- ∎
+-- start
+--     {!   !}
+-- ≤⟨ {!   !} ⟩
+--     {!   !}
+-- ≤⟨ {!   !} ⟩
+--     {!   !}
+-- ≤⟨ {!   !} ⟩
+--     {!   !}
+-- □

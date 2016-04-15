@@ -39,12 +39,20 @@ isPreorder = IsPartialOrder.isPreorder isPartialOrder
 ≤∧≢⇒< {suc m} {zero}  ()      q
 ≤∧≢⇒< {suc m} {suc n} (s≤s p) q = s≤s (≤∧≢⇒< p (q ∘ cong suc))
 
+≤0⇒≡0 : ∀ n → n ≤ 0 → n ≡ 0
+≤0⇒≡0 zero    n≤0 = refl
+≤0⇒≡0 (suc n) ()
+
 ≤-suc : ∀ {m n} → m ≤ n → suc m ≤ suc n
 ≤-suc z≤n = s≤s z≤n
 ≤-suc (s≤s rel) = s≤s (s≤s rel)
 
 suc-injective : ∀ {x y} → suc x ≡ suc y → x ≡ y
 suc-injective {x} {.x} refl = refl
+
+*-right-identity : ∀ n → n * 1 ≡ n
+*-right-identity zero = refl
+*-right-identity (suc n) = cong suc (*-right-identity n)
 
 cancel-+-right : ∀ k {i j} → i + k ≡ j + k → i ≡ j
 cancel-+-right zero {i} {j} p  =
