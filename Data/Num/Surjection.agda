@@ -98,6 +98,16 @@ digit+1 x ¬p = fromℕ≤ {suc (Fin.toℕ x)} (≤∧≢⇒< (bounded x) ¬p)
 1+ (x ∷ xs) | Zeroless b≥1 d≥1 b≤d | no ¬p = digit+1   x    ¬p ∷ xs     --      n ⇒ n + 1
 1+ xs       | Spurious _ = xs
 
+n+ : ∀ {b d o}
+    → ℕ
+    → Num b d o
+    → Num b d o
+n+ {b} {d} {o} n xs with surjectionView b d o
+n+ zero    xs | WithZero b≥1 d≥2 b≤d = xs
+n+ (suc n) xs | WithZero b≥1 d≥2 b≤d = 1+ (n+ n xs)
+n+ zero    xs | Zeroless b≥1 d≥1 b≤d = xs
+n+ (suc n) xs | Zeroless b≥1 d≥1 b≤d = 1+ (n+ n xs)
+n+ n       xs | Spurious reason = xs
 
 fromℕ : ∀ {b d o} → ℕ → Num b d o
 fromℕ {b} {d} {o} n with surjectionView b d o
@@ -380,3 +390,25 @@ Surjective? b d 1 | Zeroless b≥1 d≥1 b≤d = yes (record
     ; right-inverse-of = toℕ-fromℕ {b} {d} {✓ = Zeroless≢Spurious b≥1 d≥1 b≤d}
     })
 Surjective? b d _ | Spurious reason = no (Spurious⇏Surjective reason)
+
+Surjective⇒base≥1 : ∀ {b} {d} {o} → Surjective (Num⟶ℕ b d o) → b ≥ 1
+Surjective⇒base≥1 {zero} {d} {o} surj = contradiction
+    (right-inverse-of surj (suc (o + d)))       -- : toℕ (from surj ⟨$⟩ suc (o + d)) ≡ suc (o + d)
+    (lemma1 (_⟨$⟩_ (from surj) (suc (o + d))))  -- : toℕ (from surj ⟨$⟩ suc (o + d)) ≢ suc (o + d)
+Surjective⇒base≥1 {suc b} surj = s≤s z≤n
+
+Surjective⇒d≥1 : ∀ {b} {d} {o} → Surjective (Num⟶ℕ b d o) → d ≥ 1
+Surjective⇒d≥1 {d = zero} surj = contradiction
+    (right-inverse-of surj 1)           -- : toℕ (from surj ⟨$⟩ 1) ≡ 1
+    (lemma2 (from surj ⟨$⟩ 1))          -- : toℕ (from surj ⟨$⟩ 1) ≢ 1
+Surjective⇒d≥1 {d = suc d} surj = s≤s z≤n
+
+Surjective⇒b≤d : ∀ {b} {d} {o} → Surjective (Num⟶ℕ b d o) → b ≤ d
+Surjective⇒b≤d {_} {zero} {_} surj = contradiction
+    (Surjective⇒d≥1 surj)               -- : d ≥ 1
+    (λ ())                              -- : d ≱ 1
+Surjective⇒b≤d {b} {suc d} {o} surj with b ≤? suc d
+Surjective⇒b≤d {b} {suc d} {o} surj | yes p = p
+Surjective⇒b≤d {b} {suc d} {o} surj | no ¬p = contradiction
+    (right-inverse-of surj (o + suc d))             -- : toℕ (from surj ⟨$⟩ (o + suc d)) ≡ (o + suc d)
+    (lemma5 (s≤s z≤n) ¬p (from surj ⟨$⟩ o + suc d)) -- : toℕ (from surj ⟨$⟩ (o + suc d)) ≢ (o + suc d)
