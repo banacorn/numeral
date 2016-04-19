@@ -132,10 +132,8 @@ digit+1 x ¬p = fromℕ≤ {suc (Fin.toℕ x)} (≤∧≢⇒< (bounded x) ¬p)
 
 
 n+ : ∀ {b d o} → ℕ → Num b d o → Num b d o
-n+ {b} {d} {o} n xs with surjectionView b d o
-n+ zero    xs |    Surj cond = xs
-n+ (suc n) xs |    Surj cond = 1+ (n+ n xs)
-n+ n       xs | NonSurj cond = xs
+n+ zero xs = xs
+n+ (suc n) xs = 1+ (n+ n xs)
 
 fromℕ : ∀ {b d o} → ℕ → Num b d o
 fromℕ {b} {d} {o} n with surjectionView b d o
@@ -160,20 +158,6 @@ toℕ-digit+1-b {d} {b} x b≥1 p = toℕ-fromℕ≤ $ start
     ≤⟨ reflexive p ⟩
         d
     □
-
-
--- begin
---     {!   !}
--- ≡⟨ {!   !} ⟩
---     {!   !}
--- ≡⟨ {!   !} ⟩
---     {!   !}
--- ≡⟨ {!   !} ⟩
---     {!   !}
--- ≡⟨ {!   !} ⟩
---     {!   !}
--- ∎
-
 
 ------------------------------------------------------------------------
 -- toℕ-1+ : toℕ (1+ xs) ≡ suc (toℕ xs)
@@ -279,185 +263,190 @@ toℕ-1+ {b} {d} {_} (x ∷ xs) | Surj (Zeroless b≥1 d≥b)   | yes p = toℕ-
 toℕ-1+ {b} {d} {_} (x ∷ xs) | Surj (Zeroless b≥1 d≥b)   | no ¬p = toℕ-1+-x∷xs-not-full-lemma x xs ¬p
 toℕ-1+ {beSurj = surjCond , ()} xs | NonSurj reason
 
--- 1+-fromℕ : ∀ {b d o}
---     → {✓ : notSpurious b d o}
---     → (n : ℕ)
---     → 1+ (fromℕ {b} {d} {o} n) ≡ fromℕ (suc n)
--- 1+-fromℕ {b} {d} {o} n with surjectionView b d o | inspect (surjectionView b d) o
--- 1+-fromℕ             n | WithZero b≥1 d≥2 b≤d | [ eq ] rewrite eq = refl
--- 1+-fromℕ             n | Zeroless b≥1 d≥1 b≤d | [ eq ] rewrite eq = refl
--- 1+-fromℕ {✓ = claim} n | Spurious reason      | [ eq ] = contradiction refl (claim reason)
---
--- toℕ-fromℕ : ∀ {b d o}
---     → {✓ : notSpurious b d o}
---     → (n : ℕ)
---     → toℕ (fromℕ {b} {d} {o} n) ≡ n
--- toℕ-fromℕ {b} {d} {o} n       with surjectionView b d o
--- toℕ-fromℕ {b} {d}     zero    | WithZero b≥1 d≥2 b≤d = refl
--- toℕ-fromℕ {b} {d}     (suc n) | WithZero b≥1 d≥2 b≤d =
---     begin
---         toℕ (1+ (fromℕ {b} {d} n))
---     ≡⟨ toℕ-1+ {✓ = WithZero≢Spurious b≥1 d≥2 b≤d} (fromℕ {b} {d} n) ⟩
---         suc (toℕ (fromℕ {b} {d} n))
---     ≡⟨ cong suc (toℕ-fromℕ {b} {d} {✓ = WithZero≢Spurious b≥1 d≥2 b≤d} n) ⟩
---         suc n
---     ∎
--- toℕ-fromℕ {b} {d}     zero    | Zeroless b≥1 d≥1 b≤d = refl
--- toℕ-fromℕ {b} {d}     (suc n) | Zeroless b≥1 d≥1 b≤d =
---     begin
---         toℕ (1+ (fromℕ {b} {d} n))
---     ≡⟨ toℕ-1+ {✓ = Zeroless≢Spurious b≥1 d≥1 b≤d} (fromℕ {b} {d} n) ⟩
---         suc (toℕ (fromℕ {b} {d} n))
---     ≡⟨ cong suc (toℕ-fromℕ {b} {d} {✓ = Zeroless≢Spurious b≥1 d≥1 b≤d} n) ⟩
---         suc n
---     ∎
--- toℕ-fromℕ {✓ = claim}   n     | Spurious reason = contradiction refl (claim reason)
---
---
---
--- ------------------------------------------------------------------------
--- -- Lemmata for proving Spurious cases not surjective
--- ------------------------------------------------------------------------
---
--- lemma1 : ∀ {d o} → (xs : Num 0 d o) → toℕ xs ≢ suc (o + d)
--- lemma1 {d} {o} ∙        ()
--- lemma1 {d} {o} (x ∷ xs) p =
---     contradiction p (<⇒≢ ⟦x∷xs⟧<1+o+d)
---     where
---         ⟦x∷xs⟧<1+o+d : o + Fin.toℕ x + 0 < suc (o + d)
---         ⟦x∷xs⟧<1+o+d = s≤s $
---             start
---                 o + Fin.toℕ x + zero
---             ≤⟨ reflexive (+-right-identity (o + Fin.toℕ x)) ⟩
---                 o + Fin.toℕ x
---             ≤⟨ ≤-sucs o (
---                 start
---                     Fin.toℕ x
---                 ≤⟨ n≤1+n (Fin.toℕ x) ⟩
---                     suc (Fin.toℕ x)
---                 ≤⟨ bounded x ⟩
---                     d
---                 □
---             )⟩
---                 o + d
---             □
---
--- lemma2 : ∀ {b o} → (xs : Num b 0 o) → toℕ xs ≢ 1
--- lemma2 ∙         ()
--- lemma2 (() ∷ xs)
---
--- lemma3 : ∀ {b d o} → o ≥ 2 → (xs : Num b d o) → toℕ xs ≢ 1
--- lemma3                   o≥2      ∙        ()
--- lemma3 {o = 0}           ()       (x ∷ xs) p
--- lemma3 {o = 1}           (s≤s ()) (x ∷ xs) p
--- lemma3 {o = suc (suc o)} o≥2      (x ∷ xs) ()
---
--- lemma4 : (xs : Num 1 1 0) → toℕ xs ≢ 1
--- lemma4 ∙ ()
--- lemma4 (z ∷ xs) p = contradiction (begin
---         toℕ xs
---     ≡⟨ sym (+-right-identity (toℕ xs)) ⟩
---         toℕ xs + zero
---     ≡⟨ p ⟩
---         suc zero
---     ∎) (lemma4 xs)
--- lemma4 (s () ∷ xs)
---
--- lemma5 : ∀ {b d o} → d ≥ 1 → b ≰ d → (xs : Num b d o) → toℕ xs ≢ o + d
--- lemma5 {_} {_} {o} d≥1 b≰d ∙        = <⇒≢ (≤-steps o d≥1)
--- lemma5 {b} {d} {o} d≥1 b≰d (x ∷ xs) p with toℕ xs ≤? 0
--- lemma5 {b} {d} {o} d≥1 b≰d (x ∷ xs) p | yes q =
---     contradiction p (<⇒≢ ⟦x∷xs⟧>o+d)
---     where
---         ⟦xs⟧≡0 : toℕ xs ≡ 0
---         ⟦xs⟧≡0 = ≤0⇒≡0 (toℕ xs) q
---         ⟦x∷xs⟧>o+d : o + Fin.toℕ x + b * toℕ xs < o + d
---         ⟦x∷xs⟧>o+d = start
---                 suc (o + Fin.toℕ x + b * toℕ xs)
---             ≤⟨ reflexive (begin
---                     suc (o + Fin.toℕ x + b * toℕ xs)
---                 ≡⟨ cong (λ w → suc (o + Fin.toℕ x + b * w)) ⟦xs⟧≡0 ⟩
---                     suc (o + Fin.toℕ x + b * zero)
---                 ≡⟨ cong (λ w → suc (o + Fin.toℕ x + w)) (*-right-zero b) ⟩
---                     suc (o + Fin.toℕ x + zero)
---                 ≡⟨ +-right-identity (suc (o + Fin.toℕ x)) ⟩
---                     suc (o + Fin.toℕ x)
---                 ≡⟨ sym (+-suc o (Fin.toℕ x)) ⟩
---                     o + suc (Fin.toℕ x)
---                 ∎) ⟩
---                 o + suc (Fin.toℕ x)
---             ≤⟨ ≤-sucs o (bounded x) ⟩
---                 o + d
---             □
---
--- lemma5 {b} {d} {o} d≥1 b≰d (x ∷ xs) p | no ¬q =
---     contradiction p (>⇒≢ ⟦x∷xs⟧>o+d)
---     where
---         ⟦x∷xs⟧>o+d : o + Fin.toℕ x + b * toℕ xs > o + d
---         ⟦x∷xs⟧>o+d = start
---                 suc (o + d)
---             ≤⟨ reflexive (sym (+-suc o d)) ⟩
---                 o + suc d
---             ≤⟨ ≤-sucs o (
---                 start
---                     suc d
---                 ≤⟨ ≰⇒> b≰d ⟩
---                     b
---                 ≤⟨ reflexive (sym (*-right-identity b)) ⟩
---                     b * 1
---                 ≤⟨ _*-mono_ {b} {b} {1} {toℕ xs} ≤-refl (≰⇒> ¬q) ⟩
---                     b * toℕ xs
---                 ≤⟨ n≤m+n (Fin.toℕ x) (b * toℕ xs) ⟩
---                     Fin.toℕ x + b * toℕ xs
---                 □
---             ) ⟩
---                 o + (Fin.toℕ x + b * toℕ xs)
---             ≤⟨ reflexive (sym (+-assoc o (Fin.toℕ x) (b * toℕ xs))) ⟩
---                 o + Fin.toℕ x + b * toℕ xs
---             □
---
--- Spurious⇏Surjective : ∀ {b} {d} {o} → WhySpurious b d o → ¬ (Surjective (Num⟶ℕ b d o))
--- Spurious⇏Surjective {_} {d} {o} Base≡0              claim =
---     lemma1 (from claim ⟨$⟩ suc o + d) (right-inverse-of claim (suc (o + d)))
--- Spurious⇏Surjective NoDigits            claim =
---     lemma2      (from claim ⟨$⟩ 1)    (right-inverse-of claim 1)
--- Spurious⇏Surjective (Offset≥2 p)        claim =
---     lemma3 p    (from claim ⟨$⟩ 1)    (right-inverse-of claim 1)
--- Spurious⇏Surjective UnaryWithOnly0s     claim =
---     lemma4     (from claim ⟨$⟩ 1)     (right-inverse-of claim 1)
--- Spurious⇏Surjective {_} {d} {o} (NotEnoughDigits p q) claim =
---     lemma5 p q (from claim ⟨$⟩ o + d) (right-inverse-of claim (o + d))
---
--- Surjective? : ∀ b d o → Dec (Surjective (Num⟶ℕ b d o))
--- Surjective? b d o with surjectionView b d o
--- Surjective? b d 0 | WithZero b≥1 d≥2 b≤d = yes (record
---     { from = ℕ⟶Num b d 0
---     ; right-inverse-of = toℕ-fromℕ {b} {d} {✓ = WithZero≢Spurious b≥1 d≥2 b≤d}
---     })
--- Surjective? b d 1 | Zeroless b≥1 d≥1 b≤d = yes (record
---     { from = ℕ⟶Num b d 1
---     ; right-inverse-of = toℕ-fromℕ {b} {d} {✓ = Zeroless≢Spurious b≥1 d≥1 b≤d}
---     })
--- Surjective? b d _ | Spurious reason = no (Spurious⇏Surjective reason)
---
--- Surjective⇒base≥1 : ∀ {b} {d} {o} → Surjective (Num⟶ℕ b d o) → b ≥ 1
--- Surjective⇒base≥1 {zero} {d} {o} surj = contradiction
---     (right-inverse-of surj (suc (o + d)))       -- : toℕ (from surj ⟨$⟩ suc (o + d)) ≡ suc (o + d)
---     (lemma1 (_⟨$⟩_ (from surj) (suc (o + d))))  -- : toℕ (from surj ⟨$⟩ suc (o + d)) ≢ suc (o + d)
--- Surjective⇒base≥1 {suc b} surj = s≤s z≤n
---
--- Surjective⇒d≥1 : ∀ {b} {d} {o} → Surjective (Num⟶ℕ b d o) → d ≥ 1
--- Surjective⇒d≥1 {d = zero} surj = contradiction
---     (right-inverse-of surj 1)           -- : toℕ (from surj ⟨$⟩ 1) ≡ 1
---     (lemma2 (from surj ⟨$⟩ 1))          -- : toℕ (from surj ⟨$⟩ 1) ≢ 1
--- Surjective⇒d≥1 {d = suc d} surj = s≤s z≤n
---
--- Surjective⇒b≤d : ∀ {b} {d} {o} → Surjective (Num⟶ℕ b d o) → b ≤ d
--- Surjective⇒b≤d {_} {zero} {_} surj = contradiction
---     (Surjective⇒d≥1 surj)               -- : d ≥ 1
---     (λ ())                              -- : d ≱ 1
--- Surjective⇒b≤d {b} {suc d} {o} surj with b ≤? suc d
--- Surjective⇒b≤d {b} {suc d} {o} surj | yes p = p
--- Surjective⇒b≤d {b} {suc d} {o} surj | no ¬p = contradiction
---     (right-inverse-of surj (o + suc d))             -- : toℕ (from surj ⟨$⟩ (o + suc d)) ≡ (o + suc d)
---     (lemma5 (s≤s z≤n) ¬p (from surj ⟨$⟩ o + suc d)) -- : toℕ (from surj ⟨$⟩ (o + suc d)) ≢ (o + suc d)
+------------------------------------------------------------------------
+-- toℕ-n+ : toℕ (n+ n xs) ≡ n + (toℕ xs)
+------------------------------------------------------------------------
+
+toℕ-n+ : ∀ {b d o}
+    → {beSurj : BeSurj b d o}
+    → (n : ℕ)
+    → (xs : Num b d o)
+    → toℕ (n+ n xs) ≡ n + (toℕ xs)
+toℕ-n+ {b} {d} {o} n xs with surjectionView b d o
+toℕ-n+ zero xs | Surj cond = refl
+toℕ-n+ (suc n) xs | Surj cond =
+    begin
+        toℕ (n+ (suc n) xs)
+    ≡⟨ refl ⟩
+        toℕ (1+ (n+ n xs))
+    ≡⟨ toℕ-1+ {beSurj = SurjCond⇒BeSurj cond} (n+ n xs) ⟩
+        suc (toℕ (n+ n xs))
+    ≡⟨ cong suc (toℕ-n+ {beSurj = SurjCond⇒BeSurj cond} n xs) ⟩
+        suc (n + toℕ xs)
+    ∎
+toℕ-n+ {beSurj = surjCond , ()} n xs | NonSurj reason
+
+------------------------------------------------------------------------
+-- toℕ-fromℕ : toℕ (fromℕ n) ≡ n
+------------------------------------------------------------------------
+
+toℕ-fromℕ : ∀ {b d o}
+    → {beSurj : BeSurj b d o}
+    → (n : ℕ)
+    → toℕ (fromℕ {b} {d} {o} n) ≡ n
+toℕ-fromℕ {b} {d} {o} n       with surjectionView b d o
+toℕ-fromℕ             zero    | Surj (WithZerosUnary d≥2) = refl
+toℕ-fromℕ {_} {d} {_} (suc n) | Surj (WithZerosUnary d≥2) =
+    begin
+        toℕ (1+ (n+ {1} {d} {0} n ∙))
+    ≡⟨ toℕ-1+ {1} {d} {0} {SurjCond⇒BeSurj (WithZerosUnary d≥2)} (n+ n ∙) ⟩
+        suc (toℕ (n+ n ∙))
+    ≡⟨ cong suc (toℕ-n+ {1} {d} {0} {SurjCond⇒BeSurj (WithZerosUnary d≥2)} n ∙) ⟩
+        suc (n + zero)
+    ≡⟨ cong suc (+-right-identity n) ⟩
+        suc n
+    ∎
+toℕ-fromℕ             zero    | Surj (WithZeros b≥2 d≥b) = refl
+toℕ-fromℕ {b} {d} {_} (suc n) | Surj (WithZeros b≥2 d≥b) =
+    begin
+        toℕ (1+ (n+ {b} {d} {0} n ∙))
+    ≡⟨ toℕ-1+ {b} {d} {0} {SurjCond⇒BeSurj (WithZeros b≥2 d≥b)} (n+ n ∙) ⟩
+        suc (toℕ (n+ n ∙))
+    ≡⟨ cong suc (toℕ-n+ {b} {d} {0} {SurjCond⇒BeSurj (WithZeros b≥2 d≥b)} n ∙) ⟩
+        suc (n + zero)
+    ≡⟨ cong suc (+-right-identity n) ⟩
+        suc n
+    ∎
+toℕ-fromℕ {b} {d} {_} zero    | Surj (Zeroless b≥1 d≥b) = refl
+toℕ-fromℕ {b} {d} {_} (suc n) | Surj (Zeroless b≥1 d≥b) =
+    begin
+        toℕ (1+ (n+ {b} {d} {1} n ∙))
+    ≡⟨ toℕ-1+ {b} {d} {1} {SurjCond⇒BeSurj (Zeroless b≥1 d≥b)} (n+ n ∙) ⟩
+        suc (toℕ (n+ n ∙))
+    ≡⟨ cong suc (toℕ-n+ {b} {d} {1} {SurjCond⇒BeSurj (Zeroless b≥1 d≥b)} n ∙) ⟩
+        suc (n + zero)
+    ≡⟨ cong suc (+-right-identity n) ⟩
+        suc n
+    ∎
+toℕ-fromℕ {beSurj = reason , ()} n | NonSurj x
+
+
+------------------------------------------------------------------------
+-- Lemmata for proving Spurious cases not surjective
+------------------------------------------------------------------------
+
+lemma1 : ∀ {d o} → (xs : Num 0 d o) → toℕ xs ≢ suc (o + d)
+lemma1 {d} {o} ∙        ()
+lemma1 {d} {o} (x ∷ xs) p =
+    contradiction p (<⇒≢ ⟦x∷xs⟧<1+o+d)
+    where
+        ⟦x∷xs⟧<1+o+d : o + Fin.toℕ x + 0 < suc (o + d)
+        ⟦x∷xs⟧<1+o+d = s≤s $
+            start
+                o + Fin.toℕ x + zero
+            ≤⟨ reflexive (+-right-identity (o + Fin.toℕ x)) ⟩
+                o + Fin.toℕ x
+            ≤⟨ ≤-sucs o (
+                start
+                    Fin.toℕ x
+                ≤⟨ n≤1+n (Fin.toℕ x) ⟩
+                    suc (Fin.toℕ x)
+                ≤⟨ bounded x ⟩
+                    d
+                □
+            )⟩
+                o + d
+            □
+
+lemma2 : ∀ {b o} → (xs : Num b 0 o) → toℕ xs ≢ 1
+lemma2 ∙         ()
+lemma2 (() ∷ xs)
+
+lemma3 : ∀ {b d o} → o ≥ 2 → (xs : Num b d o) → toℕ xs ≢ 1
+lemma3                   o≥2      ∙        ()
+lemma3 {o = 0}           ()       (x ∷ xs) p
+lemma3 {o = 1}           (s≤s ()) (x ∷ xs) p
+lemma3 {o = suc (suc o)} o≥2      (x ∷ xs) ()
+
+lemma4 : (xs : Num 1 1 0) → toℕ xs ≢ 1
+lemma4 ∙ ()
+lemma4 (z ∷ xs) p = contradiction (begin
+        toℕ xs
+    ≡⟨ sym (+-right-identity (toℕ xs)) ⟩
+        toℕ xs + zero
+    ≡⟨ p ⟩
+        suc zero
+    ∎) (lemma4 xs)
+lemma4 (s () ∷ xs)
+
+lemma5 : ∀ {b d o} → d ≥ 1 → b ≰ d → (xs : Num b d o) → toℕ xs ≢ o + d
+lemma5 {_} {_} {o} d≥1 b≰d ∙        = <⇒≢ (≤-steps o d≥1)
+lemma5 {b} {d} {o} d≥1 b≰d (x ∷ xs) p with toℕ xs ≤? 0
+lemma5 {b} {d} {o} d≥1 b≰d (x ∷ xs) p | yes q =
+    contradiction p (<⇒≢ ⟦x∷xs⟧>o+d)
+    where
+        ⟦xs⟧≡0 : toℕ xs ≡ 0
+        ⟦xs⟧≡0 = ≤0⇒≡0 (toℕ xs) q
+        ⟦x∷xs⟧>o+d : o + Fin.toℕ x + b * toℕ xs < o + d
+        ⟦x∷xs⟧>o+d = start
+                suc (o + Fin.toℕ x + b * toℕ xs)
+            ≤⟨ reflexive (begin
+                    suc (o + Fin.toℕ x + b * toℕ xs)
+                ≡⟨ cong (λ w → suc (o + Fin.toℕ x + b * w)) ⟦xs⟧≡0 ⟩
+                    suc (o + Fin.toℕ x + b * zero)
+                ≡⟨ cong (λ w → suc (o + Fin.toℕ x + w)) (*-right-zero b) ⟩
+                    suc (o + Fin.toℕ x + zero)
+                ≡⟨ +-right-identity (suc (o + Fin.toℕ x)) ⟩
+                    suc (o + Fin.toℕ x)
+                ≡⟨ sym (+-suc o (Fin.toℕ x)) ⟩
+                    o + suc (Fin.toℕ x)
+                ∎) ⟩
+                o + suc (Fin.toℕ x)
+            ≤⟨ ≤-sucs o (bounded x) ⟩
+                o + d
+            □
+
+lemma5 {b} {d} {o} d≥1 b≰d (x ∷ xs) p | no ¬q =
+    contradiction p (>⇒≢ ⟦x∷xs⟧>o+d)
+    where
+        ⟦x∷xs⟧>o+d : o + Fin.toℕ x + b * toℕ xs > o + d
+        ⟦x∷xs⟧>o+d = start
+                suc (o + d)
+            ≤⟨ reflexive (sym (+-suc o d)) ⟩
+                o + suc d
+            ≤⟨ ≤-sucs o (
+                start
+                    suc d
+                ≤⟨ ≰⇒> b≰d ⟩
+                    b
+                ≤⟨ reflexive (sym (*-right-identity b)) ⟩
+                    b * 1
+                ≤⟨ _*-mono_ {b} {b} {1} {toℕ xs} ≤-refl (≰⇒> ¬q) ⟩
+                    b * toℕ xs
+                ≤⟨ n≤m+n (Fin.toℕ x) (b * toℕ xs) ⟩
+                    Fin.toℕ x + b * toℕ xs
+                □
+            ) ⟩
+                o + (Fin.toℕ x + b * toℕ xs)
+            ≤⟨ reflexive (sym (+-assoc o (Fin.toℕ x) (b * toℕ xs))) ⟩
+                o + Fin.toℕ x + b * toℕ xs
+            □
+
+NonSurjCond⇏Surjective : ∀ {b} {d} {o} → NonSurjCond b d o → ¬ (Surjective (Num⟶ℕ b d o))
+NonSurjCond⇏Surjective {_} {d} {o} Base≡0              claim =
+    lemma1 (from claim ⟨$⟩ suc o + d) (right-inverse-of claim (suc (o + d)))
+NonSurjCond⇏Surjective NoDigits            claim =
+    lemma2      (from claim ⟨$⟩ 1)    (right-inverse-of claim 1)
+NonSurjCond⇏Surjective (Offset≥2 p)        claim =
+    lemma3 p    (from claim ⟨$⟩ 1)    (right-inverse-of claim 1)
+NonSurjCond⇏Surjective UnaryWithOnlyZeros     claim =
+    lemma4     (from claim ⟨$⟩ 1)     (right-inverse-of claim 1)
+NonSurjCond⇏Surjective {_} {d} {o} (NotEnoughDigits p q) claim =
+    lemma5 p q (from claim ⟨$⟩ o + d) (right-inverse-of claim (o + d))
+
+Surjective? : ∀ b d o → Dec (Surjective (Num⟶ℕ b d o))
+Surjective? b d o with surjectionView b d o
+Surjective? b d o | Surj cond = yes (record
+        { from = ℕ⟶Num b d o
+        ; right-inverse-of = toℕ-fromℕ {b} {d} {o} {SurjCond⇒BeSurj cond} })
+Surjective? b d o | NonSurj reason = no (NonSurjCond⇏Surjective reason)
