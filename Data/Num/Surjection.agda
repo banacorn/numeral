@@ -12,6 +12,8 @@ open import Data.Fin as Fin
     renaming (zero to z; suc to s)
 open import Data.Fin.Properties using (toℕ-fromℕ≤; bounded)
 open import Data.Product
+open import Data.Empty using (⊥)
+open import Data.Unit using (⊤; tt)
 
 open import Function
 open import Function.Surjection hiding (_∘_)
@@ -57,8 +59,10 @@ surjectionView (suc b)       (suc d)       1             | yes p = Surj    (Zero
 surjectionView (suc b)       (suc d)       (suc (suc o)) | yes p = NonSurj (Offset≥2 (s≤s (s≤s z≤n)))
 surjectionView (suc b)       (suc d)       o             | no ¬p = NonSurj (NotEnoughDigits (s≤s z≤n) ¬p)
 
-BeSurj : ℕ → ℕ → ℕ → Set
-BeSurj b d o = Σ[ condition ∈ SurjCond b d o ] surjectionView b d o ≡ Surj condition
+IsSurjective : ℕ → ℕ → ℕ → Set
+IsSurjective b d o with surjectionView b d o
+IsSurjective b d o | Surj    _ = ⊤
+IsSurjective b d o | NonSurj _ = ⊥
 
 SurjCond⇒b≥1 : ∀ {b d o} → SurjCond b d o → b ≥ 1
 SurjCond⇒b≥1 (WithZerosUnary d≥2)      = s≤s z≤n
@@ -70,23 +74,22 @@ SurjCond⇒d≥b (WithZerosUnary (s≤s d≥1)) = s≤s z≤n
 SurjCond⇒d≥b (WithZeros b≥2 d≥b)        = d≥b
 SurjCond⇒d≥b (Zeroless b≥1 d≥b)         = d≥b
 
-SurjCond⇒BeSurj : ∀ {b d o} → SurjCond b d o → BeSurj b d o
-SurjCond⇒BeSurj {b} {d} {o} condition with surjectionView b d o
-SurjCond⇒BeSurj _                         | Surj condition = condition , refl
-SurjCond⇒BeSurj (WithZeros () d≥b)        | NonSurj Base≡0
-SurjCond⇒BeSurj (Zeroless () d≥b)         | NonSurj Base≡0
-SurjCond⇒BeSurj (WithZerosUnary ())       | NonSurj NoDigits
-SurjCond⇒BeSurj (WithZeros () z≤n)        | NonSurj NoDigits
-SurjCond⇒BeSurj (Zeroless () z≤n)         | NonSurj NoDigits
-SurjCond⇒BeSurj (WithZerosUnary _)        | NonSurj (Offset≥2 ())
-SurjCond⇒BeSurj (WithZeros _ _)           | NonSurj (Offset≥2 ())
-SurjCond⇒BeSurj (Zeroless _ _)            | NonSurj (Offset≥2 (s≤s ()))
-SurjCond⇒BeSurj (WithZerosUnary (s≤s ())) | NonSurj UnaryWithOnlyZeros
-SurjCond⇒BeSurj (WithZeros (s≤s ()) _)    | NonSurj UnaryWithOnlyZeros
-SurjCond⇒BeSurj (WithZerosUnary _)        | NonSurj (NotEnoughDigits d≥1 d≱1) = contradiction d≥1 d≱1
-SurjCond⇒BeSurj (WithZeros _ d≥b)         | NonSurj (NotEnoughDigits _ d≱b) = contradiction d≥b d≱b
-SurjCond⇒BeSurj (Zeroless _ d≥b)          | NonSurj (NotEnoughDigits _ d≱b) = contradiction d≥b d≱b
-
+SurjCond⇒IsSurj : ∀ {b d o} → SurjCond b d o → IsSurjective b d o
+SurjCond⇒IsSurj {b} {d} {o} cond with surjectionView b d o
+SurjCond⇒IsSurj cond | Surj x = tt
+SurjCond⇒IsSurj (WithZeros () d≥b)        | NonSurj Base≡0
+SurjCond⇒IsSurj (Zeroless () d≥b)         | NonSurj Base≡0
+SurjCond⇒IsSurj (WithZerosUnary ())       | NonSurj NoDigits
+SurjCond⇒IsSurj (WithZeros () z≤n)        | NonSurj NoDigits
+SurjCond⇒IsSurj (Zeroless () z≤n)         | NonSurj NoDigits
+SurjCond⇒IsSurj (WithZerosUnary _)        | NonSurj (Offset≥2 ())
+SurjCond⇒IsSurj (WithZeros _ _)           | NonSurj (Offset≥2 ())
+SurjCond⇒IsSurj (Zeroless _ _)            | NonSurj (Offset≥2 (s≤s ()))
+SurjCond⇒IsSurj (WithZerosUnary (s≤s ())) | NonSurj UnaryWithOnlyZeros
+SurjCond⇒IsSurj (WithZeros (s≤s ()) _)    | NonSurj UnaryWithOnlyZeros
+SurjCond⇒IsSurj (WithZerosUnary _)        | NonSurj (NotEnoughDigits d≥1 d≱1) = contradiction d≥1 d≱1
+SurjCond⇒IsSurj (WithZeros _ d≥b)         | NonSurj (NotEnoughDigits _ d≱b) = contradiction d≥b d≱b
+SurjCond⇒IsSurj (Zeroless _ d≥b)          | NonSurj (NotEnoughDigits _ d≱b) = contradiction d≥b d≱b
 
 ------------------------------------------------------------------------
 -- Operations on Num (which does not necessary needs to be Surj)
@@ -220,7 +223,7 @@ toℕ-1+-x∷xs-not-full-lemma {b} {d} {o} x xs ¬p =
 
 
 toℕ-1+ : ∀ {b d o}
-    → {beSurj : BeSurj b d o}
+    → {isSurjective : IsSurjective b d o}
     → (xs : Num b d o)
     → toℕ (1+ xs) ≡ suc (toℕ xs)
 toℕ-1+ {b} {d} {o} xs with surjectionView b d o
@@ -253,22 +256,22 @@ toℕ-1+ {b} {d} {_} ∙ | Surj (Zeroless b≥1 d≥b) =
         suc zero
     ∎
 toℕ-1+ {_} {d} {_} (x ∷ xs) | Surj (WithZerosUnary d≥2) with full x
-toℕ-1+ {_} {d} {_} (x ∷ xs) | Surj (WithZerosUnary d≥2) | yes p = toℕ-1+-x∷xs-full-lemma x xs (WithZerosUnary d≥2) p (toℕ-1+ {beSurj = SurjCond⇒BeSurj (WithZerosUnary d≥2)} xs)
+toℕ-1+ {_} {d} {_} (x ∷ xs) | Surj (WithZerosUnary d≥2) | yes p = toℕ-1+-x∷xs-full-lemma x xs (WithZerosUnary d≥2) p (toℕ-1+ {isSurjective = SurjCond⇒IsSurj (WithZerosUnary d≥2)} xs)
 toℕ-1+ {_} {d} {_} (x ∷ xs) | Surj (WithZerosUnary d≥2) | no ¬p = toℕ-1+-x∷xs-not-full-lemma x xs ¬p
 toℕ-1+ {b} {d} {_} (x ∷ xs) | Surj (WithZeros b≥2 d≥b)  with full x
-toℕ-1+ {b} {d} {_} (x ∷ xs) | Surj (WithZeros b≥2 d≥b)  | yes p = toℕ-1+-x∷xs-full-lemma x xs (WithZeros b≥2 d≥b) p (toℕ-1+ {beSurj = SurjCond⇒BeSurj (WithZeros b≥2 d≥b)} xs)
+toℕ-1+ {b} {d} {_} (x ∷ xs) | Surj (WithZeros b≥2 d≥b)  | yes p = toℕ-1+-x∷xs-full-lemma x xs (WithZeros b≥2 d≥b) p (toℕ-1+ {isSurjective = SurjCond⇒IsSurj (WithZeros b≥2 d≥b)} xs)
 toℕ-1+ {b} {d} {_} (x ∷ xs) | Surj (WithZeros b≥2 d≥b)  | no ¬p = toℕ-1+-x∷xs-not-full-lemma x xs ¬p
 toℕ-1+ {b} {d} {_} (x ∷ xs) | Surj (Zeroless b≥1 d≥b)   with full x
-toℕ-1+ {b} {d} {_} (x ∷ xs) | Surj (Zeroless b≥1 d≥b)   | yes p = toℕ-1+-x∷xs-full-lemma x xs (Zeroless b≥1 d≥b) p (toℕ-1+ {beSurj = SurjCond⇒BeSurj (Zeroless b≥1 d≥b)} xs)
+toℕ-1+ {b} {d} {_} (x ∷ xs) | Surj (Zeroless b≥1 d≥b)   | yes p = toℕ-1+-x∷xs-full-lemma x xs (Zeroless b≥1 d≥b) p (toℕ-1+ {isSurjective = SurjCond⇒IsSurj (Zeroless b≥1 d≥b)} xs)
 toℕ-1+ {b} {d} {_} (x ∷ xs) | Surj (Zeroless b≥1 d≥b)   | no ¬p = toℕ-1+-x∷xs-not-full-lemma x xs ¬p
-toℕ-1+ {beSurj = surjCond , ()} xs | NonSurj reason
+toℕ-1+ {isSurjective = ()} xs | NonSurj reason
 
 ------------------------------------------------------------------------
 -- toℕ-n+ : toℕ (n+ n xs) ≡ n + (toℕ xs)
 ------------------------------------------------------------------------
 
 toℕ-n+ : ∀ {b d o}
-    → {beSurj : BeSurj b d o}
+    → {isSurjective : IsSurjective b d o}
     → (n : ℕ)
     → (xs : Num b d o)
     → toℕ (n+ n xs) ≡ n + (toℕ xs)
@@ -279,19 +282,19 @@ toℕ-n+ (suc n) xs | Surj cond =
         toℕ (n+ (suc n) xs)
     ≡⟨ refl ⟩
         toℕ (1+ (n+ n xs))
-    ≡⟨ toℕ-1+ {beSurj = SurjCond⇒BeSurj cond} (n+ n xs) ⟩
+    ≡⟨ toℕ-1+ {isSurjective = SurjCond⇒IsSurj cond} (n+ n xs) ⟩
         suc (toℕ (n+ n xs))
-    ≡⟨ cong suc (toℕ-n+ {beSurj = SurjCond⇒BeSurj cond} n xs) ⟩
+    ≡⟨ cong suc (toℕ-n+ {isSurjective = SurjCond⇒IsSurj cond} n xs) ⟩
         suc (n + toℕ xs)
     ∎
-toℕ-n+ {beSurj = surjCond , ()} n xs | NonSurj reason
+toℕ-n+ {isSurjective = ()} n xs | NonSurj reason
 
 ------------------------------------------------------------------------
 -- toℕ-fromℕ : toℕ (fromℕ n) ≡ n
 ------------------------------------------------------------------------
 
 toℕ-fromℕ : ∀ {b d o}
-    → {beSurj : BeSurj b d o}
+    → {isSurjective : IsSurjective b d o}
     → (n : ℕ)
     → toℕ (fromℕ {b} {d} {o} n) ≡ n
 toℕ-fromℕ {b} {d} {o} n       with surjectionView b d o
@@ -299,9 +302,9 @@ toℕ-fromℕ             zero    | Surj (WithZerosUnary d≥2) = refl
 toℕ-fromℕ {_} {d} {_} (suc n) | Surj (WithZerosUnary d≥2) =
     begin
         toℕ (1+ (n+ {1} {d} {0} n ∙))
-    ≡⟨ toℕ-1+ {1} {d} {0} {SurjCond⇒BeSurj (WithZerosUnary d≥2)} (n+ n ∙) ⟩
+    ≡⟨ toℕ-1+ {1} {d} {0} {SurjCond⇒IsSurj (WithZerosUnary d≥2)} (n+ n ∙) ⟩
         suc (toℕ (n+ n ∙))
-    ≡⟨ cong suc (toℕ-n+ {1} {d} {0} {SurjCond⇒BeSurj (WithZerosUnary d≥2)} n ∙) ⟩
+    ≡⟨ cong suc (toℕ-n+ {1} {d} {0} {SurjCond⇒IsSurj (WithZerosUnary d≥2)} n ∙) ⟩
         suc (n + zero)
     ≡⟨ cong suc (+-right-identity n) ⟩
         suc n
@@ -310,9 +313,9 @@ toℕ-fromℕ             zero    | Surj (WithZeros b≥2 d≥b) = refl
 toℕ-fromℕ {b} {d} {_} (suc n) | Surj (WithZeros b≥2 d≥b) =
     begin
         toℕ (1+ (n+ {b} {d} {0} n ∙))
-    ≡⟨ toℕ-1+ {b} {d} {0} {SurjCond⇒BeSurj (WithZeros b≥2 d≥b)} (n+ n ∙) ⟩
+    ≡⟨ toℕ-1+ {b} {d} {0} {SurjCond⇒IsSurj (WithZeros b≥2 d≥b)} (n+ n ∙) ⟩
         suc (toℕ (n+ n ∙))
-    ≡⟨ cong suc (toℕ-n+ {b} {d} {0} {SurjCond⇒BeSurj (WithZeros b≥2 d≥b)} n ∙) ⟩
+    ≡⟨ cong suc (toℕ-n+ {b} {d} {0} {SurjCond⇒IsSurj (WithZeros b≥2 d≥b)} n ∙) ⟩
         suc (n + zero)
     ≡⟨ cong suc (+-right-identity n) ⟩
         suc n
@@ -321,14 +324,14 @@ toℕ-fromℕ {b} {d} {_} zero    | Surj (Zeroless b≥1 d≥b) = refl
 toℕ-fromℕ {b} {d} {_} (suc n) | Surj (Zeroless b≥1 d≥b) =
     begin
         toℕ (1+ (n+ {b} {d} {1} n ∙))
-    ≡⟨ toℕ-1+ {b} {d} {1} {SurjCond⇒BeSurj (Zeroless b≥1 d≥b)} (n+ n ∙) ⟩
+    ≡⟨ toℕ-1+ {b} {d} {1} {SurjCond⇒IsSurj (Zeroless b≥1 d≥b)} (n+ n ∙) ⟩
         suc (toℕ (n+ n ∙))
-    ≡⟨ cong suc (toℕ-n+ {b} {d} {1} {SurjCond⇒BeSurj (Zeroless b≥1 d≥b)} n ∙) ⟩
+    ≡⟨ cong suc (toℕ-n+ {b} {d} {1} {SurjCond⇒IsSurj (Zeroless b≥1 d≥b)} n ∙) ⟩
         suc (n + zero)
     ≡⟨ cong suc (+-right-identity n) ⟩
         suc n
     ∎
-toℕ-fromℕ {beSurj = reason , ()} n | NonSurj x
+toℕ-fromℕ {isSurjective = ()} n | NonSurj x
 
 
 ------------------------------------------------------------------------
@@ -448,5 +451,5 @@ Surjective? : ∀ b d o → Dec (Surjective (Num⟶ℕ b d o))
 Surjective? b d o with surjectionView b d o
 Surjective? b d o | Surj cond = yes (record
         { from = ℕ⟶Num b d o
-        ; right-inverse-of = toℕ-fromℕ {b} {d} {o} {SurjCond⇒BeSurj cond} })
+        ; right-inverse-of = toℕ-fromℕ {b} {d} {o} {SurjCond⇒IsSurj cond} })
 Surjective? b d o | NonSurj reason = no (NonSurjCond⇏Surjective reason)
