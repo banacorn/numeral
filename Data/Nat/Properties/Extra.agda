@@ -31,7 +31,6 @@ isPreorder = IsPartialOrder.isPreorder isPartialOrder
 <-preds zero    m<n       = m<n
 <-preds (suc l) (s≤s m<n) = <-preds l m<n
 
-
 ≤-trans :  Transitive _≤_
 ≤-trans = IsPreorder.trans isPreorder
 
@@ -41,6 +40,11 @@ isPreorder = IsPartialOrder.isPreorder isPartialOrder
 ≤-preds : ∀ {m n} l → l + m ≤ l + n → m ≤ n
 ≤-preds zero    m≤n       = m≤n
 ≤-preds (suc l) (s≤s m≤n) = ≤-preds l m≤n
+
+>⇒≰ : _>_ ⇒ _≰_
+>⇒≰ {zero}  ()      q
+>⇒≰ {suc m} (s≤s p) (s≤s q) = >⇒≰ p q
+
 
 >⇒≢ : _>_ ⇒ _≢_
 >⇒≢ {zero} () refl
@@ -68,8 +72,12 @@ suc-injective : ∀ {x y} → suc x ≡ suc y → x ≡ y
 suc-injective {x} {.x} refl = refl
 
 *-right-identity : ∀ n → n * 1 ≡ n
-*-right-identity zero = refl
+*-right-identity zero    = refl
 *-right-identity (suc n) = cong suc (*-right-identity n)
+
+*-left-identity : ∀ n → 1 * n ≡ n
+*-left-identity zero    = refl
+*-left-identity (suc n) = cong suc (*-left-identity n)
 
 cancel-+-right : ∀ k {i j} → i + k ≡ j + k → i ≡ j
 cancel-+-right zero {i} {j} p  =

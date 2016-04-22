@@ -145,10 +145,10 @@ fromℕ n | NonSurj x = ∙
 
 
 -- fromℕ that preserves equality
-ℕ⟶Num : ∀ b d o → setoid ℕ ⟶ Num-Setoid b d o
+ℕ⟶Num : ∀ b d o → setoid ℕ ⟶ setoid (Num b d o)
 ℕ⟶Num b d o = record
     { _⟨$⟩_ = fromℕ
-    ; cong = cong (toℕ ∘ fromℕ {b} {d} {o})
+    ; cong = cong fromℕ
     }
 
 toℕ-digit+1-b : ∀ {d b} (x : Digit d)
@@ -175,19 +175,20 @@ toℕ-1+-x∷xs-full-lemma : ∀ {b d o}
 toℕ-1+-x∷xs-full-lemma {b} {d} {o} x xs cond p toℕ-1+-xs =
     begin
         toℕ (digit+1-b x (SurjCond⇒b≥1 cond) p ∷ 1+ xs)
-    ≡⟨ cong (λ w → o + w + b * toℕ (1+ xs)) (toℕ-fromℕ≤ ((digit+1-b-lemma x (SurjCond⇒b≥1 cond) p))) ⟩
-        o + (suc (Fin.toℕ x) ∸ b) + b * toℕ (1+ xs)
-    ≡⟨ cong (λ w → o + (suc (Fin.toℕ x) ∸ b) + b * w) toℕ-1+-xs ⟩
-        o + (suc (Fin.toℕ x) ∸ b) + b * suc (toℕ xs)
-    ≡⟨ cong (λ w → o + (suc (Fin.toℕ x) ∸ b) + w) (*-comm b (suc (toℕ xs))) ⟩
+    -- toℕ-fromℕ≤ : toℕ (fromℕ≤ m<n) ≡ m
+    ≡⟨ cong (λ w → o + w + toℕ (1+ xs) * b) (toℕ-fromℕ≤ ((digit+1-b-lemma x (SurjCond⇒b≥1 cond) p))) ⟩
+        o + (suc (Fin.toℕ x) ∸ b) + toℕ (1+ xs) * b
+    -- induction hypothesis
+    ≡⟨ cong (λ w → o + (suc (Fin.toℕ x) ∸ b) + w * b) toℕ-1+-xs ⟩
         o + (suc (Fin.toℕ x) ∸ b) + (b + toℕ xs * b)
-    ≡⟨ +-assoc o (suc (Fin.toℕ x) ∸ b) (b + toℕ xs * b)  ⟩
+    ≡⟨ +-assoc o (suc (Fin.toℕ x) ∸ b) (b + toℕ xs * b) ⟩
         o + (suc (Fin.toℕ x) ∸ b + (b + toℕ xs * b))
     ≡⟨ cong (λ w → o + w) (sym (+-assoc (suc (Fin.toℕ x) ∸ b) b (toℕ xs * b))) ⟩
         o + (suc (Fin.toℕ x) ∸ b + b + toℕ xs * b)
     ≡⟨ cong (λ w → o + (w + toℕ xs * b)) (+-comm (suc (Fin.toℕ x) ∸ b) b) ⟩
         o + (b + (suc (Fin.toℕ x) ∸ b) + toℕ xs * b)
-    ≡⟨ cong (λ w → o + (w + toℕ xs * b)) (m+n∸m≡n (                                               -- m+n∸m≡n
+    -- m+n∸m≡n : m + (n ∸ m) ≡ n
+    ≡⟨ cong (λ w → o + (w + toℕ xs * b)) (m+n∸m≡n (
             start
                 b
             ≤⟨ SurjCond⇒d≥b cond ⟩
@@ -196,12 +197,10 @@ toℕ-1+-x∷xs-full-lemma {b} {d} {o} x xs cond p toℕ-1+-xs =
                 suc (Fin.toℕ x)
             □)) ⟩
         o + suc (Fin.toℕ x + toℕ xs * b)
-    ≡⟨ cong (λ w → o + suc (Fin.toℕ x + w)) (*-comm (toℕ xs) b) ⟩
-        o + suc (Fin.toℕ x + b * toℕ xs)
-    ≡⟨ +-suc o (Fin.toℕ x + b * toℕ xs) ⟩
-        suc (o + (Fin.toℕ x + b * toℕ xs))
-    ≡⟨ cong suc (sym (+-assoc o (Fin.toℕ x) (b * toℕ xs))) ⟩
-        suc (o + Fin.toℕ x + b * toℕ xs)
+    ≡⟨ +-suc o (Fin.toℕ x + toℕ xs * b) ⟩
+        suc (o + (Fin.toℕ x + toℕ xs * b))
+    ≡⟨ cong suc (sym (+-assoc o (Fin.toℕ x) (toℕ xs * b))) ⟩
+        suc (o + Fin.toℕ x + toℕ xs * b)
     ∎
 
 toℕ-1+-x∷xs-not-full-lemma : ∀ {b d o}
@@ -210,15 +209,16 @@ toℕ-1+-x∷xs-not-full-lemma : ∀ {b d o}
     → toℕ (digit+1 x ¬p ∷ xs) ≡ suc (toℕ (x ∷ xs))
 toℕ-1+-x∷xs-not-full-lemma {b} {d} {o} x xs ¬p =
     begin
-        o + Fin.toℕ (fromℕ≤ (≤∧≢⇒< (bounded x) ¬p)) + b * toℕ xs
-    ≡⟨ cong (λ w → o + w + b * toℕ xs) (toℕ-fromℕ≤ (≤∧≢⇒< (bounded x) ¬p)) ⟩
-        o + suc (Fin.toℕ x) + b * toℕ xs
-    ≡⟨ +-assoc o (suc (Fin.toℕ x)) (b * toℕ xs) ⟩
-        o + suc (Fin.toℕ x + b * toℕ xs)
-    ≡⟨ +-suc o (Fin.toℕ x + b * toℕ xs) ⟩
-        suc (o + (Fin.toℕ x + b * toℕ xs))
-    ≡⟨ cong suc (sym (+-assoc o (Fin.toℕ x) (b * toℕ xs))) ⟩
-        suc (o + Fin.toℕ x + b * toℕ xs)
+        o + Fin.toℕ (fromℕ≤ (≤∧≢⇒< (bounded x) ¬p)) + toℕ xs * b
+    -- toℕ-fromℕ≤
+    ≡⟨ cong (λ w → o + w + toℕ xs * b) (toℕ-fromℕ≤ (≤∧≢⇒< (bounded x) ¬p)) ⟩
+        o + suc (Fin.toℕ x) + toℕ xs * b
+    ≡⟨ +-assoc o (suc (Fin.toℕ x)) (toℕ xs * b) ⟩
+        o + suc (Fin.toℕ x + toℕ xs * b)
+    ≡⟨ +-suc o (Fin.toℕ x + toℕ xs * b) ⟩
+        suc (o + (Fin.toℕ x + toℕ xs * b))
+    ≡⟨ cong suc (sym (+-assoc o (Fin.toℕ x) (toℕ xs * b))) ⟩
+        suc (o + Fin.toℕ x + toℕ xs * b)
     ∎
 
 
@@ -237,9 +237,7 @@ toℕ-1+ {_} {d} {_} ∙ | Surj (WithZerosUnary d≥2) =
     ∎
 toℕ-1+ {b} {d} {_} ∙ | Surj (WithZeros b≥2 d≥b) =
     begin
-        Fin.toℕ (fromℕ≤ (≤-trans b≥2 d≥b)) + b * zero
-    ≡⟨ cong (λ w → Fin.toℕ (fromℕ≤ (≤-trans b≥2 d≥b)) + w) (*-right-zero b) ⟩
-        Fin.toℕ (fromℕ≤ (≤-trans b≥2 d≥b)) + zero
+        Fin.toℕ (fromℕ≤ (≤-trans b≥2 d≥b)) + zero * b
     ≡⟨ +-right-identity (Fin.toℕ (fromℕ≤ (≤-trans b≥2 d≥b))) ⟩
         Fin.toℕ (fromℕ≤ (≤-trans b≥2 d≥b))
     ≡⟨ toℕ-fromℕ≤ (≤-trans b≥2 d≥b) ⟩
@@ -247,8 +245,6 @@ toℕ-1+ {b} {d} {_} ∙ | Surj (WithZeros b≥2 d≥b) =
     ∎
 toℕ-1+ {b} {d} {_} ∙ | Surj (Zeroless b≥1 d≥b) =
     begin
-        suc (Fin.toℕ (fromℕ≤ (≤-trans b≥1 d≥b)) + b * zero)
-    ≡⟨ cong (λ w → suc (Fin.toℕ (fromℕ≤ (≤-trans b≥1 d≥b))) + w) (*-right-zero b) ⟩
         suc (Fin.toℕ (fromℕ≤ (≤-trans b≥1 d≥b)) + zero)
     ≡⟨ +-right-identity (suc (Fin.toℕ (fromℕ≤ (≤-trans b≥1 d≥b)))) ⟩
         suc (Fin.toℕ (fromℕ≤ (≤-trans b≥1 d≥b)))
@@ -340,12 +336,13 @@ toℕ-fromℕ {isSurjective = ()} n | NonSurj x
 
 lemma1 : ∀ {d o} → (xs : Num 0 d o) → toℕ xs ≢ suc (o + d)
 lemma1 {d} {o} ∙        ()
-lemma1 {d} {o} (x ∷ xs) p =
-    contradiction p (<⇒≢ ⟦x∷xs⟧<1+o+d)
+lemma1 {d} {o} (x ∷ xs) p = contradiction p (<⇒≢ ⟦x∷xs⟧<1+o+d)
     where
-        ⟦x∷xs⟧<1+o+d : o + Fin.toℕ x + 0 < suc (o + d)
+        ⟦x∷xs⟧<1+o+d : o + Fin.toℕ x + toℕ xs * 0 < suc (o + d)
         ⟦x∷xs⟧<1+o+d = s≤s $
             start
+                o + Fin.toℕ x + toℕ xs * zero
+            ≤⟨ reflexive (cong (λ w → o + Fin.toℕ x + w) (*-right-zero (toℕ xs))) ⟩
                 o + Fin.toℕ x + zero
             ≤⟨ reflexive (+-right-identity (o + Fin.toℕ x)) ⟩
                 o + Fin.toℕ x
@@ -373,10 +370,11 @@ lemma3 {o = suc (suc o)} o≥2      (x ∷ xs) ()
 
 lemma4 : (xs : Num 1 1 0) → toℕ xs ≢ 1
 lemma4 ∙ ()
-lemma4 (z ∷ xs) p = contradiction (begin
+lemma4 (z ∷ xs) p = contradiction (
+    begin
         toℕ xs
-    ≡⟨ sym (+-right-identity (toℕ xs)) ⟩
-        toℕ xs + zero
+    ≡⟨ sym (*-right-identity (toℕ xs)) ⟩
+        toℕ xs * 1
     ≡⟨ p ⟩
         suc zero
     ∎) (lemma4 xs)
@@ -390,14 +388,12 @@ lemma5 {b} {d} {o} d≥1 b≰d (x ∷ xs) p | yes q =
     where
         ⟦xs⟧≡0 : toℕ xs ≡ 0
         ⟦xs⟧≡0 = ≤0⇒≡0 (toℕ xs) q
-        ⟦x∷xs⟧>o+d : o + Fin.toℕ x + b * toℕ xs < o + d
+        ⟦x∷xs⟧>o+d : o + Fin.toℕ x + toℕ xs * b < o + d
         ⟦x∷xs⟧>o+d = start
-                suc (o + Fin.toℕ x + b * toℕ xs)
+                suc (o + Fin.toℕ x + toℕ xs * b)
             ≤⟨ reflexive (begin
-                    suc (o + Fin.toℕ x + b * toℕ xs)
-                ≡⟨ cong (λ w → suc (o + Fin.toℕ x + b * w)) ⟦xs⟧≡0 ⟩
-                    suc (o + Fin.toℕ x + b * zero)
-                ≡⟨ cong (λ w → suc (o + Fin.toℕ x + w)) (*-right-zero b) ⟩
+                    suc (o + Fin.toℕ x + toℕ xs * b)
+                ≡⟨ cong (λ w → suc (o + Fin.toℕ x + w * b)) ⟦xs⟧≡0 ⟩
                     suc (o + Fin.toℕ x + zero)
                 ≡⟨ +-right-identity (suc (o + Fin.toℕ x)) ⟩
                     suc (o + Fin.toℕ x)
@@ -412,7 +408,7 @@ lemma5 {b} {d} {o} d≥1 b≰d (x ∷ xs) p | yes q =
 lemma5 {b} {d} {o} d≥1 b≰d (x ∷ xs) p | no ¬q =
     contradiction p (>⇒≢ ⟦x∷xs⟧>o+d)
     where
-        ⟦x∷xs⟧>o+d : o + Fin.toℕ x + b * toℕ xs > o + d
+        ⟦x∷xs⟧>o+d : o + Fin.toℕ x + toℕ xs * b > o + d
         ⟦x∷xs⟧>o+d = start
                 suc (o + d)
             ≤⟨ reflexive (sym (+-suc o d)) ⟩
@@ -422,17 +418,17 @@ lemma5 {b} {d} {o} d≥1 b≰d (x ∷ xs) p | no ¬q =
                     suc d
                 ≤⟨ ≰⇒> b≰d ⟩
                     b
-                ≤⟨ reflexive (sym (*-right-identity b)) ⟩
-                    b * 1
-                ≤⟨ _*-mono_ {b} {b} {1} {toℕ xs} ≤-refl (≰⇒> ¬q) ⟩
-                    b * toℕ xs
-                ≤⟨ n≤m+n (Fin.toℕ x) (b * toℕ xs) ⟩
-                    Fin.toℕ x + b * toℕ xs
+                ≤⟨ reflexive (sym (*-left-identity b)) ⟩
+                    1 * b
+                ≤⟨ _*-mono_ {1} {toℕ xs} {b} {b} (≰⇒> ¬q) ≤-refl ⟩
+                    toℕ xs * b
+                ≤⟨ n≤m+n (Fin.toℕ x) (toℕ xs * b) ⟩
+                    Fin.toℕ x + toℕ xs * b
                 □
             ) ⟩
-                o + (Fin.toℕ x + b * toℕ xs)
-            ≤⟨ reflexive (sym (+-assoc o (Fin.toℕ x) (b * toℕ xs))) ⟩
-                o + Fin.toℕ x + b * toℕ xs
+                o + (Fin.toℕ x + toℕ xs * b)
+            ≤⟨ reflexive (sym (+-assoc o (Fin.toℕ x) (toℕ xs * b))) ⟩
+                o + Fin.toℕ x + toℕ xs * b
             □
 
 NonSurjCond⇏Surjective : ∀ {b} {d} {o} → NonSurjCond b d o → ¬ (Surjective (Num⟶ℕ b d o))
@@ -450,6 +446,6 @@ NonSurjCond⇏Surjective {_} {d} {o} (NotEnoughDigits p q) claim =
 Surjective? : ∀ b d o → Dec (Surjective (Num⟶ℕ b d o))
 Surjective? b d o with surjectionView b d o
 Surjective? b d o | Surj cond = yes (record
-        { from = ℕ⟶Num b d o
-        ; right-inverse-of = toℕ-fromℕ {b} {d} {o} {SurjCond⇒IsSurj cond} })
+    { from = ℕ⟶Num b d o
+    ; right-inverse-of = toℕ-fromℕ {b} {d} {o} {SurjCond⇒IsSurj cond} })
 Surjective? b d o | NonSurj reason = no (NonSurjCond⇏Surjective reason)

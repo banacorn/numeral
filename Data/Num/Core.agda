@@ -50,7 +50,7 @@ full {d} x = suc (Fin.toℕ x) ≟ d
 
 toℕ : ∀ {b d o} → Num b d o → ℕ
 toℕ             ∙        = 0
-toℕ {b} {_} {o} (x ∷ xs) = Digit-toℕ x o + b * toℕ xs
+toℕ {b} {_} {o} (x ∷ xs) = Digit-toℕ x o + toℕ xs * b
 
 
 ------------------------------------------------------------------------
@@ -76,5 +76,5 @@ Num-Setoid b d o = record
     }
 
 -- toℕ that preserves equality
-Num⟶ℕ : ∀ b d o → Num-Setoid b d o ⟶ setoid ℕ
-Num⟶ℕ b d o = record { _⟨$⟩_ = toℕ ; cong = id }
+Num⟶ℕ : ∀ b d o → setoid (Num b d o) ⟶ setoid ℕ
+Num⟶ℕ b d o = record { _⟨$⟩_ = toℕ ; cong = cong toℕ }
