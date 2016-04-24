@@ -346,7 +346,7 @@ lemma1 {d} {o} (x ∷ xs) p = contradiction p (<⇒≢ ⟦x∷xs⟧<1+o+d)
                 o + Fin.toℕ x + zero
             ≤⟨ reflexive (+-right-identity (o + Fin.toℕ x)) ⟩
                 o + Fin.toℕ x
-            ≤⟨ ≤-sucs o (
+            ≤⟨ n+-mono o (
                 start
                     Fin.toℕ x
                 ≤⟨ n≤1+n (Fin.toℕ x) ⟩
@@ -401,7 +401,7 @@ lemma5 {b} {d} {o} d≥1 b≰d (x ∷ xs) p | yes q =
                     o + suc (Fin.toℕ x)
                 ∎) ⟩
                 o + suc (Fin.toℕ x)
-            ≤⟨ ≤-sucs o (bounded x) ⟩
+            ≤⟨ n+-mono o (bounded x) ⟩
                 o + d
             □
 
@@ -413,7 +413,7 @@ lemma5 {b} {d} {o} d≥1 b≰d (x ∷ xs) p | no ¬q =
                 suc (o + d)
             ≤⟨ reflexive (sym (+-suc o d)) ⟩
                 o + suc d
-            ≤⟨ ≤-sucs o (
+            ≤⟨ n+-mono o (
                 start
                     suc d
                 ≤⟨ ≰⇒> b≰d ⟩

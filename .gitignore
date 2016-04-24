@@ -13,3 +13,4 @@ cabal.config
 *.agdai
 *~
 Temp*.agda
+Relation/Binary/InjReasoning.agda

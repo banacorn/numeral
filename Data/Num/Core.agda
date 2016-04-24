@@ -26,6 +26,8 @@ open import Function.Equality using (_⟶_)
 Digit : ℕ → Set
 Digit = Fin
 
+infixr 5 _∷_
+
 data Num : ℕ → ℕ → ℕ → Set where
     ∙   : ∀ {b d o} → Num b d o
     _∷_ : ∀ {b d o} → Digit d → Num b d o → Num b d o

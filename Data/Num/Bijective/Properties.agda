@@ -133,7 +133,7 @@ toℕ-injective ∙        ∙        eq = refl
 toℕ-injective ∙        (y ∷ ys) ()
 toℕ-injective (x ∷ xs) ∙        ()
 toℕ-injective (x ∷ xs) (y ∷ ys) eq =
-    cong₂ _∷_ (proj₁ ind) (toℕ-injective xs ys (proj₂ ind))
+    cong₂ _∷_ (proj₁ ind) (toℕ-injective xs ys (proj₂ ?))
     where
             ind : x ≡ y × toℕ xs ≡ toℕ ys
             ind = some-lemma x y (toℕ xs) (toℕ ys) (suc-injective eq)

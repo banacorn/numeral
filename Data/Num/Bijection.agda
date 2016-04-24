@@ -18,8 +18,8 @@ open import Data.Unit using (⊤; tt)
 
 
 -- open import Function
--- open import Function.Injective hiding (_∘_)
--- open Injective
+open import Function.Injection
+open Injection
 -- open import Function.Equality using (_⟶_; _⟨$⟩_)
 open import Relation.Nullary.Decidable
 open import Relation.Nullary
@@ -84,3 +84,21 @@ IsBij⇒IsSurj condition | Bij (bijCond b≥1 b≡d o≡1) | NonSurj (Offset≥2
 IsBij⇒IsSurj condition | Bij (bijCond b≥1 b≡d o≡1) | NonSurj (NotEnoughDigits d≥1 b≰d) = contradiction (reflexive b≡d) b≰d
 IsBij⇒IsSurj condition | NonBij _                   | Surj _ = tt
 IsBij⇒IsSurj ()        | NonBij _                   | NonSurj _
+
+-- BijCond⇒toℕ-injective :  ∀ {b d o} → BijCond b d o → (xs ys : Num b d o) → toℕ xs ≡ toℕ ys → xs ≡ ys
+-- BijCond⇒toℕ-injective (bijCond b≥1 b≡d o≡1) {xs} {ys} eq = {! o  !}
+
+toℕ-injective : ∀ {b d o}
+    → {isSurjective : I b d o}
+    → (xs : Num b d o)
+    → toℕ (1+ xs) ≡ suc (toℕ xs)
+
+
+{is} → (xs ys : Num b d o) → toℕ xs ≡ toℕ ys → xs ≡ ys
+
+
+
+Injective? : ∀ b d o → Dec (Injective (Num⟶ℕ b d o))
+Injective? b d o with bijectionView b d o
+Injective? b d o | Bij condition = yes {!   !}
+Injective? b d o | NonBij reason = no {! reason  !}
