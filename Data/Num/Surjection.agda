@@ -334,9 +334,9 @@ toℕ-fromℕ {isSurjective = ()} n | NonSurj x
 -- Lemmata for proving Spurious cases not surjective
 ------------------------------------------------------------------------
 
-lemma1 : ∀ {d o} → (xs : Num 0 d o) → toℕ xs ≢ suc (o + d)
-lemma1 {d} {o} ∙        ()
-lemma1 {d} {o} (x ∷ xs) p = contradiction p (<⇒≢ ⟦x∷xs⟧<1+o+d)
+NonSurjCond-Base≡0 : ∀ {d o} → (xs : Num 0 d o) → toℕ xs ≢ suc (o + d)
+NonSurjCond-Base≡0 {d} {o} ∙        ()
+NonSurjCond-Base≡0 {d} {o} (x ∷ xs) p = contradiction p (<⇒≢ ⟦x∷xs⟧<1+o+d)
     where
         ⟦x∷xs⟧<1+o+d : o + Fin.toℕ x + toℕ xs * 0 < suc (o + d)
         ⟦x∷xs⟧<1+o+d = s≤s $
@@ -358,32 +358,32 @@ lemma1 {d} {o} (x ∷ xs) p = contradiction p (<⇒≢ ⟦x∷xs⟧<1+o+d)
                 o + d
             □
 
-lemma2 : ∀ {b o} → (xs : Num b 0 o) → toℕ xs ≢ 1
-lemma2 ∙         ()
-lemma2 (() ∷ xs)
+NonSurjCond-NoDigits : ∀ {b o} → (xs : Num b 0 o) → toℕ xs ≢ 1
+NonSurjCond-NoDigits ∙         ()
+NonSurjCond-NoDigits (() ∷ xs)
 
-lemma3 : ∀ {b d o} → o ≥ 2 → (xs : Num b d o) → toℕ xs ≢ 1
-lemma3                   o≥2      ∙        ()
-lemma3 {o = 0}           ()       (x ∷ xs) p
-lemma3 {o = 1}           (s≤s ()) (x ∷ xs) p
-lemma3 {o = suc (suc o)} o≥2      (x ∷ xs) ()
+NonSurjCond-Offset≥2 : ∀ {b d o} → o ≥ 2 → (xs : Num b d o) → toℕ xs ≢ 1
+NonSurjCond-Offset≥2                   o≥2      ∙        ()
+NonSurjCond-Offset≥2 {o = 0}           ()       (x ∷ xs) p
+NonSurjCond-Offset≥2 {o = 1}           (s≤s ()) (x ∷ xs) p
+NonSurjCond-Offset≥2 {o = suc (suc o)} o≥2      (x ∷ xs) ()
 
-lemma4 : (xs : Num 1 1 0) → toℕ xs ≢ 1
-lemma4 ∙ ()
-lemma4 (z ∷ xs) p = contradiction (
+NonSurjCond-UnaryWithOnlyZeros : (xs : Num 1 1 0) → toℕ xs ≢ 1
+NonSurjCond-UnaryWithOnlyZeros ∙ ()
+NonSurjCond-UnaryWithOnlyZeros (z ∷ xs) p = contradiction (
     begin
         toℕ xs
     ≡⟨ sym (*-right-identity (toℕ xs)) ⟩
         toℕ xs * 1
     ≡⟨ p ⟩
         suc zero
-    ∎) (lemma4 xs)
-lemma4 (s () ∷ xs)
+    ∎) (NonSurjCond-UnaryWithOnlyZeros xs)
+NonSurjCond-UnaryWithOnlyZeros (s () ∷ xs)
 
-lemma5 : ∀ {b d o} → d ≥ 1 → b ≰ d → (xs : Num b d o) → toℕ xs ≢ o + d
-lemma5 {_} {_} {o} d≥1 b≰d ∙        = <⇒≢ (≤-steps o d≥1)
-lemma5 {b} {d} {o} d≥1 b≰d (x ∷ xs) p with toℕ xs ≤? 0
-lemma5 {b} {d} {o} d≥1 b≰d (x ∷ xs) p | yes q =
+NonSurjCond-NotEnoughDigits : ∀ {b d o} → d ≥ 1 → b ≰ d → (xs : Num b d o) → toℕ xs ≢ o + d
+NonSurjCond-NotEnoughDigits {_} {_} {o} d≥1 b≰d ∙        = <⇒≢ (≤-steps o d≥1)
+NonSurjCond-NotEnoughDigits {b} {d} {o} d≥1 b≰d (x ∷ xs) p with toℕ xs ≤? 0
+NonSurjCond-NotEnoughDigits {b} {d} {o} d≥1 b≰d (x ∷ xs) p | yes q =
     contradiction p (<⇒≢ ⟦x∷xs⟧>o+d)
     where
         ⟦xs⟧≡0 : toℕ xs ≡ 0
@@ -405,7 +405,7 @@ lemma5 {b} {d} {o} d≥1 b≰d (x ∷ xs) p | yes q =
                 o + d
             □
 
-lemma5 {b} {d} {o} d≥1 b≰d (x ∷ xs) p | no ¬q =
+NonSurjCond-NotEnoughDigits {b} {d} {o} d≥1 b≰d (x ∷ xs) p | no ¬q =
     contradiction p (>⇒≢ ⟦x∷xs⟧>o+d)
     where
         ⟦x∷xs⟧>o+d : o + Fin.toℕ x + toℕ xs * b > o + d
@@ -432,16 +432,26 @@ lemma5 {b} {d} {o} d≥1 b≰d (x ∷ xs) p | no ¬q =
             □
 
 NonSurjCond⇏Surjective : ∀ {b} {d} {o} → NonSurjCond b d o → ¬ (Surjective (Num⟶ℕ b d o))
-NonSurjCond⇏Surjective {_} {d} {o} Base≡0              claim =
-    lemma1 (from claim ⟨$⟩ suc o + d) (right-inverse-of claim (suc (o + d)))
-NonSurjCond⇏Surjective NoDigits            claim =
-    lemma2      (from claim ⟨$⟩ 1)    (right-inverse-of claim 1)
-NonSurjCond⇏Surjective (Offset≥2 p)        claim =
-    lemma3 p    (from claim ⟨$⟩ 1)    (right-inverse-of claim 1)
-NonSurjCond⇏Surjective UnaryWithOnlyZeros     claim =
-    lemma4     (from claim ⟨$⟩ 1)     (right-inverse-of claim 1)
+NonSurjCond⇏Surjective {_} {d} {o} Base≡0  claim =
+    NonSurjCond-Base≡0
+        (from             claim ⟨$⟩ suc o + d)
+        (right-inverse-of claim   (suc (o + d)))
+NonSurjCond⇏Surjective NoDigits claim =
+    NonSurjCond-NoDigits
+        (from             claim ⟨$⟩ 1)
+        (right-inverse-of claim     1)
+NonSurjCond⇏Surjective (Offset≥2 p) claim =
+    NonSurjCond-Offset≥2 p
+        (from             claim ⟨$⟩ 1)
+        (right-inverse-of claim     1)
+NonSurjCond⇏Surjective UnaryWithOnlyZeros claim =
+    NonSurjCond-UnaryWithOnlyZeros
+        (from             claim ⟨$⟩ 1)
+        (right-inverse-of claim     1)
 NonSurjCond⇏Surjective {_} {d} {o} (NotEnoughDigits p q) claim =
-    lemma5 p q (from claim ⟨$⟩ o + d) (right-inverse-of claim (o + d))
+    NonSurjCond-NotEnoughDigits p q
+        (from             claim ⟨$⟩ o + d)
+        (right-inverse-of claim    (o + d))
 
 Surjective? : ∀ b d o → Dec (Surjective (Num⟶ℕ b d o))
 Surjective? b d o with surjectionView b d o
