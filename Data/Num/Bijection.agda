@@ -2,103 +2,48 @@ module Data.Num.Bijection where
 
 open import Data.Num.Core
 open import Data.Num.Surjection
+open import Data.Num.Injection
 
 open import Data.Nat
-open import Data.Nat.Properties
-open import Data.Nat.Properties.Simple
-open import Data.Nat.Properties.Extra
-
-open import Data.Fin as Fin
-    using (Fin; fromℕ≤; inject≤)
-    renaming (zero to z; suc to s)
-open import Data.Fin.Properties using (toℕ-fromℕ≤; bounded)
-open import Data.Product
 open import Data.Empty using (⊥)
 open import Data.Unit using (⊤; tt)
 
+open import Function.Bijection
+open Bijective
 
--- open import Function
-open import Function.Injection
-open Injection
--- open import Function.Equality using (_⟶_; _⟨$⟩_)
-open import Relation.Nullary.Decidable
 open import Relation.Nullary
+open import Relation.Nullary.Decidable
 open import Relation.Nullary.Negation
-open import Relation.Binary
-open import Relation.Binary.PropositionalEquality
-
-open ≡-Reasoning
-open ≤-Reasoning renaming (begin_ to start_; _∎ to _□; _≡⟨_⟩_ to _≈⟨_⟩_)
-open DecTotalOrder decTotalOrder using (reflexive) renaming (refl to ≤-refl)
-
-
-record BijCond (b d o : ℕ) : Set where
-    constructor bijCond
-    field
-        b≥1 : b ≥ 1
-        b≡d : b ≡ d
-        o≡1 : o ≡ 1
-
-data NonBijCond : ℕ → ℕ → ℕ → Set where
-    Base≡0      : ∀ {  d o}         → NonBijCond 0 d o
-    Offset≢1    : ∀ {b d o} → o ≢ 1 → NonBijCond b d o
-    Base≢#Digit : ∀ {b d o} → b ≢ d → NonBijCond b d o
 
 data BijectionView : ℕ → ℕ → ℕ → Set where
-    Bij    : ∀ {b d o} → BijCond b d o   → BijectionView b d o
-    NonBij : ∀ {b d o} → NonBijCond b d o → BijectionView b d o
+    Bij     : ∀ {b d o} → SurjCond b d o → InjCond b d o → BijectionView b d o
+    NonSurj : ∀ {b d o} → NonSurjCond b d o              → BijectionView b d o
+    NonInj  : ∀ {b d o} → NonInjCond b d o               → BijectionView b d o
 
 bijectionView : (b d o : ℕ) → BijectionView b d o
-bijectionView 0       d o = NonBij Base≡0
-bijectionView (suc b) d 0 = NonBij (Offset≢1 (λ ()))
-bijectionView (suc b) d 1 with suc b ≟ d
-bijectionView (suc b) d 1 | yes p = Bij (bijCond (s≤s z≤n) p refl)
-bijectionView (suc b) d 1 | no ¬p = NonBij (Base≢#Digit ¬p)
-bijectionView (suc b) d (suc (suc o)) = NonBij (Offset≢1 (λ ()))
+bijectionView b d o with surjectionView b d o | injectionView b d o
+bijectionView b d o | Surj c₁    | Inj c₂    = Bij c₁ c₂
+bijectionView b d o | Surj _     | NonInj c₁ = NonInj c₁
+bijectionView b d o | NonSurj c₁ | _         = NonSurj c₁
 
 IsBijective : ℕ → ℕ → ℕ → Set
 IsBijective b d o with bijectionView b d o
-IsBijective b d o | Bij x    = ⊤
-IsBijective b d o | NonBij x = ⊥
-
-BijCond⇒IsBij : ∀ {b d o} → BijCond b d o → IsBijective b d o
-BijCond⇒IsBij {b} {d} {o} cond with bijectionView b d o
-BijCond⇒IsBij _                     | Bij _                     = tt
-BijCond⇒IsBij (bijCond ()  b≡d o≡1) | NonBij Base≡0
-BijCond⇒IsBij (bijCond b≥1 b≡d o≡1) | NonBij (Offset≢1 o≢1)    = contradiction o≡1 o≢1
-BijCond⇒IsBij (bijCond b≥1 b≡d o≡1) | NonBij (Base≢#Digit b≢d) = contradiction b≡d b≢d
-
-NonBijCond⇏IsBij : ∀ {b d o} → NonBijCond b d o → ¬ IsBijective b d o
-NonBijCond⇏IsBij {b} {d} {o} reason claim with bijectionView b d o
-NonBijCond⇏IsBij Base≡0            claim | Bij (bijCond () b≡d o≡1)
-NonBijCond⇏IsBij (Offset≢1 o≢1)    claim | Bij (bijCond b≥1 b≡d o≡1) = contradiction o≡1 o≢1
-NonBijCond⇏IsBij (Base≢#Digit b≢d) claim | Bij (bijCond b≥1 b≡d o≡1) = contradiction b≡d b≢d
-NonBijCond⇏IsBij _ () | NonBij _
-
-IsBij⇒IsSurj : ∀ {b d} → IsBijective b d 1 → IsSurjective b d 1
-IsBij⇒IsSurj {b} {d} condition with bijectionView b d 1 | surjectionView b d 1
-IsBij⇒IsSurj condition | Bij _                      | Surj _ = tt
-IsBij⇒IsSurj condition | Bij (bijCond ()  b≡d o≡1) | NonSurj Base≡0
-IsBij⇒IsSurj condition | Bij (bijCond b≥1 b≡d o≡1) | NonSurj NoDigits = contradiction b≡d (>⇒≢ b≥1)
-IsBij⇒IsSurj condition | Bij (bijCond b≥1 b≡d o≡1) | NonSurj (Offset≥2 (s≤s ()))
-IsBij⇒IsSurj condition | Bij (bijCond b≥1 b≡d o≡1) | NonSurj (NotEnoughDigits d≥1 b≰d) = contradiction (reflexive b≡d) b≰d
-IsBij⇒IsSurj condition | NonBij _                   | Surj _ = tt
-IsBij⇒IsSurj ()        | NonBij _                   | NonSurj _
-
--- BijCond⇒toℕ-injective :  ∀ {b d o} → BijCond b d o → (xs ys : Num b d o) → toℕ xs ≡ toℕ ys → xs ≡ ys
--- BijCond⇒toℕ-injective (bijCond b≥1 b≡d o≡1) {xs} {ys} eq = {! o  !}
-
-toℕ-injective : ∀ {b d o}
-    → {isSurjective : I b d o}
-    → (xs : Num b d o)
-    → toℕ (1+ xs) ≡ suc (toℕ xs)
+IsBijective b d o | Bij _ _   = ⊤
+IsBijective b d o | NonSurj _ = ⊥
+IsBijective b d o | NonInj _  = ⊥
 
 
-{is} → (xs ys : Num b d o) → toℕ xs ≡ toℕ ys → xs ≡ ys
+NonSurjCond⇏Bijective : ∀ {b} {d} {o} → NonSurjCond b d o → ¬ (Bijective (Num⟶ℕ b d o))
+NonSurjCond⇏Bijective reason claim = NonSurjCond⇏Surjective reason (surjective claim)
 
+NonInjCond⇏Bijective : ∀ {b} {d} {o} → NonInjCond b d o → ¬ (Bijective (Num⟶ℕ b d o))
+NonInjCond⇏Bijective reason claim = NonInjCond⇏Injective reason (injective claim)
 
-
-Injective? : ∀ b d o → Dec (Injective (Num⟶ℕ b d o))
-Injective? b d o with bijectionView b d o
-Injective? b d o | Bij condition = yes {!   !}
-Injective? b d o | NonBij reason = no {! reason  !}
+Bijective? : ∀ b d o → Dec (Bijective (Num⟶ℕ b d o))
+Bijective? b d o with bijectionView b d o
+Bijective? b d o | Bij surjCond injCond = yes (record
+    { injective = InjCond⇒Injective injCond
+    ; surjective = SurjCond⇒Surjective surjCond
+    })
+Bijective? b d o | NonSurj reason       = no (NonSurjCond⇏Bijective reason)
+Bijective? b d o | NonInj reason        = no (NonInjCond⇏Bijective reason)

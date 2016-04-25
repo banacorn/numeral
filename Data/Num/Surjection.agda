@@ -453,9 +453,16 @@ NonSurjCond⇏Surjective {_} {d} {o} (NotEnoughDigits p q) claim =
         (from             claim ⟨$⟩ o + d)
         (right-inverse-of claim    (o + d))
 
+SurjCond⇒Surjective : ∀ {b} {d} {o} → SurjCond b d o → Surjective (Num⟶ℕ b d o)
+SurjCond⇒Surjective {b} {d} {o} cond = record
+    { from = ℕ⟶Num b d o
+    ; right-inverse-of = toℕ-fromℕ {b} {d} {o} {SurjCond⇒IsSurj cond}
+    }
+
 Surjective? : ∀ b d o → Dec (Surjective (Num⟶ℕ b d o))
 Surjective? b d o with surjectionView b d o
 Surjective? b d o | Surj cond = yes (record
     { from = ℕ⟶Num b d o
-    ; right-inverse-of = toℕ-fromℕ {b} {d} {o} {SurjCond⇒IsSurj cond} })
+    ; right-inverse-of = toℕ-fromℕ {b} {d} {o} {SurjCond⇒IsSurj cond}
+    })
 Surjective? b d o | NonSurj reason = no (NonSurjCond⇏Surjective reason)
