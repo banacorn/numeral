@@ -11,9 +11,10 @@ open import Data.Fin as Fin
     using (Fin; fromℕ≤; inject≤)
     renaming (zero to z; suc to s)
 open import Data.Fin.Properties
-    using (toℕ-fromℕ≤; bounded; inject≤-lemma)
+    using (toℕ-fromℕ≤; to-from; bounded; inject≤-lemma)
     renaming (toℕ-injective to Fin→ℕ-injective; _≟_ to _Fin≟_)
 open import Data.Fin.Properties.Extra
+open import Data.Sum
 open import Data.Product
 open import Data.Empty using (⊥)
 open import Data.Unit using (⊤; tt)
@@ -155,53 +156,73 @@ toℕ-injective {_} {suc _} {o} (x  ∷ xs) (y ∷ ys) eq | Inj condition | tri�
 toℕ-injective {_} {suc _} {_} (x  ∷ xs) (y ∷ ys) eq | Inj condition | tri≈ _ ⟦xs⟧≡⟦ys⟧ _ | tri> _ _ ⟦x⟧>⟦y⟧ = contradiction eq (>⇒≢ (∷ns-mono-strict y x ys xs (sym ⟦xs⟧≡⟦ys⟧) ⟦x⟧>⟦y⟧))
 toℕ-injective {_} {suc _} {_} (x  ∷ xs) (y ∷ ys) eq | Inj condition | tri> _ _ ⟦xs⟧>⟦ys⟧ = contradiction eq (>⇒≢ ((n∷-mono-strict y x ys xs condition ⟦xs⟧>⟦ys⟧)))
 toℕ-injective {isInj = ()}    (x ∷ xs) (y ∷ ys) eq | NonInj reason
---
---
--- -- start
--- --     {!   !}
--- -- ≤⟨ {!   !} ⟩
--- --     {!   !}
--- -- ≤⟨ {!   !} ⟩
--- --     {!   !}
--- -- ≤⟨ {!   !} ⟩
--- --     {!   !}
--- -- □
---
---
--- -- begin
--- --     {!   !}
--- -- ≡⟨ {!   !} ⟩
--- --     {!   !}
--- -- ≡⟨ {!   !} ⟩
--- --     {!   !}
--- -- ≡⟨ {!   !} ⟩
--- --     {!   !}
--- -- ≡⟨ {!   !} ⟩
--- --     {!   !}
--- -- ∎
 
--- InjCond⇒Injective : ∀ {b} {d} {o} → InjCond b d o → Injective (Num⟶ℕ b d o)
--- InjCond⇒Injective condition {x} {y} = toℕ-injective {isInj = InjCond⇒IsInj condition} x y
---
--- NonInjCond⇏Injective : ∀ {b} {d} {o} → NonInjCond b d o → ¬ (Injective (Num⟶ℕ b d o))
--- -- NonInjCond⇏Injective (d>b: d>b) claim =
--- NonInjCond⇏Injective {_} {zero}  (d>b: ()) claim
--- NonInjCond⇏Injective {b} {suc d} {o} (d>b: d>b) claim =
+
+-- start
 --     {!   !}
---     where   ⟦11⟧≡⟦1+d⟧ : toℕ {b} (z ∷ z ∷ ∙) ≡ toℕ (Fin.fromℕ d ∷ ∙)
---             ⟦11⟧≡⟦1+d⟧ =
---                 begin
---                     o + zero + (o + zero + zero) * b
---                 ≡⟨ {!   !} ⟩
---                     {!   !}
---                 ≡⟨ {!   !} ⟩
---                     {!   !}
---                 ≡⟨ {!   !} ⟩
---                     {!   !}
---                 ≡⟨ {!   !} ⟩
---                     o + Fin.toℕ (Fin.fromℕ d) + zero
---                 ∎
--- NonInjCond⇏Injective (o≡0: o≡0) x = {!   !}
+-- ≤⟨ {!   !} ⟩
+--     {!   !}
+-- ≤⟨ {!   !} ⟩
+--     {!   !}
+-- ≤⟨ {!   !} ⟩
+--     {!   !}
+-- □
+
+
+-- begin
+--     {!   !}
+-- ≡⟨ {!   !} ⟩
+--     {!   !}
+-- ≡⟨ {!   !} ⟩
+--     {!   !}
+-- ≡⟨ {!   !} ⟩
+--     {!   !}
+-- ≡⟨ {!   !} ⟩
+--     {!   !}
+-- ∎
+
+InjCond⇒Injective : ∀ {b} {d} {o} → InjCond b d o → Injective (Num⟶ℕ b d o)
+InjCond⇒Injective condition {x} {y} = toℕ-injective {isInj = InjCond⇒IsInj condition} x y
+
+NonInjCond⇏Injective : ∀ {b} {d} {o} → NonInjCond b d o → ¬ (Injective (Num⟶ℕ b d o))
+NonInjCond⇏Injective {_} {zero}  (d>b: ()) claim
+NonInjCond⇏Injective {zero} {suc d} {o} (d>b: d>b) claim =
+    contradiction
+        (claim
+            {z ∷ ∙}
+            {z ∷ z ∷ ∙}
+            ⟦1∷∙⟧≡⟦1∷1∷∙⟧)
+        (λ ())
+    where   ⟦1∷∙⟧≡⟦1∷1∷∙⟧ : toℕ {zero} {suc d} {o} (z ∷ ∙) ≡ toℕ {zero} {suc d} {o} (z ∷ z ∷ ∙)
+            ⟦1∷∙⟧≡⟦1∷1∷∙⟧ = cong (λ w → o + 0 + w) (sym (*-right-zero (o + 0 + 0)))
+NonInjCond⇏Injective {suc b} {suc zero} (d>b: (s≤s ())) claim
+NonInjCond⇏Injective {suc b} {suc (suc d)} {o} (d>b: d>b) claim =
+    contradiction
+        (claim
+            {z ∷ s z ∷ ∙}
+            {fromℕ≤ d>b ∷ z ∷ ∙}
+            ⟦1∷2⟧≡⟦b+1∷1⟧)
+        (λ ())
+    where   ⟦1∷2⟧≡⟦b+1∷1⟧ : toℕ {suc b} {suc (suc d)} {o} (z ∷ s z ∷ ∙) ≡ toℕ {suc b} {suc (suc d)} {o} (fromℕ≤ {suc b} d>b ∷ z ∷ ∙)
+            ⟦1∷2⟧≡⟦b+1∷1⟧ =
+                begin
+                    o + zero + (o + suc zero + zero) * suc b
+                ≡⟨ cong (λ x → x + (o + suc zero + zero) * suc b) (+-right-identity o) ⟩
+                    o + (o + suc zero + zero) * suc b
+                ≡⟨ cong (λ x → o + (x + zero) * suc b) (+-suc o zero) ⟩
+                    o + (suc (o + zero) + zero) * suc b
+                ≡⟨ refl ⟩
+                    o + (suc b + (o + zero + zero) * suc b)
+                ≡⟨ sym (+-assoc o (suc b) ((o + zero + zero) * suc b)) ⟩
+                    o + suc b + (o + zero + zero) * suc b
+                ≡⟨ cong (λ x → o + x + (o + zero + zero) * suc b) (sym (toℕ-fromℕ≤ d>b)) ⟩
+                    o + Fin.toℕ (fromℕ≤ d>b) + (o + zero + zero) * suc b
+                ∎
+NonInjCond⇏Injective {d = zero} (o≡0: o≡0) x = {!   !}
+NonInjCond⇏Injective {d = suc d} (o≡0: o≡0) x = {!   !}
+    -- {!   !}
+    -- where   ⟦0∷∙⟧≡⟦∙⟧ : toℕ {b} {d} (z ∷ ∙) ≡ ?
+    --         ⟦0∷∙⟧≡⟦∙⟧ = ?
 --
 -- Injective? : ∀ b d o → Dec (Injective (Num⟶ℕ b d o))
 -- Injective? b d o with injectionView b d o
