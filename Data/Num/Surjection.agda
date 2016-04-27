@@ -466,6 +466,9 @@ Surjective⇒SurjCond {b} {d} {o} surj with surjectionView b d o
 Surjective⇒SurjCond surj | Surj condition = condition
 Surjective⇒SurjCond surj | NonSurj reason = contradiction surj (NonSurjCond⇏Surjective reason)
 
+Surjective⇒IsSurj : ∀ {b} {d} {o} → Surjective (Num⟶ℕ b d o) → IsSurjective b d o
+Surjective⇒IsSurj = SurjCond⇒IsSurj ∘ Surjective⇒SurjCond
+
 Surjective⇒b≥1 : ∀ {b} {d} {o} → Surjective (Num⟶ℕ b d o) → b ≥ 1
 Surjective⇒b≥1 = SurjCond⇒b≥1 ∘ Surjective⇒SurjCond
 
