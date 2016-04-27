@@ -37,7 +37,7 @@ open StrictTotalOrder strictTotalOrder using (compare)
 
 data InjCond : ℕ → ℕ → ℕ → Set where
     Ordinary  : ∀ {b d o} → (b≥d : b ≥ d) → (o≥1 : o ≥ 1) → InjCond b d o
-    Digitless : ∀ {b d o}                 → (d≡0 : d ≡ 0) → InjCond b 0 o    -- having no digits at all
+    Digitless : ∀ {b d o}                 → (d≡0 : d ≡ 0) → InjCond b 0 o -- having no digits at all
 
 data NonInjCond : ℕ → ℕ → ℕ → Set where
     Redundant : ∀ {b d o}                  → (d>b : d > b) → NonInjCond b d o -- having to many digits
@@ -83,7 +83,7 @@ NonInjCond⇏IsInj (WithZeros o≡0 d≢0) claim | Inj (Digitless d≡0) = contr
 NonInjCond⇏IsInj reason              ()    | NonInj _
 
 Digit-toℕ-injective : ∀ {d} o (x y : Fin d)
-    → Digit-toℕ x o ≡ Digit-toℕ y o
+    → Digit-toℕ x o ≡ Digit-toℕ y o -- o + toℕ x ≡ o + toℕ y
     → x ≡ y
 Digit-toℕ-injective {_} o x y eq =
     Fin→ℕ-injective         -- cancels `Fin.toℕ`
