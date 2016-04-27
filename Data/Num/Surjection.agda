@@ -113,12 +113,14 @@ digit+1-b {b} {d} x b≥1 p = fromℕ≤ {suc (Fin.toℕ x) ∸ b} (digit+1-b-le
 digit+1 : ∀ {d} → (x : Digit d) → (¬p : suc (Fin.toℕ x) ≢ d) → Fin d
 digit+1 x ¬p = fromℕ≤ {suc (Fin.toℕ x)} (≤∧≢⇒< (bounded x) ¬p)
 
+starting-digit : ∀ {b d o} → SurjCond b d o → Digit d
+starting-digit (WithZerosUnary d≥2) = fromℕ≤ {1} d≥2
+starting-digit (WithZeros b≥2 d≥b) = fromℕ≤ {1} (≤-trans b≥2 d≥b)
+starting-digit (Zeroless b≥1 d≥b) = fromℕ≤ {0} (≤-trans b≥1 d≥b)
+
 1+ : ∀ {b d o} → Num b d o → Num b d o
 1+ {b} {d} {o} xs with surjectionView b d o
-1+ ∙        | Surj cond with cond
-1+ ∙        | Surj cond | WithZerosUnary d≥2 = fromℕ≤ {1} d≥2                ∷ ∙
-1+ ∙        | Surj cond | WithZeros b≥2 d≥b = fromℕ≤ {1} (≤-trans b≥2 d≥b) ∷ ∙
-1+ ∙        | Surj cond | Zeroless b≥1 d≥b = fromℕ≤ {0} (≤-trans b≥1 d≥b) ∷ ∙
+1+ ∙        | Surj cond = starting-digit cond ∷ ∙
 1+ (x ∷ xs) | Surj cond with full x
 1+ (x ∷ xs) | Surj cond | yes p = digit+1-b x (SurjCond⇒b≥1 cond) p ∷ 1+ xs -- carry
 1+ (x ∷ xs) | Surj cond | no ¬p = digit+1   x ¬p                     ∷    xs
