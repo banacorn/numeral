@@ -2,6 +2,8 @@ module Data.Num where
 
 open import Data.Num.Core public
 open import Data.Num.Surjection public
+open import Data.Num.Injection public
+open import Data.Num.Bijection public
 
 open import Data.Nat
 open import Data.Nat.Properties.Extra
@@ -9,10 +11,16 @@ open import Data.Nat.DM
 open import Data.Fin as Fin
     using (Fin; fromℕ≤; inject≤)
     renaming (zero to z; suc to s)
+open import Function.Surjection
+open import Function.Injection
+open import Function.Bijection
 
 open import Relation.Nullary
 open import Relation.Nullary.Decidable
-
+open import Relation.Nullary.Negation
+open import Relation.Binary
+open import Relation.Binary.PropositionalEquality
+open DecTotalOrder decTotalOrder using (reflexive) renaming (refl to ≤-refl)
 
 _⊹_ : ∀ {b d o}
     → {surj : True (Surjective? b d o)}
@@ -29,18 +37,23 @@ _⊹_ {b} {d} {o}      (x ∷ xs) (y ∷ ys) | yes surj | result quotient remain
             d≥b = Surjective⇒d≥b surj
 _⊹_ {b} {d} {o} {()} xs ys | no ¬surj
 
+BijN : ℕ → Set
+BijN b = Num (suc b) (suc b) 1
 
--- _⊹_ : ∀ {b d o}
---     → {isSurj : IsSurjective b d o}
---     → (xs ys : Num b d o)
---     → Num b d o
--- _⊹_ {b} {d} {o}      xs       ys        with surjectionView b d o
--- _⊹_ {b} {d} {o}      ∙        ∙        | Surj cond = ∙
--- _⊹_ {b} {d} {o}      ∙        (y ∷ ys) | Surj cond = y ∷ ys
--- _⊹_ {b} {d} {o}      (x ∷ xs) ∙        | Surj cond = x ∷ xs
--- _⊹_ {b} {d} {o}      (x ∷ xs) (y ∷ ys) | Surj cond with _divMod_ (o + Fin.toℕ x + Fin.toℕ y) b {fromWitnessFalse (>⇒≢ (SurjCond⇒b≥1 cond))}
--- _⊹_ {b} {d} {o}      (x ∷ xs) (y ∷ ys) | Surj cond | result quotient remainder property div-eq mod-eq =
---     inject≤ remainder d≥b ∷ n+ quotient (_⊹_ {isSurj = SurjCond⇒IsSurj cond} xs ys)
---     where   d≥b : d ≥ b
---             d≥b = SurjCond⇒d≥b cond
--- _⊹_ {b} {d} {o} {()} xs ys | NonSurj _
+BijN⇒Surjective : ∀ b → Surjective (Num⟶ℕ (suc b) (suc b) 1)
+BijN⇒Surjective b with surjectionView (suc b) (suc b) 1
+BijN⇒Surjective b | Surj surjCond = SurjCond⇒Surjective surjCond
+BijN⇒Surjective b | NonSurj (Offset≥2 (s≤s ()))
+BijN⇒Surjective b | NonSurj (NotEnoughDigits _ d≱b) = contradiction (s≤s ≤-refl) d≱b
+
+BijN⇒Injective : ∀ b → Injective (Num⟶ℕ (suc b) (suc b) 1)
+BijN⇒Injective b with injectionView (suc b) (suc b) 1
+BijN⇒Injective b | Inj injCond = InjCond⇒Injective injCond
+BijN⇒Injective b | NonInj (Redundant d>b) = contradiction refl (>⇒≢ d>b)
+
+BijN⇒Bijective : ∀ b → Bijective (Num⟶ℕ (suc b) (suc b) 1)
+BijN⇒Bijective b with bijectionView (suc b) (suc b) 1
+BijN⇒Bijective b | Bij surjCond injCond = SurjCond∧InjCond⇒Bijective surjCond injCond
+BijN⇒Bijective b | NonSurj (Offset≥2 (s≤s ()))
+BijN⇒Bijective b | NonSurj (NotEnoughDigits _ d≱b) = contradiction (s≤s ≤-refl) d≱b
+BijN⇒Bijective b | NonInj (Redundant d>b) = contradiction refl (>⇒≢ d>b)

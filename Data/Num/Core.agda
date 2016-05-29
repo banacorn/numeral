@@ -62,20 +62,8 @@ toℕ {b} {_} {o} (x ∷ xs) = Digit-toℕ x o + toℕ xs * b
 _≲_ : ∀ {b d o} → Num b d o → Num b d o → Set
 xs ≲ ys = toℕ xs ≤ toℕ ys
 
-_≋_ : ∀ {b d o} → Num b d o → Num b d o → Set
-xs ≋ ys = toℕ xs ≡ toℕ ys
-
-
-Num-Setoid : ∀ b d o → Setoid _ _
-Num-Setoid b d o = record
-    { Carrier = Num b d o
-    ; _≈_ = _≋_
-    ; isEquivalence = record
-        { refl = λ {x} → refl
-        ; sym = sym
-        ; trans = trans
-        }
-    }
+-- _≋_ : ∀ {b d o} → Num b d o → Num b d o → Set
+-- xs ≋ ys = toℕ xs ≡ toℕ ys
 
 -- toℕ that preserves equality
 Num⟶ℕ : ∀ b d o → setoid (Num b d o) ⟶ setoid ℕ

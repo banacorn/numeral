@@ -32,6 +32,11 @@ IsBijective b d o | Bij _ _   = ⊤
 IsBijective b d o | NonSurj _ = ⊥
 IsBijective b d o | NonInj _  = ⊥
 
+SurjCond∧InjCond⇒Bijective : ∀ {b} {d} {o} → SurjCond b d o → InjCond b d o → Bijective (Num⟶ℕ b d o)
+SurjCond∧InjCond⇒Bijective surjCond injCond = record
+    { injective = InjCond⇒Injective injCond
+    ; surjective = SurjCond⇒Surjective surjCond
+    }
 
 NonSurjCond⇏Bijective : ∀ {b} {d} {o} → NonSurjCond b d o → ¬ (Bijective (Num⟶ℕ b d o))
 NonSurjCond⇏Bijective reason claim = NonSurjCond⇏Surjective reason (surjective claim)

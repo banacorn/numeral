@@ -1,15 +1,15 @@
 module Data.Num.Pred where
 
-open import Data.Num.Surjection
-open import Data.Num.Injection
+open import Data.Num
+open import Data.Num.Properties
 open import Data.Num.Bijection
--- open import Data.Num.Bijective.Properties
 
 open import Data.Nat
 open import Data.Fin using (Fin; suc; zero; #_)
 open import Data.Vec
 open import Data.Product hiding (map)
 open import Relation.Binary.PropositionalEquality
+open import Relation.Nullary.Decidable using (True; fromWitness)
 
 infixl 6 _∔_
 
@@ -35,12 +35,14 @@ record Signature : Set₁ where
         _≈_ : carrier → carrier → Set
 open Signature
 
-
--- Bij-sig : ℕ → Signature
--- Bij-sig b = sig (Bij b) _⊹_ _≡_
-
 ℕ-sig : Signature
 ℕ-sig = sig ℕ _+_ _≡_
+
+Num-sig : (b d o : ℕ) → True (Surjective? b d o) → Signature
+Num-sig b d o pf = sig (Num b d o) (_⊹_ {surj = pf}) _≡_
+
+BijN-sig : ℕ → Signature
+BijN-sig b = sig (BijN b) (_⊹_ {surj = fromWitness (BijN⇒Surjective b)}) _≡_
 
 
 Env : Set → ℕ → Set
@@ -65,18 +67,21 @@ Env = Vec
 ⟦_⟧ (All p)          signature       env = (x : carrier signature) → ⟦ p ⟧ signature (x ∷ env)
 
 
--- module Example-1 where
---     ≋-trans : Predicate zero
---     ≋-trans = let   x = var zero
---                     y = var (suc zero)
---                     z = var (suc (suc zero))
---         in All (All (All (((x ≋ y) ⇒ (y ≋ z)) ⇒ (x ≋ z))))
---
---     ≋-trans-ℕ : Set
---     ≋-trans-ℕ = ⟦ ≋-trans ⟧ ℕ-sig []
---
---     ≋-trans-Bij : ℕ → Set
---     ≋-trans-Bij b = ⟦ ≋-trans ⟧ (Bij-sig b) []
+module Example-1 where
+    ≋-trans : Predicate zero
+    ≋-trans = let   x = var zero
+                    y = var (suc zero)
+                    z = var (suc (suc zero))
+        in All (All (All (((x ≋ y) ⇒ (y ≋ z)) ⇒ (x ≋ z))))
+
+    ≋-trans-ℕ : Set
+    ≋-trans-ℕ = ⟦ ≋-trans ⟧ ℕ-sig []
+
+    ≋-trans-Num : (b d o : ℕ) → True (Surjective? b d o) → Set
+    ≋-trans-Num b d o pf = ⟦ ≋-trans ⟧ (Num-sig b d o pf) []
+
+    ≋-trans-BijN : ℕ → Set
+    ≋-trans-BijN b = ⟦ ≋-trans ⟧ (BijN-sig b) []
 
 -- lemma for env
 lookup-map : ∀ {i j} → {A : Set i} {B : Set j}
@@ -95,16 +100,16 @@ lookup-map f (x ∷ xs) (suc i) = lookup-map f xs i
 -- toℕ : preserving structures of terms and predicates
 ------------------------------------------------------------------------
 
--- toℕ-term-homo : ∀ {b n}
---     → (t : Term n)
---     → (env : Vec (Bij (suc b)) n)
---     → ⟦ t ⟧T ℕ-sig (map toℕ env) ≡ toℕ (⟦ t ⟧T (Bij-sig (suc b)) env)
--- toℕ-term-homo     (var i)   env = lookup-map toℕ env i
--- toℕ-term-homo {b} (t₁ ∔ t₂) env
---     rewrite toℕ-term-homo t₁ env | toℕ-term-homo t₂ env
---     = sym (toℕ-⊹-homo
---             (⟦ t₁ ⟧T (Bij-sig (suc b)) env)
---             (⟦ t₂ ⟧T (Bij-sig (suc b)) env))
+toℕ-term-homo : ∀ {b n}
+    → (t : Term n)
+    → (env : Vec (BijN b) n)
+    → ⟦ t ⟧T ℕ-sig (map toℕ env) ≡ toℕ (⟦ t ⟧T (BijN-sig b) env)
+toℕ-term-homo     (var i)   env = lookup-map toℕ env i
+toℕ-term-homo {b} (t₁ ∔ t₂) env
+    rewrite toℕ-term-homo t₁ env | toℕ-term-homo t₂ env
+    = sym (toℕ-⊹-homo
+            (⟦ t₁ ⟧T (BijN-sig b) env)
+            (⟦ t₂ ⟧T (BijN-sig b) env))
 --
 --
 -- mutual
@@ -112,17 +117,17 @@ lookup-map f (x ∷ xs) (suc i) = lookup-map f xs i
 --                 → (pred : Predicate n)
 --                 → (env  : Vec (Bij (suc b)) n)
 --                 → ⟦ pred ⟧ ℕ-sig            (map toℕ env)
---                 → ⟦ pred ⟧ (Bij-sig (suc b)) env
+--                 → ⟦ pred ⟧ (BijN-sig (suc b)) env
 --     toℕ-pred-ℕ⇒Bij {b} (t₁ ≋ t₂) env ⟦t₁≈t₂⟧ℕ
 --         rewrite toℕ-term-homo t₁ env | toℕ-term-homo t₂ env -- ⟦ t₁ ⟧T ℕ-sig (map toℕ env) ≡ toℕ (⟦ t₁ ⟧T (Bij-sig (suc b)) env)
---         = toℕ-injective (⟦ t₁ ⟧T (Bij-sig (suc b)) env) (⟦ t₂ ⟧T (Bij-sig (suc b)) env) ⟦t₁≈t₂⟧ℕ
+--         = toℕ-injective (⟦ t₁ ⟧T (BijN-sig (suc b)) env) (⟦ t₂ ⟧T (BijN-sig (suc b)) env) ⟦t₁≈t₂⟧ℕ
 --     toℕ-pred-ℕ⇒Bij (p ⇒ q)   env ⟦p→q⟧ℕ ⟦p⟧B = toℕ-pred-ℕ⇒Bij q env (⟦p→q⟧ℕ (toℕ-pred-Bij⇒ℕ p env ⟦p⟧B))
 --     toℕ-pred-ℕ⇒Bij (All p)   env ⟦λx→p⟧ℕ x = toℕ-pred-ℕ⇒Bij p (x ∷ env) (⟦λx→p⟧ℕ (toℕ x))
 --
 --     toℕ-pred-Bij⇒ℕ : ∀ {b n}
 --                 → (pred : Predicate n)
 --                 → (env  : Vec (Bij (suc b)) n)
---                 → ⟦ pred ⟧ (Bij-sig (suc b)) env
+--                 → ⟦ pred ⟧ (BijN-sig (suc b)) env
 --                 → ⟦ pred ⟧ ℕ-sig             (map toℕ env)
 --     toℕ-pred-Bij⇒ℕ (t₁ ≋ t₂) env ⟦t₁≈t₂⟧B
 --         rewrite toℕ-term-homo t₁ env | toℕ-term-homo t₂ env
@@ -131,8 +136,8 @@ lookup-map f (x ∷ xs) (suc i) = lookup-map f xs i
 --     toℕ-pred-Bij⇒ℕ {b} (All p) env ⟦λx→p⟧B x
 --         rewrite (sym (toℕ-fromℕ b x)) -- rewritting "x" to "toℕ (fromℕ x)"
 --         = toℕ-pred-Bij⇒ℕ p (fromℕ x ∷ env) (⟦λx→p⟧B (fromℕ x))
---
---
+
+
 -- fromℕ-term-homo : ∀ {b n}
 --     → (term : Term n)
 --     → (env : Vec ℕ n)
