@@ -5,6 +5,8 @@ open import Data.Num.Surjection public
 open import Data.Num.Injection public
 open import Data.Num.Bijection public
 
+open import Data.Unit using (⊤; tt)
+open import Data.Empty using (⊥)
 open import Data.Nat
 open import Data.Nat.Properties.Extra
 open import Data.Nat.DM
@@ -37,6 +39,24 @@ _⊹_ {b} {d} {o}      (x ∷ xs) (y ∷ ys) | yes surj | result quotient remain
             d≥b = Surjective⇒d≥b surj
 _⊹_ {b} {d} {o} {()} xs ys | no ¬surj
 
+_≋_ : ∀ {b d o}
+    → (xs ys : Num b d o)
+    → Set
+_≋_ {b}     {d}     {o} ∙        ∙        = ⊤
+_≋_ {b}     {zero}      ∙        (() ∷ ys)
+_≋_ {b}     {suc d} {o} ∙        (y ∷ ys) with Digit-toℕ y o ≟ 0
+_≋_ {zero}  {suc d} {o} ∙        (y ∷ ys) | yes p = ⊤
+_≋_ {suc b} {suc d}     ∙        (y ∷ ys) | yes p = ∙ ≋ ys
+_≋_ {b}     {suc d}     ∙        (y ∷ ys) | no ¬p = ⊥
+_≋_ {b}     {d}     {o} (x ∷ xs) ∙        with Digit-toℕ x o ≟ 0
+_≋_ {zero}              (x ∷ xs) ∙        | yes p = ⊤
+_≋_ {suc b}             (x ∷ xs) ∙        | yes p = xs ≋ ∙
+_≋_ {b}     {d}     {o} (x ∷ xs) ∙        | no ¬p = ⊥
+_≋_ {b}     {d}     {o} (x ∷ xs) (y ∷ ys) with Digit-toℕ x o ≟ Digit-toℕ y o
+_≋_ {b}     {d}     {o} (x ∷ xs) (y ∷ ys) | yes p = xs ≋ ys
+_≋_ {b}     {d}     {o} (x ∷ xs) (y ∷ ys) | no ¬p = ⊥
+
+-- indexing bijective systems
 BijN : ℕ → Set
 BijN b = Num (suc b) (suc b) 1
 

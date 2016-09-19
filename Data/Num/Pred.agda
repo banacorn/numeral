@@ -110,32 +110,32 @@ toℕ-term-homo {b} (t₁ ∔ t₂) env
     = sym (toℕ-⊹-homo
             (⟦ t₁ ⟧T (BijN-sig b) env)
             (⟦ t₂ ⟧T (BijN-sig b) env))
---
---
--- mutual
---     toℕ-pred-ℕ⇒Bij : ∀ {b n}
---                 → (pred : Predicate n)
---                 → (env  : Vec (Bij (suc b)) n)
---                 → ⟦ pred ⟧ ℕ-sig            (map toℕ env)
---                 → ⟦ pred ⟧ (BijN-sig (suc b)) env
---     toℕ-pred-ℕ⇒Bij {b} (t₁ ≋ t₂) env ⟦t₁≈t₂⟧ℕ
---         rewrite toℕ-term-homo t₁ env | toℕ-term-homo t₂ env -- ⟦ t₁ ⟧T ℕ-sig (map toℕ env) ≡ toℕ (⟦ t₁ ⟧T (Bij-sig (suc b)) env)
---         = toℕ-injective (⟦ t₁ ⟧T (BijN-sig (suc b)) env) (⟦ t₂ ⟧T (BijN-sig (suc b)) env) ⟦t₁≈t₂⟧ℕ
---     toℕ-pred-ℕ⇒Bij (p ⇒ q)   env ⟦p→q⟧ℕ ⟦p⟧B = toℕ-pred-ℕ⇒Bij q env (⟦p→q⟧ℕ (toℕ-pred-Bij⇒ℕ p env ⟦p⟧B))
---     toℕ-pred-ℕ⇒Bij (All p)   env ⟦λx→p⟧ℕ x = toℕ-pred-ℕ⇒Bij p (x ∷ env) (⟦λx→p⟧ℕ (toℕ x))
---
---     toℕ-pred-Bij⇒ℕ : ∀ {b n}
---                 → (pred : Predicate n)
---                 → (env  : Vec (Bij (suc b)) n)
---                 → ⟦ pred ⟧ (BijN-sig (suc b)) env
---                 → ⟦ pred ⟧ ℕ-sig             (map toℕ env)
---     toℕ-pred-Bij⇒ℕ (t₁ ≋ t₂) env ⟦t₁≈t₂⟧B
---         rewrite toℕ-term-homo t₁ env | toℕ-term-homo t₂ env
---         = cong toℕ ⟦t₁≈t₂⟧B
---     toℕ-pred-Bij⇒ℕ (p ⇒ q) env ⟦p→q⟧B ⟦p⟧ℕ = toℕ-pred-Bij⇒ℕ q env (⟦p→q⟧B (toℕ-pred-ℕ⇒Bij p env ⟦p⟧ℕ))
---     toℕ-pred-Bij⇒ℕ {b} (All p) env ⟦λx→p⟧B x
---         rewrite (sym (toℕ-fromℕ b x)) -- rewritting "x" to "toℕ (fromℕ x)"
---         = toℕ-pred-Bij⇒ℕ p (fromℕ x ∷ env) (⟦λx→p⟧B (fromℕ x))
+
+
+mutual
+    toℕ-pred-ℕ⇒Bij : ∀ {b n}
+                → (pred : Predicate n)
+                → (env  : Vec (Bij (suc b)) n)
+                → ⟦ pred ⟧ ℕ-sig            (map toℕ env)
+                → ⟦ pred ⟧ (BijN-sig (suc b)) env
+    toℕ-pred-ℕ⇒Bij {b} (t₁ ≋ t₂) env ⟦t₁≈t₂⟧ℕ
+        rewrite toℕ-term-homo t₁ env | toℕ-term-homo t₂ env -- ⟦ t₁ ⟧T ℕ-sig (map toℕ env) ≡ toℕ (⟦ t₁ ⟧T (Bij-sig (suc b)) env)
+        = toℕ-injective (⟦ t₁ ⟧T (BijN-sig (suc b)) env) (⟦ t₂ ⟧T (BijN-sig (suc b)) env) ⟦t₁≈t₂⟧ℕ
+    toℕ-pred-ℕ⇒Bij (p ⇒ q)   env ⟦p→q⟧ℕ ⟦p⟧B = toℕ-pred-ℕ⇒Bij q env (⟦p→q⟧ℕ (toℕ-pred-Bij⇒ℕ p env ⟦p⟧B))
+    toℕ-pred-ℕ⇒Bij (All p)   env ⟦λx→p⟧ℕ x = toℕ-pred-ℕ⇒Bij p (x ∷ env) (⟦λx→p⟧ℕ (toℕ x))
+
+    toℕ-pred-Bij⇒ℕ : ∀ {b n}
+                → (pred : Predicate n)
+                → (env  : Vec (Bij (suc b)) n)
+                → ⟦ pred ⟧ (BijN-sig (suc b)) env
+                → ⟦ pred ⟧ ℕ-sig             (map toℕ env)
+    toℕ-pred-Bij⇒ℕ (t₁ ≋ t₂) env ⟦t₁≈t₂⟧B
+        rewrite toℕ-term-homo t₁ env | toℕ-term-homo t₂ env
+        = cong toℕ ⟦t₁≈t₂⟧B
+    toℕ-pred-Bij⇒ℕ (p ⇒ q) env ⟦p→q⟧B ⟦p⟧ℕ = toℕ-pred-Bij⇒ℕ q env (⟦p→q⟧B (toℕ-pred-ℕ⇒Bij p env ⟦p⟧ℕ))
+    toℕ-pred-Bij⇒ℕ {b} (All p) env ⟦λx→p⟧B x
+        rewrite (sym (toℕ-fromℕ b x)) -- rewritting "x" to "toℕ (fromℕ x)"
+        = toℕ-pred-Bij⇒ℕ p (fromℕ x ∷ env) (⟦λx→p⟧B (fromℕ x))
 
 
 -- fromℕ-term-homo : ∀ {b n}
