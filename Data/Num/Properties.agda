@@ -6,7 +6,7 @@ open import Data.Nat
 open import Data.Nat.Properties
 open import Data.Nat.Properties.Simple
 open import Data.Nat.Properties.Extra
-open import Data.Fin.Properties hiding (setoid)
+open import Data.Fin.Properties hiding (setoid; _≟_)
 open import Data.Nat.DM
 open import Data.Fin as Fin
     using (Fin; #_; fromℕ≤; inject≤)
@@ -102,6 +102,36 @@ toℕ-⊹-homo {b} {d} {o} (x ∷ xs) (y ∷ ys) | yes surj | result quotient re
     where   d≥b : d ≥ b
             d≥b = Surjective⇒d≥b surj
 toℕ-⊹-homo {surj = ()} xs ys | no _
+
+
+toℕ-≋-ℕ⇒Num-lemma-1 : ∀ m n → m * suc n ≡ 0 → m ≡ 0
+toℕ-≋-ℕ⇒Num-lemma-1 zero n p = refl
+toℕ-≋-ℕ⇒Num-lemma-1 (suc m) n ()
+
+
+toℕ-≋-ℕ⇒Num : ∀ {b d o}
+    → (xs ys : Num b d o)
+    → toℕ xs ≡ toℕ ys
+    → xs ≋ ys
+toℕ-≋-ℕ⇒Num ∙ ∙        ⟦xs⟧≡⟦ys⟧ = tt
+toℕ-≋-ℕ⇒Num {b} {zero} ∙ (() ∷ ys) ⟦∙⟧≡⟦y∷ys⟧
+toℕ-≋-ℕ⇒Num {b} {suc d} {o} ∙ (y ∷ ys) ⟦∙⟧≡⟦y∷ys⟧ with Digit-toℕ y o ≟ 0
+toℕ-≋-ℕ⇒Num {zero} {suc d} ∙ (y ∷ ys) ⟦∙⟧≡⟦y∷ys⟧ | yes p = tt
+toℕ-≋-ℕ⇒Num {suc b} {suc d} {o} ∙ (y ∷ ys) ⟦∙⟧≡⟦y∷ys⟧ | yes p =
+    let ⟦ys⟧≡0 : toℕ ys * suc b ≡ 0
+        ⟦ys⟧≡0 =
+            begin
+                toℕ ys * suc b
+            ≡⟨ cong (λ w → w + toℕ ys * suc b) (sym p) ⟩
+                o + Fin.toℕ y + toℕ ys * suc b
+            ≡⟨ sym ⟦∙⟧≡⟦y∷ys⟧ ⟩
+                zero
+            ∎
+    in
+    toℕ-≋-ℕ⇒Num ∙ ys (sym (toℕ-≋-ℕ⇒Num-lemma-1 (toℕ ys) b ⟦ys⟧≡0))
+toℕ-≋-ℕ⇒Num {b} {suc d} ∙ (y ∷ ys) ⟦∙⟧≡⟦y∷ys⟧ | no ¬p = {!   !}
+toℕ-≋-ℕ⇒Num (x ∷ xs) ys ⟦xs⟧≡⟦ys⟧ = {!   !}
+
 
 -- begin
 --     {!   !}

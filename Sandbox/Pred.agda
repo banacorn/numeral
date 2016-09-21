@@ -68,7 +68,6 @@ lookup-map f []        ()
 lookup-map f (x ∷ env) zero    = refl
 lookup-map f (x ∷ env) (suc i) = lookup-map f env i
 
-
 toℕ-term-homo : ∀ {b d o}
     → {surj : True (Surjective? b d o)}
     → ∀ {n}
@@ -82,8 +81,38 @@ toℕ-term-homo {b} {d} {o} {surj} (s ∔ t) env =
     ≡⟨ cong₂ _+_ (toℕ-term-homo {surj = surj} s env) (toℕ-term-homo {surj = surj} t env) ⟩
         toℕ (⟦ s ⟧Term _ env) + toℕ (⟦ t ⟧Term _ env)
     ≡⟨ sym (toℕ-⊹-homo (⟦ s ⟧Term _ env) (⟦ t ⟧Term _ env)) ⟩
-        toℕ (⟦ s ∔ t ⟧Term (Num-sig b d o surj) {! S Z  !})
+        toℕ (⟦ s ∔ t ⟧Term (Num-sig b d o surj) env)
     ∎
+
+mutual
+    toℕ-pred-ℕ⇒Num : ∀ {b d o}
+        → {surj : True (Surjective? b d o)}
+        → ∀ {n}
+        → (p : Pred n)
+        → (env : Vec (Num b d o) n)
+        → ⟦ p ⟧ ℕ-sig (map toℕ env)
+        → ⟦ p ⟧ (Num-sig b d o surj) env
+    -- toℕ-pred-ℕ⇒Num (p ≣ q) env ⟦p≡q⟧ℕ = {!   !}
+    toℕ-pred-ℕ⇒Num {b} {d} {o} {surj} (p ≣ q) env a =
+        -- a : ⟦ p ⟧Term ℕ-sig (ℕ-env) ≡ ⟦ q ⟧Term ℕ-sig (ℕ-env)
+
+        let p' = ⟦ p ⟧Term {! Num-sig b d o surj  !} {!   !} {!   !}
+            temp = toℕ-injective p' {!   !} a
+        in
+        {! toℕ-injective  !}
+    toℕ-pred-ℕ⇒Num (p ⇒ q) env a = {!   !}
+    toℕ-pred-ℕ⇒Num (All p) env a = {!   !}
+
+    toℕ-pred-Num→ℕ : ∀ {b d o}
+        → {surj : True (Surjective? b d o)}
+        → ∀ {n}
+        → (p : Pred n)
+        → (env : Vec (Num b d o) n)
+        → ⟦ p ⟧ (Num-sig b d o surj) env
+        → ⟦ p ⟧ ℕ-sig (map toℕ env)
+    toℕ-pred-Num→ℕ (p ≣ q) env a = {!   !}
+    toℕ-pred-Num→ℕ (p ⇒ q) env a = {!   !}
+    toℕ-pred-Num→ℕ (All p) env a = {!   !}
 
 
 -- begin
