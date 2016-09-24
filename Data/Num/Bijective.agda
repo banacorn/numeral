@@ -108,15 +108,15 @@ fromℕ (suc n) = 1+ (fromℕ n)
 -- Functions on Bij
 ------------------------------------------------------------------------
 
-infixl 6 _⊹_
-
-_⊹_ : ∀ {b} → Bij b → Bij b → Bij b
-_⊹_         ∙       ys        = ys
-_⊹_         xs       ∙        = xs
-_⊹_ {zero} (() ∷ xs) (y ∷ ys)
-_⊹_ {suc b} (x ∷ xs) (y ∷ ys) with (suc (Fin.toℕ x + Fin.toℕ y)) divMod (suc b)
-_⊹_ {suc b} (x ∷ xs) (y ∷ ys) | result quotient remainder property div-eq mod-eq =
-    remainder ∷ n+ quotient (xs ⊹ ys)
+-- infixl 6 _⊹_
+--
+-- _⊹_ : ∀ {b} → Bij b → Bij b → Bij b
+-- _⊹_         ∙       ys        = ys
+-- _⊹_         xs       ∙        = xs
+-- _⊹_ {zero} (() ∷ xs) (y ∷ ys)
+-- _⊹_ {suc b} (x ∷ xs) (y ∷ ys) with (suc (Fin.toℕ x + Fin.toℕ y)) divMod (suc b)
+-- _⊹_ {suc b} (x ∷ xs) (y ∷ ys) | result quotient remainder property div-eq mod-eq =
+--     remainder ∷ n+ quotient (xs ⊹ ys)
 
 
 -- old base = suc b

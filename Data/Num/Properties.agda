@@ -109,6 +109,10 @@ toℕ-≋-ℕ⇒Num-lemma-1 zero n p = refl
 toℕ-≋-ℕ⇒Num-lemma-1 (suc m) n ()
 
 
+toℕ-≋-ℕ⇒Num-lemma-2 : ∀ m n → m ≢ 0 → m + n ≢ 0
+toℕ-≋-ℕ⇒Num-lemma-2 zero    n p = contradiction refl p
+toℕ-≋-ℕ⇒Num-lemma-2 (suc m) n p ()
+
 toℕ-≋-ℕ⇒Num : ∀ {b d o}
     → (xs ys : Num b d o)
     → toℕ xs ≡ toℕ ys
@@ -129,8 +133,13 @@ toℕ-≋-ℕ⇒Num {suc b} {suc d} {o} ∙ (y ∷ ys) ⟦∙⟧≡⟦y∷ys⟧ 
             ∎
     in
     toℕ-≋-ℕ⇒Num ∙ ys (sym (toℕ-≋-ℕ⇒Num-lemma-1 (toℕ ys) b ⟦ys⟧≡0))
-toℕ-≋-ℕ⇒Num {b} {suc d} ∙ (y ∷ ys) ⟦∙⟧≡⟦y∷ys⟧ | no ¬p = {!   !}
-toℕ-≋-ℕ⇒Num (x ∷ xs) ys ⟦xs⟧≡⟦ys⟧ = {!   !}
+toℕ-≋-ℕ⇒Num {b} {suc d} {o} ∙ (y ∷ ys) ⟦∙⟧≡⟦y∷ys⟧ | no ¬p = toℕ-≋-ℕ⇒Num-lemma-2 (Digit-toℕ y o) (toℕ ys * b) ¬p (sym ⟦∙⟧≡⟦y∷ys⟧)
+toℕ-≋-ℕ⇒Num {b} {zero} (() ∷ xs) ∙ ⟦x∷xs⟧≡⟦∙⟧
+toℕ-≋-ℕ⇒Num {b} {suc d} {o} (x ∷ xs) ∙ ⟦x∷xs⟧≡⟦∙⟧ with Digit-toℕ x o ≟ 0
+toℕ-≋-ℕ⇒Num {zero} {suc d} (x ∷ xs) ∙ ⟦x∷xs⟧≡⟦∙⟧ | yes p = tt
+toℕ-≋-ℕ⇒Num {suc b} {suc d} (x ∷ xs) ∙ ⟦x∷xs⟧≡⟦∙⟧ | yes p = {!   !}
+toℕ-≋-ℕ⇒Num {b} {suc d} (x ∷ xs) ∙ ⟦x∷xs⟧≡⟦∙⟧ | no ¬p = {!   !}
+toℕ-≋-ℕ⇒Num (x ∷ xs) (x₁ ∷ ys) ⟦xs⟧≡⟦ys⟧ = {!   !}
 
 
 -- begin
