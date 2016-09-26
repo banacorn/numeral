@@ -109,18 +109,17 @@ toℕ-digit-1-b : ∀ {b d}
     → (redundant : suc b ≤ d)
     → (full : True (full x))
     → Fin.toℕ (digit+1-b x redundant full) ≡ suc (Fin.toℕ x) ∸ suc b
-toℕ-digit-1-b {b} {d} x redundant full = toℕ-fromℕ≤ $ goal
-    where   goal : suc (Fin.toℕ x ∸ b) ≤ d
-            goal = {!   !}
-    -- start
-    --     {!   !}
-    -- ≤⟨ {!   !} ⟩
-    --     {!   !}
-    -- ≤⟨ {!   !} ⟩
-    --     {!   !}
-    -- ≤⟨ {!   !} ⟩
-    --     {!   !}
-    -- □
+toℕ-digit-1-b {b} {d} x redundant full =
+    begin
+        Fin.toℕ (digit+1-b x redundant full)
+    ≡⟨ refl ⟩
+        Fin.toℕ (fromℕ≤  {suc (Fin.toℕ x) ∸ suc b} (digit+1-b-lemma x redundant full))
+    ≡⟨ toℕ-fromℕ≤ (digit+1-b-lemma x redundant full) ⟩
+        Fin.toℕ x ∸ b
+    ≡⟨ sym ([i+j]∸[i+k]≡j∸k 1 (Fin.toℕ x) b) ⟩
+        suc (Fin.toℕ x) ∸ suc b
+    ∎
+
 
 -- start
 --     {!   !}
