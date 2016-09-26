@@ -2,16 +2,18 @@ module Data.Num.Core where
 
 
 open import Data.Nat
+open import Data.Nat.Properties
 open import Data.Nat.Properties.Simple
 open import Data.Nat.Properties.Extra
 open import Data.Fin as Fin
     using (Fin; fromℕ≤; inject≤)
     renaming (zero to z; suc to s)
-open import Data.Fin.Properties as FinProps using ()
+open import Data.Fin.Properties using (bounded; toℕ-fromℕ≤)
 
 open import Function
 open import Relation.Binary.PropositionalEquality
 open import Relation.Nullary
+open import Relation.Nullary.Decidable
 open import Relation.Binary
 open import Function.Equality using (_⟶_)
 
@@ -52,7 +54,7 @@ Digit-toℕ-fromℕ≤ : ∀ {d o n} → (p : n < d) → Digit-toℕ (fromℕ≤
 Digit-toℕ-fromℕ≤ {d} {o} {n} p =
     begin
         o + Fin.toℕ (fromℕ≤ p)
-    ≡⟨ cong (_+_ o) (FinProps.toℕ-fromℕ≤ p) ⟩
+    ≡⟨ cong (_+_ o) (toℕ-fromℕ≤ p) ⟩
         o + n
     ≡⟨ +-comm o n ⟩
         n + o
@@ -64,17 +66,103 @@ Digit<d+o {d} x o =
         suc (o + Fin.toℕ x)
     ≤⟨ reflexive (sym (+-suc o (Fin.toℕ x))) ⟩
         o + suc (Fin.toℕ x)
-    ≤⟨ n+-mono o (FinProps.bounded x) ⟩
+    ≤⟨ n+-mono o (bounded x) ⟩
         o + d
     ≤⟨ reflexive (+-comm o d) ⟩
         d + o
     □
 
-
-
 -- A digit at its greatest
 full : ∀ {d} (x : Fin d) → Dec (suc (Fin.toℕ x) ≡ d)
 full {d} x = suc (Fin.toℕ x) ≟ d
+
+-- +1 and then -base, useful for handling carrying on increment
+
+digit+1-b-lemma : ∀ {b d}
+    → (x : Digit d)
+    → (redundant : suc b ≤ d)
+    → (full : True (full x))
+    → suc (Fin.toℕ x) ∸ suc b < d
+digit+1-b-lemma {b} {d} x redundant full =
+    start
+        suc (suc (Fin.toℕ x) ∸ suc b)
+    ≤⟨ s≤s (∸-mono {suc (Fin.toℕ x)} {d} {suc b} {suc b} (bounded x) ≤-refl) ⟩
+        suc (d ∸ suc b)
+    ≤⟨ reflexive (sym (+-∸-assoc (suc zero) redundant)) ⟩
+        suc d ∸ suc b
+    ≤⟨ reflexive ([i+j]∸[i+k]≡j∸k 1 d b) ⟩
+        d ∸ b
+    ≤⟨ ∸-mono {d} {d} {b} ≤-refl z≤n ⟩
+        d
+    □
+
+digit+1-b : ∀ {b d}
+    → (x : Digit d)
+    → (redundant : suc b ≤ d)
+    → (full : True (full x))
+    → Digit d
+digit+1-b {b} {d} x redundant full
+    = fromℕ≤ {suc (Fin.toℕ x) ∸ suc b} (digit+1-b-lemma x redundant full)
+
+toℕ-digit-1-b : ∀ {b d}
+    → (x : Digit d)
+    → (redundant : suc b ≤ d)
+    → (full : True (full x))
+    → Fin.toℕ (digit+1-b x redundant full) ≡ suc (Fin.toℕ x) ∸ suc b
+toℕ-digit-1-b {b} {d} x redundant full = toℕ-fromℕ≤ $ goal
+    where   goal : suc (Fin.toℕ x ∸ b) ≤ d
+            goal = {!   !}
+    -- start
+    --     {!   !}
+    -- ≤⟨ {!   !} ⟩
+    --     {!   !}
+    -- ≤⟨ {!   !} ⟩
+    --     {!   !}
+    -- ≤⟨ {!   !} ⟩
+    --     {!   !}
+    -- □
+
+-- start
+--     {!   !}
+-- ≤⟨ {!   !} ⟩
+--     {!   !}
+-- ≤⟨ {!   !} ⟩
+--     {!   !}
+-- ≤⟨ {!   !} ⟩
+--     {!   !}
+-- □
+
+-- begin
+--     {!   !}
+-- ≡⟨ {!   !} ⟩
+--     {!   !}
+-- ≡⟨ {!   !} ⟩
+--     {!   !}
+-- ≡⟨ {!   !} ⟩
+--     {!   !}
+-- ≡⟨ {!   !} ⟩
+--     {!   !}
+-- ∎
+
+digit+1-b-legacy-lemma : ∀ {b d} → (x : Digit d)
+    → b ≥ 1 → suc (Fin.toℕ x) ≡ d
+    → suc (Fin.toℕ x) ∸ b < d
+digit+1-b-legacy-lemma {b} {d} x b≥1 p =
+    start
+        suc (suc (Fin.toℕ x) ∸ b)
+    ≤⟨ s≤s (∸-mono ≤-refl b≥1) ⟩
+        suc (Fin.toℕ x)
+    ≤⟨ reflexive p ⟩
+        d
+    □
+
+digit+1-b-legacy : ∀ {b d} → (x : Digit d) → b ≥ 1 → suc (Fin.toℕ x) ≡ d → Fin d
+digit+1-b-legacy {b} {d} x b≥1 p = fromℕ≤ {suc (Fin.toℕ x) ∸ b} (digit+1-b-legacy-lemma x b≥1 p)
+
+digit+1 : ∀ {d} → (x : Digit d) → (¬p : suc (Fin.toℕ x) ≢ d) → Fin d
+digit+1 x ¬p = fromℕ≤ {suc (Fin.toℕ x)} (≤∧≢⇒< (bounded x) ¬p)
+
+
 
 ------------------------------------------------------------------------
 -- Conversion to ℕ

@@ -96,14 +96,53 @@ Num-b-1-0⇒¬incrementable {b} xs (xs' , p) = contradiction (
         1
     ∎) (λ ())
 
-¬incrementable-lemma-2 : ∀ {b d o} → ¬ (incrementable {b} {suc d} {suc (suc o)} ∙)
-¬incrementable-lemma-2 (∙ , ())
-¬incrementable-lemma-2 (x ∷ xs , ())
+incrementable-lemma-2 : ∀ {b d o} → ¬ (incrementable {b} {suc d} {suc (suc o)} ∙)
+incrementable-lemma-2 (∙ , ())
+incrementable-lemma-2 (x ∷ xs , ())
+
+incrementable-lemma-3 : ∀ {d o}
+    → (x : Digit (suc d)) → (xs : Num 0 (suc d) o)
+    → suc (Fin.toℕ x) ≡ suc d
+    → ¬ (incrementable (x ∷ xs))
+incrementable-lemma-3 x xs p (∙ , ())
+incrementable-lemma-3 {d} {o} x xs p (x' ∷ xs' , q) =
+    let x'≡1+x : Fin.toℕ x' ≡ suc (Fin.toℕ x)
+        x'≡1+x  = cancel-+-left o
+                $ cancel-+-right 0
+                $ begin
+                    o + Fin.toℕ x' + zero
+                ≡⟨ cong (_+_ (Digit-toℕ x' o)) (sym (*-right-zero (toℕ xs'))) ⟩
+                    Digit-toℕ x' o + toℕ xs' * zero
+                ≡⟨ q ⟩
+                    suc (Digit-toℕ x o + toℕ xs * zero)
+                ≡⟨ cong (_+_ (suc (Digit-toℕ x o))) (*-right-zero (toℕ xs)) ⟩
+                    suc (o + Fin.toℕ x + zero)
+                ≡⟨ cong (λ w → w + zero) (sym (+-suc o (Fin.toℕ x))) ⟩
+                    o + suc (Fin.toℕ x) + zero
+                ∎
+        x'≡1+d : Fin.toℕ x' ≡ suc d
+        x'≡1+d =
+            begin
+                Fin.toℕ x'
+            ≡⟨ x'≡1+x ⟩
+                suc (Fin.toℕ x)
+            ≡⟨ p ⟩
+                suc d
+            ∎
+        x'≢1+d : Fin.toℕ x' ≢ suc d
+        x'≢1+d = <⇒≢ (bounded x')
+    in contradiction x'≡1+d x'≢1+d
+
+incrementable-lemma-4 : ∀ {b d o}
+    → (x : Digit (suc d))
+    → (xs xs' : Num (suc b) (suc d) o)
+    → toℕ xs' ≡ suc (toℕ xs)
+    → (isFull : suc (Fin.toℕ x) ≡ suc d)
+    → toℕ (digit+1-b {suc b} x (s≤s z≤n) isFull ∷ xs') ≡ suc (toℕ (x ∷ xs))
+incrementable-lemma-4 x xs xs' p full = {!   !}
 
 
-¬incrementable-lemma-3 : ∀ {d o} → (x : Digit (suc d)) → (xs : Num 0 (suc d) o) → ¬ (incrementable (x ∷ xs))
-¬incrementable-lemma-3 x ∙ (xs' , p) = {!   !}
-¬incrementable-lemma-3 x (x₁ ∷ xs) (xs' , p) = {!   !}
+
 -- begin
 --     {!   !}
 -- ≡⟨ {!   !} ⟩
@@ -116,38 +155,42 @@ Num-b-1-0⇒¬incrementable {b} xs (xs' , p) = contradiction (
 --     {!   !}
 -- ∎
 
+incrementable? : ∀ {b d o} → (xs : Num b d o) → Dec (incrementable xs)
+-- no digits at all
+incrementable? {_} {zero}               xs = no (incrementable-lemma-no-digits xs)
+-- all numbers evaluates to 0
+incrementable? {_} {suc zero}    {zero} ∙  = no (Num-b-1-0⇒¬incrementable ∙)
+incrementable? {_} {suc (suc d)} {zero} ∙  = yes ((fromℕ≤ {1} (s≤s (s≤s z≤n)) ∷ ∙) , refl)
+incrementable? {d = suc d} {suc zero} ∙ = yes (z ∷ ∙ , refl)
+-- digits starts from 2, impossible to increment from 0
+incrementable? {d = suc d} {suc (suc o)} ∙ = no incrementable-lemma-2
+-- see if the LSD is at its largest
+incrementable? {d = suc d} (x ∷ xs) with full x
+-- the system is bounded because base = 0
+incrementable? {zero} {suc d} (x ∷ xs) | yes p = no (incrementable-lemma-3 x xs p)
+incrementable? {suc b} {suc d} (x ∷ xs) | yes p with incrementable? xs
+incrementable? {suc b} {suc d} (x ∷ xs) | yes p | yes (xs' , q) with b ≤? d
+incrementable? {suc b} {suc d} (x ∷ xs) | yes p | yes (xs' , q) | yes r
+    = yes (digit+1-b {suc b} x (s≤s z≤n) p ∷ xs' , {!   !})
+incrementable? {suc b} {suc d} (x ∷ xs) | yes p | yes (xs' , q) | no ¬r = no {!   !}
+incrementable? {suc b} {suc d} (x ∷ xs) | yes p | no ¬q = no {!   !}
+incrementable? {b} {suc d} (x ∷ xs) | no ¬p = yes {!   !}
+
 mutual
-    incrementable? : ∀ {b d o} → (xs : Num b d o) → Dec (incrementable xs)
-    incrementable? {_} {zero}               xs = no (incrementable-lemma-no-digits xs)
-    incrementable? {_} {suc zero}    {zero} ∙  = no (Num-b-1-0⇒¬incrementable ∙)
-    incrementable? {_} {suc (suc d)} {zero} ∙  = yes ((fromℕ≤ {1} (s≤s (s≤s z≤n)) ∷ ∙) , refl)
-    incrementable? {d = suc d} {suc zero} ∙ = yes (z ∷ ∙ , refl)
-    incrementable? {d = suc d} {suc (suc o)} ∙ = no ¬incrementable-lemma-2
-    incrementable? {d = suc d} (x ∷ xs) with full x
-    incrementable? {b} {suc d} (x ∷ xs) | yes p with incrementable? xs
-    incrementable? {b} {suc d} (x ∷ xs) | yes p | yes q with b ≤? d
-    incrementable? {zero} {suc d} (x ∷ xs) | yes p | yes q | yes r =
-        no {!   !}
-    incrementable? {suc b} {suc d} (x ∷ xs) | yes p | yes q | yes r
-        = yes ((digit+1-b {suc b} {suc d} x (s≤s z≤n) p ∷ 1+ xs (fromWitness q)) , {!   !})
-    -- incrementable? {b} {suc d} (x ∷ xs) | yes p | yes q | yes r = yes ({! digit+1-b {b} {suc d} x   !} , {!   !})
-    incrementable? {b} {suc d} (x ∷ xs) | yes p | yes q | no ¬r = no {!   !}
-    incrementable? {b} {suc d} (x ∷ xs) | yes p | no ¬q = no {!   !}
-    incrementable? {b} {suc d} (x ∷ xs) | no ¬p = yes {!   !}
 
     1+ : ∀ {b d o} → (xs : Num b d o) → True (incrementable? xs) → Num b d o
     1+ {d = zero} xs ()
     1+ {d = suc zero} {zero} ∙ ()
     1+ {d = suc (suc d)} {zero} ∙ p = fromℕ≤ {1} (s≤s (s≤s z≤n)) ∷ ∙
     1+ {d = suc d} {suc zero} ∙ p = z ∷ ∙
-    1+ {d = suc d} {suc (suc o)} ∙ p = contradiction (toWitness p) ((¬incrementable-lemma-2 {_} {d} {o}))
-    1+ {d = suc d} (x ∷ xs) p with full x
-    1+ {b} {suc d} (x ∷ xs) p₁ | yes p with incrementable? xs
-    1+ {b} {suc d} (x ∷ xs) p₂ | yes p | yes q with b ≤? d
-    1+ {b} {suc d} (x ∷ xs) p₂ | yes p | yes q | yes r = {!   !}
-    1+ {b} {suc d} (x ∷ xs) p₂ | yes p | yes q | no ¬r = {!   !}
-    1+ {b} {suc d} (x ∷ xs) p₁ | yes p | no ¬q = {!   !}
-    1+ {b} {suc d} (x ∷ xs) p | no ¬p = {!   !}
+    1+ {d = suc d} {suc (suc o)} ∙ p = contradiction (toWitness p) ((incrementable-lemma-2 {_} {d} {o}))
+    1+ {d = suc d} (x ∷ xs) incr with full x
+    1+ {b} {suc d} (x ∷ xs) incr | yes p with incrementable? xs
+    1+ {b} {suc d} (x ∷ xs) incr | yes p | yes q with b ≤? d
+    1+ {b} {suc d} (x ∷ xs) incr | yes p | yes q | yes r = {!   !}
+    1+ {b} {suc d} (x ∷ xs) incr | yes p | yes q | no ¬r = {!   !}
+    1+ {b} {suc d} (x ∷ xs) incr | yes p | no ¬q = {!   !}
+    1+ {b} {suc d} (x ∷ xs) incr | no ¬p = {!   !}
 
 -- -- no digits
 -- incrementable? {b} {zero} {o} ∙ = no (incrementable-lemma-no-digits ∙)
@@ -157,7 +200,7 @@ mutual
 -- incrementable? {b} {suc (suc d)} {zero} ∙ = yes ((fromℕ≤ {1} (s≤s (s≤s z≤n)) ∷ ∙) , refl)
 -- incrementable? {b} {suc d} {suc zero} ∙ = yes (z ∷ ∙ , refl)
 -- -- offset = 2, it's impossible for "1" to exist
--- incrementable? {b} {suc d} {suc (suc o)} ∙ = no ¬incrementable-lemma-2
+-- incrementable? {b} {suc d} {suc (suc o)} ∙ = no incrementable-lemma-2
 -- incrementable? {b} {d} {o} (x ∷ xs) with full x
 -- -- x is at its largest, needs to carry in order to be incrementable
 -- incrementable? (x ∷ xs) | yes p with incrementable? xs

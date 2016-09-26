@@ -95,24 +95,6 @@ SurjCond⇒IsSurj (Zeroless _ d≥b)          | NonSurj (NotEnoughDigits _ d≱b
 -- Operations on Num (which does not necessary needs to be Surj)
 ------------------------------------------------------------------------
 
-digit+1-b-lemma : ∀ {b d} → (x : Digit d)
-    → b ≥ 1 → suc (Fin.toℕ x) ≡ d
-    → suc (Fin.toℕ x) ∸ b < d
-digit+1-b-lemma {b} {d} x b≥1 p =
-    start
-        suc (suc (Fin.toℕ x) ∸ b)
-    ≤⟨ s≤s (∸-mono ≤-refl b≥1) ⟩
-        suc (Fin.toℕ x)
-    ≤⟨ reflexive p ⟩
-        d
-    □
-
-digit+1-b : ∀ {b d} → (x : Digit d) → b ≥ 1 → suc (Fin.toℕ x) ≡ d → Fin d
-digit+1-b {b} {d} x b≥1 p = fromℕ≤ {suc (Fin.toℕ x) ∸ b} (digit+1-b-lemma x b≥1 p)
-
-digit+1 : ∀ {d} → (x : Digit d) → (¬p : suc (Fin.toℕ x) ≢ d) → Fin d
-digit+1 x ¬p = fromℕ≤ {suc (Fin.toℕ x)} (≤∧≢⇒< (bounded x) ¬p)
-
 starting-digit : ∀ {b d o} → SurjCond b d o → Digit d
 starting-digit (WithZerosUnary d≥2) = fromℕ≤ {1} d≥2
 starting-digit (WithZeros b≥2 d≥b) = fromℕ≤ {1} (≤-trans b≥2 d≥b)
@@ -122,7 +104,7 @@ starting-digit (Zeroless b≥1 d≥b) = fromℕ≤ {0} (≤-trans b≥1 d≥b)
 1+ {b} {d} {o} xs with surjectionView b d o
 1+ ∙        | Surj cond = starting-digit cond ∷ ∙
 1+ (x ∷ xs) | Surj cond with full x
-1+ (x ∷ xs) | Surj cond | yes p = digit+1-b x (SurjCond⇒b≥1 cond) p ∷ 1+ xs -- carry
+1+ (x ∷ xs) | Surj cond | yes p = digit+1-b-legacy x (SurjCond⇒b≥1 cond) p ∷ 1+ xs -- carry
 1+ (x ∷ xs) | Surj cond | no ¬p = digit+1   x ¬p                     ∷    xs
 1+ ∙        | NonSurj reason = ∙
 1+ (x ∷ xs) | NonSurj reason = xs
@@ -147,7 +129,7 @@ fromℕ n | NonSurj x = ∙
 
 toℕ-digit+1-b : ∀ {d b} (x : Digit d)
     → (b≥1 : b ≥ 1) → (p : suc (Fin.toℕ x) ≡ d)     -- required props
-    → Fin.toℕ (digit+1-b x b≥1 p) ≡ suc (Fin.toℕ x) ∸ b
+    → Fin.toℕ (digit+1-b-legacy x b≥1 p) ≡ suc (Fin.toℕ x) ∸ b
 toℕ-digit+1-b {d} {b} x b≥1 p = toℕ-fromℕ≤ $ start
         suc (suc (Fin.toℕ x) ∸ b)
     ≤⟨ s≤s (∸-mono ≤-refl b≥1) ⟩
@@ -165,12 +147,12 @@ toℕ-1+-x∷xs-full-lemma : ∀ {b d o}
     → (cond : SurjCond b d o)
     → (p : suc (Fin.toℕ x) ≡ d)
     → (toℕ-1+-xs : toℕ (1+ xs) ≡ suc (toℕ xs))
-    → toℕ (digit+1-b x (SurjCond⇒b≥1 cond) p ∷ 1+ xs) ≡ suc (toℕ (x ∷ xs))
+    → toℕ (digit+1-b-legacy x (SurjCond⇒b≥1 cond) p ∷ 1+ xs) ≡ suc (toℕ (x ∷ xs))
 toℕ-1+-x∷xs-full-lemma {b} {d} {o} x xs cond p toℕ-1+-xs =
     begin
-        toℕ (digit+1-b x (SurjCond⇒b≥1 cond) p ∷ 1+ xs)
+        toℕ (digit+1-b-legacy x (SurjCond⇒b≥1 cond) p ∷ 1+ xs)
     -- toℕ-fromℕ≤ : toℕ (fromℕ≤ m<n) ≡ m
-    ≡⟨ cong (λ w → o + w + toℕ (1+ xs) * b) (toℕ-fromℕ≤ ((digit+1-b-lemma x (SurjCond⇒b≥1 cond) p))) ⟩
+    ≡⟨ cong (λ w → o + w + toℕ (1+ xs) * b) (toℕ-fromℕ≤ ((digit+1-b-legacy-lemma x (SurjCond⇒b≥1 cond) p))) ⟩
         o + (suc (Fin.toℕ x) ∸ b) + toℕ (1+ xs) * b
     -- induction hypothesis
     ≡⟨ cong (λ w → o + (suc (Fin.toℕ x) ∸ b) + w * b) toℕ-1+-xs ⟩
