@@ -157,19 +157,17 @@ incrementable-lemma-3 : ∀ {d o}
 incrementable-lemma-3 x xs p (∙ , ())
 incrementable-lemma-3 {d} {o} x xs p (x' ∷ xs' , q) =
     let x'≡1+x : Fin.toℕ x' ≡ suc (Fin.toℕ x)
-        x'≡1+x  = cancel-+-left o
+        x'≡1+x  = cancel-+-right o
                 $ cancel-+-right 0
                 $ begin
-                    o + Fin.toℕ x' + zero
-                ≡⟨ cong (_+_ (Digit-toℕ x' o)) (sym (*-right-zero (toℕ xs'))) ⟩
-                    Digit-toℕ x' o + toℕ xs' * zero
-                ≡⟨ q ⟩
-                    suc (Digit-toℕ x o + toℕ xs * zero)
-                ≡⟨ cong (_+_ (suc (Digit-toℕ x o))) (*-right-zero (toℕ xs)) ⟩
-                    suc (o + Fin.toℕ x + zero)
-                ≡⟨ cong (λ w → w + zero) (sym (+-suc o (Fin.toℕ x))) ⟩
-                    o + suc (Fin.toℕ x) + zero
-                ∎
+                        Fin.toℕ x' + o + zero
+                    ≡⟨ cong (_+_ (Digit-toℕ x' o)) (sym (*-right-zero (toℕ xs'))) ⟩
+                        Fin.toℕ x' + o + toℕ xs' * zero
+                    ≡⟨ q ⟩
+                        suc (Fin.toℕ x + o + toℕ xs * zero)
+                    ≡⟨ cong (_+_ (suc (Digit-toℕ x o))) (*-right-zero (toℕ xs)) ⟩
+                        suc (Fin.toℕ x + o + zero)
+                    ∎
         x'≡1+d : Fin.toℕ x' ≡ suc d
         x'≡1+d =
             begin
@@ -195,17 +193,21 @@ incrementable-lemma-4 {b} {d} {o} x xs xs' p redundant greatest =
         toℕ (digit+1-b {b} x redundant greatest ∷ xs')
     ≡⟨ refl ⟩
         Digit-toℕ (digit+1-b {b} x redundant greatest) o + toℕ xs' * suc b
-    ≡⟨ cong (λ w → w + toℕ xs' * suc b) (Digit-toℕ-digit+1-b {b} {suc d} {o} x redundant greatest) ⟩
-        o + (Fin.toℕ x ∸ b) + toℕ xs' * suc b
-    ≡⟨ cong (λ w → o + (Fin.toℕ x ∸ b) + w * suc b) p ⟩
-        o + (Fin.toℕ x ∸ b) + suc (b + toℕ xs * suc b)
-    ≡⟨ +-suc (o + (Fin.toℕ x ∸ b)) (b + toℕ xs * suc b) ⟩
-        suc (o + (Fin.toℕ x ∸ b) + (b + toℕ xs * suc b))
-    ≡⟨ +-assoc (suc o) (Fin.toℕ x ∸ b) (b + toℕ xs * suc b) ⟩
-        suc (o + (Fin.toℕ x ∸ b + (b + toℕ xs * suc b)))
-    ≡⟨ cong (λ w → suc (o + w)) (sym (+-assoc (Fin.toℕ x ∸ b) b (toℕ xs * suc b))) ⟩
-        suc (o + (Fin.toℕ x ∸ b + b + toℕ xs * suc b))
-    ≡⟨ cong (λ w → suc (o + (w + toℕ xs * suc b))) (m∸n+n $ ≤-pred $
+    -- fuse Digit-toℕ with digit+1-b
+    ≡⟨ cong (λ w → w + toℕ xs' * suc b) (Digit-toℕ-digit+1-b x redundant greatest) ⟩
+        Fin.toℕ x ∸ b + o + toℕ xs' * suc b
+    -- p : toℕ xs' ≡ suc (toℕ xs)
+    ≡⟨ cong (λ w → (Fin.toℕ x ∸ b) + o + w * suc b) p ⟩
+    -- moving things around
+        Fin.toℕ x ∸ b + o + suc (b + toℕ xs * suc b)
+    ≡⟨ +-suc (Fin.toℕ x ∸ b + o) (b + toℕ xs * suc b) ⟩
+        suc (Fin.toℕ x ∸ b + o + (b + toℕ xs * suc b))
+    ≡⟨ sym (+-assoc (suc (Fin.toℕ x ∸ b + o)) b (toℕ xs * suc b)) ⟩
+        suc (Fin.toℕ x ∸ b + o + b + toℕ xs * suc b)
+    ≡⟨ cong (λ w → suc (w + toℕ xs * suc b)) ([a+b]+c≡[a+c]+b (Fin.toℕ x ∸ b) o b) ⟩
+        suc (Fin.toℕ x ∸ b + b + o + toℕ xs * suc b)
+    -- remove that annoying "∸ b + b"
+    ≡⟨ cong (λ w → suc (w + o + toℕ xs * suc b)) (m∸n+n $ ≤-pred $
         start
             suc b
         ≤⟨ redundant ⟩
@@ -213,21 +215,40 @@ incrementable-lemma-4 {b} {d} {o} x xs xs' p redundant greatest =
         ≤⟨ reflexive (sym greatest) ⟩
             suc (Fin.toℕ x)
         □ ) ⟩
-        suc (o + (Fin.toℕ x + toℕ xs * suc b))
-    ≡⟨ cong suc (sym (+-assoc o (Fin.toℕ x) (toℕ xs * suc b))) ⟩
-        suc (toℕ (x ∷ xs))
+        suc (Fin.toℕ x + o + toℕ xs * suc b)
     ∎
+
+-- start
+--     {!   !}
+-- ≤⟨ {!   !} ⟩
+--     {!   !}
+-- ≤⟨ {!   !} ⟩
+--     {!   !}
+-- ≤⟨ {!   !} ⟩
+--     {!   !}
+-- □
 
 tail-mono-strict : ∀ {b d o} (x y : Digit d) (xs ys : Num b d o)
     → Greatest x
     → toℕ (x ∷ xs) < toℕ (y ∷ ys)
     → toℕ xs < toℕ ys
-tail-mono-strict z z ∙ ∙ greatest p = {!   !}
-tail-mono-strict z (s y) ∙ ∙ greatest p = {! toWitness greatest  !}
-tail-mono-strict (s x) y ∙ ∙ greatest p = {!   !}
-tail-mono-strict x y ∙ (y' ∷ ys) greatest p = {!   !}
-tail-mono-strict x y (x' ∷ xs) ∙ greatest p = {!   !}
-tail-mono-strict x y (x' ∷ xs) (y' ∷ ys) greatest p = {!   !}
+tail-mono-strict  {b} {d} {o} x y ∙ ∙ greatest p = contradiction 0<0 (λ ())
+    where   0<0 : 0 < 0
+            0<0 = +-mono-contra (greatest-of-all o x y greatest) p
+tail-mono-strict {b} {d} {o} x y ∙         (y' ∷ ys) greatest p = ⟦y'∷ys⟧>0
+    where   ⟦∷y'∷ys⟧>0 : toℕ (y' ∷ ys) * b > 0
+            ⟦∷y'∷ys⟧>0 = +-mono-contra (greatest-of-all o x y greatest) p
+            ⟦y'∷ys⟧>0 : toℕ (y' ∷ ys) > 0
+            ⟦y'∷ys⟧>0 = proj₁ (i*j>0⇒i>0∧j>0 (toℕ (y' ∷ ys)) b ⟦∷y'∷ys⟧>0)
+tail-mono-strict {b} {d} {o} x y (x' ∷ xs) ∙         greatest p = contradiction something<0 (λ ())
+    where   something<0 : toℕ (x' ∷ xs) * b < 0
+            something<0 = +-mono-contra (greatest-of-all o x y greatest) p
+tail-mono-strict {zero} x y (x' ∷ xs) (y' ∷ ys) greatest p = {!   !}
+tail-mono-strict {suc b} {d} {o} x y (x' ∷ xs) (y' ∷ ys) greatest p
+    = {! ⟦∷x'∷xs⟧<⟦∷y'∷ys⟧  !}
+    -- = *n-mono-contra (suc b) {! ⟦∷x'∷xs⟧<⟦∷y'∷ys⟧  !}
+    where   ⟦∷x'∷xs⟧<⟦∷y'∷ys⟧ : toℕ (x' ∷ xs) * suc b < toℕ (y' ∷ ys) * suc b
+            ⟦∷x'∷xs⟧<⟦∷y'∷ys⟧ = +-mono-contra (greatest-of-all o x y greatest) p
 
 incrementable-lemma-5 : ∀ {b d o}
     → (x : Digit (suc d))

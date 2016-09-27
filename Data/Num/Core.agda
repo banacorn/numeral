@@ -47,37 +47,33 @@ data Num : ℕ → ℕ → ℕ → Set where
 --------------------------------------------------------------------------------
 
 Digit-toℕ : ∀ {d} → Digit d → ℕ → ℕ
-Digit-toℕ d o = o + Fin.toℕ d
+Digit-toℕ d o = Fin.toℕ d + o
 
 
 Digit-toℕ-fromℕ≤ : ∀ {d o n} → (p : n < d) → Digit-toℕ (fromℕ≤ p) o ≡ n + o
 Digit-toℕ-fromℕ≤ {d} {o} {n} p =
     begin
-        o + Fin.toℕ (fromℕ≤ p)
-    ≡⟨ cong (_+_ o) (toℕ-fromℕ≤ p) ⟩
-        o + n
-    ≡⟨ +-comm o n ⟩
+        Fin.toℕ (fromℕ≤ p) + o
+    ≡⟨ cong (λ w → w + o) (toℕ-fromℕ≤ p) ⟩
         n + o
     ∎
 
 Digit<d+o : ∀ {d} → (x : Digit d) → (o : ℕ) → Digit-toℕ x o < d + o
-Digit<d+o {d} x o =
-    start
-        suc (o + Fin.toℕ x)
-    ≤⟨ reflexive (sym (+-suc o (Fin.toℕ x))) ⟩
-        o + suc (Fin.toℕ x)
-    ≤⟨ n+-mono o (bounded x) ⟩
-        o + d
-    ≤⟨ reflexive (+-comm o d) ⟩
-        d + o
-    □
+Digit<d+o {d} x o = +n-mono o (bounded x)
 
-Greatest : ∀ {d} (x : Fin d) → Set
+Greatest : ∀ {d} (x : Digit d) → Set
 Greatest {d} x = suc (Fin.toℕ x) ≡ d
 
 -- A digit at its greatest
-Greatest? : ∀ {d} (x : Fin d) → Dec (Greatest x)
+Greatest? : ∀ {d} (x : Digit d) → Dec (Greatest x)
 Greatest? {d} x = suc (Fin.toℕ x) ≟ d
+
+greatest-of-all : ∀ {d} (o : ℕ) → (x y : Digit d) → Greatest x → Digit-toℕ x o ≥ Digit-toℕ y o
+greatest-of-all o z     z      refl = ≤-refl
+greatest-of-all o z     (s ()) refl
+greatest-of-all o (s x) z      greatest = +n-mono o {zero} {suc (Fin.toℕ x)} z≤n
+greatest-of-all o (s x) (s y)  greatest = s≤s (greatest-of-all o x y (suc-injective greatest))
+
 
 -- +1 and then -base, useful for handling carrying on increment
 
@@ -127,8 +123,8 @@ Digit-toℕ-digit+1-b : ∀ {b d o}
     → (x : Digit d)
     → (redundant : suc b ≤ d)
     → (greatest : Greatest x)
-    → Digit-toℕ (digit+1-b x redundant greatest) o ≡ o + (suc (Fin.toℕ x) ∸ suc b)
-Digit-toℕ-digit+1-b {b} {d} {o} x redundant greatest = cong (_+_ o) (toℕ-digit+1-b x redundant greatest)
+    → Digit-toℕ (digit+1-b x redundant greatest) o ≡ (suc (Fin.toℕ x) ∸ suc b) + o
+Digit-toℕ-digit+1-b {b} {d} {o} x redundant greatest = cong (λ w → w + o) (toℕ-digit+1-b x redundant greatest)
 
 -- start
 --     {!   !}
