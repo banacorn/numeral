@@ -178,3 +178,26 @@ distrib-left-*-+ m n o =
     ≡⟨ cong₂ _+_ (*-comm n m) (*-comm o m) ⟩
         m * n + m * o
     ∎
+
+m∸n+n : ∀ {m n} → n ≤ m → m ∸ n + n ≡ m
+m∸n+n {m} {n} n≤m =
+    begin
+        m ∸ n + n
+    ≡⟨ +-comm (m ∸ n) n ⟩
+        n + (m ∸ n)
+    ≡⟨ m+n∸m≡n n≤m ⟩
+        m
+    ∎
+
+
+-- begin
+--     {!   !}
+-- ≡⟨ {!   !} ⟩
+--     {!   !}
+-- ≡⟨ {!   !} ⟩
+--     {!   !}
+-- ≡⟨ {!   !} ⟩
+--     {!   !}
+-- ≡⟨ {!   !} ⟩
+--     {!   !}
+-- ∎

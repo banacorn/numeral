@@ -100,359 +100,557 @@ starting-digit (WithZerosUnary d≥2) = fromℕ≤ {1} d≥2
 starting-digit (WithZeros b≥2 d≥b) = fromℕ≤ {1} (≤-trans b≥2 d≥b)
 starting-digit (Zeroless b≥1 d≥b) = fromℕ≤ {0} (≤-trans b≥1 d≥b)
 
-1+ : ∀ {b d o} → Num b d o → Num b d o
-1+ {b} {d} {o} xs with surjectionView b d o
-1+ ∙        | Surj cond = starting-digit cond ∷ ∙
-1+ (x ∷ xs) | Surj cond with full x
-1+ (x ∷ xs) | Surj cond | yes p = digit+1-b-legacy x (SurjCond⇒b≥1 cond) p ∷ 1+ xs -- carry
-1+ (x ∷ xs) | Surj cond | no ¬p = digit+1   x ¬p                     ∷    xs
-1+ ∙        | NonSurj reason = ∙
-1+ (x ∷ xs) | NonSurj reason = xs
 
+-- (incrementable n) if there exists some n' : Num b d o such that ⟦ n' ⟧ℕ ≡ suc ⟦ n ⟧ℕ
+incrementable : ∀ {b d o} → Num b d o → Set
+incrementable {b} {d} {o} xs = Σ[ xs' ∈ Num b d o ] toℕ xs' ≡ suc (toℕ xs)
 
-n+ : ∀ {b d o} → ℕ → Num b d o → Num b d o
-n+ zero xs = xs
-n+ (suc n) xs = 1+ (n+ n xs)
+-- when a system has no digits at all
+incrementable-lemma-no-digits : ∀ {b o} → (xs : Num b 0 o) → ¬ (incrementable xs)
+incrementable-lemma-no-digits ∙ (∙ , ())
+incrementable-lemma-no-digits ∙ (() ∷ xs , p)
+incrementable-lemma-no-digits (() ∷ xs)
 
-fromℕ : ∀ {b d o} → ℕ → Num b d o
-fromℕ {b} {d} {o} n with surjectionView b d o
-fromℕ n |    Surj x = n+ n ∙
-fromℕ n | NonSurj x = ∙
+Num-b-1-0⇒≡0 : ∀ {b} → (xs : Num b 1 0) → toℕ xs ≡ 0
+Num-b-1-0⇒≡0     ∙           = refl
+Num-b-1-0⇒≡0 {b} (z    ∷ xs) = cong (λ w → w * b) (Num-b-1-0⇒≡0 xs)
+Num-b-1-0⇒≡0     (s () ∷ xs)
 
-
--- fromℕ that preserves equality
-ℕ⟶Num : ∀ b d o → setoid ℕ ⟶ setoid (Num b d o)
-ℕ⟶Num b d o = record
-    { _⟨$⟩_ = fromℕ
-    ; cong = cong fromℕ
-    }
-
-toℕ-digit+1-b : ∀ {d b} (x : Digit d)
-    → (b≥1 : b ≥ 1) → (p : suc (Fin.toℕ x) ≡ d)     -- required props
-    → Fin.toℕ (digit+1-b-legacy x b≥1 p) ≡ suc (Fin.toℕ x) ∸ b
-toℕ-digit+1-b {d} {b} x b≥1 p = toℕ-fromℕ≤ $ start
-        suc (suc (Fin.toℕ x) ∸ b)
-    ≤⟨ s≤s (∸-mono ≤-refl b≥1) ⟩
-        suc (Fin.toℕ x)
-    ≤⟨ reflexive p ⟩
-        d
+Num-0-d-o⇒<d+o : ∀ {d o} → (xs : Num 0 (suc d) o) → toℕ xs < suc d + o
+Num-0-d-o⇒<d+o ∙ = s≤s z≤n
+Num-0-d-o⇒<d+o {d} {o} (x ∷ xs) = s≤s $
+    start
+        Digit-toℕ x o + toℕ xs * zero
+    ≤⟨ reflexive $ begin
+            Digit-toℕ x o + toℕ xs * zero
+        ≡⟨ cong (_+_ (Digit-toℕ x o)) (*-right-zero (toℕ xs)) ⟩
+            Digit-toℕ x o + zero
+        ≡⟨ +-right-identity (Digit-toℕ x o) ⟩
+            Digit-toℕ x o
+    ∎ ⟩
+        Digit-toℕ x o
+    ≤⟨ ≤-pred (Digit<d+o x o) ⟩
+        d + o
     □
 
-------------------------------------------------------------------------
--- toℕ-1+ : toℕ (1+ xs) ≡ suc (toℕ xs)
-------------------------------------------------------------------------
-
-toℕ-1+-x∷xs-full-lemma : ∀ {b d o}
-    → (x : Digit d) → (xs : Num b d o)
-    → (cond : SurjCond b d o)
-    → (p : suc (Fin.toℕ x) ≡ d)
-    → (toℕ-1+-xs : toℕ (1+ xs) ≡ suc (toℕ xs))
-    → toℕ (digit+1-b-legacy x (SurjCond⇒b≥1 cond) p ∷ 1+ xs) ≡ suc (toℕ (x ∷ xs))
-toℕ-1+-x∷xs-full-lemma {b} {d} {o} x xs cond p toℕ-1+-xs =
+-- when a system has only the digit 0
+Num-b-1-0⇒¬incrementable : ∀ {b} → (xs : Num b 1 0) → ¬ (incrementable xs)
+Num-b-1-0⇒¬incrementable {b} xs (xs' , p) = contradiction (
     begin
-        toℕ (digit+1-b-legacy x (SurjCond⇒b≥1 cond) p ∷ 1+ xs)
-    -- toℕ-fromℕ≤ : toℕ (fromℕ≤ m<n) ≡ m
-    ≡⟨ cong (λ w → o + w + toℕ (1+ xs) * b) (toℕ-fromℕ≤ ((digit+1-b-legacy-lemma x (SurjCond⇒b≥1 cond) p))) ⟩
-        o + (suc (Fin.toℕ x) ∸ b) + toℕ (1+ xs) * b
-    -- induction hypothesis
-    ≡⟨ cong (λ w → o + (suc (Fin.toℕ x) ∸ b) + w * b) toℕ-1+-xs ⟩
-        o + (suc (Fin.toℕ x) ∸ b) + (b + toℕ xs * b)
-    ≡⟨ +-assoc o (suc (Fin.toℕ x) ∸ b) (b + toℕ xs * b) ⟩
-        o + (suc (Fin.toℕ x) ∸ b + (b + toℕ xs * b))
-    ≡⟨ cong (λ w → o + w) (sym (+-assoc (suc (Fin.toℕ x) ∸ b) b (toℕ xs * b))) ⟩
-        o + (suc (Fin.toℕ x) ∸ b + b + toℕ xs * b)
-    ≡⟨ cong (λ w → o + (w + toℕ xs * b)) (+-comm (suc (Fin.toℕ x) ∸ b) b) ⟩
-        o + (b + (suc (Fin.toℕ x) ∸ b) + toℕ xs * b)
-    -- m+n∸m≡n : m + (n ∸ m) ≡ n
-    ≡⟨ cong (λ w → o + (w + toℕ xs * b)) (m+n∸m≡n (
-            start
-                b
-            ≤⟨ SurjCond⇒d≥b cond ⟩
-                d
-            ≤⟨ reflexive (sym p) ⟩
-                suc (Fin.toℕ x)
-            □)) ⟩
-        o + suc (Fin.toℕ x + toℕ xs * b)
-    ≡⟨ +-suc o (Fin.toℕ x + toℕ xs * b) ⟩
-        suc (o + (Fin.toℕ x + toℕ xs * b))
-    ≡⟨ cong suc (sym (+-assoc o (Fin.toℕ x) (toℕ xs * b))) ⟩
-        suc (o + Fin.toℕ x + toℕ xs * b)
-    ∎
-
-toℕ-1+-x∷xs-not-full-lemma : ∀ {b d o}
-    → (x : Digit d) → (xs : Num b d o)
-    → (¬p : suc (Fin.toℕ x) ≢ d)
-    → toℕ (digit+1 x ¬p ∷ xs) ≡ suc (toℕ (x ∷ xs))
-toℕ-1+-x∷xs-not-full-lemma {b} {d} {o} x xs ¬p =
-    begin
-        o + Fin.toℕ (fromℕ≤ (≤∧≢⇒< (bounded x) ¬p)) + toℕ xs * b
-    -- toℕ-fromℕ≤
-    ≡⟨ cong (λ w → o + w + toℕ xs * b) (toℕ-fromℕ≤ (≤∧≢⇒< (bounded x) ¬p)) ⟩
-        o + suc (Fin.toℕ x) + toℕ xs * b
-    ≡⟨ +-assoc o (suc (Fin.toℕ x)) (toℕ xs * b) ⟩
-        o + suc (Fin.toℕ x + toℕ xs * b)
-    ≡⟨ +-suc o (Fin.toℕ x + toℕ xs * b) ⟩
-        suc (o + (Fin.toℕ x + toℕ xs * b))
-    ≡⟨ cong suc (sym (+-assoc o (Fin.toℕ x) (toℕ xs * b))) ⟩
-        suc (o + Fin.toℕ x + toℕ xs * b)
-    ∎
-
-toℕ-1+ : ∀ {b d o}
-    → {isSurj : IsSurjective b d o}
-    → (xs : Num b d o)
-    → toℕ (1+ xs) ≡ suc (toℕ xs)
-toℕ-1+ {b} {d} {o} xs with surjectionView b d o
-toℕ-1+ {1} {d} {0} ∙ | Surj (WithZerosUnary d≥2) =
-    begin
-        Fin.toℕ (fromℕ≤ d≥2) + zero
-    ≡⟨ +-right-identity (Fin.toℕ (fromℕ≤ d≥2)) ⟩
-        Fin.toℕ (fromℕ≤ d≥2)
-    ≡⟨ toℕ-fromℕ≤ d≥2 ⟩
-        suc zero
-    ∎
-toℕ-1+ {b} {d} {0} ∙ | Surj (WithZeros b≥2 d≥b) =
-    begin
-        Fin.toℕ (fromℕ≤ (≤-trans b≥2 d≥b)) + zero * b
-    ≡⟨ +-right-identity (Fin.toℕ (fromℕ≤ (≤-trans b≥2 d≥b))) ⟩
-        Fin.toℕ (fromℕ≤ (≤-trans b≥2 d≥b))
-    ≡⟨ toℕ-fromℕ≤ (≤-trans b≥2 d≥b) ⟩
-        suc zero
-    ∎
-toℕ-1+ {b} {d} {_} ∙ | Surj (Zeroless b≥1 d≥b) =
-    begin
-        suc (Fin.toℕ (fromℕ≤ (≤-trans b≥1 d≥b)) + zero)
-    ≡⟨ +-right-identity (suc (Fin.toℕ (fromℕ≤ (≤-trans b≥1 d≥b)))) ⟩
-        suc (Fin.toℕ (fromℕ≤ (≤-trans b≥1 d≥b)))
-    ≡⟨ cong suc (toℕ-fromℕ≤ (≤-trans b≥1 d≥b)) ⟩
-        suc zero
-    ∎
-toℕ-1+ {b} {d} {o} (x ∷ xs) | Surj condition with full x
-toℕ-1+ {b} {d} {o} (x ∷ xs) | Surj condition | yes p = toℕ-1+-x∷xs-full-lemma x xs condition p (toℕ-1+ {isSurj = SurjCond⇒IsSurj condition} xs)
-toℕ-1+ {b} {d} {o} (x ∷ xs) | Surj condition | no ¬p = toℕ-1+-x∷xs-not-full-lemma x xs ¬p
-toℕ-1+ {isSurj = ()} xs | NonSurj reason
-
-------------------------------------------------------------------------
--- toℕ-n+ : toℕ (n+ n xs) ≡ n + (toℕ xs)
-------------------------------------------------------------------------
-
-toℕ-n+ : ∀ {b d o}
-    → {isSurj : IsSurjective b d o}
-    → (n : ℕ)
-    → (xs : Num b d o)
-    → toℕ (n+ n xs) ≡ n + (toℕ xs)
-toℕ-n+ {b} {d} {o} n xs with surjectionView b d o
-toℕ-n+ zero xs | Surj cond = refl
-toℕ-n+ (suc n) xs | Surj cond =
-    begin
-        toℕ (n+ (suc n) xs)
-    ≡⟨ refl ⟩
-        toℕ (1+ (n+ n xs))
-    ≡⟨ toℕ-1+ {isSurj = SurjCond⇒IsSurj cond} (n+ n xs) ⟩
-        suc (toℕ (n+ n xs))
-    ≡⟨ cong suc (toℕ-n+ {isSurj = SurjCond⇒IsSurj cond} n xs) ⟩
-        suc (n + toℕ xs)
-    ∎
-toℕ-n+ {isSurj = ()} n xs | NonSurj reason
-
-------------------------------------------------------------------------
--- toℕ-fromℕ : toℕ (fromℕ n) ≡ n
-------------------------------------------------------------------------
-
-toℕ-fromℕ : ∀ {b d o}
-    → {isSurjective : IsSurjective b d o}
-    → (n : ℕ)
-    → toℕ (fromℕ {b} {d} {o} n) ≡ n
-toℕ-fromℕ {b} {d} {o} n       with surjectionView b d o
-toℕ-fromℕ             zero    | Surj (WithZerosUnary d≥2) = refl
-toℕ-fromℕ {_} {d} {_} (suc n) | Surj (WithZerosUnary d≥2) =
-    begin
-        toℕ (1+ (n+ {1} {d} {0} n ∙))
-    ≡⟨ toℕ-1+ {1} {d} {0} {SurjCond⇒IsSurj (WithZerosUnary d≥2)} (n+ n ∙) ⟩
-        suc (toℕ (n+ n ∙))
-    ≡⟨ cong suc (toℕ-n+ {1} {d} {0} {SurjCond⇒IsSurj (WithZerosUnary d≥2)} n ∙) ⟩
-        suc (n + zero)
-    ≡⟨ cong suc (+-right-identity n) ⟩
-        suc n
-    ∎
-toℕ-fromℕ             zero    | Surj (WithZeros b≥2 d≥b) = refl
-toℕ-fromℕ {b} {d} {_} (suc n) | Surj (WithZeros b≥2 d≥b) =
-    begin
-        toℕ (1+ (n+ {b} {d} {0} n ∙))
-    ≡⟨ toℕ-1+ {b} {d} {0} {SurjCond⇒IsSurj (WithZeros b≥2 d≥b)} (n+ n ∙) ⟩
-        suc (toℕ (n+ n ∙))
-    ≡⟨ cong suc (toℕ-n+ {b} {d} {0} {SurjCond⇒IsSurj (WithZeros b≥2 d≥b)} n ∙) ⟩
-        suc (n + zero)
-    ≡⟨ cong suc (+-right-identity n) ⟩
-        suc n
-    ∎
-toℕ-fromℕ {b} {d} {_} zero    | Surj (Zeroless b≥1 d≥b) = refl
-toℕ-fromℕ {b} {d} {_} (suc n) | Surj (Zeroless b≥1 d≥b) =
-    begin
-        toℕ (1+ (n+ {b} {d} {1} n ∙))
-    ≡⟨ toℕ-1+ {b} {d} {1} {SurjCond⇒IsSurj (Zeroless b≥1 d≥b)} (n+ n ∙) ⟩
-        suc (toℕ (n+ n ∙))
-    ≡⟨ cong suc (toℕ-n+ {b} {d} {1} {SurjCond⇒IsSurj (Zeroless b≥1 d≥b)} n ∙) ⟩
-        suc (n + zero)
-    ≡⟨ cong suc (+-right-identity n) ⟩
-        suc n
-    ∎
-toℕ-fromℕ {isSurjective = ()} n | NonSurj x
-
-
-------------------------------------------------------------------------
--- Lemmata for proving Spurious cases not surjective
-------------------------------------------------------------------------
-
-NonSurjCond-Base≡0 : ∀ {d o} → (xs : Num 0 d o) → toℕ xs ≢ suc (o + d)
-NonSurjCond-Base≡0 {d} {o} ∙        ()
-NonSurjCond-Base≡0 {d} {o} (x ∷ xs) p = contradiction p (<⇒≢ ⟦x∷xs⟧<1+o+d)
-    where
-        ⟦x∷xs⟧<1+o+d : o + Fin.toℕ x + toℕ xs * 0 < suc (o + d)
-        ⟦x∷xs⟧<1+o+d = s≤s $
-            start
-                o + Fin.toℕ x + toℕ xs * zero
-            ≤⟨ reflexive (cong (λ w → o + Fin.toℕ x + w) (*-right-zero (toℕ xs))) ⟩
-                o + Fin.toℕ x + zero
-            ≤⟨ reflexive (+-right-identity (o + Fin.toℕ x)) ⟩
-                o + Fin.toℕ x
-            ≤⟨ n+-mono o (
-                start
-                    Fin.toℕ x
-                ≤⟨ n≤1+n (Fin.toℕ x) ⟩
-                    suc (Fin.toℕ x)
-                ≤⟨ bounded x ⟩
-                    d
-                □
-            )⟩
-                o + d
-            □
-
-NonSurjCond-NoDigits : ∀ {b o} → (xs : Num b 0 o) → toℕ xs ≢ 1
-NonSurjCond-NoDigits ∙         ()
-NonSurjCond-NoDigits (() ∷ xs)
-
-NonSurjCond-Offset≥2 : ∀ {b d o} → o ≥ 2 → (xs : Num b d o) → toℕ xs ≢ 1
-NonSurjCond-Offset≥2                   o≥2      ∙        ()
-NonSurjCond-Offset≥2 {o = 0}           ()       (x ∷ xs) p
-NonSurjCond-Offset≥2 {o = 1}           (s≤s ()) (x ∷ xs) p
-NonSurjCond-Offset≥2 {o = suc (suc o)} o≥2      (x ∷ xs) ()
-
-NonSurjCond-UnaryWithOnlyZeros : (xs : Num 1 1 0) → toℕ xs ≢ 1
-NonSurjCond-UnaryWithOnlyZeros ∙ ()
-NonSurjCond-UnaryWithOnlyZeros (z ∷ xs) p = contradiction (
-    begin
-        toℕ xs
-    ≡⟨ sym (*-right-identity (toℕ xs)) ⟩
-        toℕ xs * 1
+        0
+    ≡⟨ sym (Num-b-1-0⇒≡0 xs') ⟩
+        toℕ xs'
     ≡⟨ p ⟩
-        suc zero
-    ∎) (NonSurjCond-UnaryWithOnlyZeros xs)
-NonSurjCond-UnaryWithOnlyZeros (s () ∷ xs)
+        suc (toℕ xs)
+    ≡⟨ cong suc (Num-b-1-0⇒≡0 xs) ⟩
+        1
+    ∎) (λ ())
 
-NonSurjCond-NotEnoughDigits : ∀ {b d o} → d ≥ 1 → b ≰ d → (xs : Num b d o) → toℕ xs ≢ o + d
-NonSurjCond-NotEnoughDigits {_} {_} {o} d≥1 b≰d ∙        = <⇒≢ (≤-steps o d≥1)
-NonSurjCond-NotEnoughDigits {b} {d} {o} d≥1 b≰d (x ∷ xs) p with toℕ xs ≤? 0
-NonSurjCond-NotEnoughDigits {b} {d} {o} d≥1 b≰d (x ∷ xs) p | yes q =
-    contradiction p (<⇒≢ ⟦x∷xs⟧>o+d)
-    where
-        ⟦xs⟧≡0 : toℕ xs ≡ 0
-        ⟦xs⟧≡0 = ≤0⇒≡0 (toℕ xs) q
-        ⟦x∷xs⟧>o+d : o + Fin.toℕ x + toℕ xs * b < o + d
-        ⟦x∷xs⟧>o+d = start
-                suc (o + Fin.toℕ x + toℕ xs * b)
-            ≤⟨ reflexive (begin
-                    suc (o + Fin.toℕ x + toℕ xs * b)
-                ≡⟨ cong (λ w → suc (o + Fin.toℕ x + w * b)) ⟦xs⟧≡0 ⟩
+incrementable-lemma-2 : ∀ {b d o} → ¬ (incrementable {b} {suc d} {suc (suc o)} ∙)
+incrementable-lemma-2 (∙ , ())
+incrementable-lemma-2 (x ∷ xs , ())
+
+incrementable-lemma-3 : ∀ {d o}
+    → (x : Digit (suc d)) → (xs : Num 0 (suc d) o)
+    → suc (Fin.toℕ x) ≡ suc d
+    → ¬ (incrementable (x ∷ xs))
+incrementable-lemma-3 x xs p (∙ , ())
+incrementable-lemma-3 {d} {o} x xs p (x' ∷ xs' , q) =
+    let x'≡1+x : Fin.toℕ x' ≡ suc (Fin.toℕ x)
+        x'≡1+x  = cancel-+-left o
+                $ cancel-+-right 0
+                $ begin
+                    o + Fin.toℕ x' + zero
+                ≡⟨ cong (_+_ (Digit-toℕ x' o)) (sym (*-right-zero (toℕ xs'))) ⟩
+                    Digit-toℕ x' o + toℕ xs' * zero
+                ≡⟨ q ⟩
+                    suc (Digit-toℕ x o + toℕ xs * zero)
+                ≡⟨ cong (_+_ (suc (Digit-toℕ x o))) (*-right-zero (toℕ xs)) ⟩
                     suc (o + Fin.toℕ x + zero)
-                ≡⟨ +-right-identity (suc (o + Fin.toℕ x)) ⟩
-                    suc (o + Fin.toℕ x)
-                ≡⟨ sym (+-suc o (Fin.toℕ x)) ⟩
-                    o + suc (Fin.toℕ x)
-                ∎) ⟩
-                o + suc (Fin.toℕ x)
-            ≤⟨ n+-mono o (bounded x) ⟩
-                o + d
-            □
+                ≡⟨ cong (λ w → w + zero) (sym (+-suc o (Fin.toℕ x))) ⟩
+                    o + suc (Fin.toℕ x) + zero
+                ∎
+        x'≡1+d : Fin.toℕ x' ≡ suc d
+        x'≡1+d =
+            begin
+                Fin.toℕ x'
+            ≡⟨ x'≡1+x ⟩
+                suc (Fin.toℕ x)
+            ≡⟨ p ⟩
+                suc d
+            ∎
+        x'≢1+d : Fin.toℕ x' ≢ suc d
+        x'≢1+d = <⇒≢ (bounded x')
+    in contradiction x'≡1+d x'≢1+d
 
-NonSurjCond-NotEnoughDigits {b} {d} {o} d≥1 b≰d (x ∷ xs) p | no ¬q =
-    contradiction p (>⇒≢ ⟦x∷xs⟧>o+d)
-    where
-        ⟦x∷xs⟧>o+d : o + Fin.toℕ x + toℕ xs * b > o + d
-        ⟦x∷xs⟧>o+d = start
-                suc (o + d)
-            ≤⟨ reflexive (sym (+-suc o d)) ⟩
-                o + suc d
-            ≤⟨ n+-mono o (
-                start
-                    suc d
-                ≤⟨ ≰⇒> b≰d ⟩
-                    b
-                ≤⟨ reflexive (sym (*-left-identity b)) ⟩
-                    1 * b
-                ≤⟨ _*-mono_ {1} {toℕ xs} {b} {b} (≰⇒> ¬q) ≤-refl ⟩
-                    toℕ xs * b
-                ≤⟨ n≤m+n (Fin.toℕ x) (toℕ xs * b) ⟩
-                    Fin.toℕ x + toℕ xs * b
-                □
-            ) ⟩
-                o + (Fin.toℕ x + toℕ xs * b)
-            ≤⟨ reflexive (sym (+-assoc o (Fin.toℕ x) (toℕ xs * b))) ⟩
-                o + Fin.toℕ x + toℕ xs * b
-            □
+incrementable-lemma-4 : ∀ {b d o}
+    → (x : Digit (suc d))
+    → (xs xs' : Num (suc b) (suc d) o)
+    → toℕ xs' ≡ suc (toℕ xs)
+    → (redundant : suc b ≤ suc d)
+    → (greatest : Greatest x)
+    → toℕ (digit+1-b {b} x redundant greatest ∷ xs') ≡ suc (toℕ (x ∷ xs))
+incrementable-lemma-4 {b} {d} {o} x xs xs' p redundant greatest =
+    begin
+        toℕ (digit+1-b {b} x redundant greatest ∷ xs')
+    ≡⟨ refl ⟩
+        Digit-toℕ (digit+1-b {b} x redundant greatest) o + toℕ xs' * suc b
+    ≡⟨ cong (λ w → w + toℕ xs' * suc b) (Digit-toℕ-digit+1-b {b} {suc d} {o} x redundant greatest) ⟩
+        o + (Fin.toℕ x ∸ b) + toℕ xs' * suc b
+    ≡⟨ cong (λ w → o + (Fin.toℕ x ∸ b) + w * suc b) p ⟩
+        o + (Fin.toℕ x ∸ b) + suc (b + toℕ xs * suc b)
+    ≡⟨ +-suc (o + (Fin.toℕ x ∸ b)) (b + toℕ xs * suc b) ⟩
+        suc (o + (Fin.toℕ x ∸ b) + (b + toℕ xs * suc b))
+    ≡⟨ +-assoc (suc o) (Fin.toℕ x ∸ b) (b + toℕ xs * suc b) ⟩
+        suc (o + (Fin.toℕ x ∸ b + (b + toℕ xs * suc b)))
+    ≡⟨ cong (λ w → suc (o + w)) (sym (+-assoc (Fin.toℕ x ∸ b) b (toℕ xs * suc b))) ⟩
+        suc (o + (Fin.toℕ x ∸ b + b + toℕ xs * suc b))
+    ≡⟨ cong (λ w → suc (o + (w + toℕ xs * suc b))) (m∸n+n $ ≤-pred $
+        start
+            suc b
+        ≤⟨ redundant ⟩
+            suc d
+        ≤⟨ reflexive (sym greatest) ⟩
+            suc (Fin.toℕ x)
+        □ ) ⟩
+        suc (o + (Fin.toℕ x + toℕ xs * suc b))
+    ≡⟨ cong suc (sym (+-assoc o (Fin.toℕ x) (toℕ xs * suc b))) ⟩
+        suc (toℕ (x ∷ xs))
+    ∎
 
-NonSurjCond⇏Surjective : ∀ {b} {d} {o} → NonSurjCond b d o → ¬ (Surjective (Num⟶ℕ b d o))
-NonSurjCond⇏Surjective {_} {d} {o} Base≡0  claim =
-    NonSurjCond-Base≡0
-        (from             claim ⟨$⟩ suc o + d)
-        (right-inverse-of claim   (suc (o + d)))
-NonSurjCond⇏Surjective NoDigits claim =
-    NonSurjCond-NoDigits
-        (from             claim ⟨$⟩ 1)
-        (right-inverse-of claim     1)
-NonSurjCond⇏Surjective (Offset≥2 p) claim =
-    NonSurjCond-Offset≥2 p
-        (from             claim ⟨$⟩ 1)
-        (right-inverse-of claim     1)
-NonSurjCond⇏Surjective UnaryWithOnlyZeros claim =
-    NonSurjCond-UnaryWithOnlyZeros
-        (from             claim ⟨$⟩ 1)
-        (right-inverse-of claim     1)
-NonSurjCond⇏Surjective {_} {d} {o} (NotEnoughDigits p q) claim =
-    NonSurjCond-NotEnoughDigits p q
-        (from             claim ⟨$⟩ o + d)
-        (right-inverse-of claim    (o + d))
+tail-mono-strict : ∀ {b d o} (x y : Digit d) (xs ys : Num b d o)
+    → Greatest x
+    → toℕ (x ∷ xs) < toℕ (y ∷ ys)
+    → toℕ xs < toℕ ys
+tail-mono-strict z z ∙ ∙ greatest p = {!   !}
+tail-mono-strict z (s y) ∙ ∙ greatest p = {! toWitness greatest  !}
+tail-mono-strict (s x) y ∙ ∙ greatest p = {!   !}
+tail-mono-strict x y ∙ (y' ∷ ys) greatest p = {!   !}
+tail-mono-strict x y (x' ∷ xs) ∙ greatest p = {!   !}
+tail-mono-strict x y (x' ∷ xs) (y' ∷ ys) greatest p = {!   !}
 
-SurjCond⇒Surjective : ∀ {b} {d} {o} → SurjCond b d o → Surjective (Num⟶ℕ b d o)
-SurjCond⇒Surjective {b} {d} {o} cond = record
-    { from = ℕ⟶Num b d o
-    ; right-inverse-of = toℕ-fromℕ {b} {d} {o} {SurjCond⇒IsSurj cond}
-    }
+incrementable-lemma-5 : ∀ {b d o}
+    → (x : Digit (suc d))
+    → (xs : Num (suc b) (suc d) o)
+    → (¬redundant : suc b ≰ suc d)
+    → Greatest x
+    → incrementable (x ∷ xs)
+    → ⊥
+incrementable-lemma-5 x xs ¬redundant greatest (∙ , ())
+incrementable-lemma-5 x ∙ ¬redundant greatest (y ∷ ∙ , claim) = {!   !}
+incrementable-lemma-5 x ∙ ¬redundant greatest (y ∷ y' ∷ ys , claim) = {!   !}
+incrementable-lemma-5 x (x' ∷ xs) ¬redundant greatest (y ∷ ∙ , claim) = {!   !}
+incrementable-lemma-5 x (x' ∷ xs) ¬redundant greatest (y ∷ y' ∷ ys , claim) = {!   !}
+    -- = contradiction 1+⟦x∷xs⟧≡⟦y∷ys⟧ (>⇒≢ 1+⟦x∷xs⟧<⟦y∷ys⟧)
+    -- where   1+⟦x∷xs⟧<⟦y∷ys⟧ : suc (toℕ (x ∷ xs)) < toℕ (y ∷ ys)
+    --         1+⟦x∷xs⟧<⟦y∷ys⟧ =
+    --             start
+    --                 suc (suc (o + Fin.toℕ x + toℕ xs * suc b))
+    --             ≤⟨ {!   !} ⟩
+    --                 {!   !}
+    --             ≤⟨ {!   !} ⟩
+    --                 {!   !}
+    --             ≤⟨ {!   !} ⟩
+    --                 {!   !}
+    --             ≤⟨ {!   !} ⟩
+    --                 {!   !}
+    --             ≤⟨ {!   !} ⟩
+    --                 {!   !}
+    --             ≤⟨ {!   !} ⟩
+    --                 {!   !}
+    --             ≤⟨ {!   !} ⟩
+    --                 {!   !}
+    --             □
+-- begin
+--     {!   !}
+-- ≡⟨ {!   !} ⟩
+--     {!   !}
+-- ≡⟨ {!   !} ⟩
+--     {!   !}
+-- ≡⟨ {!   !} ⟩
+--     {!   !}
+-- ≡⟨ {!   !} ⟩
+--     {!   !}
+-- ∎
+incrementable? : ∀ {b d o} → (xs : Num b d o) → Dec (incrementable xs)
+-- no digits at all
+incrementable? {_} {zero}               xs = no (incrementable-lemma-no-digits xs)
+-- all numbers evaluates to 0
+incrementable? {_} {suc zero}    {zero} ∙  = no (Num-b-1-0⇒¬incrementable ∙)
+incrementable? {_} {suc (suc d)} {zero} ∙  = yes ((fromℕ≤ {1} (s≤s (s≤s z≤n)) ∷ ∙) , refl)
+incrementable? {d = suc d} {suc zero} ∙ = yes (z ∷ ∙ , refl)
+-- digits starts from 2, impossible to increment from 0
+incrementable? {d = suc d} {suc (suc o)} ∙ = no incrementable-lemma-2
+-- see if the LSD is at its largest
+incrementable? {d = suc d} (x ∷ xs) with Greatest? x
+-- the system is bounded because base = 0
+incrementable? {zero} {suc d} (x ∷ xs) | yes greatest = no (incrementable-lemma-3 x xs greatest)
+incrementable? {suc b} {suc d} (x ∷ xs) | yes greatest with incrementable? xs
+incrementable? {suc b} {suc d} (x ∷ xs) | yes greatest | yes (xs' , q) with suc b ≤? suc d
+incrementable? {suc b} {suc d} (x ∷ xs) | yes greatest | yes (xs' , q) | yes r
+    = yes (digit+1-b {b} x r greatest ∷ xs' , incrementable-lemma-4 x xs xs' q r greatest)
+incrementable? {suc b} {suc d} (x ∷ xs) | yes greatest | yes (xs' , q) | no ¬r
+    = no (incrementable-lemma-5 x xs ¬r greatest)
+incrementable? {suc b} {suc d} (x ∷ xs) | yes greatest | no ¬q = no {!   !}
+incrementable? {b} {suc d} (x ∷ xs) | no ¬p = yes {!   !}
 
-Surjective? : ∀ b d o → Dec (Surjective (Num⟶ℕ b d o))
-Surjective? b d o with surjectionView b d o
-Surjective? b d o | Surj cond = yes (record
-    { from = ℕ⟶Num b d o
-    ; right-inverse-of = toℕ-fromℕ {b} {d} {o} {SurjCond⇒IsSurj cond}
-    })
-Surjective? b d o | NonSurj reason = no (NonSurjCond⇏Surjective reason)
 
-------------------------------------------------------------------------
+
 --
-------------------------------------------------------------------------
-
--- Surjective⇒SurjCond {b} {d} {o} surj = {!   !}
-Surjective⇒SurjCond : ∀ {b} {d} {o}
-    → Surjective (Num⟶ℕ b d o)
-    → SurjCond b d o
-Surjective⇒SurjCond {b} {d} {o} surj with surjectionView b d o
-Surjective⇒SurjCond surj | Surj condition = condition
-Surjective⇒SurjCond surj | NonSurj reason = contradiction surj (NonSurjCond⇏Surjective reason)
-
-Surjective⇒IsSurj : ∀ {b} {d} {o} → Surjective (Num⟶ℕ b d o) → IsSurjective b d o
-Surjective⇒IsSurj = SurjCond⇒IsSurj ∘ Surjective⇒SurjCond
-
-Surjective⇒b≥1 : ∀ {b} {d} {o} → Surjective (Num⟶ℕ b d o) → b ≥ 1
-Surjective⇒b≥1 = SurjCond⇒b≥1 ∘ Surjective⇒SurjCond
-
-Surjective⇒d≥b : ∀ {b} {d} {o} → Surjective (Num⟶ℕ b d o) → b ≤ d
-Surjective⇒d≥b = SurjCond⇒d≥b ∘ Surjective⇒SurjCond
+--
+-- 1+ : ∀ {b d o} → Num b d o → Num b d o
+-- 1+ {b} {d} {o} xs with surjectionView b d o
+-- 1+ ∙        | Surj cond = starting-digit cond ∷ ∙
+-- 1+ (x ∷ xs) | Surj cond with greatest x
+-- 1+ (x ∷ xs) | Surj cond | yes p = digit+1-b-legacy x (SurjCond⇒b≥1 cond) p ∷ 1+ xs -- carry
+-- 1+ (x ∷ xs) | Surj cond | no ¬p = digit+1   x ¬p                     ∷    xs
+-- 1+ ∙        | NonSurj reason = ∙
+-- 1+ (x ∷ xs) | NonSurj reason = xs
+--
+--
+-- n+ : ∀ {b d o} → ℕ → Num b d o → Num b d o
+-- n+ zero xs = xs
+-- n+ (suc n) xs = 1+ (n+ n xs)
+--
+-- fromℕ : ∀ {b d o} → ℕ → Num b d o
+-- fromℕ {b} {d} {o} n with surjectionView b d o
+-- fromℕ n |    Surj x = n+ n ∙
+-- fromℕ n | NonSurj x = ∙
+--
+--
+-- -- fromℕ that preserves equality
+-- ℕ⟶Num : ∀ b d o → setoid ℕ ⟶ setoid (Num b d o)
+-- ℕ⟶Num b d o = record
+--     { _⟨$⟩_ = fromℕ
+--     ; cong = cong fromℕ
+--     }
+--
+-- toℕ-digit+1-b : ∀ {d b} (x : Digit d)
+--     → (b≥1 : b ≥ 1) → (p : suc (Fin.toℕ x) ≡ d)     -- required props
+--     → Fin.toℕ (digit+1-b-legacy x b≥1 p) ≡ suc (Fin.toℕ x) ∸ b
+-- toℕ-digit+1-b {d} {b} x b≥1 p = toℕ-fromℕ≤ $ start
+--         suc (suc (Fin.toℕ x) ∸ b)
+--     ≤⟨ s≤s (∸-mono ≤-refl b≥1) ⟩
+--         suc (Fin.toℕ x)
+--     ≤⟨ reflexive p ⟩
+--         d
+--     □
+--
+-- ------------------------------------------------------------------------
+-- -- toℕ-1+ : toℕ (1+ xs) ≡ suc (toℕ xs)
+-- ------------------------------------------------------------------------
+--
+-- toℕ-1+-x∷xs-greatest-lemma : ∀ {b d o}
+--     → (x : Digit d) → (xs : Num b d o)
+--     → (cond : SurjCond b d o)
+--     → (p : suc (Fin.toℕ x) ≡ d)
+--     → (toℕ-1+-xs : toℕ (1+ xs) ≡ suc (toℕ xs))
+--     → toℕ (digit+1-b-legacy x (SurjCond⇒b≥1 cond) p ∷ 1+ xs) ≡ suc (toℕ (x ∷ xs))
+-- toℕ-1+-x∷xs-greatest-lemma {b} {d} {o} x xs cond p toℕ-1+-xs =
+--     begin
+--         toℕ (digit+1-b-legacy x (SurjCond⇒b≥1 cond) p ∷ 1+ xs)
+--     -- toℕ-fromℕ≤ : toℕ (fromℕ≤ m<n) ≡ m
+--     ≡⟨ cong (λ w → o + w + toℕ (1+ xs) * b) (toℕ-fromℕ≤ ((digit+1-b-legacy-lemma x (SurjCond⇒b≥1 cond) p))) ⟩
+--         o + (suc (Fin.toℕ x) ∸ b) + toℕ (1+ xs) * b
+--     -- induction hypothesis
+--     ≡⟨ cong (λ w → o + (suc (Fin.toℕ x) ∸ b) + w * b) toℕ-1+-xs ⟩
+--         o + (suc (Fin.toℕ x) ∸ b) + (b + toℕ xs * b)
+--     ≡⟨ +-assoc o (suc (Fin.toℕ x) ∸ b) (b + toℕ xs * b) ⟩
+--         o + (suc (Fin.toℕ x) ∸ b + (b + toℕ xs * b))
+--     ≡⟨ cong (λ w → o + w) (sym (+-assoc (suc (Fin.toℕ x) ∸ b) b (toℕ xs * b))) ⟩
+--         o + (suc (Fin.toℕ x) ∸ b + b + toℕ xs * b)
+--     ≡⟨ cong (λ w → o + (w + toℕ xs * b)) (+-comm (suc (Fin.toℕ x) ∸ b) b) ⟩
+--         o + (b + (suc (Fin.toℕ x) ∸ b) + toℕ xs * b)
+--     -- m+n∸m≡n : m + (n ∸ m) ≡ n
+--     ≡⟨ cong (λ w → o + (w + toℕ xs * b)) (m+n∸m≡n (
+--             start
+--                 b
+--             ≤⟨ SurjCond⇒d≥b cond ⟩
+--                 d
+--             ≤⟨ reflexive (sym p) ⟩
+--                 suc (Fin.toℕ x)
+--             □)) ⟩
+--         o + suc (Fin.toℕ x + toℕ xs * b)
+--     ≡⟨ +-suc o (Fin.toℕ x + toℕ xs * b) ⟩
+--         suc (o + (Fin.toℕ x + toℕ xs * b))
+--     ≡⟨ cong suc (sym (+-assoc o (Fin.toℕ x) (toℕ xs * b))) ⟩
+--         suc (o + Fin.toℕ x + toℕ xs * b)
+--     ∎
+--
+-- toℕ-1+-x∷xs-not-greatest-lemma : ∀ {b d o}
+--     → (x : Digit d) → (xs : Num b d o)
+--     → (¬p : suc (Fin.toℕ x) ≢ d)
+--     → toℕ (digit+1 x ¬p ∷ xs) ≡ suc (toℕ (x ∷ xs))
+-- toℕ-1+-x∷xs-not-greatest-lemma {b} {d} {o} x xs ¬p =
+--     begin
+--         o + Fin.toℕ (fromℕ≤ (≤∧≢⇒< (bounded x) ¬p)) + toℕ xs * b
+--     -- toℕ-fromℕ≤
+--     ≡⟨ cong (λ w → o + w + toℕ xs * b) (toℕ-fromℕ≤ (≤∧≢⇒< (bounded x) ¬p)) ⟩
+--         o + suc (Fin.toℕ x) + toℕ xs * b
+--     ≡⟨ +-assoc o (suc (Fin.toℕ x)) (toℕ xs * b) ⟩
+--         o + suc (Fin.toℕ x + toℕ xs * b)
+--     ≡⟨ +-suc o (Fin.toℕ x + toℕ xs * b) ⟩
+--         suc (o + (Fin.toℕ x + toℕ xs * b))
+--     ≡⟨ cong suc (sym (+-assoc o (Fin.toℕ x) (toℕ xs * b))) ⟩
+--         suc (o + Fin.toℕ x + toℕ xs * b)
+--     ∎
+--
+-- toℕ-1+ : ∀ {b d o}
+--     → {isSurj : IsSurjective b d o}
+--     → (xs : Num b d o)
+--     → toℕ (1+ xs) ≡ suc (toℕ xs)
+-- toℕ-1+ {b} {d} {o} xs with surjectionView b d o
+-- toℕ-1+ {1} {d} {0} ∙ | Surj (WithZerosUnary d≥2) =
+--     begin
+--         Fin.toℕ (fromℕ≤ d≥2) + zero
+--     ≡⟨ +-right-identity (Fin.toℕ (fromℕ≤ d≥2)) ⟩
+--         Fin.toℕ (fromℕ≤ d≥2)
+--     ≡⟨ toℕ-fromℕ≤ d≥2 ⟩
+--         suc zero
+--     ∎
+-- toℕ-1+ {b} {d} {0} ∙ | Surj (WithZeros b≥2 d≥b) =
+--     begin
+--         Fin.toℕ (fromℕ≤ (≤-trans b≥2 d≥b)) + zero * b
+--     ≡⟨ +-right-identity (Fin.toℕ (fromℕ≤ (≤-trans b≥2 d≥b))) ⟩
+--         Fin.toℕ (fromℕ≤ (≤-trans b≥2 d≥b))
+--     ≡⟨ toℕ-fromℕ≤ (≤-trans b≥2 d≥b) ⟩
+--         suc zero
+--     ∎
+-- toℕ-1+ {b} {d} {_} ∙ | Surj (Zeroless b≥1 d≥b) =
+--     begin
+--         suc (Fin.toℕ (fromℕ≤ (≤-trans b≥1 d≥b)) + zero)
+--     ≡⟨ +-right-identity (suc (Fin.toℕ (fromℕ≤ (≤-trans b≥1 d≥b)))) ⟩
+--         suc (Fin.toℕ (fromℕ≤ (≤-trans b≥1 d≥b)))
+--     ≡⟨ cong suc (toℕ-fromℕ≤ (≤-trans b≥1 d≥b)) ⟩
+--         suc zero
+--     ∎
+-- toℕ-1+ {b} {d} {o} (x ∷ xs) | Surj condition with greatest x
+-- toℕ-1+ {b} {d} {o} (x ∷ xs) | Surj condition | yes p = toℕ-1+-x∷xs-greatest-lemma x xs condition p (toℕ-1+ {isSurj = SurjCond⇒IsSurj condition} xs)
+-- toℕ-1+ {b} {d} {o} (x ∷ xs) | Surj condition | no ¬p = toℕ-1+-x∷xs-not-greatest-lemma x xs ¬p
+-- toℕ-1+ {isSurj = ()} xs | NonSurj reason
+--
+-- ------------------------------------------------------------------------
+-- -- toℕ-n+ : toℕ (n+ n xs) ≡ n + (toℕ xs)
+-- ------------------------------------------------------------------------
+--
+-- toℕ-n+ : ∀ {b d o}
+--     → {isSurj : IsSurjective b d o}
+--     → (n : ℕ)
+--     → (xs : Num b d o)
+--     → toℕ (n+ n xs) ≡ n + (toℕ xs)
+-- toℕ-n+ {b} {d} {o} n xs with surjectionView b d o
+-- toℕ-n+ zero xs | Surj cond = refl
+-- toℕ-n+ (suc n) xs | Surj cond =
+--     begin
+--         toℕ (n+ (suc n) xs)
+--     ≡⟨ refl ⟩
+--         toℕ (1+ (n+ n xs))
+--     ≡⟨ toℕ-1+ {isSurj = SurjCond⇒IsSurj cond} (n+ n xs) ⟩
+--         suc (toℕ (n+ n xs))
+--     ≡⟨ cong suc (toℕ-n+ {isSurj = SurjCond⇒IsSurj cond} n xs) ⟩
+--         suc (n + toℕ xs)
+--     ∎
+-- toℕ-n+ {isSurj = ()} n xs | NonSurj reason
+--
+-- ------------------------------------------------------------------------
+-- -- toℕ-fromℕ : toℕ (fromℕ n) ≡ n
+-- ------------------------------------------------------------------------
+--
+-- toℕ-fromℕ : ∀ {b d o}
+--     → {isSurjective : IsSurjective b d o}
+--     → (n : ℕ)
+--     → toℕ (fromℕ {b} {d} {o} n) ≡ n
+-- toℕ-fromℕ {b} {d} {o} n       with surjectionView b d o
+-- toℕ-fromℕ             zero    | Surj (WithZerosUnary d≥2) = refl
+-- toℕ-fromℕ {_} {d} {_} (suc n) | Surj (WithZerosUnary d≥2) =
+--     begin
+--         toℕ (1+ (n+ {1} {d} {0} n ∙))
+--     ≡⟨ toℕ-1+ {1} {d} {0} {SurjCond⇒IsSurj (WithZerosUnary d≥2)} (n+ n ∙) ⟩
+--         suc (toℕ (n+ n ∙))
+--     ≡⟨ cong suc (toℕ-n+ {1} {d} {0} {SurjCond⇒IsSurj (WithZerosUnary d≥2)} n ∙) ⟩
+--         suc (n + zero)
+--     ≡⟨ cong suc (+-right-identity n) ⟩
+--         suc n
+--     ∎
+-- toℕ-fromℕ             zero    | Surj (WithZeros b≥2 d≥b) = refl
+-- toℕ-fromℕ {b} {d} {_} (suc n) | Surj (WithZeros b≥2 d≥b) =
+--     begin
+--         toℕ (1+ (n+ {b} {d} {0} n ∙))
+--     ≡⟨ toℕ-1+ {b} {d} {0} {SurjCond⇒IsSurj (WithZeros b≥2 d≥b)} (n+ n ∙) ⟩
+--         suc (toℕ (n+ n ∙))
+--     ≡⟨ cong suc (toℕ-n+ {b} {d} {0} {SurjCond⇒IsSurj (WithZeros b≥2 d≥b)} n ∙) ⟩
+--         suc (n + zero)
+--     ≡⟨ cong suc (+-right-identity n) ⟩
+--         suc n
+--     ∎
+-- toℕ-fromℕ {b} {d} {_} zero    | Surj (Zeroless b≥1 d≥b) = refl
+-- toℕ-fromℕ {b} {d} {_} (suc n) | Surj (Zeroless b≥1 d≥b) =
+--     begin
+--         toℕ (1+ (n+ {b} {d} {1} n ∙))
+--     ≡⟨ toℕ-1+ {b} {d} {1} {SurjCond⇒IsSurj (Zeroless b≥1 d≥b)} (n+ n ∙) ⟩
+--         suc (toℕ (n+ n ∙))
+--     ≡⟨ cong suc (toℕ-n+ {b} {d} {1} {SurjCond⇒IsSurj (Zeroless b≥1 d≥b)} n ∙) ⟩
+--         suc (n + zero)
+--     ≡⟨ cong suc (+-right-identity n) ⟩
+--         suc n
+--     ∎
+-- toℕ-fromℕ {isSurjective = ()} n | NonSurj x
+--
+--
+-- ------------------------------------------------------------------------
+-- -- Lemmata for proving Spurious cases not surjective
+-- ------------------------------------------------------------------------
+--
+-- NonSurjCond-Base≡0 : ∀ {d o} → (xs : Num 0 d o) → toℕ xs ≢ suc (o + d)
+-- NonSurjCond-Base≡0 {d} {o} ∙        ()
+-- NonSurjCond-Base≡0 {d} {o} (x ∷ xs) p = contradiction p (<⇒≢ ⟦x∷xs⟧<1+o+d)
+--     where
+--         ⟦x∷xs⟧<1+o+d : o + Fin.toℕ x + toℕ xs * 0 < suc (o + d)
+--         ⟦x∷xs⟧<1+o+d = s≤s $
+--             start
+--                 o + Fin.toℕ x + toℕ xs * zero
+--             ≤⟨ reflexive (cong (λ w → o + Fin.toℕ x + w) (*-right-zero (toℕ xs))) ⟩
+--                 o + Fin.toℕ x + zero
+--             ≤⟨ reflexive (+-right-identity (o + Fin.toℕ x)) ⟩
+--                 o + Fin.toℕ x
+--             ≤⟨ n+-mono o (
+--                 start
+--                     Fin.toℕ x
+--                 ≤⟨ n≤1+n (Fin.toℕ x) ⟩
+--                     suc (Fin.toℕ x)
+--                 ≤⟨ bounded x ⟩
+--                     d
+--                 □
+--             )⟩
+--                 o + d
+--             □
+--
+-- NonSurjCond-NoDigits : ∀ {b o} → (xs : Num b 0 o) → toℕ xs ≢ 1
+-- NonSurjCond-NoDigits ∙         ()
+-- NonSurjCond-NoDigits (() ∷ xs)
+--
+-- NonSurjCond-Offset≥2 : ∀ {b d o} → o ≥ 2 → (xs : Num b d o) → toℕ xs ≢ 1
+-- NonSurjCond-Offset≥2                   o≥2      ∙        ()
+-- NonSurjCond-Offset≥2 {o = 0}           ()       (x ∷ xs) p
+-- NonSurjCond-Offset≥2 {o = 1}           (s≤s ()) (x ∷ xs) p
+-- NonSurjCond-Offset≥2 {o = suc (suc o)} o≥2      (x ∷ xs) ()
+--
+-- NonSurjCond-UnaryWithOnlyZeros : (xs : Num 1 1 0) → toℕ xs ≢ 1
+-- NonSurjCond-UnaryWithOnlyZeros ∙ ()
+-- NonSurjCond-UnaryWithOnlyZeros (z ∷ xs) p = contradiction (
+--     begin
+--         toℕ xs
+--     ≡⟨ sym (*-right-identity (toℕ xs)) ⟩
+--         toℕ xs * 1
+--     ≡⟨ p ⟩
+--         suc zero
+--     ∎) (NonSurjCond-UnaryWithOnlyZeros xs)
+-- NonSurjCond-UnaryWithOnlyZeros (s () ∷ xs)
+--
+-- NonSurjCond-NotEnoughDigits : ∀ {b d o} → d ≥ 1 → b ≰ d → (xs : Num b d o) → toℕ xs ≢ o + d
+-- NonSurjCond-NotEnoughDigits {_} {_} {o} d≥1 b≰d ∙        = <⇒≢ (≤-steps o d≥1)
+-- NonSurjCond-NotEnoughDigits {b} {d} {o} d≥1 b≰d (x ∷ xs) p with toℕ xs ≤? 0
+-- NonSurjCond-NotEnoughDigits {b} {d} {o} d≥1 b≰d (x ∷ xs) p | yes q =
+--     contradiction p (<⇒≢ ⟦x∷xs⟧>o+d)
+--     where
+--         ⟦xs⟧≡0 : toℕ xs ≡ 0
+--         ⟦xs⟧≡0 = ≤0⇒≡0 (toℕ xs) q
+--         ⟦x∷xs⟧>o+d : o + Fin.toℕ x + toℕ xs * b < o + d
+--         ⟦x∷xs⟧>o+d = start
+--                 suc (o + Fin.toℕ x + toℕ xs * b)
+--             ≤⟨ reflexive (begin
+--                     suc (o + Fin.toℕ x + toℕ xs * b)
+--                 ≡⟨ cong (λ w → suc (o + Fin.toℕ x + w * b)) ⟦xs⟧≡0 ⟩
+--                     suc (o + Fin.toℕ x + zero)
+--                 ≡⟨ +-right-identity (suc (o + Fin.toℕ x)) ⟩
+--                     suc (o + Fin.toℕ x)
+--                 ≡⟨ sym (+-suc o (Fin.toℕ x)) ⟩
+--                     o + suc (Fin.toℕ x)
+--                 ∎) ⟩
+--                 o + suc (Fin.toℕ x)
+--             ≤⟨ n+-mono o (bounded x) ⟩
+--                 o + d
+--             □
+--
+-- NonSurjCond-NotEnoughDigits {b} {d} {o} d≥1 b≰d (x ∷ xs) p | no ¬q =
+--     contradiction p (>⇒≢ ⟦x∷xs⟧>o+d)
+--     where
+--         ⟦x∷xs⟧>o+d : o + Fin.toℕ x + toℕ xs * b > o + d
+--         ⟦x∷xs⟧>o+d = start
+--                 suc (o + d)
+--             ≤⟨ reflexive (sym (+-suc o d)) ⟩
+--                 o + suc d
+--             ≤⟨ n+-mono o (
+--                 start
+--                     suc d
+--                 ≤⟨ ≰⇒> b≰d ⟩
+--                     b
+--                 ≤⟨ reflexive (sym (*-left-identity b)) ⟩
+--                     1 * b
+--                 ≤⟨ _*-mono_ {1} {toℕ xs} {b} {b} (≰⇒> ¬q) ≤-refl ⟩
+--                     toℕ xs * b
+--                 ≤⟨ n≤m+n (Fin.toℕ x) (toℕ xs * b) ⟩
+--                     Fin.toℕ x + toℕ xs * b
+--                 □
+--             ) ⟩
+--                 o + (Fin.toℕ x + toℕ xs * b)
+--             ≤⟨ reflexive (sym (+-assoc o (Fin.toℕ x) (toℕ xs * b))) ⟩
+--                 o + Fin.toℕ x + toℕ xs * b
+--             □
+--
+-- NonSurjCond⇏Surjective : ∀ {b} {d} {o} → NonSurjCond b d o → ¬ (Surjective (Num⟶ℕ b d o))
+-- NonSurjCond⇏Surjective {_} {d} {o} Base≡0  claim =
+--     NonSurjCond-Base≡0
+--         (from             claim ⟨$⟩ suc o + d)
+--         (right-inverse-of claim   (suc (o + d)))
+-- NonSurjCond⇏Surjective NoDigits claim =
+--     NonSurjCond-NoDigits
+--         (from             claim ⟨$⟩ 1)
+--         (right-inverse-of claim     1)
+-- NonSurjCond⇏Surjective (Offset≥2 p) claim =
+--     NonSurjCond-Offset≥2 p
+--         (from             claim ⟨$⟩ 1)
+--         (right-inverse-of claim     1)
+-- NonSurjCond⇏Surjective UnaryWithOnlyZeros claim =
+--     NonSurjCond-UnaryWithOnlyZeros
+--         (from             claim ⟨$⟩ 1)
+--         (right-inverse-of claim     1)
+-- NonSurjCond⇏Surjective {_} {d} {o} (NotEnoughDigits p q) claim =
+--     NonSurjCond-NotEnoughDigits p q
+--         (from             claim ⟨$⟩ o + d)
+--         (right-inverse-of claim    (o + d))
+--
+-- SurjCond⇒Surjective : ∀ {b} {d} {o} → SurjCond b d o → Surjective (Num⟶ℕ b d o)
+-- SurjCond⇒Surjective {b} {d} {o} cond = record
+--     { from = ℕ⟶Num b d o
+--     ; right-inverse-of = toℕ-fromℕ {b} {d} {o} {SurjCond⇒IsSurj cond}
+--     }
+--
+-- Surjective? : ∀ b d o → Dec (Surjective (Num⟶ℕ b d o))
+-- Surjective? b d o with surjectionView b d o
+-- Surjective? b d o | Surj cond = yes (record
+--     { from = ℕ⟶Num b d o
+--     ; right-inverse-of = toℕ-fromℕ {b} {d} {o} {SurjCond⇒IsSurj cond}
+--     })
+-- Surjective? b d o | NonSurj reason = no (NonSurjCond⇏Surjective reason)
+--
+-- ------------------------------------------------------------------------
+-- --
+-- ------------------------------------------------------------------------
+--
+-- -- Surjective⇒SurjCond {b} {d} {o} surj = {!   !}
+-- Surjective⇒SurjCond : ∀ {b} {d} {o}
+--     → Surjective (Num⟶ℕ b d o)
+--     → SurjCond b d o
+-- Surjective⇒SurjCond {b} {d} {o} surj with surjectionView b d o
+-- Surjective⇒SurjCond surj | Surj condition = condition
+-- Surjective⇒SurjCond surj | NonSurj reason = contradiction surj (NonSurjCond⇏Surjective reason)
+--
+-- Surjective⇒IsSurj : ∀ {b} {d} {o} → Surjective (Num⟶ℕ b d o) → IsSurjective b d o
+-- Surjective⇒IsSurj = SurjCond⇒IsSurj ∘ Surjective⇒SurjCond
+--
+-- Surjective⇒b≥1 : ∀ {b} {d} {o} → Surjective (Num⟶ℕ b d o) → b ≥ 1
+-- Surjective⇒b≥1 = SurjCond⇒b≥1 ∘ Surjective⇒SurjCond
+--
+-- Surjective⇒d≥b : ∀ {b} {d} {o} → Surjective (Num⟶ℕ b d o) → b ≤ d
+-- Surjective⇒d≥b = SurjCond⇒d≥b ∘ Surjective⇒SurjCond
