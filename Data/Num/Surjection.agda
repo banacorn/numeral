@@ -243,35 +243,53 @@ tail-mono-strict {b} {_} {o} x y xs ys greatest p
 incrementable-lemma-5 : ∀ {b d o}
     → (x : Digit (suc d))
     → (xs : Num (suc b) (suc d) o)
-    → (¬redundant : suc b ≰ suc d)
+    → (b>d : suc b > suc d)
     → Greatest x
     → incrementable (x ∷ xs)
     → ⊥
-incrementable-lemma-5 x xs ¬redundant greatest (∙ , ())
-incrementable-lemma-5 x ∙ ¬redundant greatest (y ∷ ∙ , claim) = {!   !}
-incrementable-lemma-5 x ∙ ¬redundant greatest (y ∷ y' ∷ ys , claim) = {!   !}
-incrementable-lemma-5 x (x' ∷ xs) ¬redundant greatest (y ∷ ∙ , claim) = {!   !}
-incrementable-lemma-5 x (x' ∷ xs) ¬redundant greatest (y ∷ y' ∷ ys , claim) = {!   !}
-    -- = contradiction 1+⟦x∷xs⟧≡⟦y∷ys⟧ (>⇒≢ 1+⟦x∷xs⟧<⟦y∷ys⟧)
-    -- where   1+⟦x∷xs⟧<⟦y∷ys⟧ : suc (toℕ (x ∷ xs)) < toℕ (y ∷ ys)
-    --         1+⟦x∷xs⟧<⟦y∷ys⟧ =
-    --             start
-    --                 suc (suc (o + Fin.toℕ x + toℕ xs * suc b))
-    --             ≤⟨ {!   !} ⟩
-    --                 {!   !}
-    --             ≤⟨ {!   !} ⟩
-    --                 {!   !}
-    --             ≤⟨ {!   !} ⟩
-    --                 {!   !}
-    --             ≤⟨ {!   !} ⟩
-    --                 {!   !}
-    --             ≤⟨ {!   !} ⟩
-    --                 {!   !}
-    --             ≤⟨ {!   !} ⟩
-    --                 {!   !}
-    --             ≤⟨ {!   !} ⟩
-    --                 {!   !}
-    --             □
+incrementable-lemma-5 x xs b>d greatest (∙ , ())
+incrementable-lemma-5 {b} {d} {o} x xs b>d greatest (y ∷ ys , claim)
+    = contradiction claim (>⇒≢ ⟦y∷ys⟧>1+⟦x∷xs⟧)
+    where
+        ⟦x∷xs⟧<⟦y∷ys⟧ : toℕ (x ∷ xs) < toℕ (y ∷ ys)
+        ⟦x∷xs⟧<⟦y∷ys⟧ = m≡n+o⇒m≥o {toℕ (y ∷ ys)} {suc (toℕ (x ∷ xs) )} zero claim
+        ⟦xs⟧<⟦ys⟧ : toℕ xs < toℕ ys
+        ⟦xs⟧<⟦ys⟧ = tail-mono-strict x y xs ys greatest ⟦x∷xs⟧<⟦y∷ys⟧
+        ⟦y∷ys⟧>1+⟦x∷xs⟧ : toℕ (y ∷ ys) > suc (toℕ (x ∷ xs))
+        ⟦y∷ys⟧>1+⟦x∷xs⟧ =
+            start
+                suc (suc (toℕ (x ∷ xs)))
+            ≤⟨ ≤-refl ⟩
+                suc (suc (Digit-toℕ x o + toℕ xs * suc b))
+            ≤⟨ reflexive (sym (+-suc (suc (Digit-toℕ x o)) (toℕ xs * suc b))) ⟩
+                suc (Digit-toℕ x o) + suc (toℕ xs * suc b)
+            ≤⟨ +n-mono (suc (toℕ xs * suc b)) (Digit<d+o x o) ⟩
+                suc (d + o + suc (toℕ xs * suc b))
+            ≤⟨ reflexive $
+                begin
+                    (suc d + o) + suc (toℕ xs * suc b)
+                ≡⟨ +-suc (suc d + o) (toℕ xs * suc b) ⟩
+                    2 + (d + o + toℕ xs * suc b)
+                ≡⟨ cong (_+_ 2) (+-assoc d o (toℕ xs * suc b)) ⟩
+                    2 + (d + (o + toℕ xs * suc b))
+                ≡⟨ sym (+-assoc 2 d (o + toℕ xs * suc b)) ⟩
+                    (2 + d) + (o + toℕ xs * suc b)
+                ≡⟨ a+[b+c]≡b+[a+c] ((2 + d)) o (toℕ xs * suc b) ⟩
+                    o + ((2 + d) + toℕ xs * suc b)
+                ∎ ⟩
+                o + suc (suc (d + toℕ xs * suc b))
+            ≤⟨ +n-mono ((suc (suc d) + toℕ xs * suc b)) (+n-mono o {zero} {Fin.toℕ y} z≤n) ⟩
+                Digit-toℕ y o + (suc (suc d) + toℕ xs * suc b)
+            ≤⟨ n+-mono (Digit-toℕ y o) (+n-mono (toℕ xs * suc b) b>d) ⟩
+                Digit-toℕ y o + (suc b + toℕ xs * suc b)
+            ≤⟨ ≤-refl ⟩
+                Digit-toℕ y o + suc (toℕ xs) * suc b
+            ≤⟨ n+-mono (Digit-toℕ y o) (*n-mono (suc b) ⟦xs⟧<⟦ys⟧) ⟩
+                Digit-toℕ y o + toℕ ys * suc b
+            ≤⟨ ≤-refl ⟩
+                toℕ (y ∷ ys)
+            □
+            
 -- begin
 --     {!   !}
 -- ≡⟨ {!   !} ⟩
@@ -301,7 +319,7 @@ incrementable? {suc b} {suc d} (x ∷ xs) | yes greatest | yes (xs' , q) with su
 incrementable? {suc b} {suc d} (x ∷ xs) | yes greatest | yes (xs' , q) | yes r
     = yes (digit+1-b {b} x r greatest ∷ xs' , incrementable-lemma-4 x xs xs' q r greatest)
 incrementable? {suc b} {suc d} (x ∷ xs) | yes greatest | yes (xs' , q) | no ¬r
-    = no (incrementable-lemma-5 x xs ¬r greatest)
+    = no (incrementable-lemma-5 x xs (≰⇒> ¬r) greatest)
 incrementable? {suc b} {suc d} (x ∷ xs) | yes greatest | no ¬q = no {!   !}
 incrementable? {b} {suc d} (x ∷ xs) | no ¬p = yes {!   !}
 

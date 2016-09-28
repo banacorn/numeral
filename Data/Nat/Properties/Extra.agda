@@ -65,9 +65,6 @@ isPreorder = IsPartialOrder.isPreorder isPartialOrder
 ≤∧≢⇒< {suc m} {zero}  ()      q
 ≤∧≢⇒< {suc m} {suc n} (s≤s p) q = s≤s (≤∧≢⇒< p (q ∘ cong suc))
 
-≤0⇒≡0 : ∀ n → n ≤ 0 → n ≡ 0
-≤0⇒≡0 zero    n≤0 = refl
-≤0⇒≡0 (suc n) ()
 
 m≤n+m : ∀ m n → m ≤ n + m
 m≤n+m m n =
@@ -78,6 +75,13 @@ m≤n+m m n =
     ≤⟨ reflexive (+-comm m n) ⟩
         n + m
     □
+
+m≡n+o⇒m≥o : ∀ {m} {o} n → m ≡ n + o → m ≥ o
+m≡n+o⇒m≥o {.(n + o)} {o} n refl = m≤n+m o n
+
+≤0⇒≡0 : ∀ n → n ≤ 0 → n ≡ 0
+≤0⇒≡0 zero    n≤0 = refl
+≤0⇒≡0 (suc n) ()
 
 n+-mono-inverse : ∀ n → ∀ {a b} → n + a ≤ n + b → a ≤ b
 n+-mono-inverse zero    a≤b       = a≤b
