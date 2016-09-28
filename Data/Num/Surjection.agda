@@ -227,46 +227,18 @@ incrementable-lemma-4 {b} {d} {o} x xs xs' p redundant greatest =
 -- ≤⟨ {!   !} ⟩
 --     {!   !}
 -- □
-
+--
 tail-mono-strict : ∀ {b d o} (x y : Digit d) (xs ys : Num b d o)
     → Greatest x
     → toℕ (x ∷ xs) < toℕ (y ∷ ys)
     → toℕ xs < toℕ ys
-tail-mono-strict  {b} {d} {o} x y ∙ ∙ greatest p = contradiction 0<0 (λ ())
-    where   0<0 : 0 < 0
-            0<0 = +-mono-contra (greatest-of-all o x y greatest) p
-tail-mono-strict {b} {d} {o} x y ∙         (y' ∷ ys) greatest p = ⟦y'∷ys⟧>0
-    where   ⟦∷y'∷ys⟧>0 : toℕ (y' ∷ ys) * b > 0
-            ⟦∷y'∷ys⟧>0 = +-mono-contra (greatest-of-all o x y greatest) p
-            ⟦y'∷ys⟧>0 : toℕ (y' ∷ ys) > 0
-            ⟦y'∷ys⟧>0 = proj₁ (i*j>0⇒i>0∧j>0 (toℕ (y' ∷ ys)) b ⟦∷y'∷ys⟧>0)
-tail-mono-strict {b} {d} {o} x y (x' ∷ xs) ∙         greatest p = contradiction something<0 (λ ())
-    where   something<0 : toℕ (x' ∷ xs) * b < 0
-            something<0 = +-mono-contra (greatest-of-all o x y greatest) p
-tail-mono-strict {zero} {d} {o} x y (x' ∷ xs) (y' ∷ ys) greatest p
-    = contradiction p ¬p
-    where   ⟦x⟧-greatest : Digit-toℕ x o ≥ Digit-toℕ y o
-            ⟦x⟧-greatest = greatest-of-all o x y greatest
-            ¬p : toℕ (x ∷ x' ∷ xs) ≮ toℕ (y ∷ y' ∷ ys)
-            ¬p = ≥⇒≮ $
-                start
-                    Digit-toℕ y o + toℕ (y' ∷ ys) * zero
-                ≤⟨ reflexive (cong (_+_ (Digit-toℕ y o)) (*-right-zero (toℕ (y' ∷ ys)))) ⟩
-                    Digit-toℕ y o + 0
-                ≤⟨ reflexive (+-right-identity (Digit-toℕ y o))  ⟩
-                    Digit-toℕ y o
-                ≤⟨ ⟦x⟧-greatest ⟩
-                    Digit-toℕ x o
-                ≤⟨ reflexive (sym (+-right-identity (Digit-toℕ x o))) ⟩
-                    Digit-toℕ x o + 0
-                ≤⟨ reflexive (cong (_+_ (Digit-toℕ x o)) (sym (*-right-zero (toℕ (x' ∷ xs))))) ⟩
-                    Digit-toℕ x o + toℕ (x' ∷ xs) * zero
-                □
-tail-mono-strict {suc b} {d} {o} x y (x' ∷ xs) (y' ∷ ys) greatest p
-    = *n-mono-strict-inverse (suc b) ⟦∷x'∷xs⟧<⟦∷y'∷ys⟧
-    where   ⟦∷x'∷xs⟧<⟦∷y'∷ys⟧ : toℕ (x' ∷ xs) * suc b < toℕ (y' ∷ ys) * suc b
-            ⟦∷x'∷xs⟧<⟦∷y'∷ys⟧ = +-mono-contra (greatest-of-all o x y greatest) p
-
+tail-mono-strict {b} {_} {o} x y xs ys greatest p
+    = *n-mono-strict-inverse b ⟦∷xs⟧<⟦∷ys⟧
+    where
+        ⟦x⟧≥⟦y⟧ : Digit-toℕ x o ≥ Digit-toℕ y o
+        ⟦x⟧≥⟦y⟧ = greatest-of-all o x y greatest
+        ⟦∷xs⟧<⟦∷ys⟧ : toℕ xs * b < toℕ ys * b
+        ⟦∷xs⟧<⟦∷ys⟧ = +-mono-contra ⟦x⟧≥⟦y⟧ p
 
 incrementable-lemma-5 : ∀ {b d o}
     → (x : Digit (suc d))
