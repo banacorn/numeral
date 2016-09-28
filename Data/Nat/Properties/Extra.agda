@@ -51,6 +51,10 @@ isPreorder = IsPartialOrder.isPreorder isPartialOrder
 >⇒≢ {zero} () refl
 >⇒≢ {suc m} (s≤s m>n) refl = >⇒≢ m>n refl
 
+≥⇒≮ : _≥_ ⇒ _≮_
+≥⇒≮ z≤n     ()
+≥⇒≮ (s≤s m) (s≤s p) = ≥⇒≮ m p
+
 <⇒≢ : _<_ ⇒ _≢_
 <⇒≢ {zero} () refl
 <⇒≢ {suc m} (s≤s m<n) refl = <⇒≢ m<n refl
@@ -141,25 +145,16 @@ n*-mono n = _*-mono_ {n} {n} ≤-refl
 -- □
 
 n*-mono-strict-inverse : ∀ n {a} {b} → n * a < n * b → a < b
-n*-mono-strict-inverse zero                    ()
-n*-mono-strict-inverse (suc n) {zero}  {zero}  p       = n*-mono-strict-inverse n p
-n*-mono-strict-inverse (suc n) {zero}  {suc b} (s≤s p) = s≤s z≤n
-n*-mono-strict-inverse (suc n) {suc a} {zero}  p       = contradiction p' (λ ())
-    where   p' : suc (a + n * suc a) < 0
-            p' = start
-                    suc (suc (a + n * suc a))
-                ≤⟨ p ⟩
-                    n * zero
-                ≤⟨ reflexive (*-right-zero n) ⟩
-                    zero
-                □
-n*-mono-strict-inverse (suc n) {suc a} {suc b} (s≤s p) with suc a ≤? b
-n*-mono-strict-inverse (suc n) {suc a} {suc b} (s≤s p) | yes q = s≤s q
-n*-mono-strict-inverse (suc n) {suc a} {suc b} (s≤s p) | no ¬q = contradiction p ¬p
-    where   ¬q' : suc b ≤ suc a
-            ¬q' = ≰⇒> ¬q
-            ¬p : suc (a + n * suc a) ≰ b + n * suc b
-            ¬p = >⇒≰ $ n*-mono (suc n) ¬q'
+n*-mono-strict-inverse zero ()
+n*-mono-strict-inverse (suc n) {a} {b} p with suc a ≤? b
+n*-mono-strict-inverse (suc n) {a} {b} p | yes q = q
+n*-mono-strict-inverse (suc n) {a} {b} p | no ¬q = contradiction p ¬p
+    where
+        ¬q' : b ≤ a
+        ¬q' = ≤-pred (≰⇒> ¬q)
+        ¬p : suc (suc n * a) ≰ suc n * b
+        ¬p = >⇒≰ (s≤s (n*-mono (suc n) ¬q'))
+
 
 *n-mono : ∀ n → (λ x → x * n) Preserves _≤_ ⟶ _≤_
 *n-mono n {a} {b} a≤b = _*-mono_ {a} {b} {n} {n} a≤b ≤-refl
@@ -188,56 +183,13 @@ n*-mono-strict-inverse (suc n) {suc a} {suc b} (s≤s p) | no ¬q = contradictio
         d * c
     □
 
-
 *n-mono-inverse : ∀ n {a} {b} → a * (suc n) ≤ b * (suc n) → a ≤ b
 *n-mono-inverse n {zero}          p       = z≤n
 *n-mono-inverse n {suc a} {zero}  ()
 *n-mono-inverse n {suc a} {suc b} (s≤s p) = s≤s (*n-mono-inverse n (n+-mono-inverse n p))
 
-*n-mono-inverse-strict : ∀ n {a} {b} → a * n < b * n → a < b
-*n-mono-inverse-strict zero {a} {b} p = contradiction (start
-        1
-    ≤⟨ reflexive (cong suc (sym (*-right-zero a))) ⟩
-        suc (a * zero)
-    ≤⟨ p ⟩
-        b * zero
-    ≤⟨ reflexive (*-right-zero b) ⟩
-        0
-    □) (λ ())
-*n-mono-inverse-strict (suc n) {a} {b} p = *n-mono-inverse-strict n {!   !}
-    where
-            temp : a + n * a < b + n * b
-            temp =
-                start
-                    suc (a + n * a)
-                ≤⟨ reflexive (cong suc (*-comm (suc n) a)) ⟩
-                    suc (a * suc n)
-                ≤⟨ p ⟩
-                    b * suc n
-                ≤⟨ reflexive (*-comm b (suc n)) ⟩
-                    b + n * b
-                □
-            temp' : suc n * a < suc n * b
-            temp' = *-comm-mono-strict {a} {suc n} {b} p
-
-            temp'' : n * a < n * b
-            temp'' = {!   !}
-
--- *n-mono-inverse-strict (suc n) {zero} {zero} p = p
--- *n-mono-inverse-strict (suc n) {zero} {suc j} (s≤s p) = s≤s z≤n
--- *n-mono-inverse-strict (suc n) {suc i} {zero} ()
--- *n-mono-inverse-strict (suc n) {suc i} {suc j} (s≤s p) = s≤s $
---     start
---         suc i
---     ≤⟨ {!   !} ⟩
---         {!   !}
---     ≤⟨ {!*n-mono-inverse-strict (suc n) {suc i} {suc j} (s≤s p)   !} ⟩
---         {!   !}
---     ≤⟨ {!   !} ⟩
---         j
---     □
-
-
+*n-mono-strict-inverse : ∀ n {a} {b} → a * n < b * n → a < b
+*n-mono-strict-inverse n {a} {b} p = n*-mono-strict-inverse n (*-comm-mono-strict {a} {n} {b} {n} p)
 
 
 ≤-suc : ∀ {m n} → m ≤ n → suc m ≤ suc n
