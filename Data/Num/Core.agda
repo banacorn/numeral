@@ -8,7 +8,7 @@ open import Data.Nat.Properties.Extra
 open import Data.Fin as Fin
     using (Fin; fromℕ≤; inject≤)
     renaming (zero to z; suc to s)
-open import Data.Fin.Properties using (bounded; toℕ-fromℕ≤)
+open import Data.Fin.Properties as FinProps using (bounded; toℕ-fromℕ≤)
 
 open import Function
 open import Relation.Binary.PropositionalEquality
@@ -67,6 +67,19 @@ Greatest {d} x = suc (Fin.toℕ x) ≡ d
 -- A digit at its greatest
 Greatest? : ∀ {d} (x : Digit d) → Dec (Greatest x)
 Greatest? {d} x = suc (Fin.toℕ x) ≟ d
+
+greatest-digit : ∀ d → Digit (suc d)
+greatest-digit d = Fin.fromℕ d
+
+greatest-digit-toℕ : ∀ d o → Digit-toℕ (greatest-digit d) o ≡ d + o
+greatest-digit-toℕ d o =
+    begin
+        Digit-toℕ (greatest-digit d) o
+    ≡⟨ refl ⟩
+        (Fin.toℕ (Fin.fromℕ d) + o)
+    ≡⟨ cong (λ w → w + o) (FinProps.to-from d) ⟩
+        d + o
+    ∎
 
 greatest-of-all : ∀ {d} (o : ℕ) → (x y : Digit d) → Greatest x → Digit-toℕ x o ≥ Digit-toℕ y o
 greatest-of-all o z     z      refl = ≤-refl

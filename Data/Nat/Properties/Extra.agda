@@ -47,6 +47,10 @@ isPreorder = IsPartialOrder.isPreorder isPartialOrder
 >⇒≰ {suc m} (s≤s p) (s≤s q) = >⇒≰ p q
 
 
+<⇒≱ : _<_ ⇒ _≱_
+<⇒≱ {zero} () z≤n
+<⇒≱ {suc i} (s≤s p) (s≤s q) = <⇒≱ p q
+
 >⇒≢ : _>_ ⇒ _≢_
 >⇒≢ {zero} () refl
 >⇒≢ {suc m} (s≤s m>n) refl = >⇒≢ m>n refl

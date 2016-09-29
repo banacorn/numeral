@@ -289,7 +289,26 @@ incrementable-lemma-5 {b} {d} {o} x xs b>d greatest (y ∷ ys , claim)
             ≤⟨ ≤-refl ⟩
                 toℕ (y ∷ ys)
             □
-            
+
+incrementable-lemma-6 : ∀ {b d o}
+    → (x : Digit (suc d))
+    → (xs : Num (suc b) (suc d) o)
+    → Greatest x
+    → ¬ (incrementable xs)
+    → incrementable (x ∷ xs)
+    → ⊥
+incrementable-lemma-6 x xs greatest ¬p (∙ , ())
+incrementable-lemma-6 x xs greatest ¬p (y ∷ ys , claim) = {! ⟦xs⟧<⟦ys⟧  !}
+    -- ¬p : Σ[ xs' ∈ _ ] toℕ xs' ≡ suc (toℕ xs) → ⊥
+    -- p0 : toℕ (y ∷ ys) > toℕ (x ∷ xs)
+    -- toℕ ys > toℕ xs
+    where
+        ⟦x∷xs⟧<⟦y∷ys⟧ : toℕ (x ∷ xs) < toℕ (y ∷ ys)
+        ⟦x∷xs⟧<⟦y∷ys⟧ = m≡n+o⇒m≥o {toℕ (y ∷ ys)} {suc (toℕ (x ∷ xs) )} zero claim
+        ⟦xs⟧<⟦ys⟧ : toℕ xs < toℕ ys
+        ⟦xs⟧<⟦ys⟧ = tail-mono-strict x y xs ys greatest ⟦x∷xs⟧<⟦y∷ys⟧
+
+
 -- begin
 --     {!   !}
 -- ≡⟨ {!   !} ⟩
@@ -320,9 +339,13 @@ incrementable? {suc b} {suc d} (x ∷ xs) | yes greatest | yes (xs' , q) | yes r
     = yes (digit+1-b {b} x r greatest ∷ xs' , incrementable-lemma-4 x xs xs' q r greatest)
 incrementable? {suc b} {suc d} (x ∷ xs) | yes greatest | yes (xs' , q) | no ¬r
     = no (incrementable-lemma-5 x xs (≰⇒> ¬r) greatest)
-incrementable? {suc b} {suc d} (x ∷ xs) | yes greatest | no ¬q = no {!   !}
+incrementable? {suc b} {suc d} {o} (x ∷ xs) | yes greatest | no ¬q with suc b * o ≤? suc d
+incrementable? {suc b} {suc d} (x ∷ xs) | yes greatest | no ¬q | yes r
+    = yes (({!   !} ∷ {!   !}) , {!   !})
+incrementable? {suc b} {suc d} (x ∷ xs) | yes greatest | no ¬q | no ¬r
+    = no {!   !}
+    -- = no (incrementable-lemma-6 x xs greatest ¬q)
 incrementable? {b} {suc d} (x ∷ xs) | no ¬p = yes {!   !}
-
 
 
 --
