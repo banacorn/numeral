@@ -57,31 +57,30 @@ Bounded-lemma-3 b (z ∷ xs) = *n-mono b (Bounded-lemma-3 b xs)
 Bounded-lemma-3 b (s () ∷ xs)
 
 
-Bounded-lemma-5 : ∀ b d o → ¬ (Bounded (suc b) (suc d) (suc o))
-Bounded-lemma-5 b d o (evidence , claim) = contradiction p ¬p
+Bounded-lemma-7 : ∀ b d o → d + o ≥ 1 → ¬ (Bounded (suc b) (suc d) o)
+Bounded-lemma-7 b d o d+o≥1 (evidence , claim) = contradiction p ¬p
     where
         p : toℕ evidence ≥ toℕ (greatest-digit d ∷ evidence)
         p = claim (greatest-digit d ∷ evidence)
         ¬p : toℕ evidence ≱ toℕ (greatest-digit d ∷ evidence)
-        ¬p = <⇒≱ $ start
+        ¬p = <⇒≱ $
+            start
                 suc (toℕ evidence)
             ≤⟨ reflexive (cong suc (sym (*-right-identity (toℕ evidence)))) ⟩
                 suc (toℕ evidence * 1)
             ≤⟨ s≤s (n*-mono (toℕ evidence) (s≤s z≤n)) ⟩
                 suc (toℕ evidence * suc b)
-            ≤⟨ +n-mono (toℕ evidence * suc b) {suc zero} {suc d + o} (s≤s z≤n) ⟩
-                (suc d + o) + (toℕ evidence * suc b)
-            ≤⟨ reflexive (cong (λ w → w + toℕ evidence * suc b) $
-                begin
-                    suc (d + o)
-                ≡⟨ sym (+-suc d o) ⟩
-                    d + suc o
-                ≡⟨ sym (greatest-digit-toℕ d (suc o)) ⟩
-                    Digit-toℕ (greatest-digit d) (suc o)
-                ∎
-            ) ⟩
-                Digit-toℕ (greatest-digit d) (suc o) + toℕ evidence * suc b
+            ≤⟨ +n-mono (toℕ evidence * suc b) d+o≥1 ⟩
+                (d + o) + (toℕ evidence * suc b)
+            ≤⟨ reflexive
+                (cong
+                    (λ w → w + toℕ evidence * suc b)
+                    (sym (greatest-digit-toℕ d o))
+                )
+            ⟩
+                Digit-toℕ (greatest-digit d) o + toℕ evidence * suc b
             □
+
 
 -- begin
 --     {!   !}
@@ -105,43 +104,13 @@ Bounded-lemma-5 b d o (evidence , claim) = contradiction p ¬p
 --     {!   !}
 -- □
 
-Bounded-lemma-6 : ∀ b d o → ¬ (Bounded (suc b) (suc (suc d)) o)
-Bounded-lemma-6 b d o (evidence , claim) = contradiction p ¬p
-    where
-        p : toℕ evidence ≥ toℕ (greatest-digit (suc d) ∷ evidence)
-        p = claim (greatest-digit (suc d) ∷ evidence)
-        ¬p : toℕ evidence ≱ toℕ (greatest-digit (suc d) ∷ evidence)
-        ¬p = <⇒≱ $ s≤s $ start
-                toℕ evidence
-            ≤⟨ reflexive (sym (*-right-identity (toℕ evidence))) ⟩
-                toℕ evidence * suc zero
-            ≤⟨ n*-mono (toℕ evidence) (s≤s z≤n) ⟩
-                toℕ evidence * suc b
-            ≤⟨ n≤m+n (Digit-toℕ (greatest-digit d) o) (toℕ evidence * suc b) ⟩
-                Digit-toℕ (greatest-digit d) o + toℕ evidence * suc b
-            □
-
-
 Bounded? : ∀ b d o → Dec (Bounded b d o)
-Bounded? zero zero o = yes (∙ , Bounded-lemma-1 zero o)
-Bounded? zero (suc d) o = yes ((greatest-digit d ∷ ∙) , Bounded-lemma-2 d o)
-Bounded? (suc zero) zero o = yes (∙ , (Bounded-lemma-1 (suc zero) o))
-Bounded? (suc zero) (suc zero) zero = yes (∙ , (Bounded-lemma-3 (suc zero)))
-Bounded? (suc zero) (suc zero) (suc o) = no (Bounded-lemma-5 zero zero o)
-Bounded? (suc zero) (suc (suc d)) o = no (Bounded-lemma-6 zero d o)
-Bounded? (suc (suc b)) zero o = yes (∙ , (Bounded-lemma-1 (suc (suc b)) o))
-Bounded? (suc (suc b)) (suc zero) zero = yes (∙ , (Bounded-lemma-3 (suc (suc b))))
-Bounded? (suc (suc b)) (suc zero) (suc o) = no (Bounded-lemma-5 (suc b) zero o)
-Bounded? (suc (suc b)) (suc (suc d)) o = no (Bounded-lemma-6 (suc b) d o)
--- Bounded? (suc b) zero o = yes (∙ , Bounded-lemma-1 (suc b) o)
--- Bounded? (suc b) (suc d) o = {! b  !}
-
--- Bounded? b zero o = yes (∙ , (Bounded-lemma-1 b o))
--- -- only has the digit "0"
--- Bounded? b (suc zero) zero = yes (∙ , Bounded-lemma-3 b)
--- Bounded? zero (suc zero) (suc o) = {!   !}
--- Bounded? (suc b) (suc zero) (suc o) = {!   !}
--- Bounded? b (suc (suc d)) o = {!   !}
+Bounded? zero    zero          o       = yes (∙ , Bounded-lemma-1 zero o)
+Bounded? zero    (suc d)       o       = yes ((greatest-digit d ∷ ∙) , Bounded-lemma-2 d o)
+Bounded? (suc b) zero          o       = yes (∙ , (Bounded-lemma-1 (suc b) o))
+Bounded? (suc b) (suc zero)    zero    = yes (∙ , (Bounded-lemma-3 (suc b)))
+Bounded? (suc b) (suc zero)    (suc o) = no (Bounded-lemma-7 b zero (suc o) (s≤s z≤n))
+Bounded? (suc b) (suc (suc d)) o       = no (Bounded-lemma-7 b (suc d) o (s≤s z≤n))
 
 -- start
 --     {!   !}
