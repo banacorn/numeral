@@ -3,6 +3,7 @@ module Data.Num.Core where
 
 open import Data.Unit using (⊤; tt)
 open import Data.Empty using (⊥)
+open import Data.Product
 open import Data.Nat
 open import Data.Nat.Properties
 open import Data.Nat.Properties.Simple
@@ -237,3 +238,10 @@ Num⟶ℕ b d o = record { _⟨$⟩_ = toℕ ; cong = cong toℕ }
 -- _≋_ {b}     {d}     {o} (x ∷ xs) (y ∷ ys) with Digit-toℕ x o ≟ Digit-toℕ y o
 -- _≋_ {b}     {d}     {o} (x ∷ xs) (y ∷ ys) | yes p = xs ≋ ys
 -- _≋_ {b}     {d}     {o} (x ∷ xs) (y ∷ ys) | no ¬p = ⊥
+
+Suprenum : ∀ {b d o} → Num b d o → Set
+Suprenum {b} {d} {o} sup = ∀ (xs : Num b d o) → toℕ sup ≥ toℕ xs
+
+-- a system is bounded if there exists the greatest number
+Bounded : ∀ b d o → Set
+Bounded b d o = Σ[ xs ∈ Num b d o ] Suprenum xs
