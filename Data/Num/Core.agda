@@ -89,6 +89,8 @@ greatest-of-all o z     (s ()) refl
 greatest-of-all o (s x) z      greatest = +n-mono o {zero} {suc (Fin.toℕ x)} z≤n
 greatest-of-all o (s x) (s y)  greatest = s≤s (greatest-of-all o x y (suc-injective greatest))
 
+greatest-digit-Greatest : ∀ d → Greatest (greatest-digit d)
+greatest-digit-Greatest d = cong suc (FinProps.to-from d)
 
 -- +1 and then -base, useful for handling carrying on increment
 

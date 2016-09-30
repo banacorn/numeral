@@ -63,19 +63,21 @@ boundedView (suc b) (suc (suc d)) o
 ------------------------------------------------------------------------
 -- Relations between Conditions and Predicates
 
-Base≡0-lemma : ∀ d o → Suprenum (greatest-digit d ∷ ∙)
-Base≡0-lemma d o ∙ = z≤n
-Base≡0-lemma d o (x ∷ xs) =
+Base≡0-lemma : ∀ {d} {o}
+    → (x : Digit (suc d))
+    → (xs : Num 0 (suc d) o)
+    → Greatest x
+    → Suprenum (x ∷ xs)
+Base≡0-lemma         x xs greatest ∙        = z≤n
+Base≡0-lemma {d} {o} x xs greatest (y ∷ ys) =
     start
-        -- toℕ (x ∷ xs)
-        Fin.toℕ x + o + toℕ xs * zero
-    ≤⟨ reflexive (cong (λ w → Digit-toℕ x o + w) (*-right-zero (toℕ xs))) ⟩
-        Fin.toℕ x + o + zero
-    ≤⟨ +n-mono 0 (+n-mono o $ ≤-pred (bounded x)) ⟩
-        d + o + zero
-    ≤⟨ reflexive (cong (λ w → w + 0) (sym (greatest-digit-toℕ d o))) ⟩
-        -- toℕ (greatest-digit d ∷ ∙)
-        Fin.toℕ (Fin.fromℕ d) + o + zero
+        Digit-toℕ y o + toℕ ys * 0
+    ≤⟨ reflexive (cong (_+_ (Digit-toℕ y o)) (*-right-zero (toℕ ys))) ⟩
+        Digit-toℕ y o + 0
+    ≤⟨ +n-mono 0 (greatest-of-all o x y greatest) ⟩
+        Digit-toℕ x o + 0
+    ≤⟨ reflexive (cong (_+_ (Digit-toℕ x o)) (sym (*-right-zero (toℕ xs)))) ⟩
+        Digit-toℕ x o + toℕ xs * 0
     □
 
 HasNoDigit-lemma : ∀ b o → Suprenum {b} {0} {o} ∙
@@ -122,7 +124,7 @@ Digit+Offset≥2-lemma b d o d+o≥1 (evidence , claim) = contradiction p ¬p
             □
 
 BoundedCond⇒Bounded : ∀ {b d o} → BoundedCond b d o → Bounded b d o
-BoundedCond⇒Bounded (Base≡0 d o)     = (greatest-digit d ∷ ∙) , (Base≡0-lemma d o)
+BoundedCond⇒Bounded (Base≡0 d o)     = (greatest-digit d ∷ ∙) , (Base≡0-lemma (greatest-digit d) ∙ (greatest-digit-Greatest d))
 BoundedCond⇒Bounded (HasNoDigit b o) = ∙ , (HasNoDigit-lemma b o)
 BoundedCond⇒Bounded (HasOnly:0 b)    = ∙ , (HasOnly:0-lemma (suc b) ∙)
 
@@ -194,15 +196,39 @@ next-lemma-1 : ∀ {d o}
     → (x : Digit (suc d))
     → (xs : Num 0 (suc d) o)
     → (¬Suprenum : ¬ (Suprenum (x ∷ xs)))
-    → (greatest : suc (Fin.toℕ x) ≡ suc d)
+    → (greatest : Greatest x)
     → Num 0 (suc d) o
-next-lemma-1 {d} {o} x xs ¬sup greatest = {! ¬sup   !}
+next-lemma-1 {d} {o} x xs ¬sup greatest = contradiction sup ¬sup
     where   sup : Suprenum (x ∷ xs)
-            sup ys = ?
+            sup ys = Base≡0-lemma x xs greatest ys
+
     -- where   p : toℕ xs ≥ toℕ (greatest-digit d ∷ x ∷ xs)
     --         p = claim (greatest-digit d ∷ x ∷ xs)
     --         ¬p : toℕ xs ≱ toℕ (greatest-digit d ∷ x ∷ xs)
     --         ¬p = <⇒≱ {!   !}
+
+-- begin
+--     {!   !}
+-- ≡⟨ {!   !} ⟩
+--     {!   !}
+-- ≡⟨ {!   !} ⟩
+--     {!   !}
+-- ≡⟨ {!   !} ⟩
+--     {!   !}
+-- ≡⟨ {!   !} ⟩
+--     {!   !}
+-- ∎
+
+-- start
+--     {!   !}
+-- ≤⟨ {!   !} ⟩
+--     {!   !}
+-- ≤⟨ {!   !} ⟩
+--     {!   !}
+-- ≤⟨ {!   !} ⟩
+--     {!   !}
+-- □
+
 
 next : ∀ {b d o}
     → (xs : Num b d o)
