@@ -1,4 +1,4 @@
-module Data.Num.Continuity where
+module Data.Num.Bounded where
 
 open import Data.Num.Core
 
@@ -112,7 +112,7 @@ Bounded? (IsBounded   (HasOnly:0 b))            = yes (∙ , (HasOnly:0-lemma (s
 Bounded? (IsntBounded (Digit+Offset≥2 b d o p)) = no (Digit+Offset≥2-lemma b d o (≤-pred p))
 
 ------------------------------------------------------------------------
--- Properties
+-- Functions
 
 
 
