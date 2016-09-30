@@ -27,9 +27,14 @@ open ≡-Reasoning
 open ≤-Reasoning renaming (begin_ to start_; _∎ to _□; _≡⟨_⟩_ to _≈⟨_⟩_)
 open DecTotalOrder decTotalOrder using (reflexive) renaming (refl to ≤-refl)
 
+------------------------------------------------------------------------
 -- a system is bounded if there exists the greatest number
+
 Bounded : ∀ b d o → Set
 Bounded b d o = Σ[ xs ∈ Num b d o ] ∀ (ys : Num b d o) → toℕ xs ≥ toℕ ys
+
+------------------------------------------------------------------------
+-- Views
 
 data BoundedCond : ℕ → ℕ → ℕ → Set where
     Base≡0     : ∀ d o → BoundedCond 0       (suc d) o
@@ -52,13 +57,9 @@ boundedView (suc b) 1             (suc o)
 boundedView (suc b) (suc (suc d)) o
     = IsntBounded (Digit+Offset≥2 b (suc d) o (s≤s (s≤s z≤n)))
 
-Bounded-lemma-1 : ∀ b o → (xs : Num b 0 o) → 0 ≥ toℕ xs
-Bounded-lemma-1 b o ∙         = z≤n
-Bounded-lemma-1 b o (() ∷ xs)
-
-Bounded-lemma-2 : ∀ d o → (xs : Num 0 (suc d) o) → toℕ {0} {suc d} {o} (greatest-digit d ∷ ∙) ≥ toℕ xs
-Bounded-lemma-2 d o ∙ = z≤n
-Bounded-lemma-2 d o (x ∷ xs) =
+Base≡0-lemma : ∀ d o → (xs : Num 0 (suc d) o) → toℕ {0} {suc d} {o} (greatest-digit d ∷ ∙) ≥ toℕ xs
+Base≡0-lemma d o ∙ = z≤n
+Base≡0-lemma d o (x ∷ xs) =
     start
         -- toℕ (x ∷ xs)
         Fin.toℕ x + o + toℕ xs * zero
@@ -71,13 +72,17 @@ Bounded-lemma-2 d o (x ∷ xs) =
         Fin.toℕ (Fin.fromℕ d) + o + zero
     □
 
-Bounded-lemma-3 : ∀ b → (xs : Num b 1 0) → 0 ≥ toℕ xs
-Bounded-lemma-3 b ∙ = z≤n
-Bounded-lemma-3 b (z ∷ xs) = *n-mono b (Bounded-lemma-3 b xs)
-Bounded-lemma-3 b (s () ∷ xs)
+HasNoDigit-lemma : ∀ b o → (xs : Num b 0 o) → 0 ≥ toℕ xs
+HasNoDigit-lemma b o ∙         = z≤n
+HasNoDigit-lemma b o (() ∷ xs)
 
-Bounded-lemma-7 : ∀ b d o → d + o ≥ 1 → ¬ (Bounded (suc b) (suc d) o)
-Bounded-lemma-7 b d o d+o≥1 (evidence , claim) = contradiction p ¬p
+HasOnly:0-lemma : ∀ b → (xs : Num b 1 0) → 0 ≥ toℕ xs
+HasOnly:0-lemma b ∙ = z≤n
+HasOnly:0-lemma b (z ∷ xs) = *n-mono b (HasOnly:0-lemma b xs)
+HasOnly:0-lemma b (s () ∷ xs)
+
+Digit+Offset≥2-lemma : ∀ b d o → d + o ≥ 1 → ¬ (Bounded (suc b) (suc d) o)
+Digit+Offset≥2-lemma b d o d+o≥1 (evidence , claim) = contradiction p ¬p
     where
         p : toℕ evidence ≥ toℕ (greatest-digit d ∷ evidence)
         p = claim (greatest-digit d ∷ evidence)
@@ -101,10 +106,15 @@ Bounded-lemma-7 b d o d+o≥1 (evidence , claim) = contradiction p ¬p
             □
 
 Bounded? : ∀ {b d o} → BoundedView b d o → Dec (Bounded b d o)
-Bounded? (IsBounded   (Base≡0 d o))             = yes ((greatest-digit d ∷ ∙) , Bounded-lemma-2 d o)
-Bounded? (IsBounded   (HasNoDigit b o))         = yes (∙ , (Bounded-lemma-1 b o))
-Bounded? (IsBounded   (HasOnly:0 b))            = yes (∙ , (Bounded-lemma-3 (suc b)))
-Bounded? (IsntBounded (Digit+Offset≥2 b d o p)) = no (Bounded-lemma-7 b d o (≤-pred p))
+Bounded? (IsBounded   (Base≡0 d o))             = yes ((greatest-digit d ∷ ∙) , Base≡0-lemma d o)
+Bounded? (IsBounded   (HasNoDigit b o))         = yes (∙ , (HasNoDigit-lemma b o))
+Bounded? (IsBounded   (HasOnly:0 b))            = yes (∙ , (HasOnly:0-lemma (suc b)))
+Bounded? (IsntBounded (Digit+Offset≥2 b d o p)) = no (Digit+Offset≥2-lemma b d o (≤-pred p))
+
+------------------------------------------------------------------------
+-- Properties
+
+
 
 
 -- begin
