@@ -256,21 +256,18 @@ next : ∀ {b d o}
     → ¬ (Suprenum xs)
     → Num b d o
 next {b} {d} {o} xs ¬sup with boundedView b d o
-next xs        ¬sup | IsBounded cond             with Suprenum? xs
-next xs        ¬sup | IsBounded cond             | yes sup = contradiction sup ¬sup
-next ∙         ¬sup | IsBounded (Base≡0 d o)     | no ¬p   = z ∷ ∙
-next ∙         ¬sup | IsBounded (HasNoDigit b o) | no ¬p   = contradiction (HasNoDigit-lemma b o) ¬sup
-next ∙         ¬sup | IsBounded (HasOnly:0 b)    | no ¬p   = next-lemma-2 ∙ ¬sup
-next (x ∷ xs)  ¬sup | IsBounded cond             | no ¬p   with Greatest? x
-next (x ∷ xs)  ¬sup | IsBounded (Base≡0 d o)     | no ¬p   | yes greatest = next-lemma-1 {d} {o} x xs ¬sup greatest
-next (() ∷ xs) ¬sup | IsBounded (HasNoDigit b o) | no ¬p   | yes greatest
-next (x ∷ xs)  ¬sup | IsBounded (HasOnly:0 b)    | no ¬p   | yes greatest = next-lemma-2 (x ∷ xs) ¬sup
-next (x ∷ xs)  ¬sup | IsBounded cond             | no ¬p   | no ¬greatest = digit+1 x ¬greatest ∷ xs
-
-next ∙         ¬sup | IsntBounded (Digit+Offset≥2 b d o d+o≥2) = z ∷ ∙
-next (x ∷ xs)  ¬sup | IsntBounded (Digit+Offset≥2 b d o d+o≥2) with Greatest? x
-next (x ∷ xs)  ¬sup | IsntBounded (Digit+Offset≥2 b d o d+o≥2) | yes greatest = z ∷ next xs (next-lemma-3 x xs ¬sup greatest d+o≥2)
-next (x ∷ xs)  ¬sup | IsntBounded (Digit+Offset≥2 b d o d+o≥2) | no ¬greatest = digit+1 x ¬greatest ∷ xs
+next ∙         ¬sup | IsBounded (Base≡0 d o)     = z ∷ ∙
+next ∙         ¬sup | IsBounded (HasNoDigit b o) = contradiction (HasNoDigit-lemma b o) ¬sup
+next ∙         ¬sup | IsBounded (HasOnly:0 b)    = next-lemma-2 ∙ ¬sup
+next ∙         ¬sup | IsntBounded (Digit+Offset≥2 b d o d+o≥2)
+    = z ∷ ∙
+next (x  ∷ xs) ¬sup | cond with Greatest? x
+next (x  ∷ xs) ¬sup | IsBounded (Base≡0 d o)     | yes greatest = next-lemma-1 {d} {o} x xs ¬sup greatest
+next (() ∷ xs) ¬sup | IsBounded (HasNoDigit b o) | yes greatest
+next (x  ∷ xs) ¬sup | IsBounded (HasOnly:0 b)    | yes greatest = next-lemma-2 (x ∷ xs) ¬sup
+next (x  ∷ xs) ¬sup | IsntBounded (Digit+Offset≥2 b d o d+o≥2) | yes greatest
+    = z ∷ next xs (next-lemma-3 x xs ¬sup greatest d+o≥2)
+next (x  ∷ xs) ¬sup | cond | no ¬greatest = digit+1 x ¬greatest ∷ xs
 
 -- begin
 --     {!   !}
