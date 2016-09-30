@@ -30,8 +30,11 @@ open DecTotalOrder decTotalOrder using (reflexive) renaming (refl to ≤-refl)
 ------------------------------------------------------------------------
 -- a system is bounded if there exists the greatest number
 
+Suprenum : ∀ {b d o} → Num b d o → Set
+Suprenum {b} {d} {o} sup = ∀ (xs : Num b d o) → toℕ sup ≥ toℕ xs
+
 Bounded : ∀ b d o → Set
-Bounded b d o = Σ[ xs ∈ Num b d o ] ∀ (ys : Num b d o) → toℕ xs ≥ toℕ ys
+Bounded b d o = Σ[ xs ∈ Num b d o ] Suprenum xs
 
 ------------------------------------------------------------------------
 -- Views
@@ -45,8 +48,8 @@ data NonBoundedCond : ℕ → ℕ → ℕ → Set where
     Digit+Offset≥2 : ∀ b d o → (d+o≥2 : suc d + o ≥ 2) → NonBoundedCond (suc b) (suc d) o
 
 data BoundedView : ℕ → ℕ → ℕ → Set where
-    IsBounded  : ∀ {b d o} → BoundedCond b d o → BoundedView b d o
-    IsntBounded : ∀ {b d o} → NonBoundedCond b d o → BoundedView b d o
+    IsBounded   : ∀ {b d o} → (cond :    BoundedCond b d o) → BoundedView b d o
+    IsntBounded : ∀ {b d o} → (cond : NonBoundedCond b d o) → BoundedView b d o
 
 boundedView : ∀ b d o → BoundedView b d o
 boundedView b       0             o = IsBounded (HasNoDigit b o)
@@ -60,7 +63,7 @@ boundedView (suc b) (suc (suc d)) o
 ------------------------------------------------------------------------
 -- Relations between Conditions and Predicates
 
-Base≡0-lemma : ∀ d o → (xs : Num 0 (suc d) o) → toℕ {0} {suc d} {o} (greatest-digit d ∷ ∙) ≥ toℕ xs
+Base≡0-lemma : ∀ d o → Suprenum (greatest-digit d ∷ ∙)
 Base≡0-lemma d o ∙ = z≤n
 Base≡0-lemma d o (x ∷ xs) =
     start
@@ -75,14 +78,24 @@ Base≡0-lemma d o (x ∷ xs) =
         Fin.toℕ (Fin.fromℕ d) + o + zero
     □
 
-HasNoDigit-lemma : ∀ b o → (xs : Num b 0 o) → 0 ≥ toℕ xs
+HasNoDigit-lemma : ∀ b o → Suprenum {b} {0} {o} ∙
 HasNoDigit-lemma b o ∙         = z≤n
 HasNoDigit-lemma b o (() ∷ xs)
 
-HasOnly:0-lemma : ∀ b → (xs : Num b 1 0) → 0 ≥ toℕ xs
-HasOnly:0-lemma b ∙ = z≤n
-HasOnly:0-lemma b (z ∷ xs) = *n-mono b (HasOnly:0-lemma b xs)
-HasOnly:0-lemma b (s () ∷ xs)
+HasOnly:0-all-zero : ∀ {b} → (xs : Num b 1 0) → toℕ xs ≡ 0
+HasOnly:0-all-zero {b} ∙ = refl
+HasOnly:0-all-zero {b} (z ∷ xs) = cong (λ x → x * b) (HasOnly:0-all-zero {b} xs)
+HasOnly:0-all-zero {b} (s () ∷ xs)
+
+HasOnly:0-lemma : ∀ b → (xs : Num b 1 0) → Suprenum xs
+HasOnly:0-lemma b xs ys = reflexive $
+    begin
+        toℕ ys
+    ≡⟨ HasOnly:0-all-zero ys ⟩
+        zero
+    ≡⟨ sym (HasOnly:0-all-zero xs) ⟩
+        toℕ xs
+    ∎
 
 Digit+Offset≥2-lemma : ∀ b d o → d + o ≥ 1 → ¬ (Bounded (suc b) (suc d) o)
 Digit+Offset≥2-lemma b d o d+o≥1 (evidence , claim) = contradiction p ¬p
@@ -111,7 +124,7 @@ Digit+Offset≥2-lemma b d o d+o≥1 (evidence , claim) = contradiction p ¬p
 BoundedCond⇒Bounded : ∀ {b d o} → BoundedCond b d o → Bounded b d o
 BoundedCond⇒Bounded (Base≡0 d o)     = (greatest-digit d ∷ ∙) , (Base≡0-lemma d o)
 BoundedCond⇒Bounded (HasNoDigit b o) = ∙ , (HasNoDigit-lemma b o)
-BoundedCond⇒Bounded (HasOnly:0 b)    = ∙ , (HasOnly:0-lemma (suc b))
+BoundedCond⇒Bounded (HasOnly:0 b)    = ∙ , (HasOnly:0-lemma (suc b) ∙)
 
 NonBoundedCond⇒¬Bounded : ∀ {b d o} → NonBoundedCond b d o → ¬ (Bounded b d o)
 NonBoundedCond⇒¬Bounded (Digit+Offset≥2 b d o d+o≥2)
@@ -130,6 +143,87 @@ Bounded⇒BoundedCond bounded | IsntBounded condition = contradiction bounded (N
 Bounded? : ∀ {b d o} → BoundedView b d o → Dec (Bounded b d o)
 Bounded? (IsBounded condition) = yes (BoundedCond⇒Bounded condition)
 Bounded? (IsntBounded condition) = no (NonBoundedCond⇒¬Bounded condition)
+
+------------------------------------------------------------------------
+-- Misc
+
+¬Bounded⇒¬Suprenum : ∀ {b d o}
+    → ¬ (Bounded b d o)
+    → (xs : Num b d o)
+    → Suprenum xs
+    → ⊥
+¬Bounded⇒¬Suprenum ¬bounded xs claim =
+    contradiction (xs , claim) ¬bounded
+
+
+
+Suprenum?-lemma-1 : ∀ {b d o}
+    → (xs : Num b d o)
+    → (sup : Num b d o)
+    → Suprenum sup
+    → toℕ sup ≢ toℕ xs
+    → Suprenum xs
+    → ⊥
+Suprenum?-lemma-1 xs sup claim p xs-be-suprenum
+    = contradiction ⟦xs⟧≥⟦sup⟧ ⟦xs⟧≱⟦sup⟧
+    where   ⟦xs⟧≥⟦sup⟧ : toℕ xs ≥ toℕ sup
+            ⟦xs⟧≥⟦sup⟧ = xs-be-suprenum sup
+            ⟦xs⟧≱⟦sup⟧ : toℕ xs ≱ toℕ sup
+            ⟦xs⟧≱⟦sup⟧ = <⇒≱ $ ≤∧≢⇒< (claim xs) (λ x → p (sym x))
+
+Suprenum? : ∀ {b d o}
+    → (xs : Num b d o)
+    → Dec (Suprenum xs)
+Suprenum? {b} {d} {o} xs with boundedView b d o
+Suprenum? xs | IsBounded cond with BoundedCond⇒Bounded cond
+Suprenum? xs | IsBounded cond | sup , claim with toℕ sup ≟ toℕ xs
+Suprenum? xs | IsBounded cond | sup , claim | yes p rewrite p = yes claim
+Suprenum? xs | IsBounded cond | sup , claim | no ¬p = no (Suprenum?-lemma-1 xs sup claim ¬p)
+Suprenum? xs | IsntBounded cond = no (¬Bounded⇒¬Suprenum (NonBoundedCond⇒¬Bounded cond) xs)
+--
+
+next-lemma-2 : ∀ {b}
+    → (xs : Num (suc b) 1 0)
+    → ¬ (Suprenum xs)
+    → Num (suc b) 1 0
+next-lemma-2 {b} xs ¬sup = contradiction sup ¬sup
+    where   sup : Suprenum xs
+            sup ys = HasOnly:0-lemma (suc b) xs ys
+
+next-lemma-1 : ∀ {d o}
+    → (x : Digit (suc d))
+    → (xs : Num 0 (suc d) o)
+    → (¬Suprenum : ¬ (Suprenum (x ∷ xs)))
+    → (greatest : suc (Fin.toℕ x) ≡ suc d)
+    → Num 0 (suc d) o
+next-lemma-1 {d} {o} x xs ¬sup greatest = {! ¬sup   !}
+    where   sup : Suprenum (x ∷ xs)
+            sup ys = ?
+    -- where   p : toℕ xs ≥ toℕ (greatest-digit d ∷ x ∷ xs)
+    --         p = claim (greatest-digit d ∷ x ∷ xs)
+    --         ¬p : toℕ xs ≱ toℕ (greatest-digit d ∷ x ∷ xs)
+    --         ¬p = <⇒≱ {!   !}
+
+next : ∀ {b d o}
+    → (xs : Num b d o)
+    → ¬ (Suprenum xs)
+    → Num b d o
+next {b} {d} {o} xs ¬sup with boundedView b d o
+next xs        ¬sup | IsBounded cond             with Suprenum? xs
+next xs        ¬sup | IsBounded cond             | yes sup = contradiction sup ¬sup
+next ∙         ¬sup | IsBounded (Base≡0 d o)     | no ¬p   = z ∷ ∙
+next ∙         ¬sup | IsBounded (HasNoDigit b o) | no ¬p   = contradiction (HasNoDigit-lemma b o) ¬sup
+next ∙         ¬sup | IsBounded (HasOnly:0 b)    | no ¬p   = next-lemma-2 ∙ ¬sup
+next (x ∷ xs)  ¬sup | IsBounded cond             | no ¬p   with Greatest? x
+next (x ∷ xs)  ¬sup | IsBounded (Base≡0 d o)     | no ¬p   | yes greatest = next-lemma-1 {d} {o} x xs ¬sup greatest
+next (() ∷ xs) ¬sup | IsBounded (HasNoDigit b o) | no ¬p   | yes greatest
+next (x ∷ xs)  ¬sup | IsBounded (HasOnly:0 b)    | no ¬p   | yes greatest = next-lemma-2 (x ∷ xs) ¬sup
+next (x ∷ xs)  ¬sup | IsBounded cond             | no ¬p   | no ¬greatest = digit+1 x ¬greatest ∷ xs
+
+next ∙         ¬sup | IsntBounded (Digit+Offset≥2 b d o d+o≥2) = z ∷ ∙
+next (x ∷ xs)  ¬sup | IsntBounded (Digit+Offset≥2 b d o d+o≥2) with Greatest? x
+next (x ∷ xs)  ¬sup | IsntBounded (Digit+Offset≥2 b d o d+o≥2) | yes greatest = z ∷ next xs {!   !}
+next (x ∷ xs)  ¬sup | IsntBounded (Digit+Offset≥2 b d o d+o≥2) | no ¬greatest = digit+1 x ¬greatest ∷ xs
 
 -- begin
 --     {!   !}

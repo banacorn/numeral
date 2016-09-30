@@ -1,6 +1,8 @@
 module Data.Num.Core where
 
 
+open import Data.Unit using (⊤; tt)
+open import Data.Empty using (⊥)
 open import Data.Nat
 open import Data.Nat.Properties
 open import Data.Nat.Properties.Simple
@@ -217,3 +219,23 @@ Num⟶ℕ b d o = record { _⟨$⟩_ = toℕ ; cong = cong toℕ }
 -- ≡⟨ {!   !} ⟩
 --     {!   !}
 -- ∎
+
+-- _≋_ : ∀ {b d o}
+--     → (xs ys : Num b d o)
+--     → Dec ?
+-- _≋_ {b}     {d}     {o} ∙        ∙        = yes = ?
+--
+-- _≋_ {b}     {d}     {o} ∙        (y ∷ ys) with Digit-toℕ y o ≟ 0
+-- _≋_ {zero}  {d}     {o} ∙        (y ∷ ys) | yes p = ?
+-- _≋_ {suc b} {d}         ∙        (y ∷ ys) | yes p = ?
+-- _≋_ {b}     {d}         ∙        (y ∷ ys) | no ¬p = ?
+--
+-- _≋_ {b}     {d}     {o} (x ∷ xs) ∙        with Digit-toℕ x o ≟ 0
+-- _≋_ {zero}              (x ∷ xs) ∙        | yes p = ?
+-- _≋_ {suc b}             (x ∷ xs) ∙        | yes p = ?
+-- _≋_ {b}     {d}     {o} (x ∷ xs) ∙        | no ¬p = ?
+-- -- things get trickier here, we cannot say two numbers are equal or not base on
+-- -- their LSD, since the system may be redundant.
+-- _≋_ {b}     {d}     {o} (x ∷ xs) (y ∷ ys) with Digit-toℕ x o ≟ Digit-toℕ y o
+-- _≋_ {b}     {d}     {o} (x ∷ xs) (y ∷ ys) | yes p = xs ≋ ys
+-- _≋_ {b}     {d}     {o} (x ∷ xs) (y ∷ ys) | no ¬p = ⊥
