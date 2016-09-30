@@ -73,15 +73,11 @@ Greatest? {d} x = suc (Fin.toℕ x) ≟ d
 greatest-digit : ∀ d → Digit (suc d)
 greatest-digit d = Fin.fromℕ d
 
-greatest-digit-toℕ : ∀ d o → Digit-toℕ (greatest-digit d) o ≡ d + o
-greatest-digit-toℕ d o =
-    begin
-        Digit-toℕ (greatest-digit d) o
-    ≡⟨ refl ⟩
-        (Fin.toℕ (Fin.fromℕ d) + o)
-    ≡⟨ cong (λ w → w + o) (FinProps.to-from d) ⟩
-        d + o
-    ∎
+toℕ-greatest : ∀ {d o}
+    → (x : Digit (suc d))
+    → Greatest x
+    → Digit-toℕ x o ≡ d + o
+toℕ-greatest {d} {o} x greatest = suc-injective $ cong (λ w → w + o) greatest
 
 greatest-of-all : ∀ {d} (o : ℕ) → (x y : Digit d) → Greatest x → Digit-toℕ x o ≥ Digit-toℕ y o
 greatest-of-all o z     z      refl = ≤-refl

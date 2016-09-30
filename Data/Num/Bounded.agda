@@ -117,7 +117,7 @@ Digit+Offset≥2-lemma b d o d+o≥1 (evidence , claim) = contradiction p ¬p
             ≤⟨ reflexive
                 (cong
                     (λ w → w + toℕ evidence * suc b)
-                    (sym (greatest-digit-toℕ d o))
+                    (sym (toℕ-greatest (Fin.fromℕ d) (greatest-digit-Greatest d)))
                 )
             ⟩
                 Digit-toℕ (greatest-digit d) o + toℕ evidence * suc b
@@ -202,11 +202,6 @@ next-lemma-1 {d} {o} x xs ¬sup greatest = contradiction sup ¬sup
     where   sup : Suprenum (x ∷ xs)
             sup ys = Base≡0-lemma x xs greatest ys
 
-    -- where   p : toℕ xs ≥ toℕ (greatest-digit d ∷ x ∷ xs)
-    --         p = claim (greatest-digit d ∷ x ∷ xs)
-    --         ¬p : toℕ xs ≱ toℕ (greatest-digit d ∷ x ∷ xs)
-    --         ¬p = <⇒≱ {!   !}
-
 -- begin
 --     {!   !}
 -- ≡⟨ {!   !} ⟩
@@ -230,6 +225,32 @@ next-lemma-1 {d} {o} x xs ¬sup greatest = contradiction sup ¬sup
 -- □
 
 
+next-lemma-3 : ∀ {b d o}
+    → (x : Digit (suc d))
+    → (xs : Num (suc b) (suc d) o)
+    → (¬Suprenum : ¬ (Suprenum (x ∷ xs)))
+    → (greatest : Greatest x)
+    → suc d + o ≥ 2
+    → Suprenum xs
+    → ⊥
+next-lemma-3 {b} {d} {o} x xs ¬sup greatest d+o≥2 claim = contradiction p ¬p
+    where   p : toℕ xs ≥ toℕ (x ∷ xs)
+            p = claim (x ∷ xs)
+            ¬p : toℕ xs ≱ toℕ (x ∷ xs)
+            ¬p = <⇒≱ $
+                start
+                    suc (toℕ xs)
+                ≤⟨ reflexive (cong suc (sym (*-right-identity (toℕ xs)))) ⟩
+                    suc (toℕ xs * suc zero)
+                ≤⟨ s≤s (n*-mono (toℕ xs) (s≤s z≤n)) ⟩
+                    suc (toℕ xs * suc b)
+                ≤⟨ +n-mono (toℕ xs * suc b) (≤-pred d+o≥2) ⟩
+                    d + o + toℕ xs * suc b
+                ≤⟨ reflexive (cong (λ w → w + toℕ xs * suc b) (sym (toℕ-greatest x greatest))) ⟩
+                    Digit-toℕ x o + toℕ xs * suc b
+                □
+
+
 next : ∀ {b d o}
     → (xs : Num b d o)
     → ¬ (Suprenum xs)
@@ -248,7 +269,7 @@ next (x ∷ xs)  ¬sup | IsBounded cond             | no ¬p   | no ¬greatest =
 
 next ∙         ¬sup | IsntBounded (Digit+Offset≥2 b d o d+o≥2) = z ∷ ∙
 next (x ∷ xs)  ¬sup | IsntBounded (Digit+Offset≥2 b d o d+o≥2) with Greatest? x
-next (x ∷ xs)  ¬sup | IsntBounded (Digit+Offset≥2 b d o d+o≥2) | yes greatest = z ∷ next xs {!   !}
+next (x ∷ xs)  ¬sup | IsntBounded (Digit+Offset≥2 b d o d+o≥2) | yes greatest = z ∷ next xs (next-lemma-3 x xs ¬sup greatest d+o≥2)
 next (x ∷ xs)  ¬sup | IsntBounded (Digit+Offset≥2 b d o d+o≥2) | no ¬greatest = digit+1 x ¬greatest ∷ xs
 
 -- begin
