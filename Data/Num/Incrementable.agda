@@ -231,7 +231,7 @@ Incrementable? {suc b} {suc d} (x ∷ xs) | yes greatest | yes incr | no ¬r
     = no (Incrementable-lemma-6 x xs (≰⇒> ¬r) greatest)
 Incrementable? {suc b} {suc d} {o} (x ∷ xs) | yes greatest | no ¬incr with suc b * o ≤? suc d
 Incrementable? {suc b} {suc d} (x ∷ xs) | yes greatest | no ¬incr | yes p
-    = yes {!   !}
+    = yes ({!   !} , {!   !})
 Incrementable? {suc b} {suc d} (x ∷ xs) | yes greatest | no ¬incr | no ¬p
     = no {!   !}
 Incrementable? {b} {suc d} (x ∷ xs) | no ¬greatest

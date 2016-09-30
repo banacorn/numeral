@@ -57,6 +57,9 @@ boundedView (suc b) 1             (suc o)
 boundedView (suc b) (suc (suc d)) o
     = IsntBounded (Digit+Offset≥2 b (suc d) o (s≤s (s≤s z≤n)))
 
+------------------------------------------------------------------------
+-- Relations between Conditions and Predicates
+
 Base≡0-lemma : ∀ d o → (xs : Num 0 (suc d) o) → toℕ {0} {suc d} {o} (greatest-digit d ∷ ∙) ≥ toℕ xs
 Base≡0-lemma d o ∙ = z≤n
 Base≡0-lemma d o (x ∷ xs) =
@@ -105,17 +108,28 @@ Digit+Offset≥2-lemma b d o d+o≥1 (evidence , claim) = contradiction p ¬p
                 Digit-toℕ (greatest-digit d) o + toℕ evidence * suc b
             □
 
+BoundedCond⇒Bounded : ∀ {b d o} → BoundedCond b d o → Bounded b d o
+BoundedCond⇒Bounded (Base≡0 d o)     = (greatest-digit d ∷ ∙) , (Base≡0-lemma d o)
+BoundedCond⇒Bounded (HasNoDigit b o) = ∙ , (HasNoDigit-lemma b o)
+BoundedCond⇒Bounded (HasOnly:0 b)    = ∙ , (HasOnly:0-lemma (suc b))
+
+NonBoundedCond⇒¬Bounded : ∀ {b d o} → NonBoundedCond b d o → ¬ (Bounded b d o)
+NonBoundedCond⇒¬Bounded (Digit+Offset≥2 b d o d+o≥2)
+    = Digit+Offset≥2-lemma b d o (≤-pred d+o≥2)
+
+Bounded⇒BoundedCond : ∀ {b d o} → Bounded b d o → BoundedCond b d o
+Bounded⇒BoundedCond {b} {d} {o} bounded with boundedView b d o
+Bounded⇒BoundedCond bounded | IsBounded condition = condition
+Bounded⇒BoundedCond bounded | IsntBounded condition = contradiction bounded (NonBoundedCond⇒¬Bounded condition)
+
+¬Bounded⇒NonBoundedCond : ∀ {b d o} → ¬ (Bounded b d o) → NonBoundedCond b d o
+¬Bounded⇒NonBoundedCond {b} {d} {o} ¬bounded with boundedView b d o
+¬Bounded⇒NonBoundedCond ¬bounded | IsBounded condition = contradiction (BoundedCond⇒Bounded condition) ¬bounded
+¬Bounded⇒NonBoundedCond ¬bounded | IsntBounded condition = condition
+
 Bounded? : ∀ {b d o} → BoundedView b d o → Dec (Bounded b d o)
-Bounded? (IsBounded   (Base≡0 d o))             = yes ((greatest-digit d ∷ ∙) , Base≡0-lemma d o)
-Bounded? (IsBounded   (HasNoDigit b o))         = yes (∙ , (HasNoDigit-lemma b o))
-Bounded? (IsBounded   (HasOnly:0 b))            = yes (∙ , (HasOnly:0-lemma (suc b)))
-Bounded? (IsntBounded (Digit+Offset≥2 b d o p)) = no (Digit+Offset≥2-lemma b d o (≤-pred p))
-
-------------------------------------------------------------------------
--- Functions
-
-
-
+Bounded? (IsBounded condition) = yes (BoundedCond⇒Bounded condition)
+Bounded? (IsntBounded condition) = no (NonBoundedCond⇒¬Bounded condition)
 
 -- begin
 --     {!   !}
