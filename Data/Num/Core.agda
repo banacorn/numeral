@@ -16,6 +16,7 @@ open import Data.Fin.Properties as FinProps using (bounded; toℕ-fromℕ≤)
 open import Function
 open import Relation.Binary.PropositionalEquality
 open import Relation.Nullary
+open import Relation.Nullary.Negation
 open import Relation.Nullary.Decidable
 open import Relation.Binary
 open import Function.Equality using (_⟶_)
@@ -52,7 +53,65 @@ data Num : ℕ → ℕ → ℕ → Set where
 Digit-toℕ : ∀ {d} → Digit d → ℕ → ℕ
 Digit-toℕ d o = Fin.toℕ d + o
 
+Digit-fromℕ : ∀ {d o} → (n : ℕ) → d + o ≥ n → Digit (suc d)
+Digit-fromℕ {d} {o} n upper-bound with n ∸ o ≤? d
+Digit-fromℕ {d} {o} n upper-bound | yes p = fromℕ≤ (s≤s p)
+Digit-fromℕ {d} {o} n upper-bound | no ¬p = contradiction p ¬p
+    where   p : n ∸ o ≤ d
+            p = start
+                    n ∸ o
+                ≤⟨ ∸-mono {n} {d + o} {o} {o} upper-bound ≤-refl ⟩
+                    (d + o) ∸ o
+                ≤⟨ reflexive (m+n∸n≡m d o) ⟩
+                    d
+                □
 
+Digit-toℕ-fromℕ : ∀ {d o n}
+    → (upper-bound : d + o ≥ n)
+    → (lower-bound :     o ≤ n)
+    → Digit-toℕ (Digit-fromℕ {d} n upper-bound) o ≡ n
+Digit-toℕ-fromℕ {d} {o} {n} ub lb with n ∸ o ≤? d
+Digit-toℕ-fromℕ {d} {o} {n} ub lb | yes q =
+    begin
+        Fin.toℕ (fromℕ≤ (s≤s q)) + o
+    ≡⟨ cong (λ x → x + o) (toℕ-fromℕ≤ (s≤s q)) ⟩
+        n ∸ o + o
+    ≡⟨ m∸n+n lb ⟩
+        n
+    ∎
+Digit-toℕ-fromℕ {d} {o} {n} ub lb | no ¬q = contradiction q ¬q
+    where   q : n ∸ o ≤ d
+            q = +n-mono-inverse o $
+                start
+                    n ∸ o + o
+                ≤⟨ reflexive (m∸n+n lb) ⟩
+                    n
+                ≤⟨ ub ⟩
+                    d + o
+                □
+
+
+-- start
+--     {!   !}
+-- ≤⟨ {!   !} ⟩
+--     {!   !}
+-- ≤⟨ {!   !} ⟩
+--     {!   !}
+-- ≤⟨ {!   !} ⟩
+--     {!   !}
+-- □
+
+-- begin
+--     {!   !}
+-- ≡⟨ {!   !} ⟩
+--     {!   !}
+-- ≡⟨ {!   !} ⟩
+--     {!   !}
+-- ≡⟨ {!   !} ⟩
+--     {!   !}
+-- ≡⟨ {!   !} ⟩
+--     {!   !}
+-- ∎
 Digit-toℕ-fromℕ≤ : ∀ {d o n} → (p : n < d) → Digit-toℕ (fromℕ≤ p) o ≡ n + o
 Digit-toℕ-fromℕ≤ {d} {o} {n} p =
     begin
