@@ -129,25 +129,40 @@ next-number-lemma-6 (suc d) o xs (s≤s ())
 --     {!   !}
 -- □
 
+
+
+
+digit-1 : ∀ {d o} → d + o > 0 → Digit (suc d)
+digit-1 {zero}  {zero}  ()
+digit-1 {suc d} {zero}  p = s z
+digit-1 {d}     {suc o} p = z
+
+data NextView-0 : ℕ → ℕ → Set where
+    HasOnly:0 : NextView-0 0 0
+    StartsFrom0 : ∀ {d} → (d+0>0 : d + 0 > 0) → NextView-0 d 0
+    Others : ∀ {d o} → NextView-0 d (suc o)
+
+nextView-0 : ∀ d o → NextView-0 d o
+nextView-0 zero    zero     = HasOnly:0
+nextView-0 zero    (suc o)  = Others
+nextView-0 (suc d) zero     = StartsFrom0 (s≤s z≤n)
+nextView-0 (suc d) (suc o)  = Others
+
 next-number-Base≡0 : ∀ {d o}
     → (xs : Num 0 (suc d) o)
     → ¬ (Maximum xs)
     → Num 0 (suc d) o
-next-number-Base≡0 {zero} {zero} ∙ ¬max = contradiction (next-number-lemma-6 zero zero ∙ (s≤s z≤n)) ¬max
-next-number-Base≡0 {zero} {suc o} ∙ ¬max = z ∷ ∙
-next-number-Base≡0 {suc d} {zero} ∙ ¬max = s z ∷ ∙
-next-number-Base≡0 {suc d} {suc o} ∙ ¬max = z ∷ ∙
-next-number-Base≡0 {zero} {zero} (z ∷ xs) ¬max = contradiction (next-number-lemma-6 zero zero (z ∷ xs) (s≤s z≤n)) ¬max
-next-number-Base≡0 {zero} {zero} (s () ∷ xs) ¬max
-next-number-Base≡0 {zero} {suc o} (x ∷ xs) ¬max with Greatest? x
-next-number-Base≡0 {zero} {suc o} (x ∷ xs) ¬max | yes greatest = contradiction (Base≡0-lemma x xs greatest) ¬max
-next-number-Base≡0 {zero} {suc o} (x ∷ xs) ¬max | no ¬greatest = digit+1 x ¬greatest ∷ xs
-next-number-Base≡0 {suc d} {zero} (x ∷ xs) ¬max with Greatest? x
-next-number-Base≡0 {suc d} {zero} (x ∷ xs) ¬max | yes greatest = contradiction (Base≡0-lemma x xs greatest) ¬max
-next-number-Base≡0 {suc d} {zero} (x ∷ xs) ¬max | no ¬greatest = digit+1 x ¬greatest ∷ xs
-next-number-Base≡0 {suc d} {suc o} (x ∷ xs) ¬max with Greatest? x
-next-number-Base≡0 {suc d} {suc o} (x ∷ xs) ¬max | yes greatest = contradiction (Base≡0-lemma x xs greatest) ¬max
-next-number-Base≡0 {suc d} {suc o} (x ∷ xs) ¬max | no ¬greatest = digit+1 x ¬greatest ∷ xs
+-- next-number-Base≡0 {d} {o} xs ¬max = ?
+next-number-Base≡0 {d} {o} xs ¬max with nextView-0 d o
+next-number-Base≡0 xs ¬max | HasOnly:0 = contradiction (next-number-lemma-6 zero zero xs (s≤s z≤n)) ¬max
+next-number-Base≡0 {d} ∙ ¬max | StartsFrom0 d+0>0 = Digit-fromℕ {d} {0} 1 d+0>0 ∷ ∙
+next-number-Base≡0 (x ∷ xs) ¬max | StartsFrom0 d+0>0 with Greatest? x
+next-number-Base≡0 (x ∷ xs) ¬max | StartsFrom0 d+0>0 | yes greatest = contradiction (Base≡0-lemma x xs greatest) ¬max
+next-number-Base≡0 (x ∷ xs) ¬max | StartsFrom0 d+0>0 | no ¬greatest = digit+1 x ¬greatest ∷ xs
+next-number-Base≡0 {d} {suc o} ∙ ¬max | Others = Digit-fromℕ {d} {suc o} (suc o) (m≤n+m (suc o) d) ∷ ∙
+next-number-Base≡0 (x ∷ xs) ¬max | Others with Greatest? x
+next-number-Base≡0 (x ∷ xs) ¬max | Others | yes greatest = contradiction (Base≡0-lemma x xs greatest) ¬max
+next-number-Base≡0 (x ∷ xs) ¬max | Others | no ¬greatest = digit+1 x ¬greatest ∷ xs
 
 next-number : ∀ {b d o}
     → (xs : Num b d o)
@@ -160,31 +175,38 @@ next-number xs ¬max | IsBounded (HasOnly:0 b) = {!   !}
 next-number xs ¬max | IsntBounded (Digit+Offset≥2 b d o d+o≥2) = {!   !}
 
 
+
 next-number-is-greater-Base≡0 : ∀ {d o}
     → (xs : Num 0 (suc d) o)
     → (¬max : ¬ (Maximum xs))
     → toℕ (next-number-Base≡0 xs ¬max) > toℕ xs
--- next-number-is-greater-Base≡0 xs ¬max = ?
-next-number-is-greater-Base≡0 {zero} {zero} ∙ ¬max = contradiction (next-number-lemma-6 zero zero ∙ (s≤s z≤n)) ¬max
-next-number-is-greater-Base≡0 {zero} {suc o} ∙ ¬max = s≤s z≤n
-next-number-is-greater-Base≡0 {suc d} {zero} ∙ ¬max = s≤s z≤n
-next-number-is-greater-Base≡0 {suc d} {suc o} ∙ ¬max = s≤s z≤n
-next-number-is-greater-Base≡0 {zero} {zero} (z ∷ xs) ¬max = contradiction (next-number-lemma-6 zero zero (z ∷ xs) (s≤s z≤n)) ¬max
-next-number-is-greater-Base≡0 {zero} {zero} (s () ∷ xs) ¬max
-next-number-is-greater-Base≡0 {zero} {suc o} (x ∷ xs) ¬max with Greatest? x
-next-number-is-greater-Base≡0 {zero} {suc o} (x ∷ xs) ¬max | yes greatest = contradiction (Base≡0-lemma x xs greatest) ¬max
-next-number-is-greater-Base≡0 {zero} {suc o} (x ∷ xs) ¬max | no ¬greatest
-    = ∷ns-mono-strict x (digit+1 x ¬greatest) xs xs refl (reflexive (sym (digit+1-lemma x ¬greatest)))
-next-number-is-greater-Base≡0 {suc d} {zero} (x ∷ xs) ¬max with Greatest? x
-next-number-is-greater-Base≡0 {suc d} {zero} (x ∷ xs) ¬max | yes greatest = contradiction (Base≡0-lemma x xs greatest) ¬max
-next-number-is-greater-Base≡0 {suc d} {zero} (x ∷ xs) ¬max | no ¬greatest
-    = ∷ns-mono-strict x (digit+1 x ¬greatest) xs xs refl (reflexive (sym (digit+1-lemma x ¬greatest)))
-next-number-is-greater-Base≡0 {suc d} {suc o} (x ∷ xs) ¬max with Greatest? x
-next-number-is-greater-Base≡0 {suc d} {suc o} (x ∷ xs) ¬max | yes greatest = contradiction (Base≡0-lemma x xs greatest) ¬max
-next-number-is-greater-Base≡0 {suc d} {suc o} (x ∷ xs) ¬max | no ¬greatest
-    = ∷ns-mono-strict x (digit+1 x ¬greatest) xs xs refl (reflexive (sym (digit+1-lemma x ¬greatest)))
+next-number-is-greater-Base≡0 {d} {o} xs ¬max with nextView-0 d o
+next-number-is-greater-Base≡0 xs ¬max | HasOnly:0 = contradiction (next-number-lemma-6 zero zero xs (s≤s z≤n)) ¬max
+next-number-is-greater-Base≡0 {d} ∙ ¬max | StartsFrom0 d+0>0 = reflexive $ cong (λ x → x + 0) (sym (Digit-toℕ-fromℕ {d} {0} d+0>0 z≤n))
+next-number-is-greater-Base≡0 (x ∷ xs) ¬max | StartsFrom0 d+0>0 with Greatest? x
+next-number-is-greater-Base≡0 (x ∷ xs) ¬max | StartsFrom0 d+0>0 | yes greatest = contradiction (Base≡0-lemma x xs greatest) ¬max
+next-number-is-greater-Base≡0 (x ∷ xs) ¬max | StartsFrom0 d+0>0 | no ¬greatest = ∷ns-mono-strict x (digit+1 x ¬greatest) xs xs refl (reflexive (sym (digit+1-lemma x ¬greatest)))
+next-number-is-greater-Base≡0 {d} {suc o} ∙ ¬max | Others =
+    start
+        suc zero
+    ≤⟨ s≤s z≤n ⟩
+        suc o
+    ≤⟨ reflexive $
+        begin
+            suc o
+        ≡⟨ cong suc (sym (+-right-identity o)) ⟩
+            suc (o + zero)
+        ≡⟨ cong (λ x → x + 0) (sym (Digit-toℕ-fromℕ {d} {suc o} {suc o} (m≤n+m (suc o) d) ≤-refl)) ⟩
+            Digit-toℕ (Digit-fromℕ {d} {suc o} (suc o) (m≤n+m (suc o) d)) (suc o) + 0
+        ∎
+    ⟩
+        Digit-toℕ (Digit-fromℕ {d} {suc o} (suc o) (m≤n+m (suc o) d)) (suc o) + 0
+    □
+next-number-is-greater-Base≡0 (x ∷ xs) ¬max | Others with Greatest? x
+next-number-is-greater-Base≡0 (x ∷ xs) ¬max | Others | yes greatest = contradiction (Base≡0-lemma x xs greatest) ¬max
+next-number-is-greater-Base≡0 (x ∷ xs) ¬max | Others | no ¬greatest = ∷ns-mono-strict x (digit+1 x ¬greatest) xs xs refl (reflexive (sym (digit+1-lemma x ¬greatest)))
 
---
+
 next-number-is-greater : ∀ {b d o}
     → (xs : Num b d o)
     → (¬max : ¬ (Maximum xs))
@@ -194,7 +216,7 @@ next-number-is-greater xs ¬max | IsBounded (Base≡0 d o) = next-number-is-grea
 next-number-is-greater xs ¬max | IsBounded (HasNoDigit b o) = {!   !}
 next-number-is-greater xs ¬max | IsBounded (HasOnly:0 b) = {!   !}
 next-number-is-greater xs ¬max | IsntBounded cond = {!   !}
---
+
 -- next-number-is-greater : ∀ {b d o}
 --     → (xs : Num b d o)
 --     → (¬max : ¬ (Maximum xs))

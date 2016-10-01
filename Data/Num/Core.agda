@@ -69,7 +69,7 @@ Digit-fromℕ {d} {o} n upper-bound | no ¬p = contradiction p ¬p
 Digit-toℕ-fromℕ : ∀ {d o n}
     → (upper-bound : d + o ≥ n)
     → (lower-bound :     o ≤ n)
-    → Digit-toℕ (Digit-fromℕ {d} n upper-bound) o ≡ n
+    → Digit-toℕ (Digit-fromℕ {d} {o} n upper-bound) o ≡ n
 Digit-toℕ-fromℕ {d} {o} {n} ub lb with n ∸ o ≤? d
 Digit-toℕ-fromℕ {d} {o} {n} ub lb | yes q =
     begin
