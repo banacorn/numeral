@@ -162,25 +162,14 @@ Digit-toℕ-digit+1-b {b} {d} {o} x redundant greatest = cong (λ w → w + o) (
 --     {!   !}
 -- ∎
 
-digit+1-b-legacy-lemma : ∀ {b d} → (x : Digit d)
-    → b ≥ 1 → suc (Fin.toℕ x) ≡ d
-    → suc (Fin.toℕ x) ∸ b < d
-digit+1-b-legacy-lemma {b} {d} x b≥1 p =
-    start
-        suc (suc (Fin.toℕ x) ∸ b)
-    ≤⟨ s≤s (∸-mono ≤-refl b≥1) ⟩
-        suc (Fin.toℕ x)
-    ≤⟨ reflexive p ⟩
-        d
-    □
-
-digit+1-b-legacy : ∀ {b d} → (x : Digit d) → b ≥ 1 → suc (Fin.toℕ x) ≡ d → Fin d
-digit+1-b-legacy {b} {d} x b≥1 p = fromℕ≤ {suc (Fin.toℕ x) ∸ b} (digit+1-b-legacy-lemma x b≥1 p)
-
 digit+1 : ∀ {d} → (x : Digit d) → (¬p : suc (Fin.toℕ x) ≢ d) → Fin d
 digit+1 x ¬p = fromℕ≤ {suc (Fin.toℕ x)} (≤∧≢⇒< (bounded x) ¬p)
 
-
+digit+1-lemma : ∀ {d o}
+    → (x : Digit d)
+    → (¬p : suc (Fin.toℕ x) ≢ d)
+    → Digit-toℕ (digit+1 x ¬p) o ≡ suc (Digit-toℕ x o)
+digit+1-lemma {d} {o} x ¬p = cong (λ w → w + o) (toℕ-fromℕ≤ (≤∧≢⇒< (bounded x) ¬p))
 
 ------------------------------------------------------------------------
 -- Conversion to ℕ
@@ -191,6 +180,18 @@ digit+1 x ¬p = fromℕ≤ {suc (Fin.toℕ x)} (≤∧≢⇒< (bounded x) ¬p)
 toℕ : ∀ {b d o} → Num b d o → ℕ
 toℕ             ∙        = 0
 toℕ {b} {_} {o} (x ∷ xs) = Digit-toℕ x o + toℕ xs * b
+
+∷ns-mono-strict : ∀ {b d o} (x y : Fin d) (xs ys : Num b d o)
+    → toℕ xs ≡ toℕ ys
+    → Digit-toℕ x o < Digit-toℕ y o
+    → toℕ (x ∷ xs) < toℕ (y ∷ ys)
+∷ns-mono-strict {b} {d} {o} x y xs ys ⟦xs⟧≡⟦ys⟧ ⟦x⟧<⟦y⟧ = start
+        suc (Digit-toℕ x o + toℕ xs * b)
+    ≈⟨ cong (λ w → suc (Digit-toℕ x o + w * b)) ⟦xs⟧≡⟦ys⟧ ⟩
+        suc (Digit-toℕ x o + toℕ ys * b)
+    ≤⟨ +n-mono (toℕ ys * b) ⟦x⟧<⟦y⟧ ⟩
+        Digit-toℕ y o + toℕ ys * b
+    □
 
 
 ------------------------------------------------------------------------
