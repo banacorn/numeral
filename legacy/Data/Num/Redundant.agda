@@ -3,7 +3,7 @@ module Data.Num.Redundant where
 --  Base: 2
 --  Digit: { 0, 1, 2 }
 --
---  Numeral System which supports efficient addition, substraction
+--  Numeral System which maxports efficient addition, substraction
 --  and arithmetic shift.
 
 open import Data.List using (List ; []; _∷_) public

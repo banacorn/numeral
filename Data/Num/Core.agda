@@ -239,9 +239,9 @@ Num⟶ℕ b d o = record { _⟨$⟩_ = toℕ ; cong = cong toℕ }
 -- _≋_ {b}     {d}     {o} (x ∷ xs) (y ∷ ys) | yes p = xs ≋ ys
 -- _≋_ {b}     {d}     {o} (x ∷ xs) (y ∷ ys) | no ¬p = ⊥
 
-Suprenum : ∀ {b d o} → Num b d o → Set
-Suprenum {b} {d} {o} sup = ∀ (xs : Num b d o) → toℕ sup ≥ toℕ xs
+Maximum : ∀ {b d o} → Num b d o → Set
+Maximum {b} {d} {o} max = ∀ (xs : Num b d o) → toℕ max ≥ toℕ xs
 
 -- a system is bounded if there exists the greatest number
 Bounded : ∀ b d o → Set
-Bounded b d o = Σ[ xs ∈ Num b d o ] Suprenum xs
+Bounded b d o = Σ[ xs ∈ Num b d o ] Maximum xs

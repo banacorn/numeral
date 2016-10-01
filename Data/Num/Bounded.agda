@@ -58,7 +58,7 @@ Base≡0-lemma : ∀ {d} {o}
     → (x : Digit (suc d))
     → (xs : Num 0 (suc d) o)
     → Greatest x
-    → Suprenum (x ∷ xs)
+    → Maximum (x ∷ xs)
 Base≡0-lemma         x xs greatest ∙        = z≤n
 Base≡0-lemma {d} {o} x xs greatest (y ∷ ys) =
     start
@@ -71,7 +71,7 @@ Base≡0-lemma {d} {o} x xs greatest (y ∷ ys) =
         Digit-toℕ x o + toℕ xs * 0
     □
 
-HasNoDigit-lemma : ∀ b o → Suprenum {b} {0} {o} ∙
+HasNoDigit-lemma : ∀ b o → Maximum {b} {0} {o} ∙
 HasNoDigit-lemma b o ∙         = z≤n
 HasNoDigit-lemma b o (() ∷ xs)
 
@@ -80,7 +80,7 @@ HasOnly:0-all-zero {b} ∙ = refl
 HasOnly:0-all-zero {b} (z ∷ xs) = cong (λ x → x * b) (HasOnly:0-all-zero {b} xs)
 HasOnly:0-all-zero {b} (s () ∷ xs)
 
-HasOnly:0-lemma : ∀ b → (xs : Num b 1 0) → Suprenum xs
+HasOnly:0-lemma : ∀ b → (xs : Num b 1 0) → Maximum xs
 HasOnly:0-lemma b xs ys = reflexive $
     begin
         toℕ ys
@@ -140,12 +140,12 @@ Bounded? (IsntBounded condition) = no (NonBoundedCond⇒¬Bounded condition)
 ------------------------------------------------------------------------
 -- Misc
 
-¬Bounded⇒¬Suprenum : ∀ {b d o}
+¬Bounded⇒¬Maximum : ∀ {b d o}
     → ¬ (Bounded b d o)
     → (xs : Num b d o)
-    → Suprenum xs
+    → Maximum xs
     → ⊥
-¬Bounded⇒¬Suprenum ¬bounded xs claim =
+¬Bounded⇒¬Maximum ¬bounded xs claim =
     contradiction (xs , claim) ¬bounded
 
 -- begin

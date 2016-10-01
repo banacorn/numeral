@@ -1,6 +1,7 @@
 module Data.Num.Incrementable where
 
 open import Data.Num.Core
+open import Data.Num.Maximum
 
 open import Data.Nat
 open import Data.Nat.Properties
@@ -216,26 +217,29 @@ Incrementable-lemma-7 x xs greatest ¬p (y ∷ ys , claim) = {! ⟦xs⟧<⟦ys�
 
 Incrementable? : ∀ {b d o} → (xs : Num b d o) → Dec (Incrementable xs)
 -- having no digit at all
-Incrementable? {d = zero} xs = no (Incrementable-lemma-1 xs)
-Incrementable? {d = suc zero} {zero} ∙ = no (Incrementable-lemma-2 ∙)
-Incrementable? {d = suc (suc d)} {zero} ∙ = yes (fromℕ≤ {1} (s≤s (s≤s z≤n)) ∷ ∙ , refl)
-Incrementable? {d = suc d} {suc zero} ∙ = yes ((z ∷ ∙) , refl)
-Incrementable? {d = suc d} {suc (suc o)} ∙ = no Incrementable-lemma-3
-Incrementable? {d = suc d} (x ∷ xs) with Greatest? x
-Incrementable? {zero} {suc d} (x ∷ xs) | yes greatest = no (Incrementable-lemma-4 x xs greatest)
-Incrementable? {suc b} {suc d} (x ∷ xs) | yes greatest with Incrementable? xs
-Incrementable? {suc b} {suc d} (x ∷ xs) | yes greatest | yes incr with suc b ≤? suc d
-Incrementable? {suc b} {suc d} (x ∷ xs) | yes greatest | yes (xs' , incr) | yes r
-    = yes (digit+1-b {b} x r greatest ∷ xs' , Incrementable-lemma-5 x xs xs' incr r greatest)
-Incrementable? {suc b} {suc d} (x ∷ xs) | yes greatest | yes incr | no ¬r
-    = no (Incrementable-lemma-6 x xs (≰⇒> ¬r) greatest)
-Incrementable? {suc b} {suc d} {o} (x ∷ xs) | yes greatest | no ¬incr with suc b * o ≤? suc d
-Incrementable? {suc b} {suc d} (x ∷ xs) | yes greatest | no ¬incr | yes p
-    = yes ({!   !} , {!   !})
-Incrementable? {suc b} {suc d} (x ∷ xs) | yes greatest | no ¬incr | no ¬p
-    = no {!   !}
-Incrementable? {b} {suc d} (x ∷ xs) | no ¬greatest
-    = yes {!   !}
+Incrementable? xs  = {!   !}
+-- Incrementable? {d = zero} xs = no (Incrementable-lemma-1 xs)
+-- Incrementable? {d = suc zero} {zero} ∙ = no (Incrementable-lemma-2 ∙)
+-- Incrementable? {d = suc (suc d)} {zero} ∙ = yes (fromℕ≤ {1} (s≤s (s≤s z≤n)) ∷ ∙ , refl)
+-- Incrementable? {d = suc d} {suc zero} ∙ = yes ((z ∷ ∙) , refl)
+-- Incrementable? {d = suc d} {suc (suc o)} ∙ = no Incrementable-lemma-3
+-- Incrementable? {d = suc d} (x ∷ xs) with Greatest? x
+-- Incrementable? {zero} {suc d} (x ∷ xs) | yes greatest = no (Incrementable-lemma-4 x xs greatest)
+-- Incrementable? {suc b} {suc d} (x ∷ xs) | yes greatest with Incrementable? xs
+-- Incrementable? {suc b} {suc d} (x ∷ xs) | yes greatest | yes incr with suc b ≤? suc d
+-- Incrementable? {suc b} {suc d} (x ∷ xs) | yes greatest | yes (xs' , incr) | yes r
+--     = yes (digit+1-b {b} x r greatest ∷ xs' , Incrementable-lemma-5 x xs xs' incr r greatest)
+-- Incrementable? {suc b} {suc d} (x ∷ xs) | yes greatest | yes incr | no ¬r
+--     = no (Incrementable-lemma-6 x xs (≰⇒> ¬r) greatest)
+-- Incrementable? {suc b} {suc d} {o} (x ∷ xs) | yes greatest | no ¬incr with suc b * o ≤? suc d
+-- Incrementable? {suc b} {suc d} (x ∷ xs) | yes greatest | no ¬incr | yes p with Maximum? xs
+-- Incrementable? {suc b} {suc d} (x ∷ xs) | yes greatest | no ¬incr | yes p | yes max = {!   !}
+-- Incrementable? {suc b} {suc d} (x ∷ xs) | yes greatest | no ¬incr | yes p | no ¬max = {!   !}
+--     -- = yes ({!   !} ∷ next xs {!   !} , {!   !})
+-- Incrementable? {suc b} {suc d} (x ∷ xs) | yes greatest | no ¬incr | no ¬p
+--     = no {!   !}
+-- Incrementable? {b} {suc d} (x ∷ xs) | no ¬greatest
+--     = yes {!   !}
 
 
 -- begin

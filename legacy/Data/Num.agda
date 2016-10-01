@@ -92,45 +92,45 @@ private
     D+sum m x y = m + (F→N x) + (F→N y)
 
 
-suppress-pred : ℕ → Set
-suppress-pred _ = ℕ → ℕ
+maxpress-pred : ℕ → Set
+maxpress-pred _ = ℕ → ℕ
 
-suppress-rec-struct : (x : ℕ) → Rec Level.zero suppress-pred x → (bound : ℕ) → ℕ
-suppress-rec-struct zero p bound = 0
-suppress-rec-struct (suc x) p bound with bound ≤? suc (p bound)
-suppress-rec-struct (suc x) p bound | yes q = suc (p bound) ∸ bound
-suppress-rec-struct (suc x) p bound | no ¬q = suc (p bound)
+maxpress-rec-struct : (x : ℕ) → Rec Level.zero maxpress-pred x → (bound : ℕ) → ℕ
+maxpress-rec-struct zero p bound = 0
+maxpress-rec-struct (suc x) p bound with bound ≤? suc (p bound)
+maxpress-rec-struct (suc x) p bound | yes q = suc (p bound) ∸ bound
+maxpress-rec-struct (suc x) p bound | no ¬q = suc (p bound)
 
 -- if x ≥ bound, then substract bound from x, until x < bound
-suppress : (x bound : ℕ) → ℕ
-suppress = rec suppress-pred suppress-rec-struct
+maxpress : (x bound : ℕ) → ℕ
+maxpress = rec maxpress-pred maxpress-rec-struct
 
-suppressed<bound : (x bound : ℕ) → (≢0 : False (bound ≟ 0)) → suppress x bound < bound
-suppressed<bound zero    zero        ()
-suppressed<bound zero    (suc bound) ≢0 = s≤s z≤n
-suppressed<bound (suc x) zero        ()
-suppressed<bound (suc x) (suc bound) ≢0 with suc bound ≤? suc (suppress x (suc bound))
-suppressed<bound (suc x) (suc bound) ≢0 | yes p =
+maxpressed<bound : (x bound : ℕ) → (≢0 : False (bound ≟ 0)) → maxpress x bound < bound
+maxpressed<bound zero    zero        ()
+maxpressed<bound zero    (suc bound) ≢0 = s≤s z≤n
+maxpressed<bound (suc x) zero        ()
+maxpressed<bound (suc x) (suc bound) ≢0 with suc bound ≤? suc (maxpress x (suc bound))
+maxpressed<bound (suc x) (suc bound) ≢0 | yes p =
     begin
-        suc (suppress x (suc bound) ∸ bound)
+        suc (maxpress x (suc bound) ∸ bound)
     ≤⟨ ≤-refl (sym (+-∸-assoc 1 p)) ⟩
-        suc (suppress x (suc bound)) ∸ bound
-    ≤⟨ ∸-mono {suc (suppress x (suc bound))} {suc bound} {bound} {bound} (suppressed<bound x (suc bound) tt) (≤-refl refl) ⟩
+        suc (maxpress x (suc bound)) ∸ bound
+    ≤⟨ ∸-mono {suc (maxpress x (suc bound))} {suc bound} {bound} {bound} (maxpressed<bound x (suc bound) tt) (≤-refl refl) ⟩
         suc bound ∸ bound
     ≤⟨ ≤-refl (m+n∸n≡m 1 bound) ⟩
         suc zero
     ≤⟨ s≤s z≤n ⟩
         suc bound
     ∎
-suppressed<bound (suc x) (suc bound) ≢0 | no ¬p = ≰⇒> ¬p
+maxpressed<bound (suc x) (suc bound) ≢0 | no ¬p = ≰⇒> ¬p
 
-suppress′ : (x bound : ℕ) → (≢0 : False (bound ≟ 0)) → Fin bound
-suppress′ x bound ≢0 = fromℕ≤ {suppress x bound} (suppressed<bound x bound ≢0)
+maxpress′ : (x bound : ℕ) → (≢0 : False (bound ≟ 0)) → Fin bound
+maxpress′ x bound ≢0 = fromℕ≤ {maxpress x bound} (maxpressed<bound x bound ≢0)
 
 _D+_ : ∀ {b m n} → Digit b m n → Digit b m n → Digit b m n
 _D+_ {zero}                ()     ()
 _D+_ {suc zero}            x      _      = x
-_D+_ {suc (suc b)} {m} {n} (D x) (D y {b≤n} {bm≤n}) = D (suppress′ (D+sum m x y) n n≢0) {b≤n} {bm≤n}
+_D+_ {suc (suc b)} {m} {n} (D x) (D y {b≤n} {bm≤n}) = D (maxpress′ (D+sum m x y) n n≢0) {b≤n} {bm≤n}
     where   n≢0 = fromWitnessFalse $ >⇒≢ $
                 begin
                     suc zero
