@@ -39,6 +39,18 @@ isPartialOrder = IsTotalOrder.isPartialOrder isTotalOrder
 isPreorder : IsPreorder {A = ℕ} _≡_ _≤_
 isPreorder = IsPartialOrder.isPreorder isPartialOrder
 
+open import Algebra.Structures
+import Algebra.FunctionProperties as P; open P (_≡_ {A = ℕ})
+
+isSemiringWithoutOne : IsSemiringWithoutOne _≡_ _⊔_ _⊓_ zero
+isSemiringWithoutOne = IsCommutativeSemiringWithoutOne.isSemiringWithoutOne ⊔-⊓-0-isCommutativeSemiringWithoutOne
+
++-isCommutativeMonoid : IsCommutativeMonoid _≡_ _⊔_ zero
++-isCommutativeMonoid = IsSemiringWithoutOne.+-isCommutativeMonoid  isSemiringWithoutOne
+
+⊔-comm : Commutative _⊔_
+⊔-comm = IsCommutativeMonoid.comm +-isCommutativeMonoid
+
 ≤-trans :  Transitive _≤_
 ≤-trans = IsPreorder.trans isPreorder
 
@@ -316,8 +328,9 @@ m∸n+n {m} {n} n≤m =
         m
     ∎
 
-
-
+-- open ⊔-⊓-0-commutativeSemiringWithoutOne
+-- ⊔-comm : Commutative _⊔_
+-- ⊔-comm = {!IsCommutativeSemiringWithoutOne.isSemiringWithoutOne ⊔-⊓-0-isCommutativeSemiringWithoutOne  !}
 -- start
 --     {!   !}
 -- ≤⟨ {!   !} ⟩
