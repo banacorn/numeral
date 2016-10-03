@@ -282,6 +282,98 @@ Incrementable-lemma-10 {b} {d} {o} x xs greatest ¬max redundant =
         suc (toℕ (x ∷ xs))
     ∎
 
+Maximum⇒¬Incrementable : ∀ {b d o}
+    → (xs : Num b d o)
+    → Maximum xs
+    → ¬ (Incrementable xs)
+Maximum⇒¬Incrementable xs max (evidence , claim)
+    = contradiction claim (<⇒≢ (s≤s (max evidence)))
+
+
+-- begin
+--     {!   !}
+-- ≡⟨ {!   !} ⟩
+--     {!   !}
+-- ≡⟨ {!   !} ⟩
+--     {!   !}
+-- ≡⟨ {!   !} ⟩
+--     {!   !}
+-- ≡⟨ {!   !} ⟩
+--     {!   !}
+-- ∎
+
+-- start
+--     {!   !}
+-- ≤⟨ {!   !} ⟩
+--     {!   !}
+-- ≤⟨ {!   !} ⟩
+--     {!   !}
+-- ≤⟨ {!   !} ⟩
+--     {!   !}
+-- □
+Incrementable-lemma-11 : ∀ {b d o}
+    → (x : Digit (suc d))
+    → (xs : Num (suc b) (suc d) o)
+    → (greatest : Greatest x)
+    → (¬max : ¬ (Maximum xs))
+    → (¬redundant : ¬ (Redundant ((toℕ (next-number xs ¬max) ∸ toℕ xs) * suc b) (suc d)))
+    → ¬ (Incrementable (x ∷ xs))
+Incrementable-lemma-11 x xs greatest ¬max ¬redundant (∙ , ())
+Incrementable-lemma-11 x xs greatest ¬max ¬redundant (y ∷ ys , claim) = {!   !}
+    -- where   ⟦evidence⟧>1+⟦x∷xs⟧ : toℕ evidence > suc (Digit-toℕ x o + toℕ xs * suc b)
+    --         ⟦evidence⟧>1+⟦x∷xs⟧ =
+    --             start
+    --                 suc (suc (Fin.toℕ x + o + toℕ xs * suc b))
+    --             ≤⟨ reflexive (cong (λ w → suc (w + o + toℕ xs * suc b)) greatest) ⟩
+    --                 suc (suc (d + o) + toℕ xs * suc b)
+    --             ≤⟨ reflexive (+-assoc (suc (suc d)) o (toℕ xs * suc b)) ⟩
+    --                 suc (suc (d + (o + toℕ xs * suc b)))
+    --             ≤⟨ +n-mono (o + toℕ xs * suc b) (≰⇒> ¬redundant) ⟩
+    --                 suc ((toℕ (next-number xs ¬max) ∸ toℕ xs) * suc b) + (o + toℕ xs * suc b)
+    --             ≤⟨ {!   !} ⟩
+    --                 {!   !}
+    --             ≤⟨ {!   !} ⟩
+    --                 {!   !}
+    --             ≤⟨ {!   !} ⟩
+    --                 {!   !}
+    --             ≤⟨ {!   !} ⟩
+    --                 {!   !}
+    --             ≤⟨ {!   !} ⟩
+    --                 {!   !}
+    --             ≤⟨ {!   !} ⟩
+    --                 {!   !}
+    --             ≤⟨ {!   !} ⟩
+    --                 {!   !}
+    --             ≤⟨ {!   !} ⟩
+    --                 suc (Fin.toℕ x + o + toℕ xs * suc b)
+    --             ≤⟨ reflexive (sym claim) ⟩
+    --                 toℕ evidence
+    --             □
+    -- where   redundant : Redundant ((toℕ (next-number xs ¬max) ∸ toℕ xs) * suc b) (suc d)
+    --         redundant = +n-mono-inverse (toℕ xs * suc b) $
+    --             start
+    --                 suc ((toℕ (next-number xs ¬max) ∸ toℕ xs) * suc b) + toℕ xs * suc b
+    --             ≤⟨ reflexive (cong (λ w → suc w + toℕ xs * suc b) (*-distrib-∸ʳ (suc b) (toℕ (next-number xs ¬max)) (toℕ xs))) ⟩
+    --                 suc (toℕ (next-number xs ¬max) * suc b ∸ toℕ xs * suc b) + toℕ xs * suc b
+    --             ≤⟨ s≤s (reflexive (m∸n+n {_} {toℕ xs * suc b} (*n-mono (suc b) (≤-pred $ ≤-step (next-number-is-greater xs ¬max))))) ⟩
+    --                 suc (toℕ (next-number xs ¬max) * suc b)
+    --             ≤⟨ {! ≰⇒> ¬redundant  !} ⟩
+    --                 {!   !}
+    --             ≤⟨ {!   !} ⟩
+    --                 {!   !}
+    --             ≤⟨ {!   !} ⟩
+    --                 {!   !}
+    --             ≤⟨ {!   !} ⟩
+    --                 {!   !}
+    --             ≤⟨ {!   !} ⟩
+    --                 {!    !}
+    --             ≤⟨ ≤-refl ⟩
+    --                 suc (Fin.toℕ x) + toℕ xs * suc b
+    --             ≤⟨ {!   !} ⟩
+    --                 suc d + toℕ xs * suc b
+    --             □
+
+
 
 Incrementable? : ∀ {b d o} → (xs : Num b d o) → Dec (Incrementable xs)
 -- having no digit at all
@@ -297,13 +389,9 @@ Incrementable? {suc b} {suc d}       (x ∷ xs) | yes greatest with Maximum? xs
 Incrementable? {suc b} {suc d}       (x ∷ xs) | yes greatest | yes max = no {!   !}
 Incrementable? {suc b} {suc d}       (x ∷ xs) | yes greatest | no ¬max with Redundant? ((toℕ (next-number xs ¬max) ∸ toℕ xs) * suc b) (suc d)
 Incrementable? {suc b} {suc d} {o}   (x ∷ xs) | yes greatest | no ¬max | yes redundant
-    = yes
-        (
-            digit+1-b {suc d} x ((toℕ (next-number xs ¬max) ∸ toℕ xs) * suc b) (Incrementable-lemma-9 xs ¬max) redundant greatest
-            ∷
-            next-number xs ¬max
-        , Incrementable-lemma-10 x xs greatest ¬max redundant)
-Incrementable? {suc b} {suc d}       (x ∷ xs) | yes greatest | no ¬max | no ¬redundant = no {!   !}
+    = yes (digit+1-b {suc d} x ((toℕ (next-number xs ¬max) ∸ toℕ xs) * suc b) (Incrementable-lemma-9 xs ¬max) redundant greatest ∷ next-number xs ¬max , Incrementable-lemma-10 x xs greatest ¬max redundant)
+Incrementable? {suc b} {suc d}       (x ∷ xs) | yes greatest | no ¬max | no ¬redundant
+    = no (Incrementable-lemma-11 x xs greatest ¬max ¬redundant)
 Incrementable? {b} {suc d}       (x ∷ xs) | no ¬greatest = yes {!   !}
 
 
