@@ -226,7 +226,7 @@ Digit-toℕ-digit+1-b {d} {o} x b b>0 redundant greatest =
     ≡⟨ cong (λ w → w ∸ b) (+-comm o (suc (Fin.toℕ x))) ⟩
         suc (Fin.toℕ x) + o ∸ b
     ∎
-    
+
 -- start
 --     {!   !}
 -- ≤⟨ {!   !} ⟩
@@ -252,11 +252,11 @@ Digit-toℕ-digit+1-b {d} {o} x b b>0 redundant greatest =
 digit+1 : ∀ {d} → (x : Digit d) → (¬p : suc (Fin.toℕ x) ≢ d) → Fin d
 digit+1 x ¬p = fromℕ≤ {suc (Fin.toℕ x)} (≤∧≢⇒< (bounded x) ¬p)
 
-digit+1-lemma : ∀ {d o}
+Digit-toℕ-digit+1 : ∀ {d o}
     → (x : Digit d)
     → (¬p : suc (Fin.toℕ x) ≢ d)
     → Digit-toℕ (digit+1 x ¬p) o ≡ suc (Digit-toℕ x o)
-digit+1-lemma {d} {o} x ¬p = cong (λ w → w + o) (toℕ-fromℕ≤ (≤∧≢⇒< (bounded x) ¬p))
+Digit-toℕ-digit+1 {d} {o} x ¬p = cong (λ w → w + o) (toℕ-fromℕ≤ (≤∧≢⇒< (bounded x) ¬p))
 
 ------------------------------------------------------------------------
 -- Conversion to ℕ
