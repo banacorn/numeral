@@ -203,22 +203,30 @@ Digit-toℕ-digit+1-b : ∀ {d o}
     → (b>0 : b > 0)
     → (redundant : suc b ≤ d)
     → (greatest : Greatest x)
-    → Digit-toℕ {d} (digit+1-b {d} x b b>0 redundant greatest) o ≡ suc (Digit-toℕ x o) ∸ suc b
+    → Digit-toℕ {d} (digit+1-b {d} x b b>0 redundant greatest) o ≡ suc (Digit-toℕ x o) ∸ b
 Digit-toℕ-digit+1-b {d} {o} x b b>0 redundant greatest =
     begin
-        Digit-toℕ {d} (digit+1-b {b} {d} x redundant greatest) o
-    ≡⟨ cong (λ w → w + o) (toℕ-digit+1-b x redundant greatest) ⟩
-        Fin.toℕ x ∸ b + o
-    ≡⟨ {!   !} ⟩
-        {!   !}
-    ≡⟨ {!   !} ⟩
-        {!   !}
-    ≡⟨ {!   !} ⟩
-        {!   !}
+        Fin.toℕ (fromℕ≤ (digit+1-b-lemma x b b>0 redundant greatest)) + o
+    ≡⟨ cong (λ w → w + o) (toℕ-fromℕ≤ (digit+1-b-lemma x b b>0 redundant greatest)) ⟩
+        (suc (Fin.toℕ x) ∸ b) + o
+    ≡⟨ +-comm (suc (Fin.toℕ x) ∸ b) o ⟩
+        o + (suc (Fin.toℕ x) ∸ b)
+    ≡⟨ sym (+-∸-assoc o {suc (Fin.toℕ x)} {b} $
+        start
+            b
+        ≤⟨ m≤n+m b (suc zero) ⟩
+            suc b
+        ≤⟨ redundant ⟩
+            d
+        ≤⟨ reflexive (sym greatest) ⟩
+            suc (Fin.toℕ x)
+        □)
+    ⟩
+        (o + suc (Fin.toℕ x)) ∸ b
+    ≡⟨ cong (λ w → w ∸ b) (+-comm o (suc (Fin.toℕ x))) ⟩
+        suc (Fin.toℕ x) + o ∸ b
     ∎
-
- -- cong (λ w → w + o) (toℕ-digit+1-b x redundant greatest)
-
+    
 -- start
 --     {!   !}
 -- ≤⟨ {!   !} ⟩
