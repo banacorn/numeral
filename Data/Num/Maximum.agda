@@ -97,7 +97,7 @@ next-number-Base≡0 : ∀ {d o}
     → Num 0 (suc d) o
 next-number-Base≡0 {d} {o} xs ¬max with nextView-0 d o
 next-number-Base≡0 xs         ¬max | HasOnly:0    = contradiction (next-number-Base≡0-lemma-1 zero zero xs (s≤s z≤n)) ¬max
-next-number-Base≡0 {d} {o} ∙  ¬max | Others bound = Digit-fromℕ {d} {o} (1 ⊔ o) bound ∷ ∙
+next-number-Base≡0 {d} {o} ∙  ¬max | Others bound = Digit-fromℕ {d} (1 ⊔ o) o bound ∷ ∙
 next-number-Base≡0 (x ∷ xs)   ¬max | Others bound with Greatest? x
 next-number-Base≡0 (x ∷ xs)   ¬max | Others bound | yes greatest = contradiction (Base≡0-lemma x xs greatest) ¬max
 next-number-Base≡0 (x ∷ xs)   ¬max | Others bound | no ¬greatest = digit+1 x ¬greatest ∷ xs
@@ -151,7 +151,7 @@ next-number-Digit+Offset≥2 : ∀ {b d o}
     → ¬ (Maximum xs)
     → (d+o≥2 : 2 ≤ suc (d + o))
     → Num (suc b) (suc d) o
-next-number-Digit+Offset≥2 {_} {d} {o} ∙        ¬max p = Digit-fromℕ {d} {o} (1 ⊔ o) (next-number-Digit+Offset≥2-lemma-1 d o p) ∷ ∙
+next-number-Digit+Offset≥2 {_} {d} {o} ∙        ¬max p = Digit-fromℕ {d} (1 ⊔ o) o (next-number-Digit+Offset≥2-lemma-1 d o p) ∷ ∙
 next-number-Digit+Offset≥2 {_} {d} {o} (x ∷ xs) ¬max p with Greatest? x
 next-number-Digit+Offset≥2 {b} {d} {o} (x ∷ xs) ¬max p | yes greatest with suc b ≤? d
 next-number-Digit+Offset≥2 {b} {d} {o} (x ∷ xs) ¬max p | yes greatest | yes redundant
@@ -187,7 +187,7 @@ next-number-is-greater-Base≡0 {d} {o} ∙ ¬max | Others bound =
             1 ⊔ o
         ≡⟨ sym (+-right-identity (1 ⊔ o)) ⟩
             1 ⊔ o + 0
-        ≡⟨ cong (λ x → x + 0) (sym (Digit-toℕ-fromℕ {d} {o} bound $ start
+        ≡⟨ cong (λ x → x + 0) (sym (Digit-toℕ-fromℕ {d} {o} (suc zero ⊔ o) bound $ start
                 o
             ≤⟨ m≤m⊔n o 1 ⟩
                 o ⊔ 1
@@ -195,10 +195,10 @@ next-number-is-greater-Base≡0 {d} {o} ∙ ¬max | Others bound =
                 1 ⊔ o
             □))
         ⟩
-            Digit-toℕ {suc d} (Digit-fromℕ {d} {o} (1 ⊔ o) bound) o + 0
+            Digit-toℕ {suc d} (Digit-fromℕ {d} (1 ⊔ o) o bound) o + 0
         ∎
     ⟩
-        Digit-toℕ {suc d} (Digit-fromℕ {d} {o} (1 ⊔ o) bound) o + 0
+        Digit-toℕ {suc d} (Digit-fromℕ {d} (1 ⊔ o) o bound) o + 0
     □
 next-number-is-greater-Base≡0 (x ∷ xs) ¬max | Others bound with Greatest? x
 next-number-is-greater-Base≡0 (x ∷ xs) ¬max | Others bound | yes greatest = contradiction (Base≡0-lemma x xs greatest) ¬max
@@ -231,7 +231,7 @@ next-number-is-greater-Digit+Offset≥2 {b} {d} {o}     ∙ ¬max p =
         suc zero ⊔ o
     ≤⟨ reflexive (sym (+-right-identity (suc zero ⊔ o))) ⟩
         suc zero ⊔ o + zero
-    ≤⟨ +n-mono 0 (reflexive (sym (Digit-toℕ-fromℕ {d} (next-number-Digit+Offset≥2-lemma-1 d o p) $
+    ≤⟨ +n-mono 0 (reflexive (sym (Digit-toℕ-fromℕ {d} (suc zero ⊔ o) (next-number-Digit+Offset≥2-lemma-1 d o p) $
         start
             o
         ≤⟨ m≤m⊔n o (suc zero) ⟩
@@ -240,7 +240,7 @@ next-number-is-greater-Digit+Offset≥2 {b} {d} {o}     ∙ ¬max p =
             suc zero ⊔ o
         □)))
     ⟩
-        Digit-toℕ (Digit-fromℕ {d} {o} (1 ⊔ o) (next-number-Digit+Offset≥2-lemma-1 d o p)) o + zero
+        Digit-toℕ (Digit-fromℕ {d} (1 ⊔ o) o (next-number-Digit+Offset≥2-lemma-1 d o p)) o + zero
     □
 next-number-is-greater-Digit+Offset≥2 {b} {d} {o} (x ∷ xs) ¬max p with Greatest? x
 next-number-is-greater-Digit+Offset≥2 {b} {d} {o} (x ∷ xs) ¬max p | yes greatest with suc b ≤? d
@@ -307,6 +307,136 @@ next-number-is-greater xs ¬max | IsBounded (HasNoDigit b o) = next-number-is-gr
 next-number-is-greater xs ¬max | IsBounded (HasOnly:0 b) = next-number-is-greater-HasOnly:0 xs ¬max
 next-number-is-greater xs ¬max | IsntBounded (Digit+Offset≥2 b d o d+o≥2) = next-number-is-greater-Digit+Offset≥2 xs ¬max d+o≥2
 
+
+next-number-is-LUB-Base≡0 : ∀ {d o}
+    → (xs : Num 0 (suc d) o)
+    → (ys : Num 0 (suc d) o)
+    → (¬max : ¬ (Maximum xs))
+    → toℕ ys > toℕ xs
+    → toℕ ys ≥ toℕ (next-number-Base≡0 xs ¬max)
+next-number-is-LUB-Base≡0 {d} {o} xs ys ¬max prop with nextView-0 d o
+next-number-is-LUB-Base≡0 {0} {0} xs ys ¬max prop | HasOnly:0 = contradiction (next-number-Base≡0-lemma-1 zero zero xs (s≤s z≤n)) ¬max
+next-number-is-LUB-Base≡0         ∙  ∙  ¬max ()   | Others bound
+next-number-is-LUB-Base≡0 {d} {0} ∙ (y ∷ ys) ¬max prop | Others bound =
+    start
+        Digit-toℕ (Digit-fromℕ {d} 1 0 bound) 0 + 0
+    ≤⟨ +n-mono 0 (reflexive (Digit-toℕ-fromℕ {d} {0} (suc zero) bound z≤n)) ⟩
+        1
+    ≤⟨ prop ⟩
+        Fin.toℕ y + 0 + toℕ ys * 0
+    □
+next-number-is-LUB-Base≡0 {d} {suc o} ∙ (y ∷ ys) ¬max prop | Others bound =
+    start
+        Digit-toℕ (Digit-fromℕ (suc o) (suc o) bound) (suc o) + 0
+    ≤⟨ +n-mono 0 (reflexive (Digit-toℕ-fromℕ {d} (suc o) bound ≤-refl)) ⟩
+        suc o + 0
+    ≤⟨ +n-mono 0 (m≤n+m (suc o) (Fin.toℕ y)) ⟩
+        Digit-toℕ y (suc o) + zero
+    ≤⟨ reflexive (cong (λ w → Digit-toℕ y (suc o) + w) (sym (*-right-zero (toℕ ys)))) ⟩
+        Digit-toℕ y (suc o) + toℕ ys * zero
+    □
+next-number-is-LUB-Base≡0 (x ∷ xs) ∙        ¬max ()   | Others bound
+next-number-is-LUB-Base≡0 {d} {o} (x ∷ xs) (y ∷ ys) ¬max prop | Others bound with Greatest? x
+next-number-is-LUB-Base≡0 {d} {o} (x ∷ xs) (y ∷ ys) ¬max prop | Others bound | yes greatest = contradiction (Base≡0-lemma x xs greatest) ¬max
+next-number-is-LUB-Base≡0 {d} {o} (x ∷ xs) (y ∷ ys) ¬max prop | Others bound | no ¬greatest =
+    start
+        Digit-toℕ (digit+1 x ¬greatest) o + toℕ xs * 0
+    ≤⟨ +n-mono (toℕ xs * 0) (reflexive (Digit-toℕ-digit+1 x ¬greatest)) ⟩
+        suc (toℕ (x ∷ xs))
+    ≤⟨ prop ⟩
+        toℕ (y ∷ ys)
+    □
+
+
+
+
+next-number-is-LUB-HasNoDigit : ∀ {b o}
+    → (xs : Num b 0 o)
+    → (ys : Num b 0 o)
+    → (¬max : ¬ (Maximum xs))
+    → toℕ ys ≥ toℕ (next-number-HasNoDigit xs ¬max)
+next-number-is-LUB-HasNoDigit {b} {o} ∙         ys ¬max = contradiction (HasNoDigit-lemma b o) ¬max
+next-number-is-LUB-HasNoDigit         (() ∷ xs) ys ¬max
+
+
+
+-- next-number-Digit+Offset≥2 : ∀ {b d o}
+--     → (xs : Num (suc b) (suc d) o)
+--     → ¬ (Maximum xs)
+--     → (d+o≥2 : 2 ≤ suc (d + o))
+--     → Num (suc b) (suc d) o
+-- next-number-Digit+Offset≥2 {_} {d} {o} ∙        ¬max p = Digit-fromℕ {d} (1 ⊔ o) o (next-number-Digit+Offset≥2-lemma-1 d o p) ∷ ∙
+-- next-number-Digit+Offset≥2 {_} {d} {o} (x ∷ xs) ¬max p with Greatest? x
+-- next-number-Digit+Offset≥2 {b} {d} {o} (x ∷ xs) ¬max p | yes greatest with suc b ≤? d
+-- next-number-Digit+Offset≥2 {b} {d} {o} (x ∷ xs) ¬max p | yes greatest | yes redundant
+--     = digit+1-b x (suc b) (s≤s z≤n) (s≤s redundant) greatest ∷ next-number-Digit+Offset≥2 xs (next-number-Digit+Offset≥2-lemma-2 x xs ¬max greatest p) p
+-- next-number-Digit+Offset≥2 (x ∷ xs) ¬max p | yes greatest | no ¬redundant
+--     = z ∷ next-number-Digit+Offset≥2 xs (next-number-Digit+Offset≥2-lemma-2 x xs ¬max greatest p) p
+-- next-number-Digit+Offset≥2 {_} {d} {o} (x ∷ xs) ¬max p | no ¬greatest = digit+1 x ¬greatest ∷ xs
+
+
+-- start
+--     {!   !}
+-- ≤⟨ {!   !} ⟩
+--     {!   !}
+-- ≤⟨ {!   !} ⟩
+--     {!   !}
+-- ≤⟨ {!   !} ⟩
+--     {!   !}
+-- □
+
+next-number-Digit+Offset≥2-lemma-3 : ∀ m n → 2 ≤ suc m + n → 1 ⊔ n < suc m
+next-number-Digit+Offset≥2-lemma-3 m zero q = {!   !}
+next-number-Digit+Offset≥2-lemma-3 m (suc n) q = {!   !}
+
+next-number-is-LUB-Digit+Offset≥2 : ∀ {b d o}
+    → (xs : Num (suc b) (suc d) o)
+    → (ys : Num (suc b) (suc d) o)
+    → (¬max : ¬ (Maximum xs))
+    → (d+o≥2 : 2 ≤ suc (d + o))
+    → toℕ ys > toℕ xs
+    → toℕ ys ≥ toℕ (next-number-Digit+Offset≥2 xs ¬max d+o≥2)
+next-number-is-LUB-Digit+Offset≥2 ∙ ∙ ¬max d+o≥2 ()
+next-number-is-LUB-Digit+Offset≥2 {b} {d} {zero} ∙ (y ∷ ys) ¬max d+o≥2 prop =
+    start
+        Digit-toℕ (Digit-fromℕ {d} (suc zero) zero (≤-pred d+o≥2)) 0 + 0
+    ≤⟨ +n-mono 0 (reflexive (Digit-toℕ-fromℕ {d} 1 (≤-pred d+o≥2) z≤n)) ⟩
+        suc zero
+    ≤⟨ prop ⟩
+        toℕ (y ∷ ys)
+    □
+next-number-is-LUB-Digit+Offset≥2 {b} {d} {suc o} ∙ (y ∷ ys) ¬max d+o≥2 prop = {!   !}
+    -- start
+    --     Digit-toℕ (Digit-fromℕ {d} (suc o) (suc o) (next-number-Digit+Offset≥2-lemma-1 d (suc o) d+o≥2)) (suc o) + zero
+    -- ≤⟨ +n-mono 0 (reflexive (Digit-toℕ-fromℕ≤ {suc d} {suc o} {suc o} (next-number-Digit+Offset≥2-lemma-3 d (suc o) d+o≥2))) ⟩
+    --     suc (o + suc o + zero)
+    -- ≤⟨ {!   !} ⟩
+    --     {!   !}
+    -- ≤⟨ {!   !} ⟩
+    --     {!   !}
+    -- ≤⟨ {!   !} ⟩
+    --     {!   !}
+    -- ≤⟨ {!   !} ⟩
+    --     {!   !}
+    -- ≤⟨ {!   !} ⟩
+    --     suc zero
+    -- ≤⟨ prop ⟩
+    --     toℕ (y ∷ ys)
+    -- □
+next-number-is-LUB-Digit+Offset≥2 (x ∷ xs) ys ¬max d+o≥2 prop = {!   !}
+
+
+next-number-is-LUB : ∀ {b d o}
+    → (xs : Num b d o)
+    → (ys : Num b d o)
+    → (¬max : ¬ (Maximum xs))
+    → toℕ ys > toℕ xs
+    → toℕ ys ≥ toℕ (next-number xs ¬max)
+next-number-is-LUB {b} {d} {o} xs ys ¬max prop with boundedView b d o
+next-number-is-LUB xs ys ¬max prop | IsBounded (Base≡0 d o) = next-number-is-LUB-Base≡0 xs ys ¬max prop
+next-number-is-LUB xs ys ¬max prop | IsBounded (HasNoDigit b o) = next-number-is-LUB-HasNoDigit xs ys ¬max
+next-number-is-LUB xs ys ¬max prop | IsBounded (HasOnly:0 b) = contradiction (HasOnly:0-lemma (suc b) xs) ¬max
+next-number-is-LUB xs ys ¬max prop | IsntBounded (Digit+Offset≥2 b d o d+o≥2) = next-number-is-LUB-Digit+Offset≥2 xs ys ¬max d+o≥2 prop
 
 -- begin
 --     {!   !}

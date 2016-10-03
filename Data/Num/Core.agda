@@ -53,10 +53,10 @@ data Num : ℕ → ℕ → ℕ → Set where
 Digit-toℕ : ∀ {d} → Digit d → ℕ → ℕ
 Digit-toℕ d o = Fin.toℕ d + o
 
-Digit-fromℕ : ∀ {d o} → (n : ℕ) → d + o ≥ n → Digit (suc d)
-Digit-fromℕ {d} {o} n upper-bound with n ∸ o ≤? d
-Digit-fromℕ {d} {o} n upper-bound | yes p = fromℕ≤ (s≤s p)
-Digit-fromℕ {d} {o} n upper-bound | no ¬p = contradiction p ¬p
+Digit-fromℕ : ∀ {d} → (n o : ℕ) → d + o ≥ n → Digit (suc d)
+Digit-fromℕ {d} n o upper-bound with n ∸ o ≤? d
+Digit-fromℕ {d} n o upper-bound | yes p = fromℕ≤ (s≤s p)
+Digit-fromℕ {d} n o upper-bound | no ¬p = contradiction p ¬p
     where   p : n ∸ o ≤ d
             p = start
                     n ∸ o
@@ -66,12 +66,13 @@ Digit-fromℕ {d} {o} n upper-bound | no ¬p = contradiction p ¬p
                     d
                 □
 
-Digit-toℕ-fromℕ : ∀ {d o n}
+Digit-toℕ-fromℕ : ∀ {d o}
+    → (n : ℕ)
     → (upper-bound : d + o ≥ n)
     → (lower-bound :     o ≤ n)
-    → Digit-toℕ (Digit-fromℕ {d} {o} n upper-bound) o ≡ n
-Digit-toℕ-fromℕ {d} {o} {n} ub lb with n ∸ o ≤? d
-Digit-toℕ-fromℕ {d} {o} {n} ub lb | yes q =
+    → Digit-toℕ (Digit-fromℕ {d} n o upper-bound) o ≡ n
+Digit-toℕ-fromℕ {d} {o} n ub lb with n ∸ o ≤? d
+Digit-toℕ-fromℕ {d} {o} n ub lb | yes q =
     begin
         Fin.toℕ (fromℕ≤ (s≤s q)) + o
     ≡⟨ cong (λ x → x + o) (toℕ-fromℕ≤ (s≤s q)) ⟩
@@ -79,7 +80,7 @@ Digit-toℕ-fromℕ {d} {o} {n} ub lb | yes q =
     ≡⟨ m∸n+n lb ⟩
         n
     ∎
-Digit-toℕ-fromℕ {d} {o} {n} ub lb | no ¬q = contradiction q ¬q
+Digit-toℕ-fromℕ {d} {o} n ub lb | no ¬q = contradiction q ¬q
     where   q : n ∸ o ≤ d
             q = +n-mono-inverse o $
                 start
@@ -258,6 +259,7 @@ Digit-toℕ-digit+1 : ∀ {d o}
     → Digit-toℕ (digit+1 x ¬p) o ≡ suc (Digit-toℕ x o)
 Digit-toℕ-digit+1 {d} {o} x ¬p = cong (λ w → w + o) (toℕ-fromℕ≤ (≤∧≢⇒< (bounded x) ¬p))
 
+
 ------------------------------------------------------------------------
 -- Conversion to ℕ
 ------------------------------------------------------------------------
@@ -267,6 +269,19 @@ Digit-toℕ-digit+1 {d} {o} x ¬p = cong (λ w → w + o) (toℕ-fromℕ≤ (≤
 toℕ : ∀ {b d o} → Num b d o → ℕ
 toℕ             ∙        = 0
 toℕ {b} {_} {o} (x ∷ xs) = Digit-toℕ x o + toℕ xs * b
+
+toℕ-Base≡0 : ∀ {d o}
+    → (x : Digit d)
+    → (xs : Num 0 d o)
+    → toℕ (x ∷ xs) ≡ Digit-toℕ x o
+toℕ-Base≡0 {d} {o} x xs =
+    begin
+        Digit-toℕ x o + toℕ xs * zero
+    ≡⟨ cong (λ w → Digit-toℕ x o + w) (*-right-zero (toℕ xs)) ⟩
+        Digit-toℕ x o + 0
+    ≡⟨ +-right-identity (Digit-toℕ x o) ⟩
+        Digit-toℕ x o
+    ∎
 
 ∷ns-mono-strict : ∀ {b d o} (x y : Fin d) (xs ys : Num b d o)
     → toℕ xs ≡ toℕ ys

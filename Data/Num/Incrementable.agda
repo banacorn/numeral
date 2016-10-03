@@ -97,14 +97,14 @@ Incrementable-lemma-4 {d} {o} x xs p (x' ∷ xs' , q) =
         x'≢1+d = <⇒≢ (bounded x')
     in contradiction x'≡1+d x'≢1+d
 
-Incrementable-lemma-5 : ∀ {b d o}
-    → (x : Digit (suc d))
-    → (xs xs' : Num (suc b) (suc d) o)
-    → toℕ xs' ≡ suc (toℕ xs)
-    → (redundant : suc b ≤ suc d)
-    → (greatest : Greatest x)
-    → toℕ (digit+1-b x {!   !} {!   !} redundant greatest ∷ xs') ≡ suc (toℕ (x ∷ xs))
-Incrementable-lemma-5 {b} {d} {o} x xs xs' p redundant greatest = {!   !}
+-- Incrementable-lemma-5 : ∀ {b d o}
+--     → (x : Digit (suc d))
+--     → (xs xs' : Num (suc b) (suc d) o)
+--     → toℕ xs' ≡ suc (toℕ xs)
+--     → (redundant : suc b ≤ suc d)
+--     → (greatest : Greatest x)
+--     → toℕ (digit+1-b x {!   !} {!   !} redundant greatest ∷ xs') ≡ suc (toℕ (x ∷ xs))
+-- Incrementable-lemma-5 {b} {d} {o} x xs xs' p redundant greatest = {!   !}
     -- begin
     --     toℕ (digit+1-b x ? ? redundant greatest ∷ xs')
     -- ≡⟨ refl ⟩
@@ -134,85 +134,74 @@ Incrementable-lemma-5 {b} {d} {o} x xs xs' p redundant greatest = {!   !}
     --     suc (Fin.toℕ x + o + toℕ xs * suc b)
     -- ∎
 
-tail-mono-strict : ∀ {b d o} (x y : Digit d) (xs ys : Num b d o)
-    → Greatest x
-    → toℕ (x ∷ xs) < toℕ (y ∷ ys)
-    → toℕ xs < toℕ ys
-tail-mono-strict {b} {_} {o} x y xs ys greatest p
-    = *n-mono-strict-inverse b ⟦∷xs⟧<⟦∷ys⟧
-    where
-        ⟦x⟧≥⟦y⟧ : Digit-toℕ x o ≥ Digit-toℕ y o
-        ⟦x⟧≥⟦y⟧ = greatest-of-all o x y greatest
-        ⟦∷xs⟧<⟦∷ys⟧ : toℕ xs * b < toℕ ys * b
-        ⟦∷xs⟧<⟦∷ys⟧ = +-mono-contra ⟦x⟧≥⟦y⟧ p
 
-Incrementable-lemma-6 : ∀ {b d o}
-    → (x : Digit (suc d))
-    → (xs : Num (suc b) (suc d) o)
-    → (b>d : suc b > suc d)
-    → Greatest x
-    → Incrementable (x ∷ xs)
-    → ⊥
-Incrementable-lemma-6 x xs b>d greatest (∙ , ())
-Incrementable-lemma-6 {b} {d} {o} x xs b>d greatest (y ∷ ys , claim)
-    = contradiction claim (>⇒≢ ⟦y∷ys⟧>1+⟦x∷xs⟧)
-    where
-        ⟦x∷xs⟧<⟦y∷ys⟧ : toℕ (x ∷ xs) < toℕ (y ∷ ys)
-        ⟦x∷xs⟧<⟦y∷ys⟧ = m≡n+o⇒m≥o {toℕ (y ∷ ys)} {suc (toℕ (x ∷ xs) )} zero claim
-        ⟦xs⟧<⟦ys⟧ : toℕ xs < toℕ ys
-        ⟦xs⟧<⟦ys⟧ = tail-mono-strict x y xs ys greatest ⟦x∷xs⟧<⟦y∷ys⟧
-        ⟦y∷ys⟧>1+⟦x∷xs⟧ : toℕ (y ∷ ys) > suc (toℕ (x ∷ xs))
-        ⟦y∷ys⟧>1+⟦x∷xs⟧ =
-            start
-                suc (suc (toℕ (x ∷ xs)))
-            ≤⟨ ≤-refl ⟩
-                suc (suc (Digit-toℕ x o + toℕ xs * suc b))
-            ≤⟨ reflexive (sym (+-suc (suc (Digit-toℕ x o)) (toℕ xs * suc b))) ⟩
-                suc (Digit-toℕ x o) + suc (toℕ xs * suc b)
-            ≤⟨ +n-mono (suc (toℕ xs * suc b)) (Digit<d+o x o) ⟩
-                suc (d + o + suc (toℕ xs * suc b))
-            ≤⟨ reflexive $
-                begin
-                    (suc d + o) + suc (toℕ xs * suc b)
-                ≡⟨ +-suc (suc d + o) (toℕ xs * suc b) ⟩
-                    2 + (d + o + toℕ xs * suc b)
-                ≡⟨ cong (_+_ 2) (+-assoc d o (toℕ xs * suc b)) ⟩
-                    2 + (d + (o + toℕ xs * suc b))
-                ≡⟨ sym (+-assoc 2 d (o + toℕ xs * suc b)) ⟩
-                    (2 + d) + (o + toℕ xs * suc b)
-                ≡⟨ a+[b+c]≡b+[a+c] ((2 + d)) o (toℕ xs * suc b) ⟩
-                    o + ((2 + d) + toℕ xs * suc b)
-                ∎ ⟩
-                o + suc (suc (d + toℕ xs * suc b))
-            ≤⟨ +n-mono ((suc (suc d) + toℕ xs * suc b)) (+n-mono o {zero} {Fin.toℕ y} z≤n) ⟩
-                Digit-toℕ y o + (suc (suc d) + toℕ xs * suc b)
-            ≤⟨ n+-mono (Digit-toℕ y o) (+n-mono (toℕ xs * suc b) b>d) ⟩
-                Digit-toℕ y o + (suc b + toℕ xs * suc b)
-            ≤⟨ ≤-refl ⟩
-                Digit-toℕ y o + suc (toℕ xs) * suc b
-            ≤⟨ n+-mono (Digit-toℕ y o) (*n-mono (suc b) ⟦xs⟧<⟦ys⟧) ⟩
-                Digit-toℕ y o + toℕ ys * suc b
-            ≤⟨ ≤-refl ⟩
-                toℕ (y ∷ ys)
-            □
+-- Incrementable-lemma-6 : ∀ {b d o}
+--     → (x : Digit (suc d))
+--     → (xs : Num (suc b) (suc d) o)
+--     → (b>d : suc b > suc d)
+--     → Greatest x
+--     → Incrementable (x ∷ xs)
+--     → ⊥
+-- Incrementable-lemma-6 x xs b>d greatest (∙ , ())
+-- Incrementable-lemma-6 {b} {d} {o} x xs b>d greatest (y ∷ ys , claim)
+--     = contradiction claim (>⇒≢ ⟦y∷ys⟧>1+⟦x∷xs⟧)
+--     where
+--         ⟦x∷xs⟧<⟦y∷ys⟧ : toℕ (x ∷ xs) < toℕ (y ∷ ys)
+--         ⟦x∷xs⟧<⟦y∷ys⟧ = m≡n+o⇒m≥o {toℕ (y ∷ ys)} {suc (toℕ (x ∷ xs) )} zero claim
+--         ⟦xs⟧<⟦ys⟧ : toℕ xs < toℕ ys
+--         ⟦xs⟧<⟦ys⟧ = tail-mono-strict x y xs ys greatest ⟦x∷xs⟧<⟦y∷ys⟧
+--         ⟦y∷ys⟧>1+⟦x∷xs⟧ : toℕ (y ∷ ys) > suc (toℕ (x ∷ xs))
+--         ⟦y∷ys⟧>1+⟦x∷xs⟧ =
+--             start
+--                 suc (suc (toℕ (x ∷ xs)))
+--             ≤⟨ ≤-refl ⟩
+--                 suc (suc (Digit-toℕ x o + toℕ xs * suc b))
+--             ≤⟨ reflexive (sym (+-suc (suc (Digit-toℕ x o)) (toℕ xs * suc b))) ⟩
+--                 suc (Digit-toℕ x o) + suc (toℕ xs * suc b)
+--             ≤⟨ +n-mono (suc (toℕ xs * suc b)) (Digit<d+o x o) ⟩
+--                 suc (d + o + suc (toℕ xs * suc b))
+--             ≤⟨ reflexive $
+--                 begin
+--                     (suc d + o) + suc (toℕ xs * suc b)
+--                 ≡⟨ +-suc (suc d + o) (toℕ xs * suc b) ⟩
+--                     2 + (d + o + toℕ xs * suc b)
+--                 ≡⟨ cong (_+_ 2) (+-assoc d o (toℕ xs * suc b)) ⟩
+--                     2 + (d + (o + toℕ xs * suc b))
+--                 ≡⟨ sym (+-assoc 2 d (o + toℕ xs * suc b)) ⟩
+--                     (2 + d) + (o + toℕ xs * suc b)
+--                 ≡⟨ a+[b+c]≡b+[a+c] ((2 + d)) o (toℕ xs * suc b) ⟩
+--                     o + ((2 + d) + toℕ xs * suc b)
+--                 ∎ ⟩
+--                 o + suc (suc (d + toℕ xs * suc b))
+--             ≤⟨ +n-mono ((suc (suc d) + toℕ xs * suc b)) (+n-mono o {zero} {Fin.toℕ y} z≤n) ⟩
+--                 Digit-toℕ y o + (suc (suc d) + toℕ xs * suc b)
+--             ≤⟨ n+-mono (Digit-toℕ y o) (+n-mono (toℕ xs * suc b) b>d) ⟩
+--                 Digit-toℕ y o + (suc b + toℕ xs * suc b)
+--             ≤⟨ ≤-refl ⟩
+--                 Digit-toℕ y o + suc (toℕ xs) * suc b
+--             ≤⟨ n+-mono (Digit-toℕ y o) (*n-mono (suc b) ⟦xs⟧<⟦ys⟧) ⟩
+--                 Digit-toℕ y o + toℕ ys * suc b
+--             ≤⟨ ≤-refl ⟩
+--                 toℕ (y ∷ ys)
+--             □
 
-Incrementable-lemma-7 : ∀ {b d o}
-    → (x : Digit (suc d))
-    → (xs : Num (suc b) (suc d) o)
-    → Greatest x
-    → ¬ (Incrementable xs)
-    → Incrementable (x ∷ xs)
-    → ⊥
-Incrementable-lemma-7 x xs greatest ¬p (∙ , ())
-Incrementable-lemma-7 x xs greatest ¬p (y ∷ ys , claim) = {! ⟦xs⟧<⟦ys⟧  !}
+-- Incrementable-lemma-7 : ∀ {b d o}
+--     → (x : Digit (suc d))
+--     → (xs : Num (suc b) (suc d) o)
+--     → Greatest x
+--     → ¬ (Incrementable xs)
+--     → Incrementable (x ∷ xs)
+--     → ⊥
+-- Incrementable-lemma-7 x xs greatest ¬p (∙ , ())
+-- Incrementable-lemma-7 x xs greatest ¬p (y ∷ ys , claim) = {! ⟦xs⟧<⟦ys⟧  !}
     -- ¬p : Σ[ xs' ∈ _ ] toℕ xs' ≡ suc (toℕ xs) → ⊥
     -- p0 : toℕ (y ∷ ys) > toℕ (x ∷ xs)
     -- toℕ ys > toℕ xs
-    where
-        ⟦x∷xs⟧<⟦y∷ys⟧ : toℕ (x ∷ xs) < toℕ (y ∷ ys)
-        ⟦x∷xs⟧<⟦y∷ys⟧ = m≡n+o⇒m≥o {toℕ (y ∷ ys)} {suc (toℕ (x ∷ xs) )} zero claim
-        ⟦xs⟧<⟦ys⟧ : toℕ xs < toℕ ys
-        ⟦xs⟧<⟦ys⟧ = tail-mono-strict x y xs ys greatest ⟦x∷xs⟧<⟦y∷ys⟧
+    -- where
+    --     ⟦x∷xs⟧<⟦y∷ys⟧ : toℕ (x ∷ xs) < toℕ (y ∷ ys)
+    --     ⟦x∷xs⟧<⟦y∷ys⟧ = m≡n+o⇒m≥o {toℕ (y ∷ ys)} {suc (toℕ (x ∷ xs) )} zero claim
+    --     ⟦xs⟧<⟦ys⟧ : toℕ xs < toℕ ys
+    --     ⟦xs⟧<⟦ys⟧ = tail-mono-strict x y xs ys greatest ⟦x∷xs⟧<⟦y∷ys⟧
 
 Incrementable-lemma-8 : ∀ {b d o}
     → (xs : Num b (suc d) o)
@@ -290,6 +279,17 @@ Maximum⇒¬Incrementable xs max (evidence , claim)
     = contradiction claim (<⇒≢ (s≤s (max evidence)))
 
 
+tail-mono-strict : ∀ {b d o} (x y : Digit d) (xs ys : Num b d o)
+    → Greatest x
+    → toℕ (x ∷ xs) < toℕ (y ∷ ys)
+    → toℕ xs < toℕ ys
+tail-mono-strict {b} {_} {o} x y xs ys greatest p
+    = *n-mono-strict-inverse b ⟦∷xs⟧<⟦∷ys⟧
+    where
+        ⟦x⟧≥⟦y⟧ : Digit-toℕ x o ≥ Digit-toℕ y o
+        ⟦x⟧≥⟦y⟧ = greatest-of-all o x y greatest
+        ⟦∷xs⟧<⟦∷ys⟧ : toℕ xs * b < toℕ ys * b
+        ⟦∷xs⟧<⟦∷ys⟧ = +-mono-contra ⟦x⟧≥⟦y⟧ p
 -- begin
 --     {!   !}
 -- ≡⟨ {!   !} ⟩
@@ -318,8 +318,53 @@ Incrementable-lemma-11 : ∀ {b d o}
     → (¬max : ¬ (Maximum xs))
     → (¬redundant : ¬ (Redundant ((toℕ (next-number xs ¬max) ∸ toℕ xs) * suc b) (suc d)))
     → ¬ (Incrementable (x ∷ xs))
-Incrementable-lemma-11 x xs greatest ¬max ¬redundant (∙ , ())
-Incrementable-lemma-11 x xs greatest ¬max ¬redundant (y ∷ ys , claim) = {!   !}
+Incrementable-lemma-11 {b} {d} {o} x xs greatest ¬max ¬redundant (∙ , ())
+Incrementable-lemma-11 {b} {d} {o} x xs greatest ¬max ¬redundant (y ∷ ys , claim) = {!   !}
+    where   ⟦ys⟧>⟦xs⟧ : toℕ ys > toℕ xs
+            ⟦ys⟧>⟦xs⟧ = tail-mono-strict x y xs ys greatest (m≡n+o⇒m≥o 0 claim)
+
+            ⟦y∷ys⟧>1+⟦x∷xs'⟧ : toℕ (y ∷ ys) > suc (toℕ (x ∷ xs))
+            ⟦y∷ys⟧>1+⟦x∷xs⟧ =
+                start
+                    suc (suc (Fin.toℕ x + o + toℕ xs * suc b))
+                ≤⟨ {!   !} ⟩
+                    {!   !}
+                ≤⟨ {!   !} ⟩
+                    {!   !}
+                ≤⟨ {!   !} ⟩
+                    {!   !}
+                ≤⟨ {!   !} ⟩
+                    {!   !}
+                ≤⟨ {!   !} ⟩
+                    {!   !}
+                ≤⟨ {!   !} ⟩
+                    {!   !}
+                ≤⟨ {!   !} ⟩
+                    Fin.toℕ y + o + toℕ ys * suc b
+                □
+            -- ⟦y∷ys⟧>1+⟦x∷xs⟧ : toℕ (y ∷ ys) > suc (toℕ (x ∷ xs))
+            -- ⟦y∷ys⟧>1+⟦x∷xs⟧ =
+            --     start
+            --         suc (suc (Fin.toℕ x + o + toℕ xs * suc b))
+            --     ≤⟨ {!   !} ⟩
+            --         {!   !}
+            --     ≤⟨ {!   !} ⟩
+            --         {!   !}
+            --     ≤⟨ {!   !} ⟩
+            --         {!   !}
+            --     ≤⟨ {!   !} ⟩
+            --         {!   !}
+            --     ≤⟨ {!   !} ⟩
+            --         {!   !}
+            --     ≤⟨ {!   !} ⟩
+            --         {!   !}
+            --     ≤⟨ {!   !} ⟩
+            --         Fin.toℕ y + o + toℕ ys * suc b
+            --     □
+
+            -- with toℕ ys ≟ toℕ (next-number xs ¬max)
+-- Incrementable-lemma-11 x xs greatest ¬max ¬redundant (y ∷ ys , claim) | yes p = {!   !}
+-- Incrementable-lemma-11 x xs greatest ¬max ¬redundant (y ∷ ys , claim) | no ¬p = {!   !}
     -- where   ⟦evidence⟧>1+⟦x∷xs⟧ : toℕ evidence > suc (Digit-toℕ x o + toℕ xs * suc b)
     --         ⟦evidence⟧>1+⟦x∷xs⟧ =
     --             start
