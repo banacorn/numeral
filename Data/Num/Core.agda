@@ -333,3 +333,10 @@ Maximum {b} {d} {o} max = ∀ (xs : Num b d o) → toℕ max ≥ toℕ xs
 -- a system is bounded if there exists the greatest number
 Bounded : ∀ b d o → Set
 Bounded b d o = Σ[ xs ∈ Num b d o ] Maximum xs
+
+-- a system is Redundant if the number of digits is greater than the base
+Redundant : ∀ b d → Set
+Redundant b d = b < d
+
+Redundant? : ∀ b d → Dec (Redundant b d)
+Redundant? b d = suc b ≤? d

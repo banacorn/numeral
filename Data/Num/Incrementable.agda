@@ -103,36 +103,36 @@ Incrementable-lemma-5 : ∀ {b d o}
     → toℕ xs' ≡ suc (toℕ xs)
     → (redundant : suc b ≤ suc d)
     → (greatest : Greatest x)
-    → toℕ (digit+1-b {b} x redundant greatest ∷ xs') ≡ suc (toℕ (x ∷ xs))
-Incrementable-lemma-5 {b} {d} {o} x xs xs' p redundant greatest =
-    begin
-        toℕ (digit+1-b {b} x redundant greatest ∷ xs')
-    ≡⟨ refl ⟩
-        Digit-toℕ (digit+1-b {b} x redundant greatest) o + toℕ xs' * suc b
-    -- fuse Digit-toℕ with digit+1-b
-    ≡⟨ cong (λ w → w + toℕ xs' * suc b) (Digit-toℕ-digit+1-b x redundant greatest) ⟩
-        Fin.toℕ x ∸ b + o + toℕ xs' * suc b
-    -- p : toℕ xs' ≡ suc (toℕ xs)
-    ≡⟨ cong (λ w → (Fin.toℕ x ∸ b) + o + w * suc b) p ⟩
-    -- moving things around
-        Fin.toℕ x ∸ b + o + suc (b + toℕ xs * suc b)
-    ≡⟨ +-suc (Fin.toℕ x ∸ b + o) (b + toℕ xs * suc b) ⟩
-        suc (Fin.toℕ x ∸ b + o + (b + toℕ xs * suc b))
-    ≡⟨ sym (+-assoc (suc (Fin.toℕ x ∸ b + o)) b (toℕ xs * suc b)) ⟩
-        suc (Fin.toℕ x ∸ b + o + b + toℕ xs * suc b)
-    ≡⟨ cong (λ w → suc (w + toℕ xs * suc b)) ([a+b]+c≡[a+c]+b (Fin.toℕ x ∸ b) o b) ⟩
-        suc (Fin.toℕ x ∸ b + b + o + toℕ xs * suc b)
-    -- remove that annoying "∸ b + b"
-    ≡⟨ cong (λ w → suc (w + o + toℕ xs * suc b)) (m∸n+n $ ≤-pred $
-        start
-            suc b
-        ≤⟨ redundant ⟩
-            suc d
-        ≤⟨ reflexive (sym greatest) ⟩
-            suc (Fin.toℕ x)
-        □ ) ⟩
-        suc (Fin.toℕ x + o + toℕ xs * suc b)
-    ∎
+    → toℕ (digit+1-b x {!   !} {!   !} redundant greatest ∷ xs') ≡ suc (toℕ (x ∷ xs))
+Incrementable-lemma-5 {b} {d} {o} x xs xs' p redundant greatest = {!   !}
+    -- begin
+    --     toℕ (digit+1-b x ? ? redundant greatest ∷ xs')
+    -- ≡⟨ refl ⟩
+    --     Digit-toℕ (digit+1-b x ? ? redundant greatest) o + toℕ xs' * suc b
+    -- -- fuse Digit-toℕ with digit+1-b
+    -- ≡⟨ cong (λ w → w + toℕ xs' * suc b) (Digit-toℕ-digit+1-b x ? ? redundant greatest) ⟩
+    --     Fin.toℕ x ∸ b + o + toℕ xs' * suc b
+    -- -- p : toℕ xs' ≡ suc (toℕ xs)
+    -- ≡⟨ cong (λ w → (Fin.toℕ x ∸ b) + o + w * suc b) p ⟩
+    -- -- moving things around
+    --     Fin.toℕ x ∸ b + o + suc (b + toℕ xs * suc b)
+    -- ≡⟨ +-suc (Fin.toℕ x ∸ b + o) (b + toℕ xs * suc b) ⟩
+    --     suc (Fin.toℕ x ∸ b + o + (b + toℕ xs * suc b))
+    -- ≡⟨ sym (+-assoc (suc (Fin.toℕ x ∸ b + o)) b (toℕ xs * suc b)) ⟩
+    --     suc (Fin.toℕ x ∸ b + o + b + toℕ xs * suc b)
+    -- ≡⟨ cong (λ w → suc (w + toℕ xs * suc b)) ([a+b]+c≡[a+c]+b (Fin.toℕ x ∸ b) o b) ⟩
+    --     suc (Fin.toℕ x ∸ b + b + o + toℕ xs * suc b)
+    -- -- remove that annoying "∸ b + b"
+    -- ≡⟨ cong (λ w → suc (w + o + toℕ xs * suc b)) (m∸n+n $ ≤-pred $
+    --     start
+    --         suc b
+    --     ≤⟨ redundant ⟩
+    --         suc d
+    --     ≤⟨ reflexive (sym greatest) ⟩
+    --         suc (Fin.toℕ x)
+    --     □ ) ⟩
+    --     suc (Fin.toℕ x + o + toℕ xs * suc b)
+    -- ∎
 
 tail-mono-strict : ∀ {b d o} (x y : Digit d) (xs ys : Num b d o)
     → Greatest x
@@ -214,27 +214,139 @@ Incrementable-lemma-7 x xs greatest ¬p (y ∷ ys , claim) = {! ⟦xs⟧<⟦ys�
         ⟦xs⟧<⟦ys⟧ : toℕ xs < toℕ ys
         ⟦xs⟧<⟦ys⟧ = tail-mono-strict x y xs ys greatest ⟦x∷xs⟧<⟦y∷ys⟧
 
+Incrementable-lemma-8 : ∀ {b d o}
+    → (xs : Num b (suc d) o)
+    → (¬max : ¬ (Maximum xs))
+    → toℕ (next-number xs ¬max) ∸ toℕ xs > 0
+Incrementable-lemma-8 xs ¬max =
+    start
+        suc zero
+    ≤⟨ reflexive (sym (m+n∸n≡m 1 (toℕ xs))) ⟩
+        suc (toℕ xs) ∸ toℕ xs
+    ≤⟨ ∸-mono {suc (toℕ xs)} {toℕ (next-number xs ¬max)} {toℕ xs} {toℕ xs} (next-number-is-greater xs ¬max) ≤-refl ⟩
+        toℕ (next-number xs ¬max) ∸ toℕ xs
+    □
+
+Incrementable-lemma-9 : ∀ {b d o}
+    → (xs : Num (suc b) (suc d) o)
+    → (¬max : ¬ (Maximum xs))
+    → (toℕ (next-number xs ¬max) ∸ toℕ xs) * suc b > 0
+Incrementable-lemma-9 xs ¬max = (Incrementable-lemma-8 xs ¬max) *-mono (s≤s z≤n)
+
+Incrementable-lemma-10 : ∀ {b d o}
+    → (x : Digit (suc d))
+    → (xs : Num (suc b) (suc d) o)
+    → (greatest : Greatest x)
+    → (¬max : ¬ (Maximum xs))
+    → let base = (toℕ (next-number xs ¬max) ∸ toℕ xs) * suc b in
+      (redundant : Redundant base (suc d))
+    → toℕ (digit+1-b x base (Incrementable-lemma-9 xs ¬max) redundant greatest ∷ next-number xs ¬max) ≡ suc (toℕ (x ∷ xs))
+Incrementable-lemma-10 {b} {d} {o} x xs greatest ¬max redundant =
+    let
+        A = toℕ (next-number xs ¬max) * suc b
+        B = toℕ xs * suc b
+        P =
+            start
+                toℕ (next-number xs ¬max) * suc b ∸ toℕ xs * suc b
+            ≤⟨ reflexive (sym (*-distrib-∸ʳ (suc b) (toℕ (next-number xs ¬max)) (toℕ xs))) ⟩
+                (toℕ (next-number xs ¬max) ∸ toℕ xs) * suc b
+            ≤⟨ ≤-pred redundant ⟩
+                d
+            ≤⟨ m≤m+n d (suc o) ⟩
+                d + suc o
+            ≤⟨ reflexive (+-suc d o) ⟩
+                suc (d + o)
+            ≤⟨ s≤s $ reflexive (sym (toℕ-greatest x greatest)) ⟩
+                suc (Fin.toℕ x + o)
+            □
+    in
+    begin
+        toℕ (digit+1-b x ((toℕ (next-number xs ¬max) ∸ toℕ xs) * suc b) (Incrementable-lemma-9 xs ¬max) redundant greatest ∷ next-number xs ¬max)
+    ≡⟨ refl ⟩
+        Digit-toℕ (digit+1-b x ((toℕ (next-number xs ¬max) ∸ toℕ xs) * suc b) (Incrementable-lemma-9 xs ¬max) redundant greatest) o + A
+    ≡⟨ cong (λ w → w + A) (Digit-toℕ-digit+1-b x ((toℕ (next-number xs ¬max) ∸ toℕ xs) * suc b) (Incrementable-lemma-9 xs ¬max) redundant greatest) ⟩
+        suc (Digit-toℕ x o) ∸ (toℕ (next-number xs ¬max) ∸ toℕ xs) * suc b + A
+    ≡⟨ cong (λ w → suc (Digit-toℕ x o) ∸ w + A) (*-distrib-∸ʳ (suc b) (toℕ (next-number xs ¬max)) (toℕ xs)) ⟩
+        suc (Digit-toℕ x o) ∸ (A ∸ B) + A
+    ≡⟨ +-comm (suc (Digit-toℕ x o) ∸ (A ∸ B)) A ⟩
+        A + (suc (Digit-toℕ x o) ∸ (A ∸ B))
+    ≡⟨ cong (λ w → w + (suc (Digit-toℕ x o) ∸ (A ∸ B))) (sym (m+n∸m≡n {B} {A} (*n-mono (suc b) (≤-pred (≤-step (next-number-is-greater xs ¬max)))))) ⟩
+        B + (A ∸ B) + (suc (Digit-toℕ x o) ∸ (A ∸ B))
+    ≡⟨ +-assoc B (A ∸ B) (suc (Digit-toℕ x o) ∸ (A ∸ B)) ⟩
+        B + ((A ∸ B) + (suc (Digit-toℕ x o) ∸ (A ∸ B)))
+    ≡⟨ cong (λ w → B + w) (m+n∸m≡n {A ∸ B} P) ⟩
+        B + suc (Digit-toℕ x o)
+    ≡⟨ +-comm (toℕ xs * suc b) (suc (Fin.toℕ x + o)) ⟩
+        suc (Fin.toℕ x + o + toℕ xs * suc b)
+    ≡⟨ refl ⟩
+        suc (toℕ (x ∷ xs))
+    ∎
+
 
 Incrementable? : ∀ {b d o} → (xs : Num b d o) → Dec (Incrementable xs)
 -- having no digit at all
-Incrementable? xs  = {!   !}
--- Incrementable? {d = zero} xs = no (Incrementable-lemma-1 xs)
--- Incrementable? {d = suc zero} {zero} ∙ = no (Incrementable-lemma-2 ∙)
--- Incrementable? {d = suc (suc d)} {zero} ∙ = yes (fromℕ≤ {1} (s≤s (s≤s z≤n)) ∷ ∙ , refl)
--- Incrementable? {d = suc d} {suc zero} ∙ = yes ((z ∷ ∙) , refl)
--- Incrementable? {d = suc d} {suc (suc o)} ∙ = no Incrementable-lemma-3
--- Incrementable? {d = suc d} (x ∷ xs) with Greatest? x
+-- Incrementable? xs  = {!   !}
+Incrementable? {_} {zero}                     xs = no (Incrementable-lemma-1 xs)
+Incrementable? {_} {suc zero}    {zero}        ∙ = no (Incrementable-lemma-2 ∙)
+Incrementable? {_} {suc (suc d)} {zero}        ∙ = yes (fromℕ≤ {1} (s≤s (s≤s z≤n)) ∷ ∙ , refl)
+Incrementable? {_} {suc d}       {suc zero}    ∙ = yes ((z ∷ ∙) , refl)
+Incrementable? {_} {suc d}       {suc (suc o)} ∙ = no Incrementable-lemma-3
+Incrementable? {_} {suc d}       (x ∷ xs) with Greatest? x
+Incrementable? {zero} {suc d} (x ∷ xs) | yes greatest = no {!   !}
+Incrementable? {suc b} {suc d}       (x ∷ xs) | yes greatest with Maximum? xs
+Incrementable? {suc b} {suc d}       (x ∷ xs) | yes greatest | yes max = no {!   !}
+Incrementable? {suc b} {suc d}       (x ∷ xs) | yes greatest | no ¬max with Redundant? ((toℕ (next-number xs ¬max) ∸ toℕ xs) * suc b) (suc d)
+Incrementable? {suc b} {suc d} {o}   (x ∷ xs) | yes greatest | no ¬max | yes redundant
+    = yes
+        (
+            digit+1-b {suc d} x ((toℕ (next-number xs ¬max) ∸ toℕ xs) * suc b) (Incrementable-lemma-9 xs ¬max) redundant greatest
+            ∷
+            next-number xs ¬max
+        , Incrementable-lemma-10 x xs greatest ¬max redundant)
+Incrementable? {suc b} {suc d}       (x ∷ xs) | yes greatest | no ¬max | no ¬redundant = no {!   !}
+Incrementable? {b} {suc d}       (x ∷ xs) | no ¬greatest = yes {!   !}
+
+
+-- begin
+--     {!   !}
+-- ≡⟨ {!   !} ⟩
+--     {!   !}
+-- ≡⟨ {!   !} ⟩
+--     {!   !}
+-- ≡⟨ {!   !} ⟩
+--     {!   !}
+-- ≡⟨ {!   !} ⟩
+--     {!   !}
+-- ∎
+
+-- start
+--     {!   !}
+-- ≤⟨ {!   !} ⟩
+--     {!   !}
+-- ≤⟨ {!   !} ⟩
+--     {!   !}
+-- ≤⟨ {!   !} ⟩
+--     {!   !}
+-- □
+
+
+
+
 -- Incrementable? {zero} {suc d} (x ∷ xs) | yes greatest = no (Incrementable-lemma-4 x xs greatest)
 -- Incrementable? {suc b} {suc d} (x ∷ xs) | yes greatest with Incrementable? xs
--- Incrementable? {suc b} {suc d} (x ∷ xs) | yes greatest | yes incr with suc b ≤? suc d
--- Incrementable? {suc b} {suc d} (x ∷ xs) | yes greatest | yes (xs' , incr) | yes r
---     = yes (digit+1-b {b} x r greatest ∷ xs' , Incrementable-lemma-5 x xs xs' incr r greatest)
+-- Incrementable? {suc b} {suc d} (x ∷ xs) | yes greatest | yes incr with suc (suc b) ≤? suc d
+-- Incrementable? {suc b} {suc d} (x ∷ xs) | yes greatest | yes (xs' , incr) | yes redundant
+--     = yes ((digit+1-b x (suc b) (s≤s z≤n) redundant greatest  ∷ xs') , {!   !})
+--     -- = yes (digit+1-b x {! suc b  !} {!   !} {!   !} greatest ∷ xs' , Incrementable-lemma-5 x xs xs' incr ? greatest)
 -- Incrementable? {suc b} {suc d} (x ∷ xs) | yes greatest | yes incr | no ¬r
---     = no (Incrementable-lemma-6 x xs (≰⇒> ¬r) greatest)
--- Incrementable? {suc b} {suc d} {o} (x ∷ xs) | yes greatest | no ¬incr with suc b * o ≤? suc d
+--     = no {!   !}
+--     -- = no (Incrementable-lemma-6 x xs (≰⇒> ¬r) greatest)
+-- Incrementable? {suc b} {suc d} {o} (x ∷ xs) | yes greatest | no ¬incr with suc (suc b * o) ≤? suc d
 -- Incrementable? {suc b} {suc d} (x ∷ xs) | yes greatest | no ¬incr | yes p with Maximum? xs
--- Incrementable? {suc b} {suc d} (x ∷ xs) | yes greatest | no ¬incr | yes p | yes max = {!   !}
--- Incrementable? {suc b} {suc d} (x ∷ xs) | yes greatest | no ¬incr | yes p | no ¬max = {!   !}
+-- Incrementable? {suc b} {suc d} (x ∷ xs) | yes greatest | no ¬incr | yes p | yes max
+--     = no {!   !}
+-- Incrementable? {suc b} {suc d} (x ∷ xs) | yes greatest | no ¬incr | yes p | no ¬max
+--     = yes {!   !}
 --     -- = yes ({!   !} ∷ next xs {!   !} , {!   !})
 -- Incrementable? {suc b} {suc d} (x ∷ xs) | yes greatest | no ¬incr | no ¬p
 --     = no {!   !}
