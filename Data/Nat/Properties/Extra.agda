@@ -318,14 +318,34 @@ distrib-left-*-+ m n o =
         m * n + m * o
     ∎
 
-m∸n+n : ∀ {m n} → n ≤ m → m ∸ n + n ≡ m
-m∸n+n {m} {n} n≤m =
+m∸n+n≡m : ∀ {m n} → n ≤ m → m ∸ n + n ≡ m
+m∸n+n≡m {m} {n} n≤m =
     begin
         m ∸ n + n
     ≡⟨ +-comm (m ∸ n) n ⟩
         n + (m ∸ n)
     ≡⟨ m+n∸m≡n n≤m ⟩
         m
+    ∎
+
+
+m∸[o∸n]+o≡m+n : ∀ m n o
+    → n ≤ o
+    → o ∸ n ≤ m
+    → m ∸ ( o ∸ n ) + o ≡ m + n
+m∸[o∸n]+o≡m+n m n o n≤o o∸n≤m =
+    begin
+        m ∸ (o ∸ n) + o
+    ≡⟨ +-comm (m ∸ (o ∸ n)) o ⟩
+        o + (m ∸ (o ∸ n))
+    ≡⟨ cong (λ x → x + (m ∸ (o ∸ n))) (sym (m+n∸m≡n {n} {o} n≤o)) ⟩
+        (n + (o ∸ n)) + (m ∸ (o ∸ n))
+    ≡⟨ +-assoc n (o ∸ n) (m ∸ (o ∸ n)) ⟩
+        n + ((o ∸ n) + (m ∸ (o ∸ n)))
+    ≡⟨ cong (λ w → n + w) (m+n∸m≡n {o ∸ n} o∸n≤m) ⟩
+        n + m
+    ≡⟨ +-comm n m ⟩
+        m + n
     ∎
 
 -- open ⊔-⊓-0-commutativeSemiringWithoutOne

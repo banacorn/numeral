@@ -181,6 +181,16 @@ Redundant b d = b < d
 Redundant? : ∀ b d → Dec (Redundant b d)
 Redundant? b d = suc b ≤? d
 
+
+
+
+
+
+
+
+
+
+
 Digit-fromℕ : ∀ {d} → (n o : ℕ) → d + o ≥ n → Digit (suc d)
 Digit-fromℕ {d} n o upper-bound with n ∸ o ≤? d
 Digit-fromℕ {d} n o upper-bound | yes p = fromℕ≤ (s≤s p)
@@ -205,7 +215,7 @@ Digit-toℕ-fromℕ {d} {o} n ub lb | yes q =
         Fin.toℕ (fromℕ≤ (s≤s q)) + o
     ≡⟨ cong (λ x → x + o) (toℕ-fromℕ≤ (s≤s q)) ⟩
         n ∸ o + o
-    ≡⟨ m∸n+n lb ⟩
+    ≡⟨ m∸n+n≡m lb ⟩
         n
     ∎
 Digit-toℕ-fromℕ {d} {o} n ub lb | no ¬q = contradiction q ¬q
@@ -213,7 +223,7 @@ Digit-toℕ-fromℕ {d} {o} n ub lb | no ¬q = contradiction q ¬q
             q = +n-mono-inverse o $
                 start
                     n ∸ o + o
-                ≤⟨ reflexive (m∸n+n lb) ⟩
+                ≤⟨ reflexive (m∸n+n≡m lb) ⟩
                     n
                 ≤⟨ ub ⟩
                     d + o

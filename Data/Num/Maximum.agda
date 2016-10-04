@@ -146,19 +146,155 @@ next-number-Digit+Offset≥2-lemma-2 {b} {d} {o} x xs ¬max greatest d+o≥2 cla
                 □
 
 
-next-number-Digit+Offset≥2 : ∀ {b d o}
-    → (xs : Num (suc b) (suc d) o)
-    → ¬ (Maximum xs)
-    → (d+o≥2 : 2 ≤ suc (d + o))
-    → Num (suc b) (suc d) o
-next-number-Digit+Offset≥2 {_} {d} {o} ∙        ¬max p = Digit-fromℕ {d} (1 ⊔ o) o (next-number-Digit+Offset≥2-lemma-1 d o p) ∷ ∙
-next-number-Digit+Offset≥2 {_} {d} {o} (x ∷ xs) ¬max p with Greatest? x
-next-number-Digit+Offset≥2 {b} {d} {o} (x ∷ xs) ¬max p | yes greatest with Redundant? (suc b) (suc d)
-next-number-Digit+Offset≥2 {b} {d} {o} (x ∷ xs) ¬max p | yes greatest | yes redundant
-    = digit+1-b x (suc b) (s≤s z≤n) redundant greatest ∷ next-number-Digit+Offset≥2 xs (next-number-Digit+Offset≥2-lemma-2 x xs ¬max greatest p) p
-next-number-Digit+Offset≥2 (x ∷ xs) ¬max p | yes greatest | no ¬redundant
-    = z ∷ next-number-Digit+Offset≥2 xs (next-number-Digit+Offset≥2-lemma-2 x xs ¬max greatest p) p
-next-number-Digit+Offset≥2 {_} {d} {o} (x ∷ xs) ¬max p | no ¬greatest = digit+1 x ¬greatest ∷ xs
+mutual
+    next-number-Digit+Offset≥2 : ∀ {b d o}
+        → (xs : Num (suc b) (suc d) o)
+        → ¬ (Maximum xs)
+        → (d+o≥2 : 2 ≤ suc (d + o))
+        → Num (suc b) (suc d) o
+    next-number-Digit+Offset≥2 {_} {d} {o} ∙        ¬max p = Digit-fromℕ {d} (1 ⊔ o) o (next-number-Digit+Offset≥2-lemma-1 d o p) ∷ ∙
+    next-number-Digit+Offset≥2 {_} {d} {o} (x ∷ xs) ¬max p with Greatest? x
+    next-number-Digit+Offset≥2 {b} {d} {o} (x ∷ xs) ¬max p | yes greatest
+        with Redundant? ((toℕ (next-number-Digit+Offset≥2 xs (next-number-Digit+Offset≥2-lemma-2 x xs ¬max greatest p) p) ∸ toℕ xs) * suc b) (suc d)
+    next-number-Digit+Offset≥2 {b} {d} {o} (x ∷ xs) ¬max p | yes greatest | yes redundant =
+        let
+            ¬max-xs = next-number-Digit+Offset≥2-lemma-2 x xs ¬max greatest p
+            next-xs = next-number-Digit+Offset≥2 xs (next-number-Digit+Offset≥2-lemma-2 x xs ¬max greatest p) p
+            diff = (toℕ next-xs ∸ toℕ xs) * suc b
+            diff>0 = (start
+                    1
+                ≤⟨ s≤s (reflexive (sym (n∸n≡0 (toℕ xs)))) ⟩
+                    suc (toℕ xs ∸ toℕ xs)
+                ≤⟨ reflexive (sym (+-∸-assoc 1 {toℕ xs} ≤-refl)) ⟩
+                    suc (toℕ xs) ∸ toℕ xs
+                ≤⟨ ∸-mono {suc (toℕ xs)} {toℕ next-xs} {toℕ xs} (next-number-is-greater-Digit+Offset≥2 xs ¬max-xs p) ≤-refl ⟩
+                    toℕ next-xs ∸ toℕ xs
+                □) *-mono (s≤s z≤n)
+        in
+        digit+1-b x diff diff>0 redundant greatest ∷ next-xs
+    next-number-Digit+Offset≥2 {b} {d} {o} (x ∷ xs) ¬max p | yes greatest | no ¬redundant
+        = z ∷ next-number-Digit+Offset≥2 xs (next-number-Digit+Offset≥2-lemma-2 x xs ¬max greatest p) p
+    next-number-Digit+Offset≥2 {_} {d} {o} (x ∷ xs) ¬max p | no ¬greatest = digit+1 x ¬greatest ∷ xs
+
+
+    next-number-is-greater-Digit+Offset≥2 : ∀ {b d o}
+        → (xs : Num (suc b) (suc d) o)
+        → (¬max : ¬ (Maximum xs))
+        → (d+o≥2 : 2 ≤ suc (d + o))
+        → toℕ (next-number-Digit+Offset≥2 xs ¬max d+o≥2) > toℕ xs
+    next-number-is-greater-Digit+Offset≥2 {b} {d} {o}     ∙ ¬max p =
+        start
+            suc zero
+        ≤⟨ m≤m⊔n (suc zero) o ⟩
+            suc zero ⊔ o
+        ≤⟨ reflexive (sym (+-right-identity (suc zero ⊔ o))) ⟩
+            suc zero ⊔ o + zero
+        ≤⟨ +n-mono 0 (reflexive (sym (Digit-toℕ-fromℕ {d} (suc zero ⊔ o) (next-number-Digit+Offset≥2-lemma-1 d o p) $
+            start
+                o
+            ≤⟨ m≤m⊔n o (suc zero) ⟩
+                o ⊔ suc zero
+            ≤⟨ reflexive (⊔-comm o (suc zero)) ⟩
+                suc zero ⊔ o
+            □)))
+        ⟩
+            Digit-toℕ (Digit-fromℕ {d} (1 ⊔ o) o (next-number-Digit+Offset≥2-lemma-1 d o p)) o + zero
+        □
+    next-number-is-greater-Digit+Offset≥2 {b} {d} {o} (x ∷ xs) ¬max p with Greatest? x
+    next-number-is-greater-Digit+Offset≥2 {b} {d} {o} (x ∷ xs) ¬max p | yes greatest
+        with Redundant? ((toℕ (next-number-Digit+Offset≥2 xs (next-number-Digit+Offset≥2-lemma-2 x xs ¬max greatest p) p) ∸ toℕ xs) * suc b) (suc d)
+    next-number-is-greater-Digit+Offset≥2 {b} {d} {o} (x ∷ xs) ¬max p | yes greatest | yes redundant =
+        let
+            ¬max-xs : ¬ (Maximum xs)
+            ¬max-xs = next-number-Digit+Offset≥2-lemma-2 x xs ¬max greatest p
+
+            next-xs : Num (suc b) (suc d) o
+            next-xs = next-number-Digit+Offset≥2 xs (next-number-Digit+Offset≥2-lemma-2 x xs ¬max greatest p) p
+
+            gap : ℕ
+            gap = (toℕ next-xs ∸ toℕ xs) * suc b
+
+            gap>0 : gap > 0
+            gap>0 = (start
+                    1
+                ≤⟨ s≤s (reflexive (sym (n∸n≡0 (toℕ xs)))) ⟩
+                    suc (toℕ xs ∸ toℕ xs)
+                ≤⟨ reflexive (sym (+-∸-assoc 1 {toℕ xs} ≤-refl)) ⟩
+                    suc (toℕ xs) ∸ toℕ xs
+                ≤⟨ ∸-mono {suc (toℕ xs)} {toℕ next-xs} {toℕ xs} (next-number-is-greater-Digit+Offset≥2 xs ¬max-xs p) ≤-refl ⟩
+                    toℕ next-xs ∸ toℕ xs
+                □) *-mono (s≤s z≤n)
+
+            next-xs>xs : toℕ next-xs > toℕ xs
+            next-xs>xs = next-number-is-greater-Digit+Offset≥2 xs ¬max-xs p
+
+            next-xs-upper-bound : toℕ next-xs * suc b ∸ toℕ xs * suc b ≤ suc (Digit-toℕ x o)
+            next-xs-upper-bound =
+                start
+                    toℕ next-xs * suc b ∸ toℕ xs * suc b
+                ≤⟨ reflexive (sym (*-distrib-∸ʳ (suc b) (toℕ next-xs) (toℕ xs))) ⟩
+                    (toℕ next-xs ∸ toℕ xs) * suc b
+                ≤⟨ ≤-pred redundant ⟩
+                    d
+                ≤⟨ m≤m+n d (suc o) ⟩
+                    d + suc o
+                ≤⟨ reflexive (+-suc d o) ⟩
+                    suc (d + o)
+                ≤⟨ s≤s $ reflexive (sym (toℕ-greatest x greatest)) ⟩
+                    suc (Fin.toℕ x + o)
+                □
+            next-xs-lower-bound : toℕ xs * suc b ≤ toℕ next-xs * suc b
+            next-xs-lower-bound = *n-mono (suc b) (≤-pred (≤-step (next-number-is-greater-Digit+Offset≥2 xs ¬max-xs p)))
+
+        in reflexive $ sym $ begin
+                toℕ (digit+1-b x gap gap>0 redundant greatest ∷ next-xs)
+            ≡⟨ refl ⟩
+                Digit-toℕ (digit+1-b x gap gap>0 redundant greatest) o + toℕ next-xs * suc b
+            ≡⟨ cong (λ w → w + toℕ next-xs * suc b) (Digit-toℕ-digit+1-b x gap gap>0 redundant greatest) ⟩
+                suc (Digit-toℕ x o) ∸ (toℕ next-xs ∸ toℕ xs) * suc b + toℕ next-xs * suc b
+            ≡⟨ cong (λ w → suc (Digit-toℕ x o) ∸ w + toℕ next-xs * suc b) (*-distrib-∸ʳ (suc b) (toℕ next-xs) (toℕ xs)) ⟩
+                suc (Digit-toℕ x o) ∸ (toℕ next-xs * suc b ∸ toℕ xs * suc b) + toℕ next-xs * suc b
+            ≡⟨ m∸[o∸n]+o≡m+n (suc (Digit-toℕ x o)) (toℕ xs * suc b) (toℕ next-xs * suc b) next-xs-lower-bound next-xs-upper-bound ⟩
+                suc (toℕ (x ∷ xs))
+            ∎
+
+    next-number-is-greater-Digit+Offset≥2 {b} {d} {o} (x ∷ xs) ¬max p | yes greatest | no ¬redundant =
+        let
+            ¬max-xs : ¬ (Maximum xs)
+            ¬max-xs = next-number-Digit+Offset≥2-lemma-2 x xs ¬max greatest p
+
+            next-xs : Num (suc b) (suc d) o
+            next-xs = next-number-Digit+Offset≥2 xs (next-number-Digit+Offset≥2-lemma-2 x xs ¬max greatest p) p
+
+            next-xs>xs : toℕ next-xs > toℕ xs
+            next-xs>xs = next-number-is-greater-Digit+Offset≥2 xs ¬max-xs p
+
+            prop : d < ((toℕ next-xs ∸ toℕ xs) * suc b)
+            prop = ≤-pred $ ≰⇒> ¬redundant
+        in
+        start
+            suc (toℕ (x ∷ xs))
+        ≤⟨ ≤-refl ⟩
+            suc (Digit-toℕ x o) + toℕ xs * suc b
+        ≤⟨ reflexive (cong (λ w → suc w + toℕ xs * suc b) (toℕ-greatest x greatest)) ⟩
+            suc d + o + toℕ xs * suc b
+        ≤⟨ reflexive (+-assoc (suc d) o (toℕ xs * suc b)) ⟩
+            suc d + (o + toℕ xs * suc b)
+        ≤⟨ reflexive (a+[b+c]≡b+[a+c] (suc d) o (toℕ xs * suc b)) ⟩
+            o + (suc d + toℕ xs * suc b)
+        ≤⟨ ≤-refl ⟩
+            o + (suc d + toℕ xs * suc b)
+        ≤⟨ n+-mono o (+n-mono (toℕ xs * suc b) prop) ⟩
+            o + ((toℕ next-xs ∸ toℕ xs) * suc b + toℕ xs * suc b)
+        ≤⟨ reflexive (cong (λ w → o + w) (sym (distribʳ-*-+ (suc b) (toℕ next-xs ∸ toℕ xs) (toℕ xs)))) ⟩
+            o + (toℕ next-xs ∸ toℕ xs + toℕ xs) * suc b
+        ≤⟨ reflexive (cong (λ w → o + w * suc b) (m∸n+n≡m (≤-pred $ ≤-step next-xs>xs))) ⟩
+            o + toℕ next-xs * suc b
+        ≤⟨ ≤-refl ⟩
+            toℕ (z ∷ next-xs)
+        □
+    next-number-is-greater-Digit+Offset≥2 {b} {d} {o} (x ∷ xs) ¬max p | no ¬greatest
+        = +n-mono (toℕ xs * suc b) (reflexive (sym (Digit-toℕ-digit+1 x ¬greatest)))
 
 
 next-number : ∀ {b d o}
@@ -260,7 +396,7 @@ next-number xs ¬max | IsntBounded (Digit+Offset≥2 b d o d+o≥2) = next-numbe
 --             □
 --         temp = begin
 --                 suc (Digit-toℕ x o) + toℕ xs * suc b
---             ≡⟨ cong (λ w → suc w + toℕ xs * suc b) (sym (m∸n+n {_} {b} b≤⟦x⟧)) ⟩
+--             ≡⟨ cong (λ w → suc w + toℕ xs * suc b) (sym (m∸n+n≡m {_} {b} b≤⟦x⟧)) ⟩
 --                 suc (Fin.toℕ x + o ∸ b + b) + toℕ xs * suc b
 --             ≡⟨ cong (λ w → w + toℕ xs * suc b) (sym (+-suc (Fin.toℕ x + o ∸ b) b)) ⟩
 --                 Fin.toℕ x + o ∸ b + suc b + toℕ xs * suc b
