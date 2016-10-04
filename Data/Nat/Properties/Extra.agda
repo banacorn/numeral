@@ -81,6 +81,12 @@ isSemiringWithoutOne = IsCommutativeSemiringWithoutOne.isSemiringWithoutOne ⊔-
 ≤∧≢⇒< {suc m} {zero}  ()      q
 ≤∧≢⇒< {suc m} {suc n} (s≤s p) q = s≤s (≤∧≢⇒< p (q ∘ cong suc))
 
+≥∧≢⇒> : ∀ {m n} → m ≥ n → m ≢ n → m > n
+≥∧≢⇒> {zero}  {zero}  p       q = contradiction refl q
+≥∧≢⇒> {zero}  {suc n} ()      q
+≥∧≢⇒> {suc m} {zero}  p       q = s≤s z≤n
+≥∧≢⇒> {suc m} {suc n} (s≤s p) q = s≤s (≥∧≢⇒> p (q ∘ cong suc))
+
 m≤n+m : ∀ m n → m ≤ n + m
 m≤n+m m n =
     start

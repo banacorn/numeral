@@ -174,20 +174,20 @@ Maximum {b} {d} {o} max = ∀ (xs : Num b d o) → toℕ max ≥ toℕ xs
 Bounded : ∀ b d o → Set
 Bounded b d o = Σ[ xs ∈ Num b d o ] Maximum xs
 
--- a system is Redundant if the number of digits is greater than the base
-Redundant : ∀ b d → Set
-Redundant b d = b < d
+Redundant : ∀ b d o → {!   !}
+Redundant = {!   !}
 
-Redundant? : ∀ b d → Dec (Redundant b d)
-Redundant? b d = suc b ≤? d
+data Mapping : ℕ → ℕ → ℕ → Set where
+    redundant : ∀ {b d o} → o * b < d → Mapping b d o
+    exact     : ∀ {b d o} → o * b ≡ d → Mapping b d o
+    sparse    : ∀ {b d o} → o * b > d → Mapping b d o
 
-
-
-
-
-
-
-
+mapping? : ∀ b d o → Mapping b d o
+mapping? b d o with suc (o * b) ≤? d
+mapping? b d o | yes r = Redundant r
+mapping? b d o | no ¬r with o * b ≟ d
+mapping? b d o | no ¬r | yes eq = exact eq
+mapping? b d o | no ¬r | no ¬eq = sparse (≥∧≢⇒> (≤-pred (≰⇒> ¬r)) ¬eq)
 
 
 
@@ -230,6 +230,15 @@ Digit-toℕ-fromℕ {d} {o} n ub lb | no ¬q = contradiction q ¬q
                 □
 
 
+digit+1 : ∀ {d} → (x : Digit d) → (¬p : suc (Fin.toℕ x) ≢ d) → Fin d
+digit+1 x ¬p = fromℕ≤ {suc (Fin.toℕ x)} (≤∧≢⇒< (bounded x) ¬p)
+
+Digit-toℕ-digit+1 : ∀ {d o}
+    → (x : Digit d)
+    → (¬p : suc (Fin.toℕ x) ≢ d)
+    → Digit-toℕ (digit+1 x ¬p) o ≡ suc (Digit-toℕ x o)
+Digit-toℕ-digit+1 {d} {o} x ¬p = cong (λ w → w + o) (toℕ-fromℕ≤ (≤∧≢⇒< (bounded x) ¬p))
+
 -- start
 --     {!   !}
 -- ≤⟨ {!   !} ⟩
@@ -251,93 +260,107 @@ Digit-toℕ-fromℕ {d} {o} n ub lb | no ¬q = contradiction q ¬q
 -- ≡⟨ {!   !} ⟩
 --     {!   !}
 -- ∎
-Digit-toℕ-fromℕ≤ : ∀ {d o n} → (p : n < d) → Digit-toℕ (fromℕ≤ p) o ≡ n + o
-Digit-toℕ-fromℕ≤ {d} {o} {n} p =
-    begin
-        Fin.toℕ (fromℕ≤ p) + o
-    ≡⟨ cong (λ w → w + o) (toℕ-fromℕ≤ p) ⟩
-        n + o
-    ∎
 
-digit+1-b-lemma : ∀ {d}
-    → (x : Digit d)
-    → (b : ℕ)
-    → (b>0 : b > 0)
-    → (redundant : Redundant b d)
-    → Greatest x
-    → suc (Fin.toℕ x) ∸ b < d
-digit+1-b-lemma {_} x zero    ()  redundant greatest
-digit+1-b-lemma {d} x (suc b) b>0 redundant greatest =
-    start
-        suc (suc (Fin.toℕ x) ∸ suc b)
-    ≤⟨ s≤s (∸-mono {suc (Fin.toℕ x)} {d} {suc b} (bounded x) ≤-refl) ⟩
-        suc (d ∸ suc b)
-    ≤⟨ reflexive (sym (+-∸-assoc 1 {d} {suc b} (≤-pred (≤-step redundant)))) ⟩
-        suc d ∸ suc b
-    ≤⟨ reflexive ([i+j]∸[i+k]≡j∸k 1 d b) ⟩
-        d ∸ b
-    ≤⟨ ∸-mono {d} {d} {b} ≤-refl z≤n ⟩
-        d
-    □
+-- Digit-toℕ-fromℕ≤ : ∀ {d o n} → (p : n < d) → Digit-toℕ (fromℕ≤ p) o ≡ n + o
+-- Digit-toℕ-fromℕ≤ {d} {o} {n} p =
+--     begin
+--         Fin.toℕ (fromℕ≤ p) + o
+--     ≡⟨ cong (λ w → w + o) (toℕ-fromℕ≤ p) ⟩
+--         n + o
+--     ∎
+--
+-- digit+1-b-lemma : ∀ {d}
+--     → (x : Digit d)
+--     → (b : ℕ)
+--     → (b>0 : b > 0)
+--     → (redundant : Redundant b d)
+--     → Greatest x
+--     → suc (Fin.toℕ x) ∸ b < d
+-- digit+1-b-lemma {_} x zero    ()  redundant greatest
+-- digit+1-b-lemma {d} x (suc b) b>0 redundant greatest =
+--     start
+--         suc (suc (Fin.toℕ x) ∸ suc b)
+--     ≤⟨ s≤s (∸-mono {suc (Fin.toℕ x)} {d} {suc b} (bounded x) ≤-refl) ⟩
+--         suc (d ∸ suc b)
+--     ≤⟨ reflexive (sym (+-∸-assoc 1 {d} {suc b} (≤-pred (≤-step redundant)))) ⟩
+--         suc d ∸ suc b
+--     ≤⟨ reflexive ([i+j]∸[i+k]≡j∸k 1 d b) ⟩
+--         d ∸ b
+--     ≤⟨ ∸-mono {d} {d} {b} ≤-refl z≤n ⟩
+--         d
+--     □
+--
+-- digit+1-b : ∀ {d}
+--     → (x : Digit d)
+--     → (b : ℕ)
+--     → (b>0 : b > 0)
+--     → (redundant : suc b ≤ d)
+--     → Greatest x
+--     → Digit d
+-- digit+1-b {d} x b b>0 redundant greatest
+--     = fromℕ≤ {suc (Fin.toℕ x) ∸ b} (digit+1-b-lemma x b b>0 redundant greatest) -- (digit+1-b-lemma x redundant greatest)
 
-digit+1 : ∀ {d} → (x : Digit d) → (¬p : suc (Fin.toℕ x) ≢ d) → Fin d
-digit+1 x ¬p = fromℕ≤ {suc (Fin.toℕ x)} (≤∧≢⇒< (bounded x) ¬p)
+-- Digit-toℕ-digit+1-b : ∀ {d o}
+--     → (x : Digit d)
+--     → (b : ℕ)
+--     → (b>0 : b > 0)
+--     → (redundant : suc b ≤ d)
+--     → (greatest : Greatest x)
+--     → Digit-toℕ {d} (digit+1-b {d} x b b>0 redundant greatest) o ≡ suc (Digit-toℕ x o) ∸ b
+-- Digit-toℕ-digit+1-b {d} {o} x b b>0 redundant greatest =
+--     begin
+--         Fin.toℕ (fromℕ≤ (digit+1-b-lemma x b b>0 redundant greatest)) + o
+--     ≡⟨ cong (λ w → w + o) (toℕ-fromℕ≤ (digit+1-b-lemma x b b>0 redundant greatest)) ⟩
+--         (suc (Fin.toℕ x) ∸ b) + o
+--     ≡⟨ +-comm (suc (Fin.toℕ x) ∸ b) o ⟩
+--         o + (suc (Fin.toℕ x) ∸ b)
+--     ≡⟨ sym (+-∸-assoc o {suc (Fin.toℕ x)} {b} $
+--         start
+--             b
+--         ≤⟨ m≤n+m b (suc zero) ⟩
+--             suc b
+--         ≤⟨ redundant ⟩
+--             d
+--         ≤⟨ reflexive (sym greatest) ⟩
+--             suc (Fin.toℕ x)
+--         □)
+--     ⟩
+--         (o + suc (Fin.toℕ x)) ∸ b
+--     ≡⟨ cong (λ w → w ∸ b) (+-comm o (suc (Fin.toℕ x))) ⟩
+--         suc (Fin.toℕ x) + o ∸ b
+--     ∎
+--
+--
+-- tail-mono-strict : ∀ {b d o} (x y : Digit d) (xs ys : Num b d o)
+--     → Greatest x
+--     → toℕ (x ∷ xs) < toℕ (y ∷ ys)
+--     → toℕ xs < toℕ ys
+-- tail-mono-strict {b} {_} {o} x y xs ys greatest p
+--     = *n-mono-strict-inverse b ⟦∷xs⟧<⟦∷ys⟧
+--     where
+--         ⟦x⟧≥⟦y⟧ : Digit-toℕ x o ≥ Digit-toℕ y o
+--         ⟦x⟧≥⟦y⟧ = greatest-of-all o x y greatest
+--         ⟦∷xs⟧<⟦∷ys⟧ : toℕ xs * b < toℕ ys * b
+--         ⟦∷xs⟧<⟦∷ys⟧ = +-mono-contra ⟦x⟧≥⟦y⟧ p
 
-Digit-toℕ-digit+1 : ∀ {d o}
-    → (x : Digit d)
-    → (¬p : suc (Fin.toℕ x) ≢ d)
-    → Digit-toℕ (digit+1 x ¬p) o ≡ suc (Digit-toℕ x o)
-Digit-toℕ-digit+1 {d} {o} x ¬p = cong (λ w → w + o) (toℕ-fromℕ≤ (≤∧≢⇒< (bounded x) ¬p))
+-- start
+--     {!   !}
+-- ≤⟨ {!   !} ⟩
+--     {!   !}
+-- ≤⟨ {!   !} ⟩
+--     {!   !}
+-- ≤⟨ {!   !} ⟩
+--     {!   !}
+-- □
 
-digit+1-b : ∀ {d}
-    → (x : Digit d)
-    → (b : ℕ)
-    → (b>0 : b > 0)
-    → (redundant : suc b ≤ d)
-    → Greatest x
-    → Digit d
-digit+1-b {d} x b b>0 redundant greatest
-    = fromℕ≤ {suc (Fin.toℕ x) ∸ b} (digit+1-b-lemma x b b>0 redundant greatest) -- (digit+1-b-lemma x redundant greatest)
-
-Digit-toℕ-digit+1-b : ∀ {d o}
-    → (x : Digit d)
-    → (b : ℕ)
-    → (b>0 : b > 0)
-    → (redundant : suc b ≤ d)
-    → (greatest : Greatest x)
-    → Digit-toℕ {d} (digit+1-b {d} x b b>0 redundant greatest) o ≡ suc (Digit-toℕ x o) ∸ b
-Digit-toℕ-digit+1-b {d} {o} x b b>0 redundant greatest =
-    begin
-        Fin.toℕ (fromℕ≤ (digit+1-b-lemma x b b>0 redundant greatest)) + o
-    ≡⟨ cong (λ w → w + o) (toℕ-fromℕ≤ (digit+1-b-lemma x b b>0 redundant greatest)) ⟩
-        (suc (Fin.toℕ x) ∸ b) + o
-    ≡⟨ +-comm (suc (Fin.toℕ x) ∸ b) o ⟩
-        o + (suc (Fin.toℕ x) ∸ b)
-    ≡⟨ sym (+-∸-assoc o {suc (Fin.toℕ x)} {b} $
-        start
-            b
-        ≤⟨ m≤n+m b (suc zero) ⟩
-            suc b
-        ≤⟨ redundant ⟩
-            d
-        ≤⟨ reflexive (sym greatest) ⟩
-            suc (Fin.toℕ x)
-        □)
-    ⟩
-        (o + suc (Fin.toℕ x)) ∸ b
-    ≡⟨ cong (λ w → w ∸ b) (+-comm o (suc (Fin.toℕ x))) ⟩
-        suc (Fin.toℕ x) + o ∸ b
-    ∎
-
-
-tail-mono-strict : ∀ {b d o} (x y : Digit d) (xs ys : Num b d o)
-    → Greatest x
-    → toℕ (x ∷ xs) < toℕ (y ∷ ys)
-    → toℕ xs < toℕ ys
-tail-mono-strict {b} {_} {o} x y xs ys greatest p
-    = *n-mono-strict-inverse b ⟦∷xs⟧<⟦∷ys⟧
-    where
-        ⟦x⟧≥⟦y⟧ : Digit-toℕ x o ≥ Digit-toℕ y o
-        ⟦x⟧≥⟦y⟧ = greatest-of-all o x y greatest
-        ⟦∷xs⟧<⟦∷ys⟧ : toℕ xs * b < toℕ ys * b
-        ⟦∷xs⟧<⟦∷ys⟧ = +-mono-contra ⟦x⟧≥⟦y⟧ p
+-- begin
+--     {!   !}
+-- ≡⟨ {!   !} ⟩
+--     {!   !}
+-- ≡⟨ {!   !} ⟩
+--     {!   !}
+-- ≡⟨ {!   !} ⟩
+--     {!   !}
+-- ≡⟨ {!   !} ⟩
+--     {!   !}
+-- ∎

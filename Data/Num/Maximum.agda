@@ -29,13 +29,6 @@ open ≤-Reasoning renaming (begin_ to start_; _∎ to _□; _≡⟨_⟩_ to _�
 open DecTotalOrder decTotalOrder using (reflexive) renaming (refl to ≤-refl)
 
 ------------------------------------------------------------------------
---
-
--- data MaximumCond : ∀ {b} {d} {o} → Num b d o → Set where
---     ≡Bound : ∀ {b d o} (xs : Num b d o) → MaximumCond xs
---
--- data NonMaximumCond : ∀ {b} {d} {o} → Num b d o → Set where
---
 
 Maximum?-lemma-1 : ∀ {b d o}
     → (xs : Num b d o)
