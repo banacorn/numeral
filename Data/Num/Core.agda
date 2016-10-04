@@ -328,3 +328,16 @@ Digit-toℕ-digit+1-b {d} {o} x b b>0 redundant greatest =
     ≡⟨ cong (λ w → w ∸ b) (+-comm o (suc (Fin.toℕ x))) ⟩
         suc (Fin.toℕ x) + o ∸ b
     ∎
+
+
+tail-mono-strict : ∀ {b d o} (x y : Digit d) (xs ys : Num b d o)
+    → Greatest x
+    → toℕ (x ∷ xs) < toℕ (y ∷ ys)
+    → toℕ xs < toℕ ys
+tail-mono-strict {b} {_} {o} x y xs ys greatest p
+    = *n-mono-strict-inverse b ⟦∷xs⟧<⟦∷ys⟧
+    where
+        ⟦x⟧≥⟦y⟧ : Digit-toℕ x o ≥ Digit-toℕ y o
+        ⟦x⟧≥⟦y⟧ = greatest-of-all o x y greatest
+        ⟦∷xs⟧<⟦∷ys⟧ : toℕ xs * b < toℕ ys * b
+        ⟦∷xs⟧<⟦∷ys⟧ = +-mono-contra ⟦x⟧≥⟦y⟧ p
