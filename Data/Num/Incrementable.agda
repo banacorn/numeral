@@ -420,7 +420,7 @@ Incrementable? {suc b} {suc d} {o}      (x ∷ xs) | yes greatest | no ¬max wit
 Incrementable? {suc b} {suc d} {o} (x ∷ xs) | yes greatest | no ¬max | yes sparse
     = no {!   !}
 Incrementable? {suc b} {suc d} {o} (x ∷ xs) | yes greatest | no ¬max | no ¬sparse
-    = yes (digit+1-n x ? (gap xs ¬max) (gap>0 xs ¬max) ∷ next-number xs ¬max , {!   !})
+    = yes (digit+1-n x {!   !} (gap xs ¬max) (gap>0 xs ¬max) ∷ next-number xs ¬max , {!   !})
 
 -- Incrementable? {suc b} {suc d}       (x ∷ xs) | yes greatest | no ¬max with Redundant? ((toℕ (next-number xs ¬max) ∸ toℕ xs) * suc b) (suc d)
 -- Incrementable? {suc b} {suc d} {o}   (x ∷ xs) | yes greatest | no ¬max | yes redundant

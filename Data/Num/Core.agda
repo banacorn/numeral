@@ -26,17 +26,6 @@ open ≤-Reasoning renaming (begin_ to start_; _∎ to _□; _≡⟨_⟩_ to _�
 open DecTotalOrder decTotalOrder using (reflexive) renaming (refl to ≤-refl)
 
 
--- For a system to be surjective with respect to ℕ:
--- * has zero
---     * base = 1 : {0, 1 ...}
---     * base = 2 : {0, 1 ...}
---     * base = 3 : {0, 1, 2 ...}
--- * zeroless
---     * base = 1 : {   1 ...}
---     * base = 2 : {   1, 2...}
---     * base = 3 : {   1, 2, 3...}
-
-
 ------------------------------------------------------------------------
 -- Predicates on the Indices
 ------------------------------------------------------------------------
@@ -48,31 +37,30 @@ open DecTotalOrder decTotalOrder using (reflexive) renaming (refl to ≤-refl)
 --                  |   |   Redundant
 --                  |   |
 --                  |  -|
---  o * b :         ∙
+--     b ≡ d        ∙
 --              |-  |
 --     Sparse   |   |
 --              |   |
 --              |   |
 
 
-Redundant : ∀ b d o → Set
-Redundant b d o = o * b < d
+Redundant : ∀ b d → Set
+Redundant b d = b < d
 
-Redundant? : ∀ b d o → Dec (Redundant b d o)
-Redundant? b d o = suc (o * b) ≤? d
+Redundant? : ∀ b d → Dec (Redundant b d)
+Redundant? b d = suc b ≤? d
 
-Sparse : ∀ b d o → Set
-Sparse b d o = o * b > d
+Sparse : ∀ b d → Set
+Sparse b d = b > d
 
-Sparse? : ∀ b d o → Dec (Sparse b d o)
-Sparse? b d o = suc d ≤? o * b
+Sparse? : ∀ b d → Dec (Sparse b d)
+Sparse? b d = suc d ≤? b
 
-Redundant⇒¬Sparse : ∀ {b d o} → Redundant b d o → ¬ (Sparse b d o)
-Redundant⇒¬Sparse {b} {d} {o} redundant claim = contradiction claim (>⇒≰ (≤-step redundant))
+Redundant⇒¬Sparse : ∀ {b d} → Redundant b d → ¬ (Sparse b d)
+Redundant⇒¬Sparse {b} {d} redundant claim = contradiction claim (>⇒≰ (≤-step redundant))
 
-Sparse⇒¬Redundant : ∀ {b d o} → Sparse b d o → ¬ (Redundant b d o)
-Sparse⇒¬Redundant {b} {d} {o} sparse claim = contradiction claim (>⇒≰ (≤-step sparse))
-
+Sparse⇒¬Redundant : ∀ {b d } → Sparse b d → ¬ (Redundant b d)
+Sparse⇒¬Redundant {b} {d} sparse claim = contradiction claim (>⇒≰ (≤-step sparse))
 
 
 --------------------------------------------------------------------------------
@@ -251,30 +239,36 @@ data Num : ℕ → ℕ → ℕ → Set where
     _∷_ : ∀ {b d o} → Digit d → Num b d o → Num b d o
 
 
+Null : ∀ {b d o} → Num b d o → Set
+Null ∙        = ⊤
+Null (x ∷ xs) = ⊥
+
+Null? : ∀ {b d o} → (xs : Num b d o) → Dec (Null xs)
+Null? ∙        = yes tt
+Null? (x ∷ xs) = no (λ z₁ → z₁)
 
 ------------------------------------------------------------------------
 -- Converting from Num to ℕ
 ------------------------------------------------------------------------
 
+toℕ : ∀ {b d o} → (xs : Num b d o) → {non-Null : False (Null? xs)} → ℕ
+toℕ             ∙             {()}
+toℕ {_} {_} {o} (x ∷ ∙)       = Digit-toℕ x o
+toℕ {b} {_} {o} (x ∷ x' ∷ xs) = Digit-toℕ x o + toℕ (x' ∷ xs) * b
 
-
-toℕ : ∀ {b d o} → Num b d o → ℕ
-toℕ             ∙        = 0
-toℕ {b} {_} {o} (x ∷ xs) = Digit-toℕ x o + toℕ xs * b
-
-toℕ-Base≡0 : ∀ {d o}
-    → (x : Digit d)
-    → (xs : Num 0 d o)
-    → toℕ (x ∷ xs) ≡ Digit-toℕ x o
-toℕ-Base≡0 {d} {o} x xs =
-    begin
-        Digit-toℕ x o + toℕ xs * zero
-    ≡⟨ cong (λ w → Digit-toℕ x o + w) (*-right-zero (toℕ xs)) ⟩
-        Digit-toℕ x o + 0
-    ≡⟨ +-right-identity (Digit-toℕ x o) ⟩
-        Digit-toℕ x o
-    ∎
-
+-- toℕ-Base≡0 : ∀ {d o}
+--     → (x : Digit d)
+--     → (xs : Num 0 d o)
+--     → toℕ (x ∷ xs) ≡ Digit-toℕ x o
+-- toℕ-Base≡0 {d} {o} x xs =
+--     begin
+--         Digit-toℕ x o + toℕ xs * zero
+--     ≡⟨ cong (λ w → Digit-toℕ x o + w) (*-right-zero (toℕ xs)) ⟩
+--         Digit-toℕ x o + 0
+--     ≡⟨ +-right-identity (Digit-toℕ x o) ⟩
+--         Digit-toℕ x o
+--     ∎
+--
 ∷ns-mono-strict : ∀ {b d o} (x y : Fin d) (xs ys : Num b d o)
     → toℕ xs ≡ toℕ ys
     → Digit-toℕ x o < Digit-toℕ y o
@@ -286,77 +280,77 @@ toℕ-Base≡0 {d} {o} x xs =
     ≤⟨ +n-mono (toℕ ys * b) ⟦x⟧<⟦y⟧ ⟩
         Digit-toℕ y o + toℕ ys * b
     □
-
-tail-mono-strict : ∀ {b d o} (x y : Digit d) (xs ys : Num b d o)
-    → Greatest x
-    → toℕ (x ∷ xs) < toℕ (y ∷ ys)
-    → toℕ xs < toℕ ys
-tail-mono-strict {b} {_} {o} x y xs ys greatest p
-    = *n-mono-strict-inverse b ⟦∷xs⟧<⟦∷ys⟧
-    where
-        ⟦x⟧≥⟦y⟧ : Digit-toℕ x o ≥ Digit-toℕ y o
-        ⟦x⟧≥⟦y⟧ = greatest-of-all o x y greatest
-        ⟦∷xs⟧<⟦∷ys⟧ : toℕ xs * b < toℕ ys * b
-        ⟦∷xs⟧<⟦∷ys⟧ = +-mono-contra ⟦x⟧≥⟦y⟧ p
-
-
-------------------------------------------------------------------------
--- Relations
-------------------------------------------------------------------------
-
--- _≲_ : ∀ {b d o} → Num b d o → Num b d o → Set
--- xs ≲ ys = toℕ xs ≤ toℕ ys
 --
--- -- _≋_ : ∀ {b d o} → Num b d o → Num b d o → Set
--- -- xs ≋ ys = toℕ xs ≡ toℕ ys
+-- tail-mono-strict : ∀ {b d o} (x y : Digit d) (xs ys : Num b d o)
+--     → Greatest x
+--     → toℕ (x ∷ xs) < toℕ (y ∷ ys)
+--     → toℕ xs < toℕ ys
+-- tail-mono-strict {b} {_} {o} x y xs ys greatest p
+--     = *n-mono-strict-inverse b ⟦∷xs⟧<⟦∷ys⟧
+--     where
+--         ⟦x⟧≥⟦y⟧ : Digit-toℕ x o ≥ Digit-toℕ y o
+--         ⟦x⟧≥⟦y⟧ = greatest-of-all o x y greatest
+--         ⟦∷xs⟧<⟦∷ys⟧ : toℕ xs * b < toℕ ys * b
+--         ⟦∷xs⟧<⟦∷ys⟧ = +-mono-contra ⟦x⟧≥⟦y⟧ p
 --
--- -- toℕ that preserves equality
--- Num⟶ℕ : ∀ b d o → setoid (Num b d o) ⟶ setoid ℕ
--- Num⟶ℕ b d o = record { _⟨$⟩_ = toℕ ; cong = cong toℕ }
-
--- begin
---     {!   !}
--- ≡⟨ {!   !} ⟩
---     {!   !}
--- ≡⟨ {!   !} ⟩
---     {!   !}
--- ≡⟨ {!   !} ⟩
---     {!   !}
--- ≡⟨ {!   !} ⟩
---     {!   !}
--- ∎
-
--- _≋_ : ∀ {b d o}
---     → (xs ys : Num b d o)
---     → Dec ?
--- _≋_ {b}     {d}     {o} ∙        ∙        = yes = ?
 --
--- _≋_ {b}     {d}     {o} ∙        (y ∷ ys) with Digit-toℕ y o ≟ 0
--- _≋_ {zero}  {d}     {o} ∙        (y ∷ ys) | yes p = ?
--- _≋_ {suc b} {d}         ∙        (y ∷ ys) | yes p = ?
--- _≋_ {b}     {d}         ∙        (y ∷ ys) | no ¬p = ?
+-- ------------------------------------------------------------------------
+-- -- Relations
+-- ------------------------------------------------------------------------
 --
--- _≋_ {b}     {d}     {o} (x ∷ xs) ∙        with Digit-toℕ x o ≟ 0
--- _≋_ {zero}              (x ∷ xs) ∙        | yes p = ?
--- _≋_ {suc b}             (x ∷ xs) ∙        | yes p = ?
--- _≋_ {b}     {d}     {o} (x ∷ xs) ∙        | no ¬p = ?
--- -- things get trickier here, we cannot say two numbers are equal or not base on
--- -- their LSD, since the system may be redundant.
--- _≋_ {b}     {d}     {o} (x ∷ xs) (y ∷ ys) with Digit-toℕ x o ≟ Digit-toℕ y o
--- _≋_ {b}     {d}     {o} (x ∷ xs) (y ∷ ys) | yes p = xs ≋ ys
--- _≋_ {b}     {d}     {o} (x ∷ xs) (y ∷ ys) | no ¬p = ⊥
-
-
-------------------------------------------------------------------------
--- Predicates on Num
-------------------------------------------------------------------------
-
-Maximum : ∀ {b d o} → Num b d o → Set
-Maximum {b} {d} {o} max = ∀ (xs : Num b d o) → toℕ max ≥ toℕ xs
-
--- a system is bounded if there exists the greatest number
-Bounded : ∀ b d o → Set
-Bounded b d o = Σ[ xs ∈ Num b d o ] Maximum xs
+-- -- _≲_ : ∀ {b d o} → Num b d o → Num b d o → Set
+-- -- xs ≲ ys = toℕ xs ≤ toℕ ys
+-- --
+-- -- -- _≋_ : ∀ {b d o} → Num b d o → Num b d o → Set
+-- -- -- xs ≋ ys = toℕ xs ≡ toℕ ys
+-- --
+-- -- -- toℕ that preserves equality
+-- -- Num⟶ℕ : ∀ b d o → setoid (Num b d o) ⟶ setoid ℕ
+-- -- Num⟶ℕ b d o = record { _⟨$⟩_ = toℕ ; cong = cong toℕ }
+--
+-- -- begin
+-- --     {!   !}
+-- -- ≡⟨ {!   !} ⟩
+-- --     {!   !}
+-- -- ≡⟨ {!   !} ⟩
+-- --     {!   !}
+-- -- ≡⟨ {!   !} ⟩
+-- --     {!   !}
+-- -- ≡⟨ {!   !} ⟩
+-- --     {!   !}
+-- -- ∎
+--
+-- -- _≋_ : ∀ {b d o}
+-- --     → (xs ys : Num b d o)
+-- --     → Dec ?
+-- -- _≋_ {b}     {d}     {o} ∙        ∙        = yes = ?
+-- --
+-- -- _≋_ {b}     {d}     {o} ∙        (y ∷ ys) with Digit-toℕ y o ≟ 0
+-- -- _≋_ {zero}  {d}     {o} ∙        (y ∷ ys) | yes p = ?
+-- -- _≋_ {suc b} {d}         ∙        (y ∷ ys) | yes p = ?
+-- -- _≋_ {b}     {d}         ∙        (y ∷ ys) | no ¬p = ?
+-- --
+-- -- _≋_ {b}     {d}     {o} (x ∷ xs) ∙        with Digit-toℕ x o ≟ 0
+-- -- _≋_ {zero}              (x ∷ xs) ∙        | yes p = ?
+-- -- _≋_ {suc b}             (x ∷ xs) ∙        | yes p = ?
+-- -- _≋_ {b}     {d}     {o} (x ∷ xs) ∙        | no ¬p = ?
+-- -- -- things get trickier here, we cannot say two numbers are equal or not base on
+-- -- -- their LSD, since the system may be redundant.
+-- -- _≋_ {b}     {d}     {o} (x ∷ xs) (y ∷ ys) with Digit-toℕ x o ≟ Digit-toℕ y o
+-- -- _≋_ {b}     {d}     {o} (x ∷ xs) (y ∷ ys) | yes p = xs ≋ ys
+-- -- _≋_ {b}     {d}     {o} (x ∷ xs) (y ∷ ys) | no ¬p = ⊥
+--
+--
+-- ------------------------------------------------------------------------
+-- -- Predicates on Num
+-- ------------------------------------------------------------------------
+--
+-- Maximum : ∀ {b d o} → Num b d o → Set
+-- Maximum {b} {d} {o} max = ∀ (xs : Num b d o) → toℕ max ≥ toℕ xs
+--
+-- -- a system is bounded if there exists the greatest number
+-- Bounded : ∀ b d o → Set
+-- Bounded b d o = Σ[ xs ∈ Num b d o ] Maximum xs
 
 -- start
 --     {!   !}
