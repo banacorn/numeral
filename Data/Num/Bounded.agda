@@ -108,14 +108,14 @@ Digit+Offset≥2-lemma b d o d+o≥1 (evidence , claim) = contradiction p ¬p
             ≤⟨ reflexive
                 (cong
                     (λ w → w + toℕ evidence * suc b)
-                    (sym (toℕ-greatest (Fin.fromℕ d) (greatest-digit-Greatest d)))
+                    (sym (toℕ-greatest (Fin.fromℕ d) (greatest-digit-is-the-Greatest d)))
                 )
             ⟩
                 Digit-toℕ (greatest-digit d) o + toℕ evidence * suc b
             □
 
 BoundedCond⇒Bounded : ∀ {b d o} → BoundedCond b d o → Bounded b d o
-BoundedCond⇒Bounded (Base≡0 d o)     = (greatest-digit d ∷ ∙) , (Base≡0-lemma (greatest-digit d) ∙ (greatest-digit-Greatest d))
+BoundedCond⇒Bounded (Base≡0 d o)     = (greatest-digit d ∷ ∙) , (Base≡0-lemma (greatest-digit d) ∙ (greatest-digit-is-the-Greatest d))
 BoundedCond⇒Bounded (HasNoDigit b o) = ∙ , (HasNoDigit-lemma b o)
 BoundedCond⇒Bounded (HasOnly:0 b)    = ∙ , (HasOnly:0-lemma (suc b) ∙)
 
