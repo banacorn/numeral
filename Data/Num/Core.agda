@@ -250,11 +250,20 @@ Null? (x ∷ xs) = no (λ z₁ → z₁)
 ------------------------------------------------------------------------
 -- Converting from Num to ℕ
 ------------------------------------------------------------------------
+--
 
-toℕ : ∀ {b d o} → (xs : Num b d o) → {non-Null : False (Null? xs)} → ℕ
-toℕ             ∙             {()}
-toℕ {_} {_} {o} (x ∷ ∙)       = Digit-toℕ x o
-toℕ {b} {_} {o} (x ∷ x' ∷ xs) = Digit-toℕ x o + toℕ (x' ∷ xs) * b
+toℕ : ∀ {b d o} → (x : Digit d) → (xs : Num b d o) → ℕ
+toℕ {_} {_} {o} x ∙         = Digit-toℕ x o
+toℕ {b} {_} {o} x (x' ∷ xs) = Digit-toℕ x o + toℕ x' xs * b
+
+-- synonym of toℕ
+⟦_∷_⟧ : ∀ {b d o} → (x : Digit d) → (xs : Num b d o) → ℕ
+⟦ x ∷ xs ⟧ = toℕ x xs
+
+-- toℕ : ∀ {b d o} → (xs : Num b d o) → {non-Null : False (Null? xs)} → ℕ
+-- toℕ             ∙             {()}
+-- toℕ {_} {_} {o} (x ∷ ∙)       = Digit-toℕ x o
+-- toℕ {b} {_} {o} (x ∷ x' ∷ xs) = Digit-toℕ x o + toℕ (x' ∷ xs) * b
 
 -- toℕ-Base≡0 : ∀ {d o}
 --     → (x : Digit d)
@@ -269,17 +278,17 @@ toℕ {b} {_} {o} (x ∷ x' ∷ xs) = Digit-toℕ x o + toℕ (x' ∷ xs) * b
 --         Digit-toℕ x o
 --     ∎
 --
-∷ns-mono-strict : ∀ {b d o} (x y : Fin d) (xs ys : Num b d o)
-    → toℕ xs ≡ toℕ ys
-    → Digit-toℕ x o < Digit-toℕ y o
-    → toℕ (x ∷ xs) < toℕ (y ∷ ys)
-∷ns-mono-strict {b} {d} {o} x y xs ys ⟦xs⟧≡⟦ys⟧ ⟦x⟧<⟦y⟧ = start
-        suc (Digit-toℕ x o + toℕ xs * b)
-    ≈⟨ cong (λ w → suc (Digit-toℕ x o + w * b)) ⟦xs⟧≡⟦ys⟧ ⟩
-        suc (Digit-toℕ x o + toℕ ys * b)
-    ≤⟨ +n-mono (toℕ ys * b) ⟦x⟧<⟦y⟧ ⟩
-        Digit-toℕ y o + toℕ ys * b
-    □
+-- ∷ns-mono-strict : ∀ {b d o} (x y : Fin d) (xs ys : Num b d o)
+--     → toℕ xs ≡ toℕ ys
+--     → Digit-toℕ x o < Digit-toℕ y o
+--     → toℕ (x ∷ xs) < toℕ (y ∷ ys)
+-- ∷ns-mono-strict {b} {d} {o} x y xs ys ⟦xs⟧≡⟦ys⟧ ⟦x⟧<⟦y⟧ = start
+--         suc (Digit-toℕ x o + toℕ xs * b)
+--     ≈⟨ cong (λ w → suc (Digit-toℕ x o + w * b)) ⟦xs⟧≡⟦ys⟧ ⟩
+--         suc (Digit-toℕ x o + toℕ ys * b)
+--     ≤⟨ +n-mono (toℕ ys * b) ⟦x⟧<⟦y⟧ ⟩
+--         Digit-toℕ y o + toℕ ys * b
+--     □
 --
 -- tail-mono-strict : ∀ {b d o} (x y : Digit d) (xs ys : Num b d o)
 --     → Greatest x
