@@ -31,122 +31,152 @@ open DecTotalOrder decTotalOrder using (reflexive) renaming (refl to ≤-refl)
 -- Views
 
 data BoundedCond : ℕ → ℕ → ℕ → Set where
-    Base≡0     : ∀ d o → BoundedCond 0       (suc d) o
-    HasNoDigit : ∀ b o → BoundedCond b       0       o
-    HasOnly:0  : ∀ b   → BoundedCond (suc b) 1       0
+    Base≡0   : ∀ d o → BoundedCond 0       (suc d) o
+    HasOnly0 : ∀ b   → BoundedCond (suc b) 1 0
 
 data NonBoundedCond : ℕ → ℕ → ℕ → Set where
     Digit+Offset≥2 : ∀ b d o → (d+o≥2 : suc d + o ≥ 2) → NonBoundedCond (suc b) (suc d) o
+    HasNoDigit     : ∀ b   o                           → NonBoundedCond b       0 o
 
 data BoundedView : ℕ → ℕ → ℕ → Set where
     IsBounded   : ∀ {b d o} → (cond :    BoundedCond b d o) → BoundedView b d o
     IsntBounded : ∀ {b d o} → (cond : NonBoundedCond b d o) → BoundedView b d o
 
 boundedView : ∀ b d o → BoundedView b d o
-boundedView b       0             o = IsBounded (HasNoDigit b o)
-boundedView 0       (suc d)       o = IsBounded (Base≡0 d o)
-boundedView (suc b) 1             0 = IsBounded (HasOnly:0 b)
-boundedView (suc b) 1             (suc o)
-    = IsntBounded (Digit+Offset≥2 b zero (suc o) (s≤s (s≤s z≤n)))
-boundedView (suc b) (suc (suc d)) o
-    = IsntBounded (Digit+Offset≥2 b (suc d) o (s≤s (s≤s z≤n)))
-
+boundedView b       zero          o       = IsntBounded (HasNoDigit b o)
+boundedView zero    (suc d)       o       = IsBounded (Base≡0 d o)
+boundedView (suc b) (suc zero)    zero    = IsBounded (HasOnly0 b)
+boundedView (suc b) (suc zero)    (suc o) = IsntBounded (Digit+Offset≥2 b zero (suc o) (s≤s (s≤s z≤n)))
+boundedView (suc b) (suc (suc d)) o       = IsntBounded (Digit+Offset≥2 b (suc d) o (s≤s (s≤s z≤n)))
 ------------------------------------------------------------------------
 -- Relations between Conditions and Predicates
+
+toℕ-Base≡0 : ∀ {d o}
+    → (x : Digit d)
+    → (xs : Num 0 d o)
+    → ⟦ x ∷ xs ⟧ ≡ Digit-toℕ x o
+toℕ-Base≡0 {d} {o} x ∙         = +-right-identity (Digit-toℕ x o)
+toℕ-Base≡0 {d} {o} x (x' ∷ xs) =
+    begin
+        Digit-toℕ x o + ⟦ x' ∷ xs ⟧ * 0
+    ≡⟨ cong (λ w → Digit-toℕ x o + w) (*-right-zero ⟦ x' ∷ xs ⟧) ⟩
+        Digit-toℕ x o + 0
+    ≡⟨ +-right-identity (Digit-toℕ x o) ⟩
+        Digit-toℕ x o
+    ∎
 
 Base≡0-lemma : ∀ {d} {o}
     → (x : Digit (suc d))
     → (xs : Num 0 (suc d) o)
     → Greatest x
-    → Maximum (x ∷ xs)
-Base≡0-lemma         x xs greatest ∙        = z≤n
-Base≡0-lemma {d} {o} x xs greatest (y ∷ ys) =
+    → Maximum x xs
+Base≡0-lemma {_} {o} x xs greatest y ys        =
     start
-        Digit-toℕ y o + toℕ ys * 0
-    ≤⟨ reflexive (cong (_+_ (Digit-toℕ y o)) (*-right-zero (toℕ ys))) ⟩
-        Digit-toℕ y o + 0
-    ≤⟨ +n-mono 0 (greatest-of-all o x y greatest) ⟩
-        Digit-toℕ x o + 0
-    ≤⟨ reflexive (cong (_+_ (Digit-toℕ x o)) (sym (*-right-zero (toℕ xs)))) ⟩
-        Digit-toℕ x o + toℕ xs * 0
+        ⟦ y ∷ ys ⟧
+    ≈⟨ toℕ-Base≡0 y ys ⟩
+        Digit-toℕ y o
+    ≤⟨ greatest-of-all o x y greatest ⟩
+        Fin.toℕ x + o
+    ≈⟨ sym (toℕ-Base≡0 x xs) ⟩
+        ⟦ x ∷ xs ⟧
     □
 
-HasNoDigit-lemma : ∀ b o → Maximum {b} {0} {o} ∙
-HasNoDigit-lemma b o ∙         = z≤n
-HasNoDigit-lemma b o (() ∷ xs)
+-- begin
+--     {!   !}
+-- ≡⟨ {!   !} ⟩
+--     {!   !}
+-- ≡⟨ {!   !} ⟩
+--     {!   !}
+-- ≡⟨ {!   !} ⟩
+--     {!   !}
+-- ≡⟨ {!   !} ⟩
+--     {!   !}
+-- ∎
 
-HasOnly:0-all-zero : ∀ {b} → (xs : Num b 1 0) → toℕ xs ≡ 0
-HasOnly:0-all-zero {b} ∙ = refl
-HasOnly:0-all-zero {b} (z ∷ xs) = cong (λ x → x * b) (HasOnly:0-all-zero {b} xs)
-HasOnly:0-all-zero {b} (s () ∷ xs)
+-- start
+--     {!   !}
+-- ≤⟨ {!   !} ⟩
+--     {!   !}
+-- ≤⟨ {!   !} ⟩
+--     {!   !}
+-- ≤⟨ {!   !} ⟩
+--     {!   !}
+-- □
 
-HasOnly:0-lemma : ∀ b → (xs : Num b 1 0) → Maximum xs
-HasOnly:0-lemma b xs ys = reflexive $
+HasOnly0-all-zero : ∀ {b} → (x : Digit 1) (xs : Num b 1 0) → ⟦ x ∷ xs ⟧ ≡ 0
+HasOnly0-all-zero     z      ∙         = refl
+HasOnly0-all-zero {b} z      (x' ∷ xs) = cong (λ x' → x' * b) (HasOnly0-all-zero {b} x' xs)
+HasOnly0-all-zero     (s ()) xs
+
+HasOnly0-Maximum : ∀ b → (x : Digit 1) (xs : Num b 1 0) → Maximum x xs
+HasOnly0-Maximum b x xs y ys = reflexive $
     begin
-        toℕ ys
-    ≡⟨ HasOnly:0-all-zero ys ⟩
-        zero
-    ≡⟨ sym (HasOnly:0-all-zero xs) ⟩
-        toℕ xs
+        ⟦ y ∷ ys ⟧
+    ≡⟨ HasOnly0-all-zero y ys ⟩
+        0
+    ≡⟨ sym (HasOnly0-all-zero x xs) ⟩
+        ⟦ x ∷ xs ⟧
     ∎
 
-Digit+Offset≥2-lemma : ∀ b d o → d + o ≥ 1 → ¬ (Bounded (suc b) (suc d) o)
-Digit+Offset≥2-lemma b d o d+o≥1 (evidence , claim) = contradiction p ¬p
+Digit+Offset≥2-¬Bounded-lemma : ∀ b d o → d + o ≥ 1 → ¬ (Bounded (suc b) (suc d) o)
+Digit+Offset≥2-¬Bounded-lemma b d o d+o≥1 (x , xs , claim) = contradiction p ¬p
     where
-        p : toℕ evidence ≥ toℕ (greatest-digit d ∷ evidence)
-        p = claim (greatest-digit d ∷ evidence)
-        ¬p : toℕ evidence ≱ toℕ (greatest-digit d ∷ evidence)
+        p : ⟦ x ∷ xs ⟧ ≥ ⟦ greatest-digit d ∷ (x ∷ xs) ⟧
+        p = claim (greatest-digit d) (x ∷ xs)
+        ¬p : ⟦ x ∷ xs ⟧ ≱ ⟦ greatest-digit d ∷ (x ∷ xs) ⟧
         ¬p = <⇒≱ $
             start
-                suc (toℕ evidence)
-            ≤⟨ reflexive (cong suc (sym (*-right-identity (toℕ evidence)))) ⟩
-                suc (toℕ evidence * 1)
-            ≤⟨ s≤s (n*-mono (toℕ evidence) (s≤s z≤n)) ⟩
-                suc (toℕ evidence * suc b)
-            ≤⟨ +n-mono (toℕ evidence * suc b) d+o≥1 ⟩
-                (d + o) + (toℕ evidence * suc b)
-            ≤⟨ reflexive
-                (cong
-                    (λ w → w + toℕ evidence * suc b)
-                    (sym (toℕ-greatest (Fin.fromℕ d) (greatest-digit-is-the-Greatest d)))
-                )
+                suc ⟦ x ∷ xs ⟧
+            ≈⟨ cong suc (sym (*-right-identity ⟦ x ∷ xs ⟧)) ⟩
+                suc (⟦ x ∷ xs ⟧ * 1)
+            ≤⟨ s≤s (n*-mono ⟦ x ∷ xs ⟧ (s≤s z≤n)) ⟩
+                suc (⟦ x ∷ xs ⟧ * suc b)
+            ≤⟨ +n-mono (⟦ x ∷ xs ⟧ * suc b) d+o≥1 ⟩
+                (d + o) + (⟦ x ∷ xs ⟧ * suc b)
+            ≈⟨ cong
+                (λ w → w + ⟦ x ∷ xs ⟧ * suc b)
+                (sym (toℕ-greatest (Fin.fromℕ d) (greatest-digit-is-the-Greatest d)))
             ⟩
-                Digit-toℕ (greatest-digit d) o + toℕ evidence * suc b
+                Digit-toℕ (greatest-digit d) o + ⟦ x ∷ xs ⟧ * suc b
             □
 
+HasNoDigit-¬Bounded-lemma : ∀ b o → ¬ (Bounded b 0 o)
+HasNoDigit-¬Bounded-lemma b o (() , xs , claim)
+
 BoundedCond⇒Bounded : ∀ {b d o} → BoundedCond b d o → Bounded b d o
-BoundedCond⇒Bounded (Base≡0 d o)     = (greatest-digit d ∷ ∙) , (Base≡0-lemma (greatest-digit d) ∙ (greatest-digit-is-the-Greatest d))
-BoundedCond⇒Bounded (HasNoDigit b o) = ∙ , (HasNoDigit-lemma b o)
-BoundedCond⇒Bounded (HasOnly:0 b)    = ∙ , (HasOnly:0-lemma (suc b) ∙)
+BoundedCond⇒Bounded (Base≡0 d o) = greatest-digit d , ∙ , Base≡0-lemma (greatest-digit d) ∙ (greatest-digit-is-the-Greatest d)
+BoundedCond⇒Bounded (HasOnly0 b) = z , ∙ , (HasOnly0-Maximum (suc b) z ∙)
 
 NonBoundedCond⇒¬Bounded : ∀ {b d o} → NonBoundedCond b d o → ¬ (Bounded b d o)
-NonBoundedCond⇒¬Bounded (Digit+Offset≥2 b d o d+o≥2)
-    = Digit+Offset≥2-lemma b d o (≤-pred d+o≥2)
+NonBoundedCond⇒¬Bounded (Digit+Offset≥2 b d o d+o≥2) = Digit+Offset≥2-¬Bounded-lemma b d o (≤-pred d+o≥2)
+NonBoundedCond⇒¬Bounded (HasNoDigit b o)             = HasNoDigit-¬Bounded-lemma b o
 
 Bounded⇒BoundedCond : ∀ {b d o} → Bounded b d o → BoundedCond b d o
 Bounded⇒BoundedCond {b} {d} {o} bounded with boundedView b d o
 Bounded⇒BoundedCond bounded | IsBounded condition = condition
 Bounded⇒BoundedCond bounded | IsntBounded condition = contradiction bounded (NonBoundedCond⇒¬Bounded condition)
 
-¬Bounded⇒NonBoundedCond : ∀ {b d o} → ¬ (Bounded b d o) → NonBoundedCond b d o
+¬Bounded⇒NonBoundedCond : ∀ {b d o} → ¬ (Bounded b  d o) → NonBoundedCond b d o
 ¬Bounded⇒NonBoundedCond {b} {d} {o} ¬bounded with boundedView b d o
 ¬Bounded⇒NonBoundedCond ¬bounded | IsBounded condition = contradiction (BoundedCond⇒Bounded condition) ¬bounded
 ¬Bounded⇒NonBoundedCond ¬bounded | IsntBounded condition = condition
 
 Bounded? : ∀ {b d o} → BoundedView b d o → Dec (Bounded b d o)
-Bounded? (IsBounded condition) = yes (BoundedCond⇒Bounded condition)
+Bounded? (IsBounded condition)   = yes (BoundedCond⇒Bounded condition)
 Bounded? (IsntBounded condition) = no (NonBoundedCond⇒¬Bounded condition)
 
-------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
 -- Misc
 
 ¬Bounded⇒¬Maximum : ∀ {b d o}
     → ¬ (Bounded b d o)
+    → (x : Digit d)
     → (xs : Num b d o)
-    → Maximum xs
+    → Maximum x xs
     → ⊥
-¬Bounded⇒¬Maximum ¬bounded xs claim =
-    contradiction (xs , claim) ¬bounded
+¬Bounded⇒¬Maximum ¬bounded x xs claim =
+    contradiction (x , xs , claim) ¬bounded
 
 -- begin
 --     {!   !}

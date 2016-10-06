@@ -252,114 +252,129 @@ Null? (x ∷ xs) = no (λ z₁ → z₁)
 ------------------------------------------------------------------------
 --
 
-toℕ : ∀ {b d o} → (x : Digit d) → (xs : Num b d o) → ℕ
-toℕ {_} {_} {o} x ∙         = Digit-toℕ x o
-toℕ {b} {_} {o} x (x' ∷ xs) = Digit-toℕ x o + toℕ x' xs * b
+-- toℕ : ∀ {b d o} → (x : Digit d) → (xs : Num b d o) → ℕ
+-- toℕ {_} {_} {o} x ∙         = Digit-toℕ x o
+-- toℕ {b} {_} {o} x (x' ∷ xs) = Digit-toℕ x o + toℕ x' xs * b
+--
+-- -- synonym of toℕ
+-- ⟦_∷_⟧ : ∀ {b d o} → (x : Digit d) → (xs : Num b d o) → ℕ
+-- ⟦ x ∷ xs ⟧ = toℕ x xs
 
--- synonym of toℕ
+-- toℕ
 ⟦_∷_⟧ : ∀ {b d o} → (x : Digit d) → (xs : Num b d o) → ℕ
-⟦ x ∷ xs ⟧ = toℕ x xs
+⟦_∷_⟧ {b} {_} {o} x ∙         = Digit-toℕ x o + 0           * b
+⟦_∷_⟧ {b} {_} {o} x (x' ∷ xs) = Digit-toℕ x o + ⟦ x' ∷ xs ⟧ * b
 
--- toℕ : ∀ {b d o} → (xs : Num b d o) → {non-Null : False (Null? xs)} → ℕ
--- toℕ             ∙             {()}
--- toℕ {_} {_} {o} (x ∷ ∙)       = Digit-toℕ x o
--- toℕ {b} {_} {o} (x ∷ x' ∷ xs) = Digit-toℕ x o + toℕ (x' ∷ xs) * b
 
--- toℕ-Base≡0 : ∀ {d o}
---     → (x : Digit d)
---     → (xs : Num 0 d o)
---     → toℕ (x ∷ xs) ≡ Digit-toℕ x o
--- toℕ-Base≡0 {d} {o} x xs =
---     begin
---         Digit-toℕ x o + toℕ xs * zero
---     ≡⟨ cong (λ w → Digit-toℕ x o + w) (*-right-zero (toℕ xs)) ⟩
---         Digit-toℕ x o + 0
---     ≡⟨ +-right-identity (Digit-toℕ x o) ⟩
---         Digit-toℕ x o
---     ∎
+
+-- start
+--     {!   !}
+-- ≤⟨ {!   !} ⟩
+--     {!   !}
+-- ≤⟨ {!   !} ⟩
+--     {!   !}
+-- ≤⟨ {!   !} ⟩
+--     {!   !}
+-- □
+
+-- begin
+--     {!   !}
+-- ≡⟨ {!   !} ⟩
+--     {!   !}
+-- ≡⟨ {!   !} ⟩
+--     {!   !}
+-- ≡⟨ {!   !} ⟩
+--     {!   !}
+-- ≡⟨ {!   !} ⟩
+--     {!   !}
+-- ∎
+∷ns-mono-strict : ∀ {b d o}
+    → (x x' : Fin d) (xs : Num b d o)
+    → (y y' : Fin d) (ys : Num b d o)
+    → ⟦ x' ∷ xs ⟧ ≡ ⟦ y' ∷ ys ⟧
+    → Digit-toℕ x o < Digit-toℕ y o
+    → ⟦ x ∷ (x' ∷ xs) ⟧ < ⟦ y ∷ (y' ∷ ys) ⟧
+∷ns-mono-strict {b} {d} {o} x x' xs y y' ys ⟦x'∷xs⟧≡⟦y'∷ys⟧ ⟦x⟧<⟦y⟧ =
+    start
+        suc (Fin.toℕ x + o + ⟦ x' ∷ xs ⟧ * b)
+    ≈⟨ cong (λ w → suc (Digit-toℕ x o + w * b)) ⟦x'∷xs⟧≡⟦y'∷ys⟧ ⟩
+        suc (Fin.toℕ x + o + ⟦ y' ∷ ys ⟧ * b)
+    ≤⟨ +n-mono (⟦ y' ∷ ys ⟧ * b) ⟦x⟧<⟦y⟧ ⟩
+        Fin.toℕ y + o + ⟦ y' ∷ ys ⟧ * b
+    □
+
+tail-mono-strict : ∀ {b d o}
+    → (x x' : Fin d) (xs : Num b d o)
+    → (y y' : Fin d) (ys : Num b d o)
+    → Greatest x
+    → ⟦ x ∷ (x' ∷ xs) ⟧ < ⟦ y ∷ (y' ∷ ys) ⟧
+    → ⟦ x' ∷ xs ⟧ < ⟦ y' ∷ ys ⟧
+tail-mono-strict {b} {_} {o} x x' xs y y' ys greatest p
+    = *n-mono-strict-inverse b ⟦∷x'∷xs⟧<⟦∷y'∷ys⟧
+    where
+        ⟦x⟧≥⟦y⟧ : Digit-toℕ x o ≥ Digit-toℕ y o
+        ⟦x⟧≥⟦y⟧ = greatest-of-all o x y greatest
+        ⟦∷x'∷xs⟧<⟦∷y'∷ys⟧ : ⟦ x' ∷ xs ⟧ * b < ⟦ y' ∷ ys ⟧ * b
+        ⟦∷x'∷xs⟧<⟦∷y'∷ys⟧ = +-mono-contra ⟦x⟧≥⟦y⟧ p
+
+
+------------------------------------------------------------------------
+-- Relations
+------------------------------------------------------------------------
+
+-- _≲_ : ∀ {b d o} → Num b d o → Num b d o → Set
+-- xs ≲ ys = toℕ xs ≤ toℕ ys
 --
--- ∷ns-mono-strict : ∀ {b d o} (x y : Fin d) (xs ys : Num b d o)
---     → toℕ xs ≡ toℕ ys
---     → Digit-toℕ x o < Digit-toℕ y o
---     → toℕ (x ∷ xs) < toℕ (y ∷ ys)
--- ∷ns-mono-strict {b} {d} {o} x y xs ys ⟦xs⟧≡⟦ys⟧ ⟦x⟧<⟦y⟧ = start
---         suc (Digit-toℕ x o + toℕ xs * b)
---     ≈⟨ cong (λ w → suc (Digit-toℕ x o + w * b)) ⟦xs⟧≡⟦ys⟧ ⟩
---         suc (Digit-toℕ x o + toℕ ys * b)
---     ≤⟨ +n-mono (toℕ ys * b) ⟦x⟧<⟦y⟧ ⟩
---         Digit-toℕ y o + toℕ ys * b
---     □
+-- -- _≋_ : ∀ {b d o} → Num b d o → Num b d o → Set
+-- -- xs ≋ ys = toℕ xs ≡ toℕ ys
 --
--- tail-mono-strict : ∀ {b d o} (x y : Digit d) (xs ys : Num b d o)
---     → Greatest x
---     → toℕ (x ∷ xs) < toℕ (y ∷ ys)
---     → toℕ xs < toℕ ys
--- tail-mono-strict {b} {_} {o} x y xs ys greatest p
---     = *n-mono-strict-inverse b ⟦∷xs⟧<⟦∷ys⟧
---     where
---         ⟦x⟧≥⟦y⟧ : Digit-toℕ x o ≥ Digit-toℕ y o
---         ⟦x⟧≥⟦y⟧ = greatest-of-all o x y greatest
---         ⟦∷xs⟧<⟦∷ys⟧ : toℕ xs * b < toℕ ys * b
---         ⟦∷xs⟧<⟦∷ys⟧ = +-mono-contra ⟦x⟧≥⟦y⟧ p
+-- -- toℕ that preserves equality
+-- Num⟶ℕ : ∀ b d o → setoid (Num b d o) ⟶ setoid ℕ
+-- Num⟶ℕ b d o = record { _⟨$⟩_ = toℕ ; cong = cong toℕ }
+
+-- begin
+--     {!   !}
+-- ≡⟨ {!   !} ⟩
+--     {!   !}
+-- ≡⟨ {!   !} ⟩
+--     {!   !}
+-- ≡⟨ {!   !} ⟩
+--     {!   !}
+-- ≡⟨ {!   !} ⟩
+--     {!   !}
+-- ∎
+
+-- _≋_ : ∀ {b d o}
+--     → (xs ys : Num b d o)
+--     → Dec ?
+-- _≋_ {b}     {d}     {o} ∙        ∙        = yes = ?
 --
+-- _≋_ {b}     {d}     {o} ∙        (y ∷ ys) with Digit-toℕ y o ≟ 0
+-- _≋_ {zero}  {d}     {o} ∙        (y ∷ ys) | yes p = ?
+-- _≋_ {suc b} {d}         ∙        (y ∷ ys) | yes p = ?
+-- _≋_ {b}     {d}         ∙        (y ∷ ys) | no ¬p = ?
 --
--- ------------------------------------------------------------------------
--- -- Relations
--- ------------------------------------------------------------------------
---
--- -- _≲_ : ∀ {b d o} → Num b d o → Num b d o → Set
--- -- xs ≲ ys = toℕ xs ≤ toℕ ys
--- --
--- -- -- _≋_ : ∀ {b d o} → Num b d o → Num b d o → Set
--- -- -- xs ≋ ys = toℕ xs ≡ toℕ ys
--- --
--- -- -- toℕ that preserves equality
--- -- Num⟶ℕ : ∀ b d o → setoid (Num b d o) ⟶ setoid ℕ
--- -- Num⟶ℕ b d o = record { _⟨$⟩_ = toℕ ; cong = cong toℕ }
---
--- -- begin
--- --     {!   !}
--- -- ≡⟨ {!   !} ⟩
--- --     {!   !}
--- -- ≡⟨ {!   !} ⟩
--- --     {!   !}
--- -- ≡⟨ {!   !} ⟩
--- --     {!   !}
--- -- ≡⟨ {!   !} ⟩
--- --     {!   !}
--- -- ∎
---
--- -- _≋_ : ∀ {b d o}
--- --     → (xs ys : Num b d o)
--- --     → Dec ?
--- -- _≋_ {b}     {d}     {o} ∙        ∙        = yes = ?
--- --
--- -- _≋_ {b}     {d}     {o} ∙        (y ∷ ys) with Digit-toℕ y o ≟ 0
--- -- _≋_ {zero}  {d}     {o} ∙        (y ∷ ys) | yes p = ?
--- -- _≋_ {suc b} {d}         ∙        (y ∷ ys) | yes p = ?
--- -- _≋_ {b}     {d}         ∙        (y ∷ ys) | no ¬p = ?
--- --
--- -- _≋_ {b}     {d}     {o} (x ∷ xs) ∙        with Digit-toℕ x o ≟ 0
--- -- _≋_ {zero}              (x ∷ xs) ∙        | yes p = ?
--- -- _≋_ {suc b}             (x ∷ xs) ∙        | yes p = ?
--- -- _≋_ {b}     {d}     {o} (x ∷ xs) ∙        | no ¬p = ?
--- -- -- things get trickier here, we cannot say two numbers are equal or not base on
--- -- -- their LSD, since the system may be redundant.
--- -- _≋_ {b}     {d}     {o} (x ∷ xs) (y ∷ ys) with Digit-toℕ x o ≟ Digit-toℕ y o
--- -- _≋_ {b}     {d}     {o} (x ∷ xs) (y ∷ ys) | yes p = xs ≋ ys
--- -- _≋_ {b}     {d}     {o} (x ∷ xs) (y ∷ ys) | no ¬p = ⊥
---
---
--- ------------------------------------------------------------------------
--- -- Predicates on Num
--- ------------------------------------------------------------------------
---
--- Maximum : ∀ {b d o} → Num b d o → Set
--- Maximum {b} {d} {o} max = ∀ (xs : Num b d o) → toℕ max ≥ toℕ xs
---
--- -- a system is bounded if there exists the greatest number
--- Bounded : ∀ b d o → Set
--- Bounded b d o = Σ[ xs ∈ Num b d o ] Maximum xs
+-- _≋_ {b}     {d}     {o} (x ∷ xs) ∙        with Digit-toℕ x o ≟ 0
+-- _≋_ {zero}              (x ∷ xs) ∙        | yes p = ?
+-- _≋_ {suc b}             (x ∷ xs) ∙        | yes p = ?
+-- _≋_ {b}     {d}     {o} (x ∷ xs) ∙        | no ¬p = ?
+-- -- things get trickier here, we cannot say two numbers are equal or not base on
+-- -- their LSD, since the system may be redundant.
+-- _≋_ {b}     {d}     {o} (x ∷ xs) (y ∷ ys) with Digit-toℕ x o ≟ Digit-toℕ y o
+-- _≋_ {b}     {d}     {o} (x ∷ xs) (y ∷ ys) | yes p = xs ≋ ys
+-- _≋_ {b}     {d}     {o} (x ∷ xs) (y ∷ ys) | no ¬p = ⊥
+
+
+------------------------------------------------------------------------
+-- Predicates on Num
+------------------------------------------------------------------------
+
+Maximum : ∀ {b d o} → Digit d → Num b d o → Set
+Maximum {b} {d} {o} x xs = ∀ (y : Digit d) → (ys : Num b d o) → ⟦ x ∷ xs ⟧ ≥ ⟦ y ∷ ys ⟧
+
+-- a system is bounded if there exists the greatest number
+Bounded : ∀ b d o → Set
+Bounded b d o = Σ[ x ∈ Digit d ] Σ[ xs ∈ Num b d o ] Maximum x xs
 
 -- start
 --     {!   !}
