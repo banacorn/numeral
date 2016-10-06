@@ -72,7 +72,7 @@ Digit = Fin
 
 -- converting to and from ℕ
 Digit-toℕ : ∀ {d} → Digit d → ℕ → ℕ
-Digit-toℕ d o = Fin.toℕ d + o
+Digit-toℕ x o = Fin.toℕ x + o
 
 
 Digit-fromℕ : ∀ {d} → (n o : ℕ) → d + o ≥ n → Digit (suc d)
@@ -132,10 +132,10 @@ Digit<d+o {d} x o = +n-mono o (bounded x)
 -- Predicates on Digits
 --------------------------------------------------------------------------------
 
+-- A digit at its greatest
 Greatest : ∀ {d} (x : Digit d) → Set
 Greatest {d} x = suc (Fin.toℕ x) ≡ d
 
--- A digit at its greatest
 Greatest? : ∀ {d} (x : Digit d) → Dec (Greatest x)
 Greatest? {d} x = suc (Fin.toℕ x) ≟ d
 
@@ -156,6 +156,18 @@ greatest-of-all o (s x) (s y)  greatest = s≤s (greatest-of-all o x y (suc-inje
 
 greatest-digit-is-the-Greatest : ∀ d → Greatest (greatest-digit d)
 greatest-digit-is-the-Greatest d = cong suc (FinProps.to-from d)
+
+-- A digit at its least
+Least : ∀ {d} (x : Digit d) → Set
+Least z     = ⊤
+Least (s x) = ⊥
+
+Least? : ∀ {d} (x : Digit d) → Dec (Least x)
+Least? z     = yes tt
+Least? (s x) = no (λ z₁ → z₁)
+
+least-digit : ∀ {d} → Digit (suc d)
+least-digit = z
 
 --------------------------------------------------------------------------------
 -- Functions on Digits

@@ -126,31 +126,46 @@ mutual
         → (d+o≥2 : 2 ≤ suc (d + o))
         → ¬ Maximum x xs
     next-number-¬Maximum {b} {d} {o} x xs d+o≥2 = ¬Bounded⇒¬Maximum (Digit+Offset≥2-¬Bounded-lemma b d o (≤-pred d+o≥2)) x xs
+    --
+    -- -- the gap
+    -- Gapped : ∀ {b d o}
+    --     → (this : Num (suc b) (suc d) o) → ¬ (Null this)
+    --     → (next : Num (suc b) (suc d) o) → ¬ (Null next)
+    --     → Set
+    -- Gapped {b} {d} this p next q = suc d ≤ ((⟦ this ⟧ p) ∸ (⟦ next ⟧ q)) * suc b
 
-    -- see if there's a gap between x∷xs and the next number
+
+
     Gapped : ∀ {b d o}
         → (x : Digit (suc d)) (xs : Num (suc b) (suc d) o)
         → (d+o≥2 : 2 ≤ suc (d + o))
         → Set
-    Gapped {b} {d} {o} x xs d+o≥2 =
-        let
-            ¬max = next-number-¬Maximum x xs d+o≥2
-            ¬null = next-number-d+o≥2-¬Null x xs ¬max d+o≥2
-            next-xs-toℕ = ⟦ next-number-d+o≥2 x xs ¬max d+o≥2 ⟧ ¬null
-        in
-            suc d ≤ (next-xs-toℕ ∸ ⟦ x ∷ xs ⟧) * suc b
+    Gapped x ∙ d+o≥2 = {!   !}
+    Gapped x (x' ∷ xs) d+o≥2 = {!   !}
 
-    Gapped? : ∀ {b d o}
-        → (x : Digit (suc d)) (xs : Num (suc b) (suc d) o)
-        → (d+o≥2 : 2 ≤ suc (d + o))
-        → Dec (Gapped x xs d+o≥2)
-    Gapped? {b} {d} {o} x xs d+o≥2 =
-        let
-            ¬max = next-number-¬Maximum x xs d+o≥2
-            ¬null = next-number-d+o≥2-¬Null x xs ¬max d+o≥2
-            next-xs-toℕ = ⟦ next-number-d+o≥2 x xs ¬max d+o≥2 ⟧ ¬null
-        in
-            suc d ≤? (next-xs-toℕ ∸ ⟦ x ∷ xs ⟧) * suc b
+    -- Gapped : ∀ {b d o}
+    --     → (x : Digit (suc d)) (xs : Num (suc b) (suc d) o)
+    --     → (d+o≥2 : 2 ≤ suc (d + o))
+    --     → Set
+    -- Gapped {b} {d} {o} x xs d+o≥2 =
+    --     let
+    --         ¬max = next-number-¬Maximum x xs d+o≥2
+    --         ¬null = next-number-d+o≥2-¬Null x xs ¬max d+o≥2
+    --         next-xs-toℕ = ⟦ next-number-d+o≥2 x xs ¬max d+o≥2 ⟧ ¬null
+    --     in
+    --         suc d ≤ (next-xs-toℕ ∸ ⟦ x ∷ xs ⟧) * suc b
+    --
+    -- Gapped? : ∀ {b d o}
+    --     → (x : Digit (suc d)) (xs : Num (suc b) (suc d) o)
+    --     → (d+o≥2 : 2 ≤ suc (d + o))
+    --     → Dec (Gapped' x xs d+o≥2)
+    -- Gapped? {b} {d} {o} x xs d+o≥2 =
+    --     let
+    --         ¬max = next-number-¬Maximum x xs d+o≥2
+    --         ¬null = next-number-d+o≥2-¬Null x xs ¬max d+o≥2
+    --         next-xs-toℕ = ⟦ next-number-d+o≥2 x xs ¬max d+o≥2 ⟧ ¬null
+    --     in
+    --         suc d ≤? (next-xs-toℕ ∸ ⟦ x ∷ xs ⟧) * suc b
 
     -- the actual function
     next-number-d+o≥2 : ∀ {b d o}
@@ -158,16 +173,27 @@ mutual
         → ¬ (Maximum x xs)
         → (d+o≥2 : 2 ≤ suc (d + o))
         → Num (suc b) (suc d) o
-    next-number-d+o≥2 {b} {d} {o} x ∙ ¬max prop = Digit-fromℕ {d} (1 ⊔ o) o (next-number-Digit+Offset≥2-lemma-1 d o prop) ∷ ∙
-    next-number-d+o≥2 x (x' ∷ xs) ¬max prop with Greatest? x
-    next-number-d+o≥2 x (x' ∷ xs) ¬max prop | yes greatest with Gapped? x' xs prop
-    next-number-d+o≥2 x (x' ∷ xs) ¬max prop | yes greatest | yes gapped =
-        let
-            ¬max = next-number-¬Maximum x xs prop
-        in
-        z ∷ next-number-d+o≥2 x xs ¬max prop
-    next-number-d+o≥2 x (x' ∷ xs) ¬max prop | yes greatest | no ¬gapped = {!   !}
-    next-number-d+o≥2 x (x' ∷ xs) ¬max prop | no ¬greatest = {!   !}
+    next-number-d+o≥2 {b} {d} {o} x xs ¬max prop with Greatest? x
+    next-number-d+o≥2 {b} {d} {o} x ∙         ¬max prop | yes greatest
+        with suc d ≤? (1 ⊔ o) * suc b
+    next-number-d+o≥2 {b} {d} {o} x ∙ ¬max prop | yes greatest | yes gapped =
+        z ∷ Digit-fromℕ {d} (1 ⊔ o) o (next-number-Digit+Offset≥2-lemma-1 d o prop) ∷ ∙
+    next-number-d+o≥2 {b} {d} {o} x ∙ ¬max prop | yes greatest | no ¬gapped =
+        let prop2 : (1 ⊔ o) * suc b > 0
+            prop2 = m≤m⊔n 1 o *-mono s≤s z≤n
+        in  digit+1-n x greatest ((1 ⊔ o) * suc b) prop2 ∷ z ∷ ∙
+    next-number-d+o≥2 {b} {d} {o} x (x' ∷ xs) ¬max prop | yes greatest = {!   !}
+    next-number-d+o≥2 {b} {d} {o} x xs        ¬max prop | no ¬greatest = {!   !}
+    -- next-number-d+o≥2 {b} {d} {o} x ∙ ¬max prop =  {!   !} -- Digit-fromℕ {d} (1 ⊔ o) o (next-number-Digit+Offset≥2-lemma-1 d o prop) ∷ ∙
+    -- next-number-d+o≥2 x (x' ∷ xs) ¬max prop with Greatest? x
+    -- next-number-d+o≥2 x (x' ∷ xs) ¬max prop | yes greatest with Gapped? x' xs prop
+    -- next-number-d+o≥2 x (x' ∷ xs) ¬max prop | yes greatest | yes gapped =
+    --     let
+    --         ¬max = next-number-¬Maximum x xs prop
+    --     in
+    --     z ∷ next-number-d+o≥2 x xs ¬max prop
+    -- next-number-d+o≥2 x (x' ∷ xs) ¬max prop | yes greatest | no ¬gapped = {!   !}
+    -- next-number-d+o≥2 x (x' ∷ xs) ¬max prop | no ¬greatest = {!   !}
 
     -- properties of the actual function
     next-number-d+o≥2-¬Null : ∀ {b d o}
@@ -175,7 +201,14 @@ mutual
         → (¬max : ¬ (Maximum x xs))
         → (d+o≥2 : 2 ≤ suc (d + o))
         → ¬ Null (next-number-d+o≥2 x xs ¬max d+o≥2)
-    next-number-d+o≥2-¬Null {b} {d} {o} x xs ¬max prop = {!   !}
+    -- next-number-d+o≥2-¬Null {b} {d} {o} x xs ¬max prop = {!   !}
+    next-number-d+o≥2-¬Null {b} {d} {o} x xs ¬max prop with Greatest? x
+    next-number-d+o≥2-¬Null {b} {d} {o} x ∙         ¬max prop | yes greatest
+        with suc d ≤? (1 ⊔ o) * suc b
+    next-number-d+o≥2-¬Null {b} {d} {o} x ∙ ¬max prop | yes greatest | yes gapped = λ bot → bot
+    next-number-d+o≥2-¬Null {b} {d} {o} x ∙ ¬max prop | yes greatest | no ¬gapped = λ bot → bot
+    next-number-d+o≥2-¬Null {b} {d} {o} x (x' ∷ xs) ¬max prop | yes greatest = {!   !}
+    next-number-d+o≥2-¬Null {b} {d} {o} x xs        ¬max prop | no ¬greatest = {!   !}
 
 
     -- next-number-d+o≥2-¬Null {b} {d} {o} x ∙ ¬max prop ()
@@ -212,8 +245,76 @@ mutual
         → (¬max : ¬ (Maximum x xs))
         → (d+o≥2 : 2 ≤ suc (d + o))
         → ⟦ next-number-d+o≥2 x xs ¬max d+o≥2 ⟧ next-number-d+o≥2-¬Null x xs ¬max d+o≥2 > ⟦ x ∷ xs ⟧
-    next-number-d+o≥2-is-greater {b} {d} {o} x xs ¬max prop = {!   !}
-    
+    -- next-number-d+o≥2-is-greater {b} {d} {o} x xs ¬max prop = {!   !}
+    next-number-d+o≥2-is-greater {b} {d} {o} x xs ¬max prop with Greatest? x
+    next-number-d+o≥2-is-greater {b} {d} {o} x ∙         ¬max prop | yes greatest
+        with suc d ≤? (1 ⊔ o) * suc b
+    next-number-d+o≥2-is-greater {b} {d} {o} x ∙ ¬max prop | yes greatest | yes gapped =
+        let
+            lower-bound : o ≤ 1 ⊔ o
+            lower-bound =
+                start
+                    o
+                ≤⟨ m≤m⊔n o (suc zero) ⟩
+                    o ⊔ suc zero
+                ≈⟨ ⊔-comm o (suc zero) ⟩
+                    suc zero ⊔ o
+                □
+            upper-bound : d + o ≥ 1 ⊔ o
+            upper-bound = next-number-Digit+Offset≥2-lemma-1 d o prop
+        in start
+            suc (Fin.toℕ x + o + zero)
+        ≈⟨ cong (λ w → w + o + 0) greatest ⟩
+            (suc d + o) + zero
+        ≈⟨ +-right-identity (suc d + o) ⟩
+            suc (d + o)
+        ≈⟨ +-comm (suc d) o ⟩
+            o + suc d
+        ≤⟨ n+-mono o gapped ⟩
+            o + (suc zero ⊔ o) * suc b
+        ≈⟨ cong (λ w → o + w * suc b) (sym (+-right-identity (1 ⊔ o))) ⟩
+            o + (suc zero ⊔ o + zero) * suc b
+        ≈⟨ cong (λ w → o + (w + 0) * suc b) (sym (Digit-toℕ-fromℕ {d} {o} (1 ⊔ o) upper-bound lower-bound)) ⟩
+            o + (Digit-toℕ (Digit-fromℕ {d} (1 ⊔ o) o (next-number-Digit+Offset≥2-lemma-1 d o prop)) o + zero) * suc b
+        □
+    next-number-d+o≥2-is-greater {b} {d} {o} x ∙ ¬max prop | yes greatest | no ¬gapped =
+        let
+            lower-bound : (suc zero ⊔ o) * suc b ≤ suc d
+            lower-bound = ≤-pred $ ≤-step $ ≰⇒> ¬gapped
+            upper-bound : 1 ≤ (suc zero ⊔ o) * suc b
+            upper-bound = m≤m⊔n (suc zero) o *-mono s≤s z≤n
+        in start
+            suc (Fin.toℕ x + o + zero)
+        ≤⟨ {!   !} ⟩
+            {!   !}
+        ≤⟨ {!   !} ⟩
+            {!   !}
+        ≤⟨ {!   !} ⟩
+            {!   !}
+        ≤⟨ {!   !} ⟩
+            {!   !}
+        ≤⟨ {!   !} ⟩
+            {!   !}
+        ≤⟨ {!   !} ⟩
+            {!   !}
+        ≤⟨ {!   !} ⟩
+            {!   !}
+        ≤⟨ {!   !} ⟩
+            {!   !}
+        ≤⟨ {!   !} ⟩
+            {!   !}
+        ≤⟨ {!   !} ⟩
+            {!   !}
+        ≤⟨ {!   !} ⟩
+            {!   !}
+        ≈⟨ {!    !} ⟩
+            suc (Fin.toℕ x + o) ∸ (suc zero ⊔ o) * suc b + (o + zero) * suc b
+        ≈⟨ cong (λ w → w + (o + zero) * suc b) (sym (Digit-toℕ-digit+1-n x greatest ((suc zero ⊔ o) * suc b) upper-bound lower-bound)) ⟩
+            Digit-toℕ (digit+1-n x greatest ((1 ⊔ o) * suc b) (m≤m⊔n 1 o *-mono s≤s z≤n)) o + (o + zero) * suc b
+        □
+    next-number-d+o≥2-is-greater {b} {d} {o} x (x' ∷ xs) ¬max prop | yes greatest = {!   !}
+    next-number-d+o≥2-is-greater {b} {d} {o} x xs        ¬max prop | no ¬greatest = {!   !}
+
     -- next-number-d+o≥2-is-greater {b} {d} {o} x ∙ ¬max prop =
     --     start
     --         suc (Fin.toℕ x + o + zero)
