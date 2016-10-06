@@ -55,7 +55,7 @@ toℕ-Base≡0 : ∀ {d o}
     → (x : Digit d)
     → (xs : Num 0 d o)
     → ⟦ x ∷ xs ⟧ ≡ Digit-toℕ x o
-toℕ-Base≡0 {d} {o} x ∙         = +-right-identity (Digit-toℕ x o)
+toℕ-Base≡0 {d} {o} x ∙         = refl
 toℕ-Base≡0 {d} {o} x (x' ∷ xs) =
     begin
         Digit-toℕ x o + ⟦ x' ∷ xs ⟧ * 0

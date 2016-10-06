@@ -274,7 +274,7 @@ Null? (x ∷ xs) = no (λ z₁ → z₁)
 
 -- toℕ
 ⟦_∷_⟧ : ∀ {b d o} → (x : Digit d) → (xs : Num b d o) → ℕ
-⟦_∷_⟧ {b} {_} {o} x ∙         = Digit-toℕ x o + 0           * b
+⟦_∷_⟧ {b} {_} {o} x ∙         = Digit-toℕ x o
 ⟦_∷_⟧ {b} {_} {o} x (x' ∷ xs) = Digit-toℕ x o + ⟦ x' ∷ xs ⟧ * b
 
 ⟦_⟧_ : ∀ {b d o} → (xs : Num b d o) → ¬ (Null xs) → ℕ
