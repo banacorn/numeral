@@ -357,19 +357,38 @@ mutual
             {!   !}
         ≤⟨ {!   !} ⟩
             {!   !}
-        ≤⟨ {!   !} ⟩
-            {!   !}
-        ≤⟨ {!   !} ⟩
-            {!   !}
-        ≤⟨ {!   !} ⟩
-            {!   !}
-        ≤⟨ {!   !} ⟩
-            {!   !}
-        ≤⟨ {!    !} ⟩
-            ⟦ z ∷ next-number-d+o≥2 x' xs (next-number-¬Maximum x' xs prop) prop ⟧
+        ≈⟨ cong (λ w → o + w * suc b) (m∸n+n≡m {!   !}) ⟩
+            o + ⟦ next-xs ⟧ ¬null * suc b
+        ≈⟨ sym (expand z next-xs ¬null) ⟩
+            ⟦ z ∷ next-xs ⟧
+            -- {!   !}
+        -- ≤⟨ n∷-mono-strict z {!   !} z next-xs {!   !} ¬null refl {!   !} ⟩
+        -- ≤⟨ {!    !} ⟩
+        --     ⟦ z ∷ next-number-d+o≥2 x' xs (next-number-¬Maximum x' xs prop) prop ⟧
         -- ≤⟨ {!    !} ⟩
         --     Digit-toℕ {! z   !} o + (⟦ next-xs ⟧ ¬null) * suc b
         □
+--         start
+--             suc ⟦ x ∷ x' ∷ xs ⟧
+--         ≤⟨ ≤-refl ⟩
+--             suc (Digit-toℕ x o) + toℕ xs * suc b
+--         ≤⟨ reflexive (cong (λ w → suc w + toℕ xs * suc b) (toℕ-greatest x greatest)) ⟩
+--             suc d + o + toℕ xs * suc b
+--         ≤⟨ reflexive (+-assoc (suc d) o (toℕ xs * suc b)) ⟩
+--             suc d + (o + toℕ xs * suc b)
+--         ≤⟨ reflexive (a+[b+c]≡b+[a+c] (suc d) o (toℕ xs * suc b)) ⟩
+--             o + (suc d + toℕ xs * suc b)
+--         ≤⟨ ≤-refl ⟩
+--             o + (suc d + toℕ xs * suc b)
+--         ≤⟨ n+-mono o (+n-mono (toℕ xs * suc b) gapped) ⟩
+--             o + ((toℕ next-xs ∸ toℕ xs) * suc b + toℕ xs * suc b)
+--         ≤⟨ reflexive (cong (λ w → o + w) (sym (distribʳ-*-+ (suc b) (toℕ next-xs ∸ toℕ xs) (toℕ xs)))) ⟩
+--             o + (toℕ next-xs ∸ toℕ xs + toℕ xs) * suc b
+--         ≤⟨ reflexive (cong (λ w → o + w * suc b) (m∸n+n≡m (≤-pred $ ≤-step next-xs>xs))) ⟩
+--             o + toℕ next-xs * suc b
+--         ≤⟨ ≤-refl ⟩
+--             toℕ (z ∷ next-xs)
+--         □
     next-number-d+o≥2-is-greater {b} {d} {o} x (x' ∷ xs) ¬max prop | yes greatest | no ¬gapped = {!   !}
     next-number-d+o≥2-is-greater {b} {d} {o} x xs        ¬max prop | no ¬greatest = {!   !}
 

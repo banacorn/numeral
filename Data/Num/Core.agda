@@ -262,74 +262,95 @@ Null? (x ∷ xs) = no (λ z₁ → z₁)
 ------------------------------------------------------------------------
 -- Converting from Num to ℕ
 ------------------------------------------------------------------------
---
-
--- toℕ : ∀ {b d o} → (x : Digit d) → (xs : Num b d o) → ℕ
--- toℕ {_} {_} {o} x ∙         = Digit-toℕ x o
--- toℕ {b} {_} {o} x (x' ∷ xs) = Digit-toℕ x o + toℕ x' xs * b
---
--- -- synonym of toℕ
--- ⟦_∷_⟧ : ∀ {b d o} → (x : Digit d) → (xs : Num b d o) → ℕ
--- ⟦ x ∷ xs ⟧ = toℕ x xs
-
--- toℕ
-⟦_∷_⟧ : ∀ {b d o} → (x : Digit d) → (xs : Num b d o) → ℕ
-⟦_∷_⟧ {b} {_} {o} x ∙         = Digit-toℕ x o
-⟦_∷_⟧ {b} {_} {o} x (x' ∷ xs) = Digit-toℕ x o + ⟦ x' ∷ xs ⟧ * b
 
 ⟦_⟧_ : ∀ {b d o} → (xs : Num b d o) → ¬ (Null xs) → ℕ
-⟦ ∙      ⟧ ¬null = contradiction tt ¬null
-⟦ x ∷ xs ⟧ ¬null = ⟦ x ∷ xs ⟧
+⟦_⟧_ {b} {_} {o} ∙             ¬null = contradiction tt ¬null
+⟦_⟧_ {b} {_} {o} (x ∷ ∙)       ¬null = Digit-toℕ x o
+⟦_⟧_ {b} {_} {o} (x ∷ x' ∷ xs) ¬null = Digit-toℕ x o + ⟦ x' ∷ xs ⟧ ¬null * b
 
--- start
---     {!   !}
--- ≤⟨ {!   !} ⟩
---     {!   !}
--- ≤⟨ {!   !} ⟩
---     {!   !}
--- ≤⟨ {!   !} ⟩
---     {!   !}
--- □
+⟦_∷_⟧ : ∀ {b d o} → (x : Digit d) → (xs : Num b d o) → ℕ
+⟦ x ∷ xs ⟧ = ⟦ (x ∷ xs) ⟧ id
 
--- begin
---     {!   !}
--- ≡⟨ {!   !} ⟩
---     {!   !}
--- ≡⟨ {!   !} ⟩
---     {!   !}
--- ≡⟨ {!   !} ⟩
---     {!   !}
--- ≡⟨ {!   !} ⟩
---     {!   !}
--- ∎
-∷ns-mono-strict : ∀ {b d o}
-    → (x x' : Fin d) (xs : Num b d o)
-    → (y y' : Fin d) (ys : Num b d o)
-    → ⟦ x' ∷ xs ⟧ ≡ ⟦ y' ∷ ys ⟧
-    → Digit-toℕ x o < Digit-toℕ y o
-    → ⟦ x ∷ (x' ∷ xs) ⟧ < ⟦ y ∷ (y' ∷ ys) ⟧
-∷ns-mono-strict {b} {d} {o} x x' xs y y' ys ⟦x'∷xs⟧≡⟦y'∷ys⟧ ⟦x⟧<⟦y⟧ =
+
+expand : ∀ {b d o}
+    → (x : Digit d) → (xs : Num b d o)
+    → (xs! : ¬ (Null xs))
+    → ⟦ x ∷ xs ⟧ ≡ Digit-toℕ x o + ⟦ xs ⟧ xs! * b
+expand {b} {d} {o} x ∙         xs! = contradiction tt xs!
+expand {b} {d} {o} x (x' ∷ xs) xs! = refl
+
+
+n∷-mono-strict : ∀ {b d o}
+    → (x : Fin d) (xs : Num (suc b) d o)
+    → (y : Fin d) (ys : Num (suc b) d o)
+    → (¬null-xs : ¬ (Null xs))
+    → (¬null-ys : ¬ (Null ys))
+    → Digit-toℕ x o ≡ Digit-toℕ y o
+    → ⟦ xs ⟧ ¬null-xs < ⟦ ys ⟧ ¬null-ys
+    → ⟦ x ∷ xs ⟧ < ⟦ y ∷ ys ⟧
+n∷-mono-strict             x ∙         y ys        ¬null-xs ¬null-ys ⟦x⟧≡⟦y⟧ ⟦xs⟧<⟦ys⟧ = contradiction tt ¬null-xs
+n∷-mono-strict             x (x' ∷ xs) y ∙         ¬null-xs ¬null-ys ⟦x⟧≡⟦y⟧ ⟦xs⟧<⟦ys⟧ = contradiction tt ¬null-ys
+n∷-mono-strict {b} {d} {o} x (x' ∷ xs) y (y' ∷ ys) ¬null-xs ¬null-ys ⟦x⟧≡⟦y⟧ ⟦xs⟧<⟦ys⟧ =
     start
-        suc (Fin.toℕ x + o + ⟦ x' ∷ xs ⟧ * b)
-    ≈⟨ cong (λ w → suc (Digit-toℕ x o + w * b)) ⟦x'∷xs⟧≡⟦y'∷ys⟧ ⟩
-        suc (Fin.toℕ x + o + ⟦ y' ∷ ys ⟧ * b)
-    ≤⟨ +n-mono (⟦ y' ∷ ys ⟧ * b) ⟦x⟧<⟦y⟧ ⟩
-        Fin.toℕ y + o + ⟦ y' ∷ ys ⟧ * b
+        suc ⟦ x ∷ (x' ∷  xs) ⟧
+    ≈⟨ refl ⟩
+        suc (Fin.toℕ x + o) + ⟦ x' ∷ xs ⟧ * suc b
+    ≈⟨ sym (+-suc (Fin.toℕ x + o) (⟦ x' ∷ xs ⟧ * suc b)) ⟩
+        Fin.toℕ x + o + suc (⟦ x' ∷ xs ⟧ * suc b)
+    ≤⟨ n+-mono (Fin.toℕ x + o) (s≤s (m≤n+m (⟦ x' ∷ xs ⟧ * suc b) b)) ⟩
+        Fin.toℕ x + o + (suc b + ⟦ x' ∷ xs ⟧ * suc b)
+    ≤⟨ reflexive ⟦x⟧≡⟦y⟧ +-mono *n-mono (suc b) ⟦xs⟧<⟦ys⟧ ⟩
+        Fin.toℕ y + o + ⟦ y' ∷ ys ⟧ * suc b
+    ≈⟨ refl ⟩
+        ⟦ y ∷ (y' ∷ ys) ⟧
+    □
+
+∷ns-mono-strict : ∀ {b d o}
+    → (x : Fin d) (xs : Num b d o)
+    → (y : Fin d) (ys : Num b d o)
+    → (xs! : ¬ (Null xs))
+    → (ys! : ¬ (Null ys))
+    → ⟦ xs ⟧ xs! ≡ ⟦ ys ⟧ ys!
+    → Digit-toℕ x o < Digit-toℕ y o
+    → ⟦ x ∷ xs ⟧ < ⟦ y ∷ ys ⟧
+∷ns-mono-strict {b} {d} {o} x xs y ys xs! ys! ⟦xs⟧≡⟦ys⟧ ⟦x⟧<⟦y⟧ =
+    start
+        suc ⟦ x ∷ xs ⟧
+    ≈⟨ cong suc (expand x xs xs!) ⟩
+        suc (Fin.toℕ x + o + (⟦ xs ⟧ xs!) * b)
+    ≤⟨ ⟦x⟧<⟦y⟧ +-mono *n-mono b (reflexive ⟦xs⟧≡⟦ys⟧) ⟩
+        Fin.toℕ y + o + (⟦ ys ⟧ ys!) * b
+    ≈⟨ sym (expand y ys ys!) ⟩
+        ⟦ y ∷ ys ⟧
     □
 
 tail-mono-strict : ∀ {b d o}
-    → (x x' : Fin d) (xs : Num b d o)
-    → (y y' : Fin d) (ys : Num b d o)
+    → (x : Fin d) (xs : Num b d o)
+    → (y : Fin d) (ys : Num b d o)
+    → (xs! : ¬ (Null xs))
+    → (ys! : ¬ (Null ys))
     → Greatest x
-    → ⟦ x ∷ (x' ∷ xs) ⟧ < ⟦ y ∷ (y' ∷ ys) ⟧
-    → ⟦ x' ∷ xs ⟧ < ⟦ y' ∷ ys ⟧
-tail-mono-strict {b} {_} {o} x x' xs y y' ys greatest p
-    = *n-mono-strict-inverse b ⟦∷x'∷xs⟧<⟦∷y'∷ys⟧
+    → ⟦ x ∷ xs ⟧ < ⟦ y ∷ ys ⟧
+    → ⟦ xs ⟧ xs! < ⟦ ys ⟧ ys!
+tail-mono-strict {b} {_} {o} x xs y ys xs! ys! greatest p
+    = *n-mono-strict-inverse b ⟦∷xs⟧<⟦∷ys⟧
     where
         ⟦x⟧≥⟦y⟧ : Digit-toℕ x o ≥ Digit-toℕ y o
         ⟦x⟧≥⟦y⟧ = greatest-of-all o x y greatest
-        ⟦∷x'∷xs⟧<⟦∷y'∷ys⟧ : ⟦ x' ∷ xs ⟧ * b < ⟦ y' ∷ ys ⟧ * b
-        ⟦∷x'∷xs⟧<⟦∷y'∷ys⟧ = +-mono-contra ⟦x⟧≥⟦y⟧ p
+        expanded-p : Digit-toℕ x o + (⟦ xs ⟧ xs!) * b < Digit-toℕ y o + (⟦ ys ⟧ ys!) * b
+        expanded-p =
+            start
+                suc (Fin.toℕ x + o + (⟦ xs ⟧ xs!) * b)
+            ≈⟨ cong suc $ sym (expand x xs xs!) ⟩
+                suc ⟦ x ∷ xs ⟧
+            ≤⟨ p ⟩
+                ⟦ y ∷ ys ⟧
+            ≈⟨ expand y ys ys! ⟩
+                Fin.toℕ y + o + (⟦ ys ⟧ ys!) * b
+            □
+        ⟦∷xs⟧<⟦∷ys⟧ : ⟦ xs ⟧ xs! * b < ⟦ ys ⟧ ys! * b
+        ⟦∷xs⟧<⟦∷ys⟧ = +-mono-contra ⟦x⟧≥⟦y⟧ expanded-p
+
 
 
 ------------------------------------------------------------------------
