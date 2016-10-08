@@ -318,25 +318,29 @@ mutual
                 ≤⟨ ∸-mono {suc ⟦ x' ∷ xs ⟧} {⟦ next ⟧ next!} {⟦ x' ∷ xs ⟧} (next-number-d+o≥2-is-greater (x' ∷ xs) id ¬max prop) ≤-refl ⟩
                     ⟦ next ⟧ next! ∸ ⟦ x' ∷ xs ⟧
                 □) *-mono (s≤s {0} {b} z≤n)
+            gap<d = ≤-pred $ ≤-step $ ≰⇒> ¬gapped
+            gap'-upper-bound =
+                start
+                    ⟦ next ⟧ next! * suc b ∸ ⟦ x' ∷ xs ⟧ * suc b
+                ≈⟨ sym (*-distrib-∸ʳ (suc b) (⟦ next ⟧ next!) ⟦ x' ∷ xs ⟧) ⟩
+                    (⟦ next ⟧ next! ∸ ⟦ x' ∷ xs ⟧) * suc b
+                ≤⟨ gap<d ⟩
+                    suc d
+                ≤⟨ m≤m+n (suc d) o ⟩
+                    suc d + o
+                ≈⟨ cong (λ w → w + o) (sym greatest) ⟩
+                    suc (Digit-toℕ x o)
+                □
             LSD = digit+1-n x greatest gap gap>0
             next>this = ≤-pred $ ≤-step $ next-number-d+o≥2-is-greater (x' ∷ xs) id ¬max prop
+
         in start
             suc (Digit-toℕ x o) + ⟦ x' ∷ xs ⟧ * suc b
-        ≈⟨ {!   !} ⟩
-            {!   !}
-        ≈⟨ {!   !} ⟩
-            {!   !}
-        ≈⟨ {!   !} ⟩
-            {!   !}
-        ≈⟨ {!   !} ⟩
-            {!   !}
-        -- ≈⟨ {!   !} ⟩
-        --     suc (Digit-toℕ x o) ∸ {! gap  !} + ⟦ next ⟧ next! * suc b
-        ≈⟨ cong (λ w → w + ⟦ next ⟧ next! * suc b) (Digit-toℕ-digit+1-n x greatest (((⟦ next ⟧ next!) ∸ ⟦ (x' ∷ {! xs   !}) ⟧ id) * suc b) {!   !} {!   !}) ⟩
-        --     o + ((⟦ next ⟧ next! ∸ ⟦ x' ∷ xs ⟧) * suc b + ⟦ x' ∷ xs ⟧ * suc b)
-        -- ≈⟨ cong (λ w → o + w) (sym (distribʳ-*-+ (suc b) (⟦ next ⟧ next! ∸ ⟦ x' ∷ xs ⟧) ⟦ x' ∷ xs ⟧)) ⟩
-        --     o + (⟦ next ⟧ next! ∸ ⟦ x' ∷ xs ⟧ + ⟦ x' ∷ xs ⟧) * suc b
-        -- ≈⟨ cong (λ w → Digit-toℕ LSD o + w * suc b) (m∸n+n≡m next>this) ⟩
+        ≈⟨ sym (m∸[o∸n]+o≡m+n (suc (Digit-toℕ x o)) (⟦ x' ∷ xs ⟧ * suc b) (⟦ next ⟧ next! * suc b) (*n-mono (suc b) next>this) gap'-upper-bound) ⟩
+            suc (Digit-toℕ x o) ∸ (⟦ next ⟧ next! * suc b ∸ ⟦ x' ∷ xs ⟧ * suc b) + (⟦ next ⟧ next!) * suc b
+        ≈⟨ cong (λ w → suc (Digit-toℕ x o) ∸ w + (⟦ next ⟧ next!) * suc b) (sym (*-distrib-∸ʳ (suc b) (⟦ next ⟧ next!) ⟦ x' ∷ xs ⟧)) ⟩
+            suc (Digit-toℕ x o) ∸ (⟦ next ⟧ next! ∸ ⟦ x' ∷ xs ⟧) * suc b + (⟦ next ⟧ next!) * suc b
+        ≈⟨ cong (λ w → w + ⟦ next ⟧ next! * suc b) (sym (Digit-toℕ-digit+1-n x greatest gap gap>0 gap<d)) ⟩
             Digit-toℕ LSD o + ⟦ next ⟧ next! * suc b
         ≈⟨ sym (expand LSD next next!) ⟩
             ⟦ LSD ∷ next ⟧
