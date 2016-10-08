@@ -404,12 +404,12 @@ tail-mono-strict {b} {_} {o} x xs y ys xs! ys! greatest p
 -- Predicates on Num
 ------------------------------------------------------------------------
 
-Maximum : ∀ {b d o} → Digit d → Num b d o → Set
-Maximum {b} {d} {o} x xs = ∀ (y : Digit d) → (ys : Num b d o) → ⟦ x ∷ xs ⟧ ≥ ⟦ y ∷ ys ⟧
+Maximum : ∀ {b d o} → (xs : Num b d o) → ¬ (Null xs) → Set
+Maximum {b} {d} {o} xs xs! = ∀ (ys : Num b d o) (ys! : ¬ (Null ys)) → ⟦ xs ⟧ xs! ≥ ⟦ ys ⟧ ys!
 
 -- a system is bounded if there exists the greatest number
 Bounded : ∀ b d o → Set
-Bounded b d o = Σ[ x ∈ Digit d ] Σ[ xs ∈ Num b d o ] Maximum x xs
+Bounded b d o = Σ[ xs ∈ Num b d o ] Σ[ xs! ∈ ¬ (Null xs) ] Maximum xs xs!
 
 -- start
 --     {!   !}

@@ -65,91 +65,75 @@ toℕ-Base≡0 {d} {o} x (x' ∷ xs) =
         Digit-toℕ x o
     ∎
 
-Base≡0-lemma : ∀ {d} {o}
+Base≡0-Maximum : ∀ {d} {o}
     → (x : Digit (suc d))
     → (xs : Num 0 (suc d) o)
     → Greatest x
-    → Maximum x xs
-Base≡0-lemma {_} {o} x xs greatest y ys        =
+    → Maximum (x ∷ xs) id
+Base≡0-Maximum         x xs greatest ∙        ys! = contradiction tt ys!
+Base≡0-Maximum {_} {o} x xs greatest (y ∷ ys) ys! =
     start
         ⟦ y ∷ ys ⟧
     ≈⟨ toℕ-Base≡0 y ys ⟩
-        Digit-toℕ y o
+        Fin.toℕ y + o
     ≤⟨ greatest-of-all o x y greatest ⟩
         Fin.toℕ x + o
     ≈⟨ sym (toℕ-Base≡0 x xs) ⟩
         ⟦ x ∷ xs ⟧
     □
 
--- begin
---     {!   !}
--- ≡⟨ {!   !} ⟩
---     {!   !}
--- ≡⟨ {!   !} ⟩
---     {!   !}
--- ≡⟨ {!   !} ⟩
---     {!   !}
--- ≡⟨ {!   !} ⟩
---     {!   !}
--- ∎
+HasOnly0-all-zero : ∀ {b} → (xs : Num b 1 0) → (xs! : ¬ (Null xs)) → ⟦ xs ⟧ xs! ≡ 0
+HasOnly0-all-zero     ∙               xs! = contradiction tt xs!
+HasOnly0-all-zero     (z ∷ ∙)         xs! = refl
+HasOnly0-all-zero {b} (z ∷ z ∷ xs)    xs! = cong (λ w → w * b) (HasOnly0-all-zero (z ∷ xs) id)
+HasOnly0-all-zero     (z ∷ s () ∷ xs) xs!
+HasOnly0-all-zero     (s () ∷ xs)     xs!
 
--- start
---     {!   !}
--- ≤⟨ {!   !} ⟩
---     {!   !}
--- ≤⟨ {!   !} ⟩
---     {!   !}
--- ≤⟨ {!   !} ⟩
---     {!   !}
--- □
-
-HasOnly0-all-zero : ∀ {b} → (x : Digit 1) (xs : Num b 1 0) → ⟦ x ∷ xs ⟧ ≡ 0
-HasOnly0-all-zero     z      ∙         = refl
-HasOnly0-all-zero {b} z      (x' ∷ xs) = cong (λ x' → x' * b) (HasOnly0-all-zero {b} x' xs)
-HasOnly0-all-zero     (s ()) xs
-
-HasOnly0-Maximum : ∀ b → (x : Digit 1) (xs : Num b 1 0) → Maximum x xs
-HasOnly0-Maximum b x xs y ys = reflexive $
+HasOnly0-Maximum : ∀ {b} → (xs : Num b 1 0) → (xs! : ¬ (Null xs)) → Maximum xs xs!
+HasOnly0-Maximum xs xs! ys ys! = reflexive $
     begin
-        ⟦ y ∷ ys ⟧
-    ≡⟨ HasOnly0-all-zero y ys ⟩
-        0
-    ≡⟨ sym (HasOnly0-all-zero x xs) ⟩
-        ⟦ x ∷ xs ⟧
+        (⟦ ys ⟧ ys!)
+    ≡⟨ HasOnly0-all-zero ys ys! ⟩
+        zero
+    ≡⟨ sym (HasOnly0-all-zero xs xs!) ⟩
+        (⟦ xs ⟧ xs!)
     ∎
 
-Digit+Offset≥2-¬Bounded-lemma : ∀ b d o → d + o ≥ 1 → ¬ (Bounded (suc b) (suc d) o)
-Digit+Offset≥2-¬Bounded-lemma b d o d+o≥1 (x , xs , claim) = contradiction p ¬p
+Digit+Offset≥2-¬Bounded : ∀ b d o → d + o ≥ 1 → ¬ (Bounded (suc b) (suc d) o)
+Digit+Offset≥2-¬Bounded b d o d+o≥1 (xs , xs! , claim) = contradiction p ¬p
     where
-        p : ⟦ x ∷ xs ⟧ ≥ ⟦ greatest-digit d ∷ (x ∷ xs) ⟧
-        p = claim (greatest-digit d) (x ∷ xs)
-        ¬p : ⟦ x ∷ xs ⟧ ≱ ⟦ greatest-digit d ∷ (x ∷ xs) ⟧
+        p : ⟦ xs ⟧ xs! ≥ ⟦ greatest-digit d ∷ xs ⟧
+        p = claim (greatest-digit d ∷ xs) id
+        ¬p : ⟦ xs ⟧ xs! ≱ ⟦ greatest-digit d ∷ xs ⟧
         ¬p = <⇒≱ $
             start
-                suc ⟦ x ∷ xs ⟧
-            ≈⟨ cong suc (sym (*-right-identity ⟦ x ∷ xs ⟧)) ⟩
-                suc (⟦ x ∷ xs ⟧ * 1)
-            ≤⟨ s≤s (n*-mono ⟦ x ∷ xs ⟧ (s≤s z≤n)) ⟩
-                suc (⟦ x ∷ xs ⟧ * suc b)
-            ≤⟨ +n-mono (⟦ x ∷ xs ⟧ * suc b) d+o≥1 ⟩
-                (d + o) + (⟦ x ∷ xs ⟧ * suc b)
+                suc (⟦ xs ⟧ xs!)
+            ≈⟨ cong suc (sym (*-right-identity (⟦ xs ⟧ xs!))) ⟩
+                suc (⟦ xs ⟧ xs! * 1)
+            ≤⟨ s≤s (n*-mono (⟦ xs ⟧ xs!) (s≤s z≤n)) ⟩
+                suc (⟦ xs ⟧ xs! * suc b)
+            ≤⟨ +n-mono (⟦ xs ⟧ xs! * suc b) d+o≥1 ⟩
+                d + o + (⟦ xs ⟧ xs!) * suc b
             ≈⟨ cong
-                (λ w → w + ⟦ x ∷ xs ⟧ * suc b)
+                (λ w → w + ⟦ xs ⟧ xs! * suc b)
                 (sym (toℕ-greatest (Fin.fromℕ d) (greatest-digit-is-the-Greatest d)))
             ⟩
-                Digit-toℕ (greatest-digit d) o + ⟦ x ∷ xs ⟧ * suc b
+                Digit-toℕ (greatest-digit d) o + (⟦ xs ⟧ xs!) * suc b
+            ≈⟨ sym (expand (greatest-digit d) xs xs!) ⟩
+                ⟦ greatest-digit d ∷ xs ⟧
             □
 
-HasNoDigit-¬Bounded-lemma : ∀ b o → ¬ (Bounded b 0 o)
-HasNoDigit-¬Bounded-lemma b o (() , xs , claim)
+HasNoDigit-¬Bounded : ∀ b o → ¬ (Bounded b 0 o)
+HasNoDigit-¬Bounded b o (∙ , xs! , claim) = contradiction tt xs!
+HasNoDigit-¬Bounded b o (() ∷ xs , xs! , claim)
 
 BoundedCond⇒Bounded : ∀ {b d o} → BoundedCond b d o → Bounded b d o
-BoundedCond⇒Bounded (Base≡0 d o) = greatest-digit d , ∙ , Base≡0-lemma (greatest-digit d) ∙ (greatest-digit-is-the-Greatest d)
-BoundedCond⇒Bounded (HasOnly0 b) = z , ∙ , (HasOnly0-Maximum (suc b) z ∙)
+BoundedCond⇒Bounded (Base≡0 d o) = (greatest-digit d ∷ ∙) , id , Base≡0-Maximum (greatest-digit d) ∙ (greatest-digit-is-the-Greatest d)
+BoundedCond⇒Bounded (HasOnly0 b) = (z ∷ ∙) , id , HasOnly0-Maximum (z ∷ ∙) id
 
 NonBoundedCond⇒¬Bounded : ∀ {b d o} → NonBoundedCond b d o → ¬ (Bounded b d o)
-NonBoundedCond⇒¬Bounded (Digit+Offset≥2 b d o d+o≥2) = Digit+Offset≥2-¬Bounded-lemma b d o (≤-pred d+o≥2)
-NonBoundedCond⇒¬Bounded (HasNoDigit b o)             = HasNoDigit-¬Bounded-lemma b o
+NonBoundedCond⇒¬Bounded (Digit+Offset≥2 b d o d+o≥2) = Digit+Offset≥2-¬Bounded b d o (≤-pred d+o≥2)
+NonBoundedCond⇒¬Bounded (HasNoDigit b o)             = HasNoDigit-¬Bounded b o
 
 Bounded⇒BoundedCond : ∀ {b d o} → Bounded b d o → BoundedCond b d o
 Bounded⇒BoundedCond {b} {d} {o} bounded with boundedView b d o
@@ -171,12 +155,17 @@ Bounded? (IsntBounded condition) = no (NonBoundedCond⇒¬Bounded condition)
 
 ¬Bounded⇒¬Maximum : ∀ {b d o}
     → ¬ (Bounded b d o)
-    → (x : Digit d)
     → (xs : Num b d o)
-    → Maximum x xs
-    → ⊥
-¬Bounded⇒¬Maximum ¬bounded x xs claim =
-    contradiction (x , xs , claim) ¬bounded
+    → (xs! : ¬ (Null xs))
+    → ¬ (Maximum xs xs!)
+¬Bounded⇒¬Maximum ¬bounded xs xs! claim = contradiction (xs , xs! , claim) ¬bounded
+
+Maximum⇒Bounded : ∀ {b d o}
+    → (xs : Num b d o)
+    → (xs! : ¬ (Null xs))
+    → Maximum xs xs!
+    → Bounded b d o
+Maximum⇒Bounded xs xs! max = xs , xs! , max
 
 -- begin
 --     {!   !}
