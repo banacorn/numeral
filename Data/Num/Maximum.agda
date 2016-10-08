@@ -190,7 +190,8 @@ mutual
                     ⟦ next ⟧ next! ∸ ⟦ x' ∷ xs ⟧
                 □) *-mono (s≤s {0} {b} z≤n)
         in digit+1-n x greatest gap gap>0 ∷ next
-    next-number-d+o≥2 {b} {d} {o} (x ∷ xs)      xs! ¬max prop | no ¬greatest = {!   !}
+    next-number-d+o≥2 {b} {d} {o} (x ∷ xs)      xs! ¬max prop | no ¬greatest
+        = digit+1 x ¬greatest ∷ xs
 
     -- properties of the actual function
     next-number-d+o≥2-¬Null : ∀ {b d o}
@@ -207,7 +208,7 @@ mutual
     next-number-d+o≥2-¬Null {b} {d} {o} (x ∷ x' ∷ xs) xs! ¬max prop | yes greatest with Gapped? (x' ∷ xs) id prop
     next-number-d+o≥2-¬Null {b} {d} {o} (x ∷ x' ∷ xs) xs! ¬max prop | yes greatest | yes gapped = id
     next-number-d+o≥2-¬Null {b} {d} {o} (x ∷ x' ∷ xs) xs! ¬max prop | yes greatest | no ¬gapped = id
-    next-number-d+o≥2-¬Null {b} {d} {o} (x ∷ xs)      xs! ¬max prop | no ¬greatest = {!   !}
+    next-number-d+o≥2-¬Null {b} {d} {o} (x ∷ xs)      xs! ¬max prop | no ¬greatest = id
 
     Digit-toℕ-1⊔o : ∀ b {d o}
         → (xs : Num (suc b) (suc d) o)
@@ -345,7 +346,17 @@ mutual
         ≈⟨ sym (expand LSD next next!) ⟩
             ⟦ LSD ∷ next ⟧
         □
-    next-number-d+o≥2-is-greater {b} {d} {o} (x ∷ xs)      xs! ¬max prop | no ¬greatest = {!   !}
+    next-number-d+o≥2-is-greater {b} {d} {o} (x ∷ xs)      xs! ¬max prop | no ¬greatest =
+        start
+            suc ⟦ x ∷ xs ⟧
+        ≤⟨ {!   !} ⟩
+            {!   !}
+        ≤⟨ {!   !} ⟩
+            {!   !}
+        ≤⟨ {!   !} ⟩
+            {!   !}
+        □
+
 
 
 
