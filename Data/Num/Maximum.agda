@@ -378,7 +378,59 @@ next-number xs xs! ¬max | IsBounded   (HasOnly0 b) = next-number-HasOnly0 xs xs
 next-number xs xs! ¬max | IsntBounded (Digit+Offset≥2 b d o d+o≥2) = next-number-d+o≥2 xs xs! ¬max d+o≥2
 next-number xs xs! ¬max | IsntBounded (HasNoDigit b o) = next-number-HasNoDigit xs xs! ¬max
 
+next-number-Base≡0-¬Null : ∀ {d o}
+    → (xs : Num 0 (suc d) o)
+    → (xs! : ¬ (Null xs))
+    → (¬max : ¬ (Maximum xs xs!))
+    → ¬ Null (next-number-Base≡0 xs xs! ¬max)
+next-number-Base≡0-¬Null {d} {o} xs xs! ¬max with Base≡0-view d o
+next-number-Base≡0-¬Null xs       xs! ¬max | HasOnly0 = contradiction (HasOnly0-Maximum xs xs!) ¬max
+next-number-Base≡0-¬Null ∙        xs! ¬max | Others bound = contradiction tt xs!
+next-number-Base≡0-¬Null (x ∷ xs) xs! ¬max | Others bound with Greatest? x
+next-number-Base≡0-¬Null (x ∷ xs) xs! ¬max | Others bound | yes greatest = contradiction (Base≡0-Maximum x xs greatest) ¬max
+next-number-Base≡0-¬Null (x ∷ xs) xs! ¬max | Others bound | no ¬greatest = id
 
+next-number-is-LUB-Base≡0 : ∀ {d o}
+    → (xs : Num 0 (suc d) o)
+    → (ys : Num 0 (suc d) o)
+    → (xs! : ¬ (Null xs))
+    → (ys! : ¬ (Null ys))
+    → (¬max : ¬ (Maximum xs xs!))
+    → ⟦ ys ⟧ ys! > ⟦ xs ⟧ xs!
+    → ⟦ ys ⟧ ys! ≥ ⟦ next-number-Base≡0 xs xs! ¬max ⟧ next-number-Base≡0-¬Null xs xs! ¬max
+next-number-is-LUB-Base≡0 {d} {o} xs ys xs! ys! ¬max prop with Base≡0-view d o
+next-number-is-LUB-Base≡0 {0} {0} xs ys xs! ys! ¬max prop | HasOnly0 = contradiction (HasOnly0-Maximum xs xs!) ¬max
+next-number-is-LUB-Base≡0         ∙  ys xs! ys! ¬max prop | Others bound = contradiction tt xs!
+next-number-is-LUB-Base≡0 {d} {o} (x ∷ xs) ∙ xs! ys! ¬max prop | Others bound = contradiction tt ys!
+next-number-is-LUB-Base≡0 {d} {o} (x ∷ xs) (y ∷ ys) xs! ys! ¬max prop | Others bound with Greatest? x
+next-number-is-LUB-Base≡0 {d} {o} (x ∷ xs) (y ∷ ys) xs! ys! ¬max prop | Others bound | yes greatest = contradiction (Base≡0-Maximum x xs greatest) ¬max
+next-number-is-LUB-Base≡0 {d} {o} (x ∷ ∙) (y ∷ ys) xs! ys! ¬max prop | Others bound | no ¬greatest =
+    start
+        Digit-toℕ (digit+1 x ¬greatest) o
+    ≈⟨ Digit-toℕ-digit+1 x ¬greatest ⟩
+        suc (Digit-toℕ x o)
+    ≤⟨ prop ⟩
+        ⟦ y ∷ ys ⟧
+    □
+next-number-is-LUB-Base≡0 {d} {o} (x ∷ x' ∷ xs) (y ∷ ys) xs! ys! ¬max prop | Others bound | no ¬greatest =
+    start
+        ⟦ digit+1 x ¬greatest ∷ (x' ∷ xs) ⟧
+    ≈⟨ expand (digit+1 x ¬greatest) (x' ∷ xs) id ⟩
+        Digit-toℕ (digit+1 x ¬greatest) o + ⟦ x' ∷ xs ⟧ * 0
+    ≈⟨ cong (λ w → w + ⟦ x' ∷ xs ⟧ * 0) (Digit-toℕ-digit+1 x ¬greatest) ⟩
+        suc (Digit-toℕ x o) + ⟦ x' ∷ xs ⟧ * 0
+    ≤⟨ prop ⟩
+        ⟦ y ∷ ys ⟧
+    □
+
+    -- start
+    --     Digit-toℕ (digit+1 x ¬greatest) o + ⟦ xs ⟧ xs! * 0
+    -- ≤⟨ +n-mono (⟦ xs ⟧ xs! * 0oℕ xs * 0) (reflexive (Digit-toℕ-digit+1 x ¬greatest)) ⟩
+    --     suc ⟦ x ∷ xs ⟧
+    -- ≤⟨ prop ⟩
+    --     ⟦ y ∷ ys ⟧
+    -- □
+--
 -- next-number-is-LUB-Base≡0 : ∀ {d o}
 --     → (xs : Num 0 (suc d) o)
 --     → (ys : Num 0 (suc d) o)
@@ -539,6 +591,27 @@ next-number xs xs! ¬max | IsntBounded (HasNoDigit b o) = next-number-HasNoDigit
 --         toℕ (y ∷ ys)
 --     □
 --
+-- begin
+--     {!   !}
+-- ≡⟨ {!   !} ⟩
+--     {!   !}
+-- ≡⟨ {!   !} ⟩
+--     {!   !}
+-- ≡⟨ {!   !} ⟩
+--     {!   !}
+-- ≡⟨ {!   !} ⟩
+--     {!   !}
+-- ∎
+
+-- start
+--     {!   !}
+-- ≤⟨ {!   !} ⟩
+--     {!   !}
+-- ≤⟨ {!   !} ⟩
+--     {!   !}
+-- ≤⟨ {!   !} ⟩
+--     {!   !}
+-- □
 -- next-number-is-LUB-Digit+Offset≥2 {b} {d} {o} (x ∷ xs) (y ∷ ys) ¬max d+o≥2 prop | no ¬greatest =
 --     start
 --         toℕ (digit+1 x ¬greatest ∷ xs)
@@ -563,25 +636,3 @@ next-number xs xs! ¬max | IsntBounded (HasNoDigit b o) = next-number-HasNoDigit
 -- next-number-is-LUB xs ys ¬max prop | IsBounded (HasNoDigit b o) = next-number-is-LUB-HasNoDigit xs ys ¬max
 -- next-number-is-LUB xs ys ¬max prop | IsBounded (HasOnly0 b) = contradiction (HasOnly0-Maximum (suc b) xs) ¬max
 -- next-number-is-LUB xs ys ¬max prop | IsntBounded (Digit+Offset≥2 b d o d+o≥2) = next-number-is-LUB-Digit+Offset≥2 xs ys ¬max d+o≥2 prop
-
--- begin
---     {!   !}
--- ≡⟨ {!   !} ⟩
---     {!   !}
--- ≡⟨ {!   !} ⟩
---     {!   !}
--- ≡⟨ {!   !} ⟩
---     {!   !}
--- ≡⟨ {!   !} ⟩
---     {!   !}
--- ∎
-
--- start
---     {!   !}
--- ≤⟨ {!   !} ⟩
---     {!   !}
--- ≤⟨ {!   !} ⟩
---     {!   !}
--- ≤⟨ {!   !} ⟩
---     {!   !}
--- □
