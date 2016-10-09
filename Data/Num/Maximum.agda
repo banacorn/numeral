@@ -390,6 +390,14 @@ next-number-Base≡0-¬Null (x ∷ xs) xs! ¬max | Others bound with Greatest? x
 next-number-Base≡0-¬Null (x ∷ xs) xs! ¬max | Others bound | yes greatest = contradiction (Base≡0-Maximum x xs greatest) ¬max
 next-number-Base≡0-¬Null (x ∷ xs) xs! ¬max | Others bound | no ¬greatest = id
 
+next-number-HasOnly0-¬Null : ∀ {b}
+    → (xs : Num (suc b) 1 0)
+    → (xs! : ¬ (Null xs))
+    → (¬max : ¬ (Maximum xs xs!))
+    → ¬ Null (next-number-HasOnly0 xs xs! ¬max)
+next-number-HasOnly0-¬Null {b} xs xs! ¬max = contradiction (HasOnly0-Maximum xs xs!) ¬max
+
+
 next-number-is-LUB-Base≡0 : ∀ {d o}
     → (xs : Num 0 (suc d) o)
     → (ys : Num 0 (suc d) o)
@@ -422,6 +430,27 @@ next-number-is-LUB-Base≡0 {d} {o} (x ∷ x' ∷ xs) (y ∷ ys) xs! ys! ¬max p
     ≤⟨ prop ⟩
         ⟦ y ∷ ys ⟧
     □
+
+next-number-is-LUB-HasOnly0 : ∀ {b}
+    → (xs : Num (suc b) 1 0)
+    → (ys : Num (suc b) 1 0)
+    → (xs! : ¬ (Null xs))
+    → (ys! : ¬ (Null ys))
+    → (¬max : ¬ (Maximum xs xs!))
+    → ⟦ ys ⟧ ys! > ⟦ xs ⟧ xs!
+    → ⟦ ys ⟧ ys! ≥ ⟦ next-number-HasOnly0 xs xs! ¬max ⟧ next-number-HasOnly0-¬Null xs xs! ¬max
+    → ¬ Null (next-number-HasOnly0 xs xs! ¬max)
+next-number-is-LUB-HasOnly0 {b} xs ys xs! ys! ¬max prop = contradiction (HasOnly0-Maximum xs xs!) ¬max
+    --
+--
+-- next-number-is-LUB-Base≡0 : ∀ {d o}
+--     → (xs : Num 0 (suc d) o)
+--     → (ys : Num 0 (suc d) o)
+--     → (xs! : ¬ (Null xs))
+--     → (ys! : ¬ (Null ys))
+--     → (¬max : ¬ (Maximum xs xs!))
+--     → ⟦ ys ⟧ ys! > ⟦ xs ⟧ xs!
+--     → ⟦ ys ⟧ ys! ≥ ⟦ next-number-Base≡0 xs xs! ¬max ⟧ next-number-Base≡0-¬Null xs xs! ¬max
 
     -- start
     --     Digit-toℕ (digit+1 x ¬greatest) o + ⟦ xs ⟧ xs! * 0
