@@ -279,18 +279,34 @@ expand : ∀ {b d o}
 expand {b} {d} {o} x ∙         xs! = contradiction tt xs!
 expand {b} {d} {o} x (x' ∷ xs) xs! = refl
 
+⟦x∷xs⟧≥⟦xs⟧ :  ∀ {b d o}
+    → (x : Fin d) (xs : Num (suc b) d o)
+    → (xs! : ¬ (Null xs))
+    → ⟦ x ∷ xs ⟧ ≥ ⟦ xs ⟧ xs!
+⟦x∷xs⟧≥⟦xs⟧             x ∙         xs! = contradiction tt xs!
+⟦x∷xs⟧≥⟦xs⟧ {b} {d} {o} x (x' ∷ xs) xs! =
+    start
+        ⟦ x' ∷ xs ⟧
+    ≈⟨ sym (*-right-identity ⟦ x' ∷ xs ⟧) ⟩
+        ⟦ x' ∷ xs ⟧ * 1
+    ≤⟨ n*-mono ⟦ x' ∷ xs ⟧ (s≤s z≤n) ⟩
+        ⟦ x' ∷ xs ⟧ * suc b
+    ≤⟨ m≤n+m (⟦ x' ∷ xs ⟧ * suc b) (Fin.toℕ x + o) ⟩
+        Fin.toℕ x + o + ⟦ x' ∷ xs ⟧ * suc b
+    □
+
 
 n∷-mono-strict : ∀ {b d o}
     → (x : Fin d) (xs : Num (suc b) d o)
     → (y : Fin d) (ys : Num (suc b) d o)
-    → (¬null-xs : ¬ (Null xs))
-    → (¬null-ys : ¬ (Null ys))
+    → (xs! : ¬ (Null xs))
+    → (ys! : ¬ (Null ys))
     → Digit-toℕ x o ≡ Digit-toℕ y o
-    → ⟦ xs ⟧ ¬null-xs < ⟦ ys ⟧ ¬null-ys
+    → ⟦ xs ⟧ xs! < ⟦ ys ⟧ ys!
     → ⟦ x ∷ xs ⟧ < ⟦ y ∷ ys ⟧
-n∷-mono-strict             x ∙         y ys        ¬null-xs ¬null-ys ⟦x⟧≡⟦y⟧ ⟦xs⟧<⟦ys⟧ = contradiction tt ¬null-xs
-n∷-mono-strict             x (x' ∷ xs) y ∙         ¬null-xs ¬null-ys ⟦x⟧≡⟦y⟧ ⟦xs⟧<⟦ys⟧ = contradiction tt ¬null-ys
-n∷-mono-strict {b} {d} {o} x (x' ∷ xs) y (y' ∷ ys) ¬null-xs ¬null-ys ⟦x⟧≡⟦y⟧ ⟦xs⟧<⟦ys⟧ =
+n∷-mono-strict             x ∙         y ys        xs! ys! ⟦x⟧≡⟦y⟧ ⟦xs⟧<⟦ys⟧ = contradiction tt xs!
+n∷-mono-strict             x (x' ∷ xs) y ∙         xs! ys! ⟦x⟧≡⟦y⟧ ⟦xs⟧<⟦ys⟧ = contradiction tt ys!
+n∷-mono-strict {b} {d} {o} x (x' ∷ xs) y (y' ∷ ys) xs! ys! ⟦x⟧≡⟦y⟧ ⟦xs⟧<⟦ys⟧ =
     start
         suc ⟦ x ∷ (x' ∷  xs) ⟧
     ≈⟨ refl ⟩
@@ -350,6 +366,32 @@ tail-mono-strict {b} {_} {o} x xs y ys xs! ys! greatest p
             □
         ⟦∷xs⟧<⟦∷ys⟧ : ⟦ xs ⟧ xs! * b < ⟦ ys ⟧ ys! * b
         ⟦∷xs⟧<⟦∷ys⟧ = +-mono-contra ⟦x⟧≥⟦y⟧ expanded-p
+
+tail-mono-strict-Null : ∀ {b d o}
+    → (x : Fin d)
+    → (y : Fin d) (ys : Num b d o)
+    → (ys! : ¬ (Null ys))
+    → Greatest x
+    → ⟦ x ∷ ∙ {b} ⟧ < ⟦ y ∷ ys ⟧
+    → 0 < ⟦ ys ⟧ ys!
+tail-mono-strict-Null {b} {_} {o} x y ys ys! greatest p
+    = *n-mono-strict-inverse b ⟦∷∙⟧<⟦∷ys⟧
+    where
+        ⟦x⟧≥⟦y⟧ : Digit-toℕ x o ≥ Digit-toℕ y o
+        ⟦x⟧≥⟦y⟧ = greatest-of-all o x y greatest
+        expanded-p : Digit-toℕ x o + 0 * b < Digit-toℕ y o + (⟦ ys ⟧ ys!) * b
+        expanded-p =
+            start
+                suc (Fin.toℕ x + o + 0 * b)
+            ≈⟨ +-right-identity (suc (Fin.toℕ x + o)) ⟩
+                suc ⟦ x ∷ ∙ {b} ⟧
+            ≤⟨ p ⟩
+                ⟦ y ∷ ys ⟧
+            ≈⟨ expand y ys ys! ⟩
+                Fin.toℕ y + o + (⟦ ys ⟧ ys!) * b
+            □
+        ⟦∷∙⟧<⟦∷ys⟧ : 0 < ⟦ ys ⟧ ys! * b
+        ⟦∷∙⟧<⟦∷ys⟧ = +-mono-contra ⟦x⟧≥⟦y⟧ expanded-p
 
 
 
