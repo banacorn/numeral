@@ -5,6 +5,7 @@ open import Data.Product
 open import Data.Nat.Properties
 open import Data.Nat.Properties.Simple
 open import Function
+open import Level using ()
 open import Relation.Binary
 open import Relation.Binary.Core
 open import Relation.Nullary.Negation
@@ -51,6 +52,9 @@ isSemiringWithoutOne = IsCommutativeSemiringWithoutOne.isSemiringWithoutOne ⊔-
 ⊔-comm : Commutative _⊔_
 ⊔-comm = IsCommutativeMonoid.comm +-isCommutativeMonoid
 
+cmp : Trichotomous _≡_ _<_
+cmp = StrictTotalOrder.compare strictTotalOrder
+
 ≤-trans :  Transitive _≤_
 ≤-trans = IsPreorder.trans isPreorder
 
@@ -58,6 +62,9 @@ isSemiringWithoutOne = IsCommutativeSemiringWithoutOne.isSemiringWithoutOne ⊔-
 >⇒≰ {zero}  ()      q
 >⇒≰ {suc m} (s≤s p) (s≤s q) = >⇒≰ p q
 
+≤⇒≯ : _≤_ ⇒ _≯_
+≤⇒≯ {zero} p ()
+≤⇒≯ {suc m} (s≤s p) (s≤s q) = ≤⇒≯ p q
 
 <⇒≱ : _<_ ⇒ _≱_
 <⇒≱ {zero} () z≤n
@@ -353,9 +360,6 @@ m∸[o∸n]+o≡m+n m n o n≤o o∸n≤m =
         m + n
     ∎
 
--- open ⊔-⊓-0-commutativeSemiringWithoutOne
--- ⊔-comm : Commutative _⊔_
--- ⊔-comm = {!IsCommutativeSemiringWithoutOne.isSemiringWithoutOne ⊔-⊓-0-isCommutativeSemiringWithoutOne  !}
 -- start
 --     {!   !}
 -- ≤⟨ {!   !} ⟩

@@ -67,7 +67,7 @@ next-number-Base≡0 : ∀ {d o}
     → (xs! : ¬ (Null xs))
     → ¬ (Maximum xs xs!)
     → Num 0 (suc d) o
-next-number-Base≡0 {d} {o} xs xs! ¬max  with Base≡0-view d o
+next-number-Base≡0 {d} {o} xs xs! ¬max with Base≡0-view d o
 next-number-Base≡0 xs       xs! ¬max | HasOnly0 = contradiction (HasOnly0-Maximum xs xs!) ¬max
 next-number-Base≡0 ∙        xs! ¬max | Others bound = contradiction tt xs!
 next-number-Base≡0 (x ∷ xs) xs! ¬max | Others bound with Greatest? x
@@ -86,32 +86,6 @@ next-number-HasOnly0 {b} xs xs! ¬max = contradiction (HasOnly0-Maximum xs xs!) 
 next-number-1⊔o-upper-bound : ∀ m n → 2 ≤ suc m + n → m + n ≥ 1 ⊔ n
 next-number-1⊔o-upper-bound m zero    q = ≤-pred q
 next-number-1⊔o-upper-bound m (suc n) q = m≤n+m (suc n) m
---
--- -- next-number-Digit+Offset≥2-lemma-2 : ∀ {b d o}
--- --     → (x : Digit (suc d))
--- --     → (x' : Digit (suc d)) (xs : Num (suc b) (suc d) o)
--- --     → (¬Maximum : ¬ (Maximum x (x' ∷ xs)))
--- --     → (greatest : Greatest x)
--- --     → suc d + o ≥ 2
--- --     → ¬ (Maximum x' xs)
--- -- next-number-Digit+Offset≥2-lemma-2 {b} {d} {o} x x' xs ¬max greatest d+o≥2 claim = contradiction p {! ¬p  !}
--- --     where   p : ⟦ x' ∷ xs ⟧ ≥ ⟦ x ∷ (x' ∷ xs) ⟧
--- --             p = claim x (x' ∷ xs)
--- --             ¬p : ⟦ x' ∷ xs ⟧ ≱ ⟦ x ∷ (x' ∷ xs) ⟧
--- --             ¬p = <⇒≱ $
--- --                 start
--- --                     suc ⟦ x' ∷ xs ⟧
--- --                 ≈⟨ cong suc (sym (*-right-identity ⟦ x' ∷ xs ⟧)) ⟩
--- --                     suc (⟦ x' ∷ xs ⟧ * 1)
--- --                 ≤⟨ s≤s (n*-mono ⟦ x' ∷ xs ⟧ (s≤s z≤n)) ⟩
--- --                     suc (⟦ x' ∷ xs ⟧ * suc b)
--- --                 ≤⟨ +n-mono (⟦ x' ∷ xs ⟧ * suc b) (≤-pred d+o≥2) ⟩
--- --                     d + o + ⟦ x' ∷ xs ⟧ * suc b
--- --                 ≈⟨ cong (λ w → w + ⟦ x' ∷ xs ⟧ * suc b) (sym (toℕ-greatest x greatest)) ⟩
--- --                     Digit-toℕ x o + ⟦ x' ∷ xs ⟧ * suc b
--- --                 □
--- -- --
--- --
 
 mutual
 
@@ -361,8 +335,7 @@ next-number-HasNoDigit : ∀ {b o}
     → (xs! : ¬ (Null xs))
     → ¬ (Maximum xs xs!)
     → Num b 0 o
-next-number-HasNoDigit ∙         xs! ¬max = contradiction tt xs!
-next-number-HasNoDigit (() ∷ xs) xs! ¬max
+next-number-HasNoDigit xs xs! ¬max = HasNoDigit-explode xs xs!
 
 
 next-number : ∀ {b d o}
@@ -400,8 +373,7 @@ next-number-¬Null-HasNoDigit : ∀ {b o}
     → (xs! : ¬ (Null xs))
     → (¬max : ¬ (Maximum xs xs!))
     → ¬ Null (next-number-HasNoDigit xs xs! ¬max)
-next-number-¬Null-HasNoDigit ∙         xs! ¬max = contradiction tt xs!
-next-number-¬Null-HasNoDigit (() ∷ xs) xs! ¬max
+next-number-¬Null-HasNoDigit xs xs! ¬max = HasNoDigit-explode xs xs!
 
 next-number-¬Null : ∀ {b d o}
     → (xs : Num b d o)
@@ -413,6 +385,45 @@ next-number-¬Null xs xs! ¬max | IsBounded (Base≡0 d o) = next-number-¬Null-
 next-number-¬Null xs xs! ¬max | IsBounded (HasOnly0 b) = next-number-¬Null-HasOnly0 xs xs! ¬max
 next-number-¬Null xs xs! ¬max | IsntBounded (Digit+Offset≥2 b d o d+o≥2) = next-number-¬Null-d+o≥2 xs xs! ¬max d+o≥2
 next-number-¬Null xs xs! ¬max | IsntBounded (HasNoDigit b o) = next-number-¬Null-HasNoDigit xs xs! ¬max
+
+next-number-is-greater-Base≡0 : ∀ {d o}
+    → (xs : Num 0 (suc d) o)
+    → (xs! : ¬ (Null xs))
+    → (¬max : ¬ (Maximum xs xs!))
+    → ⟦ next-number-Base≡0 xs xs! ¬max ⟧ next-number-¬Null-Base≡0 xs xs! ¬max > ⟦ xs ⟧ xs!
+next-number-is-greater-Base≡0 {d} {o} xs    xs! ¬max with Base≡0-view d o
+next-number-is-greater-Base≡0 xs            xs! ¬max | HasOnly0 = contradiction (HasOnly0-Maximum xs xs!) ¬max
+next-number-is-greater-Base≡0 ∙             xs! ¬max | Others bound = contradiction tt xs!
+next-number-is-greater-Base≡0 (x ∷ xs)      xs! ¬max | Others bound with Greatest? x
+next-number-is-greater-Base≡0 (x ∷ xs)      xs! ¬max | Others bound | yes greatest = contradiction (Base≡0-Maximum x xs greatest) ¬max
+next-number-is-greater-Base≡0 (x ∷ ∙)       xs! ¬max | Others bound | no ¬greatest = reflexive (sym (Digit-toℕ-digit+1 x ¬greatest))
+next-number-is-greater-Base≡0 (x ∷ x' ∷ xs) xs! ¬max | Others bound | no ¬greatest = +n-mono (⟦ x' ∷ xs ⟧ * 0) (reflexive (sym (Digit-toℕ-digit+1 x ¬greatest)))
+
+next-number-is-greater-HasOnly0 : ∀ {b}
+    → (xs : Num (suc b) 1 0)
+    → (xs! : ¬ (Null xs))
+    → (¬max : ¬ (Maximum xs xs!))
+    → ⟦ next-number-HasOnly0 xs xs! ¬max ⟧ next-number-¬Null-HasOnly0 xs xs! ¬max > ⟦ xs ⟧ xs!
+next-number-is-greater-HasOnly0 {b} xs xs! ¬max = contradiction (HasOnly0-Maximum xs xs!) ¬max
+
+
+next-number-is-greater-HasNoDigit : ∀ {b o}
+    → (xs : Num b 0 o)
+    → (xs! : ¬ (Null xs))
+    → (¬max : ¬ (Maximum xs xs!))
+    → ⟦ next-number-HasNoDigit xs xs! ¬max ⟧ next-number-¬Null-HasNoDigit xs xs! ¬max > ⟦ xs ⟧ xs!
+next-number-is-greater-HasNoDigit {b} xs xs! ¬max = HasNoDigit-explode xs xs!
+
+next-number-is-greater : ∀ {b d o}
+    → (xs : Num b d o)
+    → (xs! : ¬ (Null xs))
+    → (¬max : ¬ (Maximum xs xs!))
+    → ⟦ next-number xs xs! ¬max ⟧ next-number-¬Null xs xs! ¬max > ⟦ xs ⟧ xs!
+next-number-is-greater {b} {d} {o} xs xs! ¬max with boundedView b d o
+next-number-is-greater xs xs! ¬max | IsBounded (Base≡0 d o) = next-number-is-greater-Base≡0 xs xs! ¬max
+next-number-is-greater xs xs! ¬max | IsBounded (HasOnly0 b) = next-number-is-greater-HasOnly0 xs xs! ¬max
+next-number-is-greater xs xs! ¬max | IsntBounded (Digit+Offset≥2 b d o d+o≥2) = next-number-is-greater-d+o≥2 xs xs! ¬max d+o≥2
+next-number-is-greater xs xs! ¬max | IsntBounded (HasNoDigit b o) = next-number-is-greater-HasNoDigit xs xs! ¬max
 
 next-number-is-LUB-Base≡0 : ∀ {d o}
     → (xs : Num 0 (suc d) o)
@@ -639,8 +650,7 @@ next-number-is-LUB-HasNoDigit : ∀ {b o}
     → (¬max : ¬ (Maximum xs xs!))
     → ⟦ ys ⟧ ys! > ⟦ xs ⟧ xs!
     → ⟦ ys ⟧ ys! ≥ ⟦ next-number-HasNoDigit xs xs! ¬max ⟧ next-number-¬Null-HasNoDigit xs xs! ¬max
-next-number-is-LUB-HasNoDigit ∙         ys xs! ys! ¬max prop = contradiction tt xs!
-next-number-is-LUB-HasNoDigit (() ∷ xs) ys xs! ys! ¬max prop
+next-number-is-LUB-HasNoDigit xs _ xs! _ _ _ = HasNoDigit-explode xs xs!
 
 next-number-is-LUB : ∀ {b d o}
     → (xs : Num b d o)

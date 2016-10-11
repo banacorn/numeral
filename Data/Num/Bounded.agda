@@ -123,9 +123,15 @@ Digit+Offset≥2-¬Bounded b d o d+o≥1 (xs , xs! , claim) = contradiction p ¬
                 ⟦ greatest-digit d ∷ xs ⟧
             □
 
+HasNoDigit-explode : ∀ {a} {Whatever : Set a} {b o}
+    → (xs : Num b 0 o)
+    → (xs! : ¬ (Null xs))
+    → Whatever
+HasNoDigit-explode ∙         xs! = contradiction tt xs!
+HasNoDigit-explode (() ∷ xs) xs!
+
 HasNoDigit-¬Bounded : ∀ b o → ¬ (Bounded b 0 o)
-HasNoDigit-¬Bounded b o (∙ , xs! , claim) = contradiction tt xs!
-HasNoDigit-¬Bounded b o (() ∷ xs , xs! , claim)
+HasNoDigit-¬Bounded b o (xs , xs! , claim) = HasNoDigit-explode xs xs!
 
 BoundedCond⇒Bounded : ∀ {b d o} → BoundedCond b d o → Bounded b d o
 BoundedCond⇒Bounded (Base≡0 d o) = (greatest-digit d ∷ ∙) , id , Base≡0-Maximum (greatest-digit d) ∙ (greatest-digit-is-the-Greatest d)
