@@ -175,6 +175,55 @@ increment-¬Null : ∀ {b d o}
     → ¬ (Null (increment xs xs! incr))
 increment-¬Null xs xs! (next , next! , prop) = next!
 
+Continuous : ∀ b d o → Set
+Continuous b d o = Σ[ n ∈ ℕ ] ((xs : Num b d o) → (xs! : ¬ (Null xs)) → ⟦ xs ⟧ xs! ≥ n → Incrementable xs xs!)
+
+StartsFrom0-¬Maximum : ∀ {b d}
+    → d ≥ b
+    → (xs : Num b d 0) → (xs! : ¬ (Null xs))
+    → ¬ (Maximum xs xs!)
+StartsFrom0-¬Maximum {b} {d} cond xs xs! with boundedView b d 0
+StartsFrom0-¬Maximum cond₁ xs xs! | IsBounded (Base≡0 d .0) = {!   !}
+StartsFrom0-¬Maximum cond₁ xs xs! | IsBounded (HasOnly0 b) = {!   !}
+StartsFrom0-¬Maximum cond₁ xs xs! | IsntBounded cond = {!   !}
+
+-- StartsFrom0-Continuous : ∀ {b d}
+--     → d ≥ b
+--     → (xs : Num b d 0) → (xs! : ¬ (Null xs))
+--     → ⟦ xs ⟧ xs! ≥ 0
+--     → Incrementable xs xs!
+-- StartsFrom0-Continuous cond xs xs! prop with Maximum? xs xs!
+-- StartsFrom0-Continuous cond xs xs! prop | yes max = contradiction max ¬max
+--     where   ¬max : ¬ (Maximum xs xs!)
+--             ¬max = {!   !}
+-- StartsFrom0-Continuous cond xs xs! prop | no ¬max = {!   !}
+
+data ContinuousCond : ℕ → ℕ → ℕ → Set where
+    continuousCond : ∀ {b} {d} {o}
+        → NonBoundedCond b d o
+        → (prop : d ≥ (1 ⊔ o) * b)
+        → ContinuousCond b d o
+
+StartsFrom0-Continuous : ∀ {b d}
+    → ContinuousCond b d 0
+    → Continuous b d 0
+StartsFrom0-Continuous (continuousCond (Digit+Offset≥2 b d .0 d+o≥2) prop) = 0 , {!   !}
+StartsFrom0-Continuous (continuousCond (HasNoDigit b .0) prop) = {!   !}
+
+ContinuousCond⇒Continuous : ∀ {b d o}
+    → ContinuousCond b d o
+    → Continuous b d o
+ContinuousCond⇒Continuous {b} {d} {zero} cond = {!   !}
+ContinuousCond⇒Continuous {b} {d} {suc zero} cond = {!   !}
+ContinuousCond⇒Continuous {b} {d} {suc (suc o)} cond = {!   !}
+
+
+-- d≥[1⊔o]*b⇒Continuous : ∀ {b d o} → d ≥ (1 ⊔ o) * b → Continuous b d o
+-- d≥[1⊔o]*b⇒Continuous {b} {d} {zero} cond = 0 , StartsFrom0-Continuous (≤-trans (reflexive (sym (+-right-identity b))) cond)
+-- d≥[1⊔o]*b⇒Continuous {b} {d} {suc zero} cond = {!   !}
+-- d≥[1⊔o]*b⇒Continuous {b} {d} {suc (suc o)} cond = {!o   !}
+
+
 -- -- begin
 -- --     {!   !}
 -- -- ≡⟨ {!   !} ⟩
