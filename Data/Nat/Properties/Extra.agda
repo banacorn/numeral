@@ -223,7 +223,6 @@ n*-mono-strict-inverse (suc n) {a} {b} p | no ¬q = contradiction p ¬p
 *n-mono-strict-inverse : ∀ n {a} {b} → a * n < b * n → a < b
 *n-mono-strict-inverse n {a} {b} p = n*-mono-strict-inverse n (*-comm-mono-strict {a} {n} {b} {n} p)
 
-
 ≤-suc : ∀ {m n} → m ≤ n → suc m ≤ suc n
 ≤-suc z≤n = s≤s z≤n
 ≤-suc (s≤s rel) = s≤s (s≤s rel)

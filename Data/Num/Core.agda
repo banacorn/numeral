@@ -258,6 +258,11 @@ data Num : ℕ → ℕ → ℕ → Set where
 ⟦_⟧ {_} {_} {o} (x ∙)    = Digit-toℕ x o
 ⟦_⟧ {b} {_} {o} (x ∷ xs) = Digit-toℕ x o + ⟦ xs ⟧ * b
 
+lsd : ∀ {b d o} → (xs : Num b d o) → Digit d
+lsd (x ∙   ) = x
+lsd (x ∷ xs) = x
+
+
 -- ⟦x∷xs⟧≥⟦xs⟧ :  ∀ {b d o}
 --     → (x : Fin d) (xs : Num (suc b) d o)
 --     → (xs! : ¬ (Null xs))
@@ -329,33 +334,29 @@ tail-mono-strict {b} {_} {o} x xs y ys greatest p
         ⟦∷xs⟧<⟦∷ys⟧ : ⟦ xs ⟧ * b < ⟦ ys ⟧ * b
         ⟦∷xs⟧<⟦∷ys⟧ = +-mono-contra ⟦x⟧≥⟦y⟧ p
 
--- tail-mono-strict-Null : ∀ {b d o}
---     → (x : Fin d)
---     → (y : Fin d) (ys : Num b d o)
---     → Greatest x
---     → ⟦ x ∷ ∙ {b} ⟧ < ⟦ y ∷ ys ⟧
---     → 0 < ⟦ ys ⟧
--- tail-mono-strict-Null {b} {_} {o} x y ys ys! greatest p
---     = *n-mono-strict-inverse b ⟦∷∙⟧<⟦∷ys⟧
---     where
---         ⟦x⟧≥⟦y⟧ : Digit-toℕ x o ≥ Digit-toℕ y o
---         ⟦x⟧≥⟦y⟧ = greatest-of-all o x y greatest
---         expanded-p : Digit-toℕ x o + 0 * b < Digit-toℕ y o + (⟦ ys ⟧ ys!) * b
---         expanded-p =
---             start
---                 suc (Fin.toℕ x + o + 0 * b)
---             ≈⟨ +-right-identity (suc (Fin.toℕ x + o)) ⟩
---                 suc ⟦ x ∷ ∙ {b} ⟧
---             ≤⟨ p ⟩
---                 ⟦ y ∷ ys ⟧
---             ≈⟨ expand y ys ys! ⟩
---                 Fin.toℕ y + o + (⟦ ys ⟧ ys!) * b
---             □
---         ⟦∷∙⟧<⟦∷ys⟧ : 0 < ⟦ ys ⟧ ys! * b
---         ⟦∷∙⟧<⟦∷ys⟧ = +-mono-contra ⟦x⟧≥⟦y⟧ expanded-p
---
---
---
+tail-mono-strict-Null : ∀ {b d o}
+    → (x : Fin d)
+    → (y : Fin d) (ys : Num b d o)
+    → Greatest x
+    → ⟦ _∙ {b} {d} {o} x ⟧ < ⟦ y ∷ ys ⟧
+    → 0 < ⟦ ys ⟧
+tail-mono-strict-Null {b} {_} {o} x y ys greatest p
+    = *n-mono-strict-inverse b ⟦∷∙⟧<⟦∷ys⟧
+    where
+        ⟦x⟧≥⟦y⟧ : Digit-toℕ x o ≥ Digit-toℕ y o
+        ⟦x⟧≥⟦y⟧ = greatest-of-all o x y greatest
+        ⟦∷∙⟧<⟦∷ys⟧ : 0 < ⟦ ys ⟧ * b
+        ⟦∷∙⟧<⟦∷ys⟧ = +-mono-contra ⟦x⟧≥⟦y⟧ $
+            start
+                suc (Digit-toℕ x o) + 0
+            ≈⟨ +-right-identity (suc (Digit-toℕ x o)) ⟩
+                suc (Digit-toℕ x o)
+            ≤⟨ p ⟩
+                ⟦ y ∷ ys ⟧
+            □
+
+
+
 ------------------------------------------------------------------------
 -- Relations
 ------------------------------------------------------------------------
