@@ -247,154 +247,115 @@ Digit-toℕ-digit+1-n {suc d} {o} x greatest n n>0  n≤d =
 infixr 5 _∷_
 
 data Num : ℕ → ℕ → ℕ → Set where
-    ∙   : ∀ {b d o} → Num b d o
+    _∙  : ∀ {b d o} → Digit d → Num b d o
     _∷_ : ∀ {b d o} → Digit d → Num b d o → Num b d o
-
-
-Null : ∀ {b d o} → Num b d o → Set
-Null ∙        = ⊤
-Null (x ∷ xs) = ⊥
-
-Null? : ∀ {b d o} → (xs : Num b d o) → Dec (Null xs)
-Null? ∙        = yes tt
-Null? (x ∷ xs) = no (λ z₁ → z₁)
 
 ------------------------------------------------------------------------
 -- Converting from Num to ℕ
 ------------------------------------------------------------------------
 
-⟦_⟧_ : ∀ {b d o} → (xs : Num b d o) → ¬ (Null xs) → ℕ
-⟦_⟧_ {b} {_} {o} ∙             ¬null = contradiction tt ¬null
-⟦_⟧_ {b} {_} {o} (x ∷ ∙)       ¬null = Digit-toℕ x o
-⟦_⟧_ {b} {_} {o} (x ∷ x' ∷ xs) ¬null = Digit-toℕ x o + ⟦ x' ∷ xs ⟧ ¬null * b
+⟦_⟧ : ∀ {b d o} → (xs : Num b d o) → ℕ
+⟦_⟧ {_} {_} {o} (x ∙)    = Digit-toℕ x o
+⟦_⟧ {b} {_} {o} (x ∷ xs) = Digit-toℕ x o + ⟦ xs ⟧ * b
 
-⟦_∷_⟧ : ∀ {b d o} → (x : Digit d) → (xs : Num b d o) → ℕ
-⟦ x ∷ xs ⟧ = ⟦ (x ∷ xs) ⟧ id
-
-
-expand : ∀ {b d o}
-    → (x : Digit d) → (xs : Num b d o)
-    → (xs! : ¬ (Null xs))
-    → ⟦ x ∷ xs ⟧ ≡ Digit-toℕ x o + ⟦ xs ⟧ xs! * b
-expand {b} {d} {o} x ∙         xs! = contradiction tt xs!
-expand {b} {d} {o} x (x' ∷ xs) xs! = refl
-
-⟦x∷xs⟧≥⟦xs⟧ :  ∀ {b d o}
-    → (x : Fin d) (xs : Num (suc b) d o)
-    → (xs! : ¬ (Null xs))
-    → ⟦ x ∷ xs ⟧ ≥ ⟦ xs ⟧ xs!
-⟦x∷xs⟧≥⟦xs⟧             x ∙         xs! = contradiction tt xs!
-⟦x∷xs⟧≥⟦xs⟧ {b} {d} {o} x (x' ∷ xs) xs! =
-    start
-        ⟦ x' ∷ xs ⟧
-    ≈⟨ sym (*-right-identity ⟦ x' ∷ xs ⟧) ⟩
-        ⟦ x' ∷ xs ⟧ * 1
-    ≤⟨ n*-mono ⟦ x' ∷ xs ⟧ (s≤s z≤n) ⟩
-        ⟦ x' ∷ xs ⟧ * suc b
-    ≤⟨ m≤n+m (⟦ x' ∷ xs ⟧ * suc b) (Fin.toℕ x + o) ⟩
-        Fin.toℕ x + o + ⟦ x' ∷ xs ⟧ * suc b
-    □
+-- ⟦x∷xs⟧≥⟦xs⟧ :  ∀ {b d o}
+--     → (x : Fin d) (xs : Num (suc b) d o)
+--     → (xs! : ¬ (Null xs))
+--     → ⟦ x ∷ xs ⟧ ≥ ⟦ xs ⟧ xs!
+-- ⟦x∷xs⟧≥⟦xs⟧             x ∙         xs! = contradiction tt xs!
+-- ⟦x∷xs⟧≥⟦xs⟧ {b} {d} {o} x (x' ∷ xs) xs! =
+--     start
+--         ⟦ x' ∷ xs ⟧
+--     ≈⟨ sym (*-right-identity ⟦ x' ∷ xs ⟧) ⟩
+--         ⟦ x' ∷ xs ⟧ * 1
+--     ≤⟨ n*-mono ⟦ x' ∷ xs ⟧ (s≤s z≤n) ⟩
+--         ⟦ x' ∷ xs ⟧ * suc b
+--     ≤⟨ m≤n+m (⟦ x' ∷ xs ⟧ * suc b) (Fin.toℕ x + o) ⟩
+--         Fin.toℕ x + o + ⟦ x' ∷ xs ⟧ * suc b
+--     □
 
 
+-- start
+--     {!   !}
+-- ≤⟨ {!   !} ⟩
+--     {!   !}
+-- ≤⟨ {!   !} ⟩
+--     {!   !}
+-- ≤⟨ {!   !} ⟩
+--     {!   !}
+-- □
 n∷-mono-strict : ∀ {b d o}
     → (x : Fin d) (xs : Num (suc b) d o)
     → (y : Fin d) (ys : Num (suc b) d o)
-    → (xs! : ¬ (Null xs))
-    → (ys! : ¬ (Null ys))
     → Digit-toℕ x o ≡ Digit-toℕ y o
-    → ⟦ xs ⟧ xs! < ⟦ ys ⟧ ys!
+    → ⟦ xs ⟧ < ⟦ ys ⟧
     → ⟦ x ∷ xs ⟧ < ⟦ y ∷ ys ⟧
-n∷-mono-strict             x ∙         y ys        xs! ys! ⟦x⟧≡⟦y⟧ ⟦xs⟧<⟦ys⟧ = contradiction tt xs!
-n∷-mono-strict             x (x' ∷ xs) y ∙         xs! ys! ⟦x⟧≡⟦y⟧ ⟦xs⟧<⟦ys⟧ = contradiction tt ys!
-n∷-mono-strict {b} {d} {o} x (x' ∷ xs) y (y' ∷ ys) xs! ys! ⟦x⟧≡⟦y⟧ ⟦xs⟧<⟦ys⟧ =
+n∷-mono-strict {b} {d} {o} x xs y ys ⟦x⟧≡⟦y⟧ ⟦xs⟧<⟦ys⟧ =
     start
-        suc ⟦ x ∷ (x' ∷  xs) ⟧
-    ≈⟨ refl ⟩
-        suc (Fin.toℕ x + o) + ⟦ x' ∷ xs ⟧ * suc b
-    ≈⟨ sym (+-suc (Fin.toℕ x + o) (⟦ x' ∷ xs ⟧ * suc b)) ⟩
-        Fin.toℕ x + o + suc (⟦ x' ∷ xs ⟧ * suc b)
-    ≤⟨ n+-mono (Fin.toℕ x + o) (s≤s (m≤n+m (⟦ x' ∷ xs ⟧ * suc b) b)) ⟩
-        Fin.toℕ x + o + (suc b + ⟦ x' ∷ xs ⟧ * suc b)
-    ≤⟨ reflexive ⟦x⟧≡⟦y⟧ +-mono *n-mono (suc b) ⟦xs⟧<⟦ys⟧ ⟩
-        Fin.toℕ y + o + ⟦ y' ∷ ys ⟧ * suc b
-    ≈⟨ refl ⟩
-        ⟦ y ∷ (y' ∷ ys) ⟧
+        suc (Digit-toℕ x o) + ⟦ xs ⟧ * suc b
+    ≈⟨ sym (+-suc (Digit-toℕ x o) (⟦ xs ⟧ * suc b)) ⟩
+        Digit-toℕ x o + suc (⟦ xs ⟧ * suc b)
+    ≤⟨ n+-mono (Digit-toℕ x o) (s≤s (m≤n+m (⟦ xs ⟧ * suc b) b)) ⟩
+        Digit-toℕ x o + (suc ⟦ xs ⟧) * suc b
+    ≤⟨ (reflexive ⟦x⟧≡⟦y⟧) +-mono (*n-mono (suc b) ⟦xs⟧<⟦ys⟧) ⟩
+        Digit-toℕ y o + ⟦ ys ⟧ * suc b
     □
+
 
 ∷ns-mono-strict : ∀ {b d o}
     → (x : Fin d) (xs : Num b d o)
     → (y : Fin d) (ys : Num b d o)
-    → (xs! : ¬ (Null xs))
-    → (ys! : ¬ (Null ys))
-    → ⟦ xs ⟧ xs! ≡ ⟦ ys ⟧ ys!
+    → ⟦ xs ⟧ ≡ ⟦ ys ⟧
     → Digit-toℕ x o < Digit-toℕ y o
     → ⟦ x ∷ xs ⟧ < ⟦ y ∷ ys ⟧
-∷ns-mono-strict {b} {d} {o} x xs y ys xs! ys! ⟦xs⟧≡⟦ys⟧ ⟦x⟧<⟦y⟧ =
+∷ns-mono-strict {b} {d} {o} x xs y ys ⟦xs⟧≡⟦ys⟧ ⟦x⟧<⟦y⟧ =
     start
         suc ⟦ x ∷ xs ⟧
-    ≈⟨ cong suc (expand x xs xs!) ⟩
-        suc (Fin.toℕ x + o + (⟦ xs ⟧ xs!) * b)
     ≤⟨ ⟦x⟧<⟦y⟧ +-mono *n-mono b (reflexive ⟦xs⟧≡⟦ys⟧) ⟩
-        Fin.toℕ y + o + (⟦ ys ⟧ ys!) * b
-    ≈⟨ sym (expand y ys ys!) ⟩
         ⟦ y ∷ ys ⟧
     □
 
 tail-mono-strict : ∀ {b d o}
     → (x : Fin d) (xs : Num b d o)
     → (y : Fin d) (ys : Num b d o)
-    → (xs! : ¬ (Null xs))
-    → (ys! : ¬ (Null ys))
     → Greatest x
     → ⟦ x ∷ xs ⟧ < ⟦ y ∷ ys ⟧
-    → ⟦ xs ⟧ xs! < ⟦ ys ⟧ ys!
-tail-mono-strict {b} {_} {o} x xs y ys xs! ys! greatest p
+    → ⟦ xs ⟧ < ⟦ ys ⟧
+tail-mono-strict {b} {_} {o} x xs y ys greatest p
     = *n-mono-strict-inverse b ⟦∷xs⟧<⟦∷ys⟧
     where
         ⟦x⟧≥⟦y⟧ : Digit-toℕ x o ≥ Digit-toℕ y o
         ⟦x⟧≥⟦y⟧ = greatest-of-all o x y greatest
-        expanded-p : Digit-toℕ x o + (⟦ xs ⟧ xs!) * b < Digit-toℕ y o + (⟦ ys ⟧ ys!) * b
-        expanded-p =
-            start
-                suc (Fin.toℕ x + o + (⟦ xs ⟧ xs!) * b)
-            ≈⟨ cong suc $ sym (expand x xs xs!) ⟩
-                suc ⟦ x ∷ xs ⟧
-            ≤⟨ p ⟩
-                ⟦ y ∷ ys ⟧
-            ≈⟨ expand y ys ys! ⟩
-                Fin.toℕ y + o + (⟦ ys ⟧ ys!) * b
-            □
-        ⟦∷xs⟧<⟦∷ys⟧ : ⟦ xs ⟧ xs! * b < ⟦ ys ⟧ ys! * b
-        ⟦∷xs⟧<⟦∷ys⟧ = +-mono-contra ⟦x⟧≥⟦y⟧ expanded-p
+        ⟦∷xs⟧<⟦∷ys⟧ : ⟦ xs ⟧ * b < ⟦ ys ⟧ * b
+        ⟦∷xs⟧<⟦∷ys⟧ = +-mono-contra ⟦x⟧≥⟦y⟧ p
 
-tail-mono-strict-Null : ∀ {b d o}
-    → (x : Fin d)
-    → (y : Fin d) (ys : Num b d o)
-    → (ys! : ¬ (Null ys))
-    → Greatest x
-    → ⟦ x ∷ ∙ {b} ⟧ < ⟦ y ∷ ys ⟧
-    → 0 < ⟦ ys ⟧ ys!
-tail-mono-strict-Null {b} {_} {o} x y ys ys! greatest p
-    = *n-mono-strict-inverse b ⟦∷∙⟧<⟦∷ys⟧
-    where
-        ⟦x⟧≥⟦y⟧ : Digit-toℕ x o ≥ Digit-toℕ y o
-        ⟦x⟧≥⟦y⟧ = greatest-of-all o x y greatest
-        expanded-p : Digit-toℕ x o + 0 * b < Digit-toℕ y o + (⟦ ys ⟧ ys!) * b
-        expanded-p =
-            start
-                suc (Fin.toℕ x + o + 0 * b)
-            ≈⟨ +-right-identity (suc (Fin.toℕ x + o)) ⟩
-                suc ⟦ x ∷ ∙ {b} ⟧
-            ≤⟨ p ⟩
-                ⟦ y ∷ ys ⟧
-            ≈⟨ expand y ys ys! ⟩
-                Fin.toℕ y + o + (⟦ ys ⟧ ys!) * b
-            □
-        ⟦∷∙⟧<⟦∷ys⟧ : 0 < ⟦ ys ⟧ ys! * b
-        ⟦∷∙⟧<⟦∷ys⟧ = +-mono-contra ⟦x⟧≥⟦y⟧ expanded-p
-
-
-
+-- tail-mono-strict-Null : ∀ {b d o}
+--     → (x : Fin d)
+--     → (y : Fin d) (ys : Num b d o)
+--     → Greatest x
+--     → ⟦ x ∷ ∙ {b} ⟧ < ⟦ y ∷ ys ⟧
+--     → 0 < ⟦ ys ⟧
+-- tail-mono-strict-Null {b} {_} {o} x y ys ys! greatest p
+--     = *n-mono-strict-inverse b ⟦∷∙⟧<⟦∷ys⟧
+--     where
+--         ⟦x⟧≥⟦y⟧ : Digit-toℕ x o ≥ Digit-toℕ y o
+--         ⟦x⟧≥⟦y⟧ = greatest-of-all o x y greatest
+--         expanded-p : Digit-toℕ x o + 0 * b < Digit-toℕ y o + (⟦ ys ⟧ ys!) * b
+--         expanded-p =
+--             start
+--                 suc (Fin.toℕ x + o + 0 * b)
+--             ≈⟨ +-right-identity (suc (Fin.toℕ x + o)) ⟩
+--                 suc ⟦ x ∷ ∙ {b} ⟧
+--             ≤⟨ p ⟩
+--                 ⟦ y ∷ ys ⟧
+--             ≈⟨ expand y ys ys! ⟩
+--                 Fin.toℕ y + o + (⟦ ys ⟧ ys!) * b
+--             □
+--         ⟦∷∙⟧<⟦∷ys⟧ : 0 < ⟦ ys ⟧ ys! * b
+--         ⟦∷∙⟧<⟦∷ys⟧ = +-mono-contra ⟦x⟧≥⟦y⟧ expanded-p
+--
+--
+--
 ------------------------------------------------------------------------
 -- Relations
 ------------------------------------------------------------------------
@@ -446,12 +407,12 @@ tail-mono-strict-Null {b} {_} {o} x y ys ys! greatest p
 -- Predicates on Num
 ------------------------------------------------------------------------
 
-Maximum : ∀ {b d o} → (xs : Num b d o) → ¬ (Null xs) → Set
-Maximum {b} {d} {o} xs xs! = ∀ (ys : Num b d o) (ys! : ¬ (Null ys)) → ⟦ xs ⟧ xs! ≥ ⟦ ys ⟧ ys!
+Maximum : ∀ {b d o} → (xs : Num b d o) → Set
+Maximum {b} {d} {o} xs = ∀ (ys : Num b d o) → ⟦ xs ⟧ ≥ ⟦ ys ⟧
 
 -- a system is bounded if there exists the greatest number
 Bounded : ∀ b d o → Set
-Bounded b d o = Σ[ xs ∈ Num b d o ] Σ[ xs! ∈ ¬ (Null xs) ] Maximum xs xs!
+Bounded b d o = Σ[ xs ∈ Num b d o ] Maximum xs
 
 -- start
 --     {!   !}
