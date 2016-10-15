@@ -68,23 +68,23 @@ Maximum⇒¬Incrementable xs max (evidence , claim)
 --     {!   !}
 -- □
 
-Incrementable-Base≡0 :  ∀ {d o}
+Incrementable-NullBase :  ∀ {d o}
     → (xs : Num 0 (suc d) o)
     → (¬max : ¬ (Maximum xs))
     → Dec (Incrementable xs)
-Incrementable-Base≡0 {d} {o} xs            ¬max with Base≡0-view d o
-Incrementable-Base≡0 xs ¬max | HasOnly0 = contradiction (HasOnly0-Maximum xs) ¬max
-Incrementable-Base≡0 xs ¬max | Others bound with Greatest? (lsd xs)
-Incrementable-Base≡0 xs ¬max | Others bound | yes greatest = contradiction (Base≡0-Maximum xs greatest) ¬max
-Incrementable-Base≡0 (x ∙) ¬max | Others bound | no ¬greatest = yes (digit+1 x ¬greatest ∙ , Digit-toℕ-digit+1 x ¬greatest )
-Incrementable-Base≡0 (x ∷ xs) ¬max | Others bound | no ¬greatest = yes (digit+1 x ¬greatest ∷ xs , cong (λ w → w + ⟦ xs ⟧ * 0) (Digit-toℕ-digit+1 x ¬greatest))
+Incrementable-NullBase {d} {o} xs            ¬max with NullBase-view d o
+Incrementable-NullBase xs ¬max | AllZeros = contradiction (AllZeros-Maximum xs) ¬max
+Incrementable-NullBase xs ¬max | Others bound with Greatest? (lsd xs)
+Incrementable-NullBase xs ¬max | Others bound | yes greatest = contradiction (NullBase-Maximum xs greatest) ¬max
+Incrementable-NullBase (x ∙) ¬max | Others bound | no ¬greatest = yes (digit+1 x ¬greatest ∙ , Digit-toℕ-digit+1 x ¬greatest )
+Incrementable-NullBase (x ∷ xs) ¬max | Others bound | no ¬greatest = yes (digit+1 x ¬greatest ∷ xs , cong (λ w → w + ⟦ xs ⟧ * 0) (Digit-toℕ-digit+1 x ¬greatest))
 
-Incrementable-d+o≥2 :  ∀ {b d o}
+Incrementable-Others :  ∀ {b d o}
     → (xs : Num b d o)
     → (¬max : ¬ (Maximum xs))
     → Dec (Incrementable xs)
-Incrementable-d+o≥2 xs ¬max with cmp (⟦ next-number xs ¬max ⟧ ∸ ⟦ xs ⟧) 1
-Incrementable-d+o≥2 xs ¬max | tri< p ¬q ¬r = contradiction p (>⇒≰ (s≤s ¬p))
+Incrementable-Others xs ¬max with cmp (⟦ next-number xs ¬max ⟧ ∸ ⟦ xs ⟧) 1
+Incrementable-Others xs ¬max | tri< p ¬q ¬r = contradiction p (>⇒≰ (s≤s ¬p))
     where
          next  = next-number xs ¬max
          ¬p : ⟦ next ⟧ ∸ ⟦ xs ⟧ > 0
@@ -96,7 +96,7 @@ Incrementable-d+o≥2 xs ¬max | tri< p ¬q ¬r = contradiction p (>⇒≰ (s≤
             ≈⟨ sym (m∸n+n≡m (≤-pred $ ≤-step $ (next-number-is-greater xs ¬max))) ⟩
                 ⟦ next ⟧ ∸ ⟦ xs ⟧ + ⟦ xs ⟧
             □
-Incrementable-d+o≥2 xs ¬max | tri≈ ¬p q ¬r = yes (next-number xs ¬max , prop)
+Incrementable-Others xs ¬max | tri≈ ¬p q ¬r = yes (next-number xs ¬max , prop)
     where
         next  = next-number xs ¬max
         prop : ⟦ next ⟧ ≡ suc ⟦ xs ⟧
@@ -108,7 +108,7 @@ Incrementable-d+o≥2 xs ¬max | tri≈ ¬p q ¬r = yes (next-number xs ¬max , 
             ≡⟨ cong (λ w → w + ⟦ xs ⟧) q ⟩
                 suc ⟦ xs ⟧
             ∎
-Incrementable-d+o≥2 xs ¬max | tri> ¬p ¬q r = no prop
+Incrementable-Others xs ¬max | tri> ¬p ¬q r = no prop
     where
         next  = next-number xs ¬max
         prop : ¬ Incrementable xs
@@ -134,10 +134,10 @@ Incrementable? : ∀ {b d o}
 Incrementable? {b} {d} {o} xs with Maximum? xs
 Incrementable? {b} {d} {o} xs | yes max = no (Maximum⇒¬Incrementable xs max)
 Incrementable? {b} {d} {o} xs | no ¬max with boundedView b d o
-Incrementable? xs | no ¬max | IsBounded (Base≡0 d o) = Incrementable-Base≡0 xs ¬max
-Incrementable? xs | no ¬max | IsBounded (HasOnly0 b) = contradiction (HasOnly0-Maximum xs) ¬max
-Incrementable? xs | no ¬max | IsntBounded (Digit+Offset≥2 b d o d+o≥2) = Incrementable-d+o≥2 xs ¬max
-Incrementable? xs | no ¬max | IsntBounded (HasNoDigit b o) = HasNoDigit-explode xs
+Incrementable? xs | no ¬max | IsBounded (NullBase d o) = Incrementable-NullBase xs ¬max
+Incrementable? xs | no ¬max | IsBounded (AllZeros b) = contradiction (AllZeros-Maximum xs) ¬max
+Incrementable? xs | no ¬max | IsntBounded (Others b d o d+o≥2) = Incrementable-Others xs ¬max
+Incrementable? xs | no ¬max | IsntBounded (NoDigits b o) = NoDigits-explode xs
 
 increment : ∀ {b d o}
     → (xs : Num b d o)
@@ -146,16 +146,16 @@ increment : ∀ {b d o}
 increment xs (next , claim) = next
 
 Continuous : ∀ b d o → Set
-Continuous b d o = Σ[ n ∈ ℕ ] ((xs : Num b d o) → (xs! : ¬ (Null xs)) → ⟦ xs ⟧ xs! ≥ n → Incrementable xs xs!)
+Continuous b d o = Σ[ n ∈ ℕ ] ((xs : Num b d o)  → ⟦ xs ⟧ ≥ n → Incrementable xs)
 
 StartsFrom0-¬Maximum : ∀ {b d}
     → d ≥ b
-    → (xs : Num b d 0) → (xs! : ¬ (Null xs))
-    → ¬ (Maximum xs xs!)
-StartsFrom0-¬Maximum {b} {d} cond xs xs! with boundedView b d 0
-StartsFrom0-¬Maximum cond₁ xs xs! | IsBounded (Base≡0 d .0) = {!   !}
-StartsFrom0-¬Maximum cond₁ xs xs! | IsBounded (HasOnly0 b) = {!   !}
-StartsFrom0-¬Maximum cond₁ xs xs! | IsntBounded cond = {!   !}
+    → (xs : Num b d 0)
+    → ¬ (Maximum xs)
+StartsFrom0-¬Maximum {b} {d} prop xs with boundedView b d 0
+StartsFrom0-¬Maximum prop xs | IsBounded (NullBase d .0) = {!   !}
+StartsFrom0-¬Maximum prop xs | IsBounded (AllZeros b) = {!   !}
+StartsFrom0-¬Maximum prop xs | IsntBounded cond = {!   !}
 
 -- StartsFrom0-Continuous : ∀ {b d}
 --     → d ≥ b
@@ -177,13 +177,13 @@ data ContinuousCond : ℕ → ℕ → ℕ → Set where
 StartsFrom0-Continuous : ∀ {b d}
     → ContinuousCond b d 0
     → Continuous b d 0
-StartsFrom0-Continuous (continuousCond (Digit+Offset≥2 b d .0 d+o≥2) prop) = 0 , {!   !}
-StartsFrom0-Continuous (continuousCond (HasNoDigit b .0) prop) = {!   !}
+StartsFrom0-Continuous (continuousCond (Others b d .0 d+o≥2) prop) = 0 , {!   !}
+StartsFrom0-Continuous (continuousCond (NoDigits b .0) prop) = {!   !}
 
 ContinuousCond⇒Continuous : ∀ {b d o}
     → ContinuousCond b d o
     → Continuous b d o
-ContinuousCond⇒Continuous {b} {d} {zero} cond = {!   !}
+ContinuousCond⇒Continuous {b} {d} {zero} cond = StartsFrom0-Continuous cond
 ContinuousCond⇒Continuous {b} {d} {suc zero} cond = {!   !}
 ContinuousCond⇒Continuous {b} {d} {suc (suc o)} cond = {!   !}
 

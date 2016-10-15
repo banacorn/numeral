@@ -31,31 +31,31 @@ open DecTotalOrder decTotalOrder using (reflexive) renaming (refl to ≤-refl)
 -- Views
 
 data BoundedCond : ℕ → ℕ → ℕ → Set where
-    Base≡0   : ∀ d o → BoundedCond 0       (suc d) o
-    HasOnly0 : ∀ b   → BoundedCond (suc b) 1 0
+    NullBase    : ∀ d o → BoundedCond 0       (suc d) o
+    AllZeros    : ∀ b   → BoundedCond (suc b) 1 0
 
 data NonBoundedCond : ℕ → ℕ → ℕ → Set where
-    Digit+Offset≥2 : ∀ b d o → (d+o≥2 : suc d + o ≥ 2) → NonBoundedCond (suc b) (suc d) o
-    HasNoDigit     : ∀ b   o                           → NonBoundedCond b       0 o
+    Others      : ∀ b d o → (d+o≥2 : suc d + o ≥ 2) → NonBoundedCond (suc b) (suc d) o
+    NoDigits    : ∀ b   o                           → NonBoundedCond b       0 o
 
 data BoundedView : ℕ → ℕ → ℕ → Set where
     IsBounded   : ∀ {b d o} → (cond :    BoundedCond b d o) → BoundedView b d o
     IsntBounded : ∀ {b d o} → (cond : NonBoundedCond b d o) → BoundedView b d o
 
 boundedView : ∀ b d o → BoundedView b d o
-boundedView b       zero          o       = IsntBounded (HasNoDigit b o)
-boundedView zero    (suc d)       o       = IsBounded (Base≡0 d o)
-boundedView (suc b) (suc zero)    zero    = IsBounded (HasOnly0 b)
-boundedView (suc b) (suc zero)    (suc o) = IsntBounded (Digit+Offset≥2 b zero (suc o) (s≤s (s≤s z≤n)))
-boundedView (suc b) (suc (suc d)) o       = IsntBounded (Digit+Offset≥2 b (suc d) o (s≤s (s≤s z≤n)))
+boundedView b       zero          o       = IsntBounded (NoDigits b o)
+boundedView zero    (suc d)       o       = IsBounded (NullBase d o)
+boundedView (suc b) (suc zero)    zero    = IsBounded (AllZeros b)
+boundedView (suc b) (suc zero)    (suc o) = IsntBounded (Others b zero (suc o) (s≤s (s≤s z≤n)))
+boundedView (suc b) (suc (suc d)) o       = IsntBounded (Others b (suc d) o (s≤s (s≤s z≤n)))
 ------------------------------------------------------------------------
 -- Relations between Conditions and Predicates
 
-toℕ-Base≡0 : ∀ {d o}
+NullBase-toℕ : ∀ {d o}
     → (x : Digit d)
     → (xs : Num 0 d o)
     → ⟦ x ∷ xs ⟧ ≡ Digit-toℕ x o
-toℕ-Base≡0 {d} {o} x xs =
+NullBase-toℕ {d} {o} x xs =
     begin
         Digit-toℕ x o + ⟦ xs ⟧ * 0
     ≡⟨ cong (λ w → Digit-toℕ x o + w) (*-right-zero ⟦ xs ⟧) ⟩
@@ -64,56 +64,56 @@ toℕ-Base≡0 {d} {o} x xs =
         Digit-toℕ x o
     ∎
 
-Base≡0-Maximum : ∀ {d} {o}
+NullBase-Maximum : ∀ {d} {o}
     → (xs : Num 0 (suc d) o)
     → Greatest (lsd xs)
     → Maximum xs
-Base≡0-Maximum {_} {o} (x ∙) greatest (y ∙) = greatest-of-all o x y greatest
-Base≡0-Maximum {_} {o} (x ∙) greatest (y ∷ ys) =
+NullBase-Maximum {_} {o} (x ∙) greatest (y ∙) = greatest-of-all o x y greatest
+NullBase-Maximum {_} {o} (x ∙) greatest (y ∷ ys) =
     start
         Fin.toℕ y + o + ⟦ ys ⟧ * 0
-    ≈⟨ toℕ-Base≡0 y ys ⟩
+    ≈⟨ NullBase-toℕ y ys ⟩
         Fin.toℕ y + o
     ≤⟨ greatest-of-all o x y greatest ⟩
         Fin.toℕ x + o
     □
-Base≡0-Maximum {_} {o} (x ∷ xs) greatest (y ∙) =
+NullBase-Maximum {_} {o} (x ∷ xs) greatest (y ∙) =
     start
         Fin.toℕ y + o
     ≤⟨ greatest-of-all o x y greatest ⟩
         Fin.toℕ x + o
-    ≈⟨ sym (toℕ-Base≡0 x xs) ⟩
+    ≈⟨ sym (NullBase-toℕ x xs) ⟩
         Fin.toℕ x + o + ⟦ xs ⟧ * 0
     □
-Base≡0-Maximum {_} {o} (x ∷ xs) greatest (y ∷ ys) =
+NullBase-Maximum {_} {o} (x ∷ xs) greatest (y ∷ ys) =
     start
         ⟦ y ∷ ys ⟧
-    ≈⟨ toℕ-Base≡0 y ys ⟩
+    ≈⟨ NullBase-toℕ y ys ⟩
         Fin.toℕ y + o
     ≤⟨ greatest-of-all o x y greatest ⟩
         Fin.toℕ x + o
-    ≈⟨ sym (toℕ-Base≡0 x xs) ⟩
+    ≈⟨ sym (NullBase-toℕ x xs) ⟩
         ⟦ x ∷ xs ⟧
     □
 
-HasOnly0-all-zero : ∀ {b} → (xs : Num b 1 0) → ⟦ xs ⟧ ≡ 0
-HasOnly0-all-zero     (z    ∙   ) = refl
-HasOnly0-all-zero     (s () ∙   )
-HasOnly0-all-zero {b} (z    ∷ xs) = cong (λ w → w * b) (HasOnly0-all-zero xs)
-HasOnly0-all-zero     (s () ∷ xs)
+AllZeros-toℕ : ∀ {b} → (xs : Num b 1 0) → ⟦ xs ⟧ ≡ 0
+AllZeros-toℕ     (z    ∙   ) = refl
+AllZeros-toℕ     (s () ∙   )
+AllZeros-toℕ {b} (z    ∷ xs) = cong (λ w → w * b) (AllZeros-toℕ xs)
+AllZeros-toℕ     (s () ∷ xs)
 
-HasOnly0-Maximum : ∀ {b} → (xs : Num b 1 0) → Maximum xs
-HasOnly0-Maximum xs ys = reflexive $
+AllZeros-Maximum : ∀ {b} → (xs : Num b 1 0) → Maximum xs
+AllZeros-Maximum xs ys = reflexive $
     begin
         ⟦ ys ⟧
-    ≡⟨ HasOnly0-all-zero ys ⟩
+    ≡⟨ AllZeros-toℕ ys ⟩
         zero
-    ≡⟨ sym (HasOnly0-all-zero xs) ⟩
+    ≡⟨ sym (AllZeros-toℕ xs) ⟩
         ⟦ xs ⟧
     ∎
 
-Digit+Offset≥2-¬Bounded : ∀ b d o → d + o ≥ 1 → ¬ (Bounded (suc b) (suc d) o)
-Digit+Offset≥2-¬Bounded b d o d+o≥1 (xs , claim) = contradiction p ¬p
+Others-¬Bounded : ∀ b d o → d + o ≥ 1 → ¬ (Bounded (suc b) (suc d) o)
+Others-¬Bounded b d o d+o≥1 (xs , claim) = contradiction p ¬p
     where
         p : ⟦ xs ⟧ ≥ ⟦ greatest-digit d ∷ xs ⟧
         p = claim (greatest-digit d ∷ xs)
@@ -134,37 +134,37 @@ Digit+Offset≥2-¬Bounded b d o d+o≥1 (xs , claim) = contradiction p ¬p
                 ⟦ greatest-digit d ∷ xs ⟧
             □
 
-HasNoDigit-explode : ∀ {b o a} {Whatever : Set a}
+NoDigits-explode : ∀ {b o a} {Whatever : Set a}
     → (xs : Num b 0 o)
     → Whatever
-HasNoDigit-explode (() ∙   )
-HasNoDigit-explode (() ∷ xs)
+NoDigits-explode (() ∙   )
+NoDigits-explode (() ∷ xs)
 
-HasOnly0-explode : ∀ {a} {Whatever : Set a} {b}
+AllZeros-explode : ∀ {a} {Whatever : Set a} {b}
     → (xs : Num (suc b) 1 0)
     → ¬ (Maximum xs)
     → Whatever
-HasOnly0-explode {b} xs ¬max = contradiction (HasOnly0-Maximum xs) ¬max
+AllZeros-explode {b} xs ¬max = contradiction (AllZeros-Maximum xs) ¬max
 
-HasNoDigit-¬Bounded : ∀ b o → ¬ (Bounded b 0 o)
-HasNoDigit-¬Bounded b o (xs , claim) = HasNoDigit-explode xs
+NoDigits-¬Bounded : ∀ b o → ¬ (Bounded b 0 o)
+NoDigits-¬Bounded b o (xs , claim) = NoDigits-explode xs
 
 BoundedCond⇒Bounded : ∀ {b d o} → BoundedCond b d o → Bounded b d o
-BoundedCond⇒Bounded (Base≡0 d o) = (greatest-digit d ∙) , Base≡0-Maximum (greatest-digit d ∙) (greatest-digit-is-the-Greatest d)
-BoundedCond⇒Bounded (HasOnly0 b) = (z ∙) , (HasOnly0-Maximum (z ∙))
+BoundedCond⇒Bounded (NullBase d o) = (greatest-digit d ∙) , NullBase-Maximum (greatest-digit d ∙) (greatest-digit-is-the-Greatest d)
+BoundedCond⇒Bounded (AllZeros b)   = (z ∙) , (AllZeros-Maximum (z ∙))
 
 NonBoundedCond⇒¬Bounded : ∀ {b d o} → NonBoundedCond b d o → ¬ (Bounded b d o)
-NonBoundedCond⇒¬Bounded (Digit+Offset≥2 b d o d+o≥2) = Digit+Offset≥2-¬Bounded b d o (≤-pred d+o≥2)
-NonBoundedCond⇒¬Bounded (HasNoDigit b o)             = HasNoDigit-¬Bounded b o
+NonBoundedCond⇒¬Bounded (Others b d o d+o≥2) = Others-¬Bounded b d o (≤-pred d+o≥2)
+NonBoundedCond⇒¬Bounded (NoDigits b o)       = NoDigits-¬Bounded b o
 
 Bounded⇒BoundedCond : ∀ {b d o} → Bounded b d o → BoundedCond b d o
 Bounded⇒BoundedCond {b} {d} {o} bounded with boundedView b d o
-Bounded⇒BoundedCond bounded | IsBounded condition = condition
+Bounded⇒BoundedCond bounded | IsBounded condition   = condition
 Bounded⇒BoundedCond bounded | IsntBounded condition = contradiction bounded (NonBoundedCond⇒¬Bounded condition)
 
 ¬Bounded⇒NonBoundedCond : ∀ {b d o} → ¬ (Bounded b  d o) → NonBoundedCond b d o
 ¬Bounded⇒NonBoundedCond {b} {d} {o} ¬bounded with boundedView b d o
-¬Bounded⇒NonBoundedCond ¬bounded | IsBounded condition = contradiction (BoundedCond⇒Bounded condition) ¬bounded
+¬Bounded⇒NonBoundedCond ¬bounded | IsBounded condition   = contradiction (BoundedCond⇒Bounded condition) ¬bounded
 ¬Bounded⇒NonBoundedCond ¬bounded | IsntBounded condition = condition
 
 Bounded? : ∀ {b d o} → BoundedView b d o → Dec (Bounded b d o)

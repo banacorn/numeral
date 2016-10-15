@@ -49,26 +49,26 @@ Maximum? xs | IsBounded cond | max , claim | yes p rewrite p = yes claim
 Maximum? xs | IsBounded cond | max , claim | no ¬p = no (contraposition (Maximum-unique max xs claim) ¬p)
 Maximum? xs | IsntBounded cond = no (¬Bounded⇒¬Maximum xs (NonBoundedCond⇒¬Bounded cond))
 
-data Base≡0-View : ℕ → ℕ → Set where
-    HasOnly0 :                                   Base≡0-View 0 0
-    Others : ∀ {d o} → (bound : d + o ≥ 1 ⊔ o) → Base≡0-View d o
+data NullBase-View : ℕ → ℕ → Set where
+    AllZeros :                                   NullBase-View 0 0
+    Others : ∀ {d o} → (bound : d + o ≥ 1 ⊔ o) → NullBase-View d o
 
-Base≡0-view : ∀ d o → Base≡0-View d o
-Base≡0-view zero    zero     = HasOnly0
-Base≡0-view zero    (suc o)  = Others (s≤s ≤-refl)
-Base≡0-view (suc d) zero     = Others (s≤s z≤n)
-Base≡0-view (suc d) (suc o)  = Others (m≤n+m (suc o) (suc d))
+NullBase-view : ∀ d o → NullBase-View d o
+NullBase-view zero    zero     = AllZeros
+NullBase-view zero    (suc o)  = Others (s≤s ≤-refl)
+NullBase-view (suc d) zero     = Others (s≤s z≤n)
+NullBase-view (suc d) (suc o)  = Others (m≤n+m (suc o) (suc d))
 
-next-number-Base≡0 : ∀ {d o}
+next-number-NullBase : ∀ {d o}
     → (xs : Num 0 (suc d) o)
     → ¬ (Maximum xs)
     → Num 0 (suc d) o
-next-number-Base≡0 {d} {o} xs ¬max with Base≡0-view d o
-next-number-Base≡0 xs       ¬max | HasOnly0 = contradiction (HasOnly0-Maximum xs) ¬max
-next-number-Base≡0 xs       ¬max | Others bound with Greatest? (lsd xs)
-next-number-Base≡0 xs       ¬max | Others bound | yes greatest = contradiction (Base≡0-Maximum xs greatest) ¬max
-next-number-Base≡0 (x ∙   ) ¬max | Others bound | no ¬greatest = digit+1 x ¬greatest ∙
-next-number-Base≡0 (x ∷ xs) ¬max | Others bound | no ¬greatest = digit+1 x ¬greatest ∷ xs
+next-number-NullBase {d} {o} xs ¬max with NullBase-view d o
+next-number-NullBase xs       ¬max | AllZeros = contradiction (AllZeros-Maximum xs) ¬max
+next-number-NullBase xs       ¬max | Others bound with Greatest? (lsd xs)
+next-number-NullBase xs       ¬max | Others bound | yes greatest = contradiction (NullBase-Maximum xs greatest) ¬max
+next-number-NullBase (x ∙   ) ¬max | Others bound | no ¬greatest = digit+1 x ¬greatest ∙
+next-number-NullBase (x ∷ xs) ¬max | Others bound | no ¬greatest = digit+1 x ¬greatest ∷ xs
 
 
 next-number-1⊔o-upper-bound : ∀ m n → 2 ≤ suc m + n → m + n ≥ 1 ⊔ n
@@ -79,7 +79,7 @@ next-number-¬Maximum : ∀ {b d o}
     → (xs : Num (suc b) (suc d) o)
     → (d+o≥2 : 2 ≤ suc (d + o))
     → ¬ (Maximum xs)
-next-number-¬Maximum {b} {d} {o} xs d+o≥2 = ¬Bounded⇒¬Maximum xs (Digit+Offset≥2-¬Bounded b d o (≤-pred d+o≥2))
+next-number-¬Maximum {b} {d} {o} xs d+o≥2 = ¬Bounded⇒¬Maximum xs (Others-¬Bounded b d o (≤-pred d+o≥2))
 
 mutual
     Gapped : ∀ {b d o}
@@ -286,7 +286,7 @@ mutual
     next-number-is-greater-d+o≥2 {b} {d} {o} (x ∷ xs) ¬max prop | no ¬greatest
         = reflexive $ cong (λ w → w + ⟦ xs ⟧ * suc b) (sym (Digit-toℕ-digit+1 x ¬greatest))
 
- -- HasNoDigit-explode xs xs!
+ -- NoDigits-explode xs xs!
 
 
 next-number : ∀ {b d o}
@@ -294,44 +294,44 @@ next-number : ∀ {b d o}
     → ¬ (Maximum xs)
     → Num b d o
 next-number {b} {d} {o} xs ¬max with boundedView b d o
-next-number xs ¬max | IsBounded   (Base≡0 d o) = next-number-Base≡0 xs ¬max
-next-number xs ¬max | IsBounded   (HasOnly0 b) = HasOnly0-explode xs ¬max
-next-number xs ¬max | IsntBounded (Digit+Offset≥2 b d o d+o≥2) = next-number-d+o≥2 xs ¬max d+o≥2
-next-number xs ¬max | IsntBounded (HasNoDigit b o) = HasNoDigit-explode xs
+next-number xs ¬max | IsBounded   (NullBase d o) = next-number-NullBase xs ¬max
+next-number xs ¬max | IsBounded   (AllZeros b) = AllZeros-explode xs ¬max
+next-number xs ¬max | IsntBounded (Others b d o d+o≥2) = next-number-d+o≥2 xs ¬max d+o≥2
+next-number xs ¬max | IsntBounded (NoDigits b o) = NoDigits-explode xs
 
-next-number-is-greater-Base≡0 : ∀ {d o}
+next-number-is-greater-NullBase : ∀ {d o}
     → (xs : Num 0 (suc d) o)
     → (¬max : ¬ (Maximum xs))
-    → ⟦ next-number-Base≡0 xs ¬max ⟧ > ⟦ xs ⟧
-next-number-is-greater-Base≡0 {d} {o} xs    ¬max with Base≡0-view d o
-next-number-is-greater-Base≡0 xs        ¬max | HasOnly0 = contradiction (HasOnly0-Maximum xs) ¬max
-next-number-is-greater-Base≡0 xs        ¬max | Others bound with Greatest? (lsd xs)
-next-number-is-greater-Base≡0 xs        ¬max | Others bound | yes greatest = contradiction (Base≡0-Maximum xs greatest) ¬max
-next-number-is-greater-Base≡0 (x ∙)     ¬max | Others bound | no ¬greatest = reflexive (sym (Digit-toℕ-digit+1 x ¬greatest))
-next-number-is-greater-Base≡0 (x ∷ xs)  ¬max | Others bound | no ¬greatest = +n-mono (⟦ xs ⟧ * 0) (reflexive (sym (Digit-toℕ-digit+1 x ¬greatest)))
+    → ⟦ next-number-NullBase xs ¬max ⟧ > ⟦ xs ⟧
+next-number-is-greater-NullBase {d} {o} xs    ¬max with NullBase-view d o
+next-number-is-greater-NullBase xs        ¬max | AllZeros = contradiction (AllZeros-Maximum xs) ¬max
+next-number-is-greater-NullBase xs        ¬max | Others bound with Greatest? (lsd xs)
+next-number-is-greater-NullBase xs        ¬max | Others bound | yes greatest = contradiction (NullBase-Maximum xs greatest) ¬max
+next-number-is-greater-NullBase (x ∙)     ¬max | Others bound | no ¬greatest = reflexive (sym (Digit-toℕ-digit+1 x ¬greatest))
+next-number-is-greater-NullBase (x ∷ xs)  ¬max | Others bound | no ¬greatest = +n-mono (⟦ xs ⟧ * 0) (reflexive (sym (Digit-toℕ-digit+1 x ¬greatest)))
 
 next-number-is-greater : ∀ {b d o}
     → (xs : Num b d o)
     → (¬max : ¬ (Maximum xs))
     → ⟦ next-number xs ¬max ⟧ > ⟦ xs ⟧
 next-number-is-greater {b} {d} {o} xs ¬max with boundedView b d o
-next-number-is-greater xs ¬max | IsBounded (Base≡0 d o) = next-number-is-greater-Base≡0 xs ¬max
-next-number-is-greater xs ¬max | IsBounded (HasOnly0 b) = HasOnly0-explode xs ¬max
-next-number-is-greater xs ¬max | IsntBounded (Digit+Offset≥2 b d o d+o≥2) = next-number-is-greater-d+o≥2 xs ¬max d+o≥2
-next-number-is-greater xs ¬max | IsntBounded (HasNoDigit b o) = HasNoDigit-explode xs
+next-number-is-greater xs ¬max | IsBounded (NullBase d o) = next-number-is-greater-NullBase xs ¬max
+next-number-is-greater xs ¬max | IsBounded (AllZeros b) = AllZeros-explode xs ¬max
+next-number-is-greater xs ¬max | IsntBounded (Others b d o d+o≥2) = next-number-is-greater-d+o≥2 xs ¬max d+o≥2
+next-number-is-greater xs ¬max | IsntBounded (NoDigits b o) = NoDigits-explode xs
 
 
-next-number-is-LUB-Base≡0 : ∀ {d o}
+next-number-is-LUB-NullBase : ∀ {d o}
     → (xs : Num 0 (suc d) o)
     → (ys : Num 0 (suc d) o)
     → (¬max : ¬ (Maximum xs))
     → ⟦ ys ⟧ > ⟦ xs ⟧
-    → ⟦ ys ⟧ ≥ ⟦ next-number-Base≡0 xs ¬max ⟧
-next-number-is-LUB-Base≡0 {d} {o} xs ys ¬max prop with Base≡0-view d o
-next-number-is-LUB-Base≡0 {_} {_} xs ys ¬max prop | HasOnly0 = contradiction (HasOnly0-Maximum xs) ¬max
-next-number-is-LUB-Base≡0 {d} {o} xs ys ¬max prop | Others bound with Greatest? (lsd xs)
-next-number-is-LUB-Base≡0 {d} {o} xs ys ¬max prop | Others bound | yes greatest = contradiction (Base≡0-Maximum xs greatest) ¬max
-next-number-is-LUB-Base≡0 {d} {o} (x ∙) ys ¬max prop | Others bound | no ¬greatest =
+    → ⟦ ys ⟧ ≥ ⟦ next-number-NullBase xs ¬max ⟧
+next-number-is-LUB-NullBase {d} {o} xs ys ¬max prop with NullBase-view d o
+next-number-is-LUB-NullBase {_} {_} xs ys ¬max prop | AllZeros = contradiction (AllZeros-Maximum xs) ¬max
+next-number-is-LUB-NullBase {d} {o} xs ys ¬max prop | Others bound with Greatest? (lsd xs)
+next-number-is-LUB-NullBase {d} {o} xs ys ¬max prop | Others bound | yes greatest = contradiction (NullBase-Maximum xs greatest) ¬max
+next-number-is-LUB-NullBase {d} {o} (x ∙) ys ¬max prop | Others bound | no ¬greatest =
     start
         Digit-toℕ (digit+1 x ¬greatest) o
     ≈⟨ Digit-toℕ-digit+1 x ¬greatest ⟩
@@ -339,7 +339,7 @@ next-number-is-LUB-Base≡0 {d} {o} (x ∙) ys ¬max prop | Others bound | no ¬
     ≤⟨ prop ⟩
         ⟦ ys ⟧
     □
-next-number-is-LUB-Base≡0 {d} {o} (x ∷ xs) ys ¬max prop | Others bound | no ¬greatest =
+next-number-is-LUB-NullBase {d} {o} (x ∷ xs) ys ¬max prop | Others bound | no ¬greatest =
     start
         ⟦ digit+1 x ¬greatest ∷ xs ⟧
     ≈⟨ cong (λ w → w + ⟦ xs ⟧ * 0) (Digit-toℕ-digit+1 x ¬greatest) ⟩
@@ -349,15 +349,15 @@ next-number-is-LUB-Base≡0 {d} {o} (x ∷ xs) ys ¬max prop | Others bound | no
     □
 
 
--- next-number-is-LUB-HasOnly0 : ∀ {b}
+-- next-number-is-LUB-AllZeros : ∀ {b}
 --     → (xs : Num (suc b) 1 0)
 --     → (ys : Num (suc b) 1 0)
 --     → (xs! : ¬ (Null xs))
 --     → (ys! : ¬ (Null ys))
 --     → (¬max : ¬ (Maximum xs xs!))
 --     → ⟦ ys ⟧ ys! > ⟦ xs ⟧ xs!
---     → ⟦ ys ⟧ ys! ≥ ⟦ next-number-HasOnly0 xs xs! ¬max ⟧ next-number-¬Null-HasOnly0 xs xs! ¬max
--- next-number-is-LUB-HasOnly0 {b} xs ys xs! ys! ¬max prop = contradiction (HasOnly0-Maximum xs xs!) ¬max
+--     → ⟦ ys ⟧ ys! ≥ ⟦ next-number-AllZeros xs xs! ¬max ⟧ next-number-¬Null-AllZeros xs xs! ¬max
+-- next-number-is-LUB-AllZeros {b} xs ys xs! ys! ¬max prop = contradiction (AllZeros-Maximum xs xs!) ¬max
 
 ≥1⊔o : ∀ {b d o}
     → (xs : Num (suc b) (suc d) o)
@@ -521,10 +521,10 @@ next-number-is-LUB : ∀ {b d o}
     → ⟦ ys ⟧ > ⟦ xs ⟧
     → ⟦ ys ⟧ ≥ ⟦ next-number xs ¬max ⟧
 next-number-is-LUB {b} {d} {o} xs ys ¬max prop with boundedView b d o
-next-number-is-LUB xs ys ¬max prop | IsBounded (Base≡0 d o) = next-number-is-LUB-Base≡0 xs ys ¬max prop
-next-number-is-LUB xs ys ¬max prop | IsBounded (HasOnly0 b) = HasOnly0-explode xs ¬max
-next-number-is-LUB xs ys ¬max prop | IsntBounded (Digit+Offset≥2 b d o d+o≥2) = next-number-is-LUB-d+o≥2 xs ys ¬max d+o≥2 prop
-next-number-is-LUB xs ys ¬max prop | IsntBounded (HasNoDigit b o) = HasNoDigit-explode xs
+next-number-is-LUB xs ys ¬max prop | IsBounded (NullBase d o) = next-number-is-LUB-NullBase xs ys ¬max prop
+next-number-is-LUB xs ys ¬max prop | IsBounded (AllZeros b) = AllZeros-explode xs ¬max
+next-number-is-LUB xs ys ¬max prop | IsntBounded (Others b d o d+o≥2) = next-number-is-LUB-d+o≥2 xs ys ¬max d+o≥2 prop
+next-number-is-LUB xs ys ¬max prop | IsntBounded (NoDigits b o) = NoDigits-explode xs
 
 -- begin
 --     {!   !}
