@@ -146,27 +146,8 @@ increment : ∀ {b d o}
 increment xs (next , claim) = next
 
 Continuous : ∀ b d o → Set
-Continuous b d o = Σ[ n ∈ ℕ ] ((xs : Num b d o)  → ⟦ xs ⟧ ≥ n → Incrementable xs)
+Continuous b d o = Σ[ n ∈ ℕ ] ((xs : Num b d o) → ⟦ xs ⟧ ≥ n → Incrementable xs)
 
-StartsFrom0-¬Maximum : ∀ {b d}
-    → d ≥ b
-    → (xs : Num b d 0)
-    → ¬ (Maximum xs)
-StartsFrom0-¬Maximum {b} {d} prop xs with boundedView b d 0
-StartsFrom0-¬Maximum prop xs | IsBounded (NullBase d .0) = {!   !}
-StartsFrom0-¬Maximum prop xs | IsBounded (AllZeros b) = {!   !}
-StartsFrom0-¬Maximum prop xs | IsntBounded cond = {!   !}
-
--- StartsFrom0-Continuous : ∀ {b d}
---     → d ≥ b
---     → (xs : Num b d 0) → (xs! : ¬ (Null xs))
---     → ⟦ xs ⟧ xs! ≥ 0
---     → Incrementable xs xs!
--- StartsFrom0-Continuous cond xs xs! prop with Maximum? xs xs!
--- StartsFrom0-Continuous cond xs xs! prop | yes max = contradiction max ¬max
---     where   ¬max : ¬ (Maximum xs xs!)
---             ¬max = {!   !}
--- StartsFrom0-Continuous cond xs xs! prop | no ¬max = {!   !}
 
 data ContinuousCond : ℕ → ℕ → ℕ → Set where
     continuousCond : ∀ {b} {d} {o}
@@ -174,19 +155,145 @@ data ContinuousCond : ℕ → ℕ → ℕ → Set where
         → (prop : d ≥ (1 ⊔ o) * b)
         → ContinuousCond b d o
 
-StartsFrom0-Continuous : ∀ {b d}
-    → ContinuousCond b d 0
-    → Continuous b d 0
-StartsFrom0-Continuous (continuousCond (Others b d .0 d+o≥2) prop) = 0 , {!   !}
-StartsFrom0-Continuous (continuousCond (NoDigits b .0) prop) = {!   !}
+Continuous-Others-StartsFrom0-¬Maximum : ∀ {b d}
+    → suc (b + 0) ≤ suc d
+    → 2 ≤ suc (d + 0)
+    → (xs : Num (suc b) (suc d) 0)
+    → ¬ (Maximum xs)
+Continuous-Others-StartsFrom0-¬Maximum {b} {d} prop d+o≥2 xs with boundedView (suc b) (suc d) 0
+Continuous-Others-StartsFrom0-¬Maximum prop d+o≥2    xs | IsBounded cond with Maximum? xs
+Continuous-Others-StartsFrom0-¬Maximum prop (s≤s ()) xs | IsBounded (AllZeros b) | yes max
+Continuous-Others-StartsFrom0-¬Maximum prop d+o≥2    xs | IsBounded cond | no ¬max = ¬max
+Continuous-Others-StartsFrom0-¬Maximum prop d+o≥2    xs | IsntBounded cond = ¬Bounded⇒¬Maximum xs (NonBoundedCond⇒¬Bounded cond)
 
+Continuous-Others-StartsFrom0 : ∀ {b d}
+    → suc (b + 0) ≤ suc d
+    → 2 ≤ suc (d + 0)
+    → (xs : Num (suc b) (suc d) 0)
+    → ⟦ xs ⟧ ≥ 0
+    → Incrementable xs
+Continuous-Others-StartsFrom0 prop d+o≥2 xs _ with cmp (⟦ next-number xs (Continuous-Others-StartsFrom0-¬Maximum prop d+o≥2 xs) ⟧ ∸ ⟦ xs ⟧) 1
+Continuous-Others-StartsFrom0 prop d+o≥2 xs _ | tri< p ¬q ¬r = contradiction p (>⇒≰ (s≤s ¬p))
+    where
+        ¬max = Continuous-Others-StartsFrom0-¬Maximum prop d+o≥2 xs
+        next = next-number xs ¬max
+        ¬p : ⟦ next ⟧ ∸ ⟦ xs ⟧ > 0
+        ¬p = +n-mono-inverse ⟦ xs ⟧ $
+            start
+                1 + ⟦ xs ⟧
+            ≤⟨ next-number-is-greater xs ¬max ⟩
+                (⟦ next ⟧)
+            ≈⟨ sym (m∸n+n≡m (≤-pred $ ≤-step $ (next-number-is-greater xs ¬max))) ⟩
+                ⟦ next ⟧ ∸ ⟦ xs ⟧ + ⟦ xs ⟧
+            □
+Continuous-Others-StartsFrom0 prop d+o≥2 xs _ | tri≈ ¬p q ¬r = (next-number xs ¬max) , proof
+    where
+        ¬max = Continuous-Others-StartsFrom0-¬Maximum prop d+o≥2 xs
+        next  = next-number xs ¬max
+        proof : ⟦ next ⟧ ≡ suc ⟦ xs ⟧
+        proof =
+            begin
+                (⟦ next ⟧)
+            ≡⟨ sym (m∸n+n≡m (≤-pred $ ≤-step $ (next-number-is-greater xs ¬max))) ⟩
+                ⟦ next ⟧ ∸ ⟦ xs ⟧ + ⟦ xs ⟧
+            ≡⟨ cong (λ w → w + ⟦ xs ⟧) q ⟩
+                suc ⟦ xs ⟧
+            ∎
+Continuous-Others-StartsFrom0 prop d+o≥2 xs _ | tri> ¬p ¬q r = {!   !}
+
+-- begin
+--     {!   !}
+-- ≡⟨ {!   !} ⟩
+--     {!   !}
+-- ≡⟨ {!   !} ⟩
+--     {!   !}
+-- ≡⟨ {!   !} ⟩
+--     {!   !}
+-- ≡⟨ {!   !} ⟩
+--     {!   !}
+-- ∎
+
+-- start
+--     {!   !}
+-- ≤⟨ {!   !} ⟩
+--     {!   !}
+-- ≤⟨ {!   !} ⟩
+--     {!   !}
+-- ≤⟨ {!   !} ⟩
+--     {!   !}
+-- □
+
+-- Continuous-Others-StartsFrom0-lemma : ∀ {b d}
+--     → (redundant : suc (b + 0) ≤ suc d)
+--     → (2≤d+o : 2 ≤ suc (d + 0))
+--     → (xs : Num (suc b) (suc d) 0)
+--     → let
+--         ¬max = Continuous-Others-StartsFrom0-¬Maximum redundant 2≤d+o xs
+--         next  = next-number xs ¬max
+--       in ⟦ next ⟧ ∸ ⟦ xs ⟧ ≤ 2
+-- Continuous-Others-StartsFrom0-lemma {b} {d} redundant 2≤d+o xs with boundedView (suc b) (suc d) 0
+-- Continuous-Others-StartsFrom0-lemma redundant (s≤s ()) xs | IsBounded (AllZeros b)
+-- Continuous-Others-StartsFrom0-lemma redundant 2≤d+o (x ∙) | IsntBounded (Others b d .0 d+o≥2) with Greatest? x
+-- Continuous-Others-StartsFrom0-lemma redundant 2≤d+o (x ∙) | IsntBounded (Others b d _ d+o≥2) | yes greatest with suc d ≤? suc (b + 0)
+-- Continuous-Others-StartsFrom0-lemma redundant 2≤d+o (x ∙) | IsntBounded (Others b d _ d+o≥2) | yes greatest | yes gapped =
+--     let
+--         b≡d : suc b + 0 ≡ suc d
+--         b≡d = IsPartialOrder.antisym isPartialOrder redundant gapped
+--     in
+--     start
+--         ⟦ z ∷ 1⊔o (suc d) 0 (≤-step $ 2≤d+o) ∙ ⟧ ∸ (Fin.toℕ x + zero)
+--     ≈⟨ refl ⟩
+--         Digit-toℕ (1⊔o (suc d) 0 (≤-step $ 2≤d+o)) 0 * suc b ∸ (Fin.toℕ x + zero)
+--     ≈⟨ cong (λ w → w * suc b ∸ (Fin.toℕ x + zero)) (Digit-toℕ-1⊔o (suc b) zero (s≤s (s≤s z≤n))) ⟩
+--         suc (b + zero) ∸ (Fin.toℕ x + zero)
+--     ≈⟨ cong (λ w → w ∸ (Fin.toℕ x + zero)) b≡d ⟩
+--         suc d ∸ (Fin.toℕ x + zero)
+--     ≈⟨ cong (λ w → w ∸ (Fin.toℕ x + zero)) (sym greatest) ⟩
+--         suc (Fin.toℕ x) ∸ (Fin.toℕ x + zero)
+--     ≤⟨ {!   !} ⟩
+--         {!   !}
+--     ≤⟨ {!   !} ⟩
+--         2
+--     □
+-- Continuous-Others-StartsFrom0-lemma redundant 2≤d+o (x ∙) | IsntBounded (Others b d _ d+o≥2) | yes greatest | no ¬gapped = {!   !}
+-- Continuous-Others-StartsFrom0-lemma redundant 2≤d+o (x ∙) | IsntBounded (Others b d _ d+o≥2) | no ¬greatest = {!   !}
+-- Continuous-Others-StartsFrom0-lemma redundant 2≤d+o (x ∷ xs) | IsntBounded (Others b d .0 d+o≥2) = {!   !}
+    -- where
+    --     ¬max = Continuous-Others-StartsFrom0-¬Maximum prop d+o≥2 xs
+    --     next  = next-number xs ¬max
+    --     ¬r : 2 ≰ ⟦ next ⟧ ∸ ⟦ xs ⟧
+    --     ¬r = >⇒≰ $ {!   !}
+        -- proof : ¬ Incrementable xs
+        -- proof (evidence , claim) = contradiction ⟦next⟧>⟦evidence⟧ ⟦next⟧≯⟦evidence⟧
+        --     where
+        --         ⟦next⟧>⟦evidence⟧ : ⟦ next ⟧ > ⟦ evidence ⟧
+        --         ⟦next⟧>⟦evidence⟧ =
+        --             start
+        --                 suc ⟦ evidence ⟧
+        --             ≈⟨ cong suc claim ⟩
+        --                 2 + ⟦ xs ⟧
+        --             ≤⟨ +n-mono ⟦ xs ⟧ r ⟩
+        --                 ⟦ next ⟧ ∸ ⟦ xs ⟧ + ⟦ xs ⟧
+        --             ≈⟨ m∸n+n≡m (≤-pred $ ≤-step $ (next-number-is-greater xs ¬max)) ⟩
+        --                 ⟦ next ⟧
+        --             □
+        --         ⟦next⟧≯⟦evidence⟧ : ⟦ next ⟧ ≯ ⟦ evidence ⟧
+        --         ⟦next⟧≯⟦evidence⟧ = ≤⇒≯ (next-number-is-LUB xs evidence ¬max (m≡1+n⇒m>n claim))
+
+Continuous-NoDigits : ∀ {b o}
+    → (1 ⊔ o) * b ≤ 0
+    → Continuous b 0 o
+Continuous-NoDigits prop = 0 , (λ xs x → NoDigits-explode xs)
+--     →
+
+-- Continuous (suc b) (suc d) (suc zero)
 ContinuousCond⇒Continuous : ∀ {b d o}
     → ContinuousCond b d o
     → Continuous b d o
-ContinuousCond⇒Continuous {b} {d} {zero} cond = StartsFrom0-Continuous cond
-ContinuousCond⇒Continuous {b} {d} {suc zero} cond = {!   !}
-ContinuousCond⇒Continuous {b} {d} {suc (suc o)} cond = {!   !}
-
+ContinuousCond⇒Continuous (continuousCond (Others b d zero d+o≥2) prop) = 0 , Continuous-Others-StartsFrom0 prop d+o≥2
+ContinuousCond⇒Continuous (continuousCond (Others b d (suc zero) d+o≥2) prop) = {!   !}
+ContinuousCond⇒Continuous (continuousCond (Others b d (suc (suc o)) d+o≥2) prop) = {!   !}
+ContinuousCond⇒Continuous (continuousCond (NoDigits b d) prop) = Continuous-NoDigits prop
 
 -- d≥[1⊔o]*b⇒Continuous : ∀ {b d o} → d ≥ (1 ⊔ o) * b → Continuous b d o
 -- d≥[1⊔o]*b⇒Continuous {b} {d} {zero} cond = 0 , StartsFrom0-Continuous (≤-trans (reflexive (sym (+-right-identity b))) cond)
@@ -194,24 +301,24 @@ ContinuousCond⇒Continuous {b} {d} {suc (suc o)} cond = {!   !}
 -- d≥[1⊔o]*b⇒Continuous {b} {d} {suc (suc o)} cond = {!o   !}
 
 
--- -- begin
--- --     {!   !}
--- -- ≡⟨ {!   !} ⟩
--- --     {!   !}
--- -- ≡⟨ {!   !} ⟩
--- --     {!   !}
--- -- ≡⟨ {!   !} ⟩
--- --     {!   !}
--- -- ≡⟨ {!   !} ⟩
--- --     {!   !}
--- -- ∎
---
--- -- start
--- --     {!   !}
--- -- ≤⟨ {!   !} ⟩
--- --     {!   !}
--- -- ≤⟨ {!   !} ⟩
--- --     {!   !}
--- -- ≤⟨ {!   !} ⟩
--- --     {!   !}
--- -- □
+-- begin
+--     {!   !}
+-- ≡⟨ {!   !} ⟩
+--     {!   !}
+-- ≡⟨ {!   !} ⟩
+--     {!   !}
+-- ≡⟨ {!   !} ⟩
+--     {!   !}
+-- ≡⟨ {!   !} ⟩
+--     {!   !}
+-- ∎
+
+-- start
+--     {!   !}
+-- ≤⟨ {!   !} ⟩
+--     {!   !}
+-- ≤⟨ {!   !} ⟩
+--     {!   !}
+-- ≤⟨ {!   !} ⟩
+--     {!   !}
+-- □
