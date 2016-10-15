@@ -30,37 +30,23 @@ open DecTotalOrder decTotalOrder using (reflexive) renaming (refl to ≤-refl)
 -- Predicates on the Indices
 ------------------------------------------------------------------------
 
+-- Redundant : ∀ b d o → Set
+-- Redundant b d = d ≤? (1 ⊔ o) * b
 --
+-- Redundant? : ∀ b d → Dec (Redundant b d)
+-- Redundant? b d = suc b ≤? d
 --
+-- Sparse : ∀ b d → Set
+-- Sparse b d = d ≤? (1 ⊔ o) * b
 --
---                  |   |
---                  |   |   Redundant
---                  |   |
---                  |  -|
---     b ≡ d        ∙
---              |-  |
---     Sparse   |   |
---              |   |
---              |   |
-
-
-Redundant : ∀ b d → Set
-Redundant b d = b < d
-
-Redundant? : ∀ b d → Dec (Redundant b d)
-Redundant? b d = suc b ≤? d
-
-Sparse : ∀ b d → Set
-Sparse b d = b > d
-
-Sparse? : ∀ b d → Dec (Sparse b d)
-Sparse? b d = suc d ≤? b
-
-Redundant⇒¬Sparse : ∀ {b d} → Redundant b d → ¬ (Sparse b d)
-Redundant⇒¬Sparse {b} {d} redundant claim = contradiction claim (>⇒≰ (≤-step redundant))
-
-Sparse⇒¬Redundant : ∀ {b d } → Sparse b d → ¬ (Redundant b d)
-Sparse⇒¬Redundant {b} {d} sparse claim = contradiction claim (>⇒≰ (≤-step sparse))
+-- Sparse? : ∀ b d → Dec (Sparse b d)
+-- Sparse? b d = suc d ≤? b
+--
+-- Redundant⇒¬Sparse : ∀ {b d} → Redundant b d → ¬ (Sparse b d)
+-- Redundant⇒¬Sparse {b} {d} redundant claim = contradiction claim (>⇒≰ (≤-step redundant))
+--
+-- Sparse⇒¬Redundant : ∀ {b d } → Sparse b d → ¬ (Redundant b d)
+-- Sparse⇒¬Redundant {b} {d} sparse claim = contradiction claim (>⇒≰ (≤-step sparse))
 
 
 --------------------------------------------------------------------------------
