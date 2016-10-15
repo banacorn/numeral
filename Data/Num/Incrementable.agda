@@ -3,6 +3,7 @@ module Data.Num.Incrementable where
 open import Data.Num.Core
 open import Data.Num.Bounded
 open import Data.Num.Maximum
+open import Data.Num.Next
 
 open import Data.Nat
 open import Data.Nat.Properties
@@ -152,7 +153,7 @@ Continuous b d o = Σ[ n ∈ ℕ ] ((xs : Num b d o) → ⟦ xs ⟧ ≥ n → In
 data ContinuousCond : ℕ → ℕ → ℕ → Set where
     continuousCond : ∀ {b} {d} {o}
         → NonBoundedCond b d o
-        → (prop : d ≥ (1 ⊔ o) * b)
+        → (abundant : d ≥ (1 ⊔ o) * b)
         → ContinuousCond b d o
 
 Continuous-Others-StartsFrom0-¬Maximum : ∀ {b d}
@@ -225,25 +226,25 @@ Continuous-Others-StartsFrom0 prop d+o≥2 xs _ | tri> ¬p ¬q r = {!   !}
 
 -- Continuous-Others-StartsFrom0-lemma : ∀ {b d}
 --     → (redundant : suc (b + 0) ≤ suc d)
---     → (2≤d+o : 2 ≤ suc (d + 0))
+--     → (d+o≥2 : 2 ≤ suc (d + 0))
 --     → (xs : Num (suc b) (suc d) 0)
 --     → let
---         ¬max = Continuous-Others-StartsFrom0-¬Maximum redundant 2≤d+o xs
+--         ¬max = Continuous-Others-StartsFrom0-¬Maximum redundant d+o≥2 xs
 --         next  = next-number xs ¬max
 --       in ⟦ next ⟧ ∸ ⟦ xs ⟧ ≤ 2
--- Continuous-Others-StartsFrom0-lemma {b} {d} redundant 2≤d+o xs with boundedView (suc b) (suc d) 0
+-- Continuous-Others-StartsFrom0-lemma {b} {d} redundant d+o≥2 xs with boundedView (suc b) (suc d) 0
 -- Continuous-Others-StartsFrom0-lemma redundant (s≤s ()) xs | IsBounded (AllZeros b)
--- Continuous-Others-StartsFrom0-lemma redundant 2≤d+o (x ∙) | IsntBounded (Others b d .0 d+o≥2) with Greatest? x
--- Continuous-Others-StartsFrom0-lemma redundant 2≤d+o (x ∙) | IsntBounded (Others b d _ d+o≥2) | yes greatest with suc d ≤? suc (b + 0)
--- Continuous-Others-StartsFrom0-lemma redundant 2≤d+o (x ∙) | IsntBounded (Others b d _ d+o≥2) | yes greatest | yes gapped =
+-- Continuous-Others-StartsFrom0-lemma redundant d+o≥2 (x ∙) | IsntBounded (Others b d .0 d+o≥2) with Greatest? x
+-- Continuous-Others-StartsFrom0-lemma redundant d+o≥2 (x ∙) | IsntBounded (Others b d _ d+o≥2) | yes greatest with suc d ≤? suc (b + 0)
+-- Continuous-Others-StartsFrom0-lemma redundant d+o≥2 (x ∙) | IsntBounded (Others b d _ d+o≥2) | yes greatest | yes gapped =
 --     let
 --         b≡d : suc b + 0 ≡ suc d
 --         b≡d = IsPartialOrder.antisym isPartialOrder redundant gapped
 --     in
 --     start
---         ⟦ z ∷ 1⊔o (suc d) 0 (≤-step $ 2≤d+o) ∙ ⟧ ∸ (Fin.toℕ x + zero)
+--         ⟦ z ∷ 1⊔o (suc d) 0 (≤-step $ d+o≥2) ∙ ⟧ ∸ (Fin.toℕ x + zero)
 --     ≈⟨ refl ⟩
---         Digit-toℕ (1⊔o (suc d) 0 (≤-step $ 2≤d+o)) 0 * suc b ∸ (Fin.toℕ x + zero)
+--         Digit-toℕ (1⊔o (suc d) 0 (≤-step $ d+o≥2)) 0 * suc b ∸ (Fin.toℕ x + zero)
 --     ≈⟨ cong (λ w → w * suc b ∸ (Fin.toℕ x + zero)) (Digit-toℕ-1⊔o (suc b) zero (s≤s (s≤s z≤n))) ⟩
 --         suc (b + zero) ∸ (Fin.toℕ x + zero)
 --     ≈⟨ cong (λ w → w ∸ (Fin.toℕ x + zero)) b≡d ⟩
@@ -255,9 +256,9 @@ Continuous-Others-StartsFrom0 prop d+o≥2 xs _ | tri> ¬p ¬q r = {!   !}
 --     ≤⟨ {!   !} ⟩
 --         2
 --     □
--- Continuous-Others-StartsFrom0-lemma redundant 2≤d+o (x ∙) | IsntBounded (Others b d _ d+o≥2) | yes greatest | no ¬gapped = {!   !}
--- Continuous-Others-StartsFrom0-lemma redundant 2≤d+o (x ∙) | IsntBounded (Others b d _ d+o≥2) | no ¬greatest = {!   !}
--- Continuous-Others-StartsFrom0-lemma redundant 2≤d+o (x ∷ xs) | IsntBounded (Others b d .0 d+o≥2) = {!   !}
+-- Continuous-Others-StartsFrom0-lemma redundant d+o≥2 (x ∙) | IsntBounded (Others b d _ d+o≥2) | yes greatest | no ¬gapped = {!   !}
+-- Continuous-Others-StartsFrom0-lemma redundant d+o≥2 (x ∙) | IsntBounded (Others b d _ d+o≥2) | no ¬greatest = {!   !}
+-- Continuous-Others-StartsFrom0-lemma redundant d+o≥2 (x ∷ xs) | IsntBounded (Others b d .0 d+o≥2) = {!   !}
     -- where
     --     ¬max = Continuous-Others-StartsFrom0-¬Maximum prop d+o≥2 xs
     --     next  = next-number xs ¬max

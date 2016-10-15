@@ -32,11 +32,11 @@ open DecTotalOrder decTotalOrder using (reflexive) renaming (refl to ≤-refl)
 
 data BoundedCond : ℕ → ℕ → ℕ → Set where
     NullBase    : ∀ d o → BoundedCond 0       (suc d) o
-    AllZeros    : ∀ b   → BoundedCond (suc b) 1 0
+    AllZeros    : ∀ b   → BoundedCond (suc b) 1       0
 
 data NonBoundedCond : ℕ → ℕ → ℕ → Set where
     Others      : ∀ b d o → (d+o≥2 : suc d + o ≥ 2) → NonBoundedCond (suc b) (suc d) o
-    NoDigits    : ∀ b   o                           → NonBoundedCond b       0 o
+    NoDigits    : ∀ b   o                           → NonBoundedCond b       0       o
 
 data BoundedView : ℕ → ℕ → ℕ → Set where
     IsBounded   : ∀ {b d o} → (cond :    BoundedCond b d o) → BoundedView b d o
