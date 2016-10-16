@@ -55,8 +55,12 @@ isSemiringWithoutOne = IsCommutativeSemiringWithoutOne.isSemiringWithoutOne ⊔-
 cmp : Trichotomous _≡_ _<_
 cmp = StrictTotalOrder.compare strictTotalOrder
 
-≤-trans :  Transitive _≤_
+≤-trans : Transitive _≤_
 ≤-trans = IsPreorder.trans isPreorder
+
+<⇒≤ : _<_ ⇒ _≤_
+<⇒≤ {zero} p = z≤n
+<⇒≤ {suc i} (s≤s p) = s≤s (<⇒≤ p)
 
 >⇒≰ : _>_ ⇒ _≰_
 >⇒≰ {zero}  ()      q

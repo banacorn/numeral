@@ -1,11 +1,10 @@
-module Sandbox.Dev where
+module Data.Num.Continuous where
 
 open import Data.Num.Core
 open import Data.Num.Bounded
 open import Data.Num.Maximum
 open import Data.Num.Next
 open import Data.Num.Incrementable
-open import Data.Num.Continuous
 
 open import Data.Nat
 open import Data.Nat.Properties
@@ -32,6 +31,24 @@ open ≡-Reasoning
 open ≤-Reasoning renaming (begin_ to start_; _∎ to _□; _≡⟨_⟩_ to _≈⟨_⟩_)
 open DecTotalOrder decTotalOrder using (reflexive) renaming (refl to ≤-refl)
 
+------------------------------------------------------------------------
+
+Continuous : ∀ b d o → Set
+Continuous b d o = (xs : Num b d o) → Incrementable xs
+
+
+data ContinuousCond : ℕ → ℕ → ℕ → Set where
+    continuousCond : ∀ {b} {d} {o}
+        → NonBoundedCond b d o
+        → (abundant : d ≥ (1 ⊔ o) * b)
+        → ContinuousCond b d o
+
+
+Continuous-Others-¬Maximum : ∀ {b d o}
+    → (d+o≥2 : 2 ≤ suc (d + o))
+    → (xs : Num (suc b) (suc d) o)
+    → ¬ (Maximum xs)
+Continuous-Others-¬Maximum {b} {d} {o} d+o≥2 xs = ¬Bounded⇒¬Maximum xs (NonBoundedCond⇒¬Bounded (Others b d o d+o≥2))
 
 Continuous-Others-Incremental : ∀ {b d o}
     → (abundant : suc d ≥ (1 ⊔ o) * suc b)
@@ -183,22 +200,10 @@ Continuous-Others-Incremental {b} {d} {o} abundant d+o≥2 (x ∷ xs) | ¬Gapped
 ContinuousCond⇒Continuous : ∀ {b d o}
     → ContinuousCond b d o
     → Continuous b d o
-ContinuousCond⇒Continuous (continuousCond (Others b d o d+o≥2) prop)
-    = λ xs → (next-number-Others xs (Continuous-Others-¬Maximum d+o≥2 xs) d+o≥2) , Continuous-Others-Incremental prop d+o≥2 xs
-ContinuousCond⇒Continuous (continuousCond (NoDigits b d) prop)
-    = Continuous-NoDigits prop
-
-
-
--- start
---     {!   !}
--- ≈⟨ {!   !} ⟩
---     {!   !}
--- ≈⟨ {!   !} ⟩
---     {!   !}
--- ≈⟨ {!   !} ⟩
---     {!   !}
--- □
+ContinuousCond⇒Continuous (continuousCond (Others b d o d+o≥2) prop) xs
+    = (next-number-Others xs (Continuous-Others-¬Maximum d+o≥2 xs) d+o≥2) , Continuous-Others-Incremental prop d+o≥2 xs
+ContinuousCond⇒Continuous (continuousCond (NoDigits b d) prop) xs
+    = NoDigits-explode xs
 
 -- begin
 --     {!   !}
@@ -211,6 +216,7 @@ ContinuousCond⇒Continuous (continuousCond (NoDigits b d) prop)
 -- ≡⟨ {!   !} ⟩
 --     {!   !}
 -- ∎
+
 -- start
 --     {!   !}
 -- ≤⟨ {!   !} ⟩

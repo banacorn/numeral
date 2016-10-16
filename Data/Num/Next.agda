@@ -211,7 +211,7 @@ mutual
     next-number-is-greater-Others {b} {d} {o} (x ∙) ¬max d+o≥2 | ¬Gapped greatest ¬gapped =
         let
             lower-bound : (suc zero ⊔ o) * suc b ≤ suc d
-            lower-bound = ≤-pred $ ≤-step ¬gapped
+            lower-bound = <⇒≤ ¬gapped
             upper-bound : 1 ≤ (suc zero ⊔ o) * suc b
             upper-bound = m≤m⊔n (suc zero) o *-mono s≤s z≤n
             prop2 : (suc zero ⊔ o) * suc b ≤ suc (Digit-toℕ x o)
@@ -241,7 +241,7 @@ mutual
         let
             ¬max = next-number-¬Maximum xs d+o≥2
             next  = next-number-Others xs ¬max d+o≥2
-            next>this = ≤-pred $ ≤-step $ next-number-is-greater-Others xs ¬max d+o≥2
+            next>this = <⇒≤ $ next-number-is-greater-Others xs ¬max d+o≥2
         in
             start
                 suc (Digit-toℕ x o) + ⟦ xs ⟧ * suc b
@@ -274,7 +274,7 @@ mutual
                 ≤⟨ ∸-mono {suc ⟦ xs ⟧} {⟦ next ⟧} {⟦ xs ⟧} (next-number-is-greater-Others xs ¬max d+o≥2) ≤-refl ⟩
                     ⟦ next ⟧ ∸ ⟦ xs ⟧
                 □) *-mono (s≤s {0} {b} z≤n)
-            gap<d = ≤-pred $ ≤-step ¬gapped
+            gap<d = <⇒≤ ¬gapped
             gap'-upper-bound =
                 start
                     ⟦ next ⟧ * suc b ∸ ⟦ xs ⟧ * suc b
@@ -288,7 +288,7 @@ mutual
                     suc (Digit-toℕ x o)
                 □
             LSD = digit+1-n x greatest gap gap>0
-            next>this = ≤-pred $ ≤-step $ next-number-is-greater-Others xs ¬max d+o≥2
+            next>this = <⇒≤ $ next-number-is-greater-Others xs ¬max d+o≥2
 
         in start
             suc (Digit-toℕ x o) + ⟦ xs ⟧ * suc b
@@ -412,7 +412,7 @@ next-number-is-LUB-d+o≥2 {b} {d} {o} (x ∙) ys ¬max d+o≥2 prop | ¬Gapped 
         lower-bound : (1 ⊔ o) * suc b > 0
         lower-bound = m≤m⊔n 1 o *-mono s≤s z≤n
         upper-bound : (1 ⊔ o) * suc b ≤ suc d
-        upper-bound = ≤-pred $ ≤-step ¬gapped
+        upper-bound = <⇒≤ ¬gapped
         upper-bound' : (1 ⊔ o) * suc b ≤ suc (Fin.toℕ x + o)
         upper-bound' = start
                 (1 ⊔ o) * suc b
@@ -487,7 +487,7 @@ next-number-is-LUB-d+o≥2 {b} {d} {o} (x ∷ xs) (y ∷ ys) ¬max d+o≥2 prop 
             ≤⟨ ∸-mono {suc ⟦ xs ⟧} {⟦ next ⟧} {⟦ xs ⟧} (next-number-is-greater-Others xs ¬max d+o≥2) ≤-refl ⟩
                 ⟦ next ⟧ ∸ ⟦ xs ⟧
             □) *-mono (s≤s {0} {b} z≤n)
-        gap<d = ≤-pred $ ≤-step ¬gapped
+        gap<d = <⇒≤ ¬gapped
         gap'-upper-bound =
             start
                 ⟦ next ⟧ * suc b ∸ ⟦ xs ⟧ * suc b
@@ -500,7 +500,7 @@ next-number-is-LUB-d+o≥2 {b} {d} {o} (x ∷ xs) (y ∷ ys) ¬max d+o≥2 prop 
             ≈⟨ cong (λ w → w + o) (sym greatest) ⟩
                 suc (Digit-toℕ x o)
             □
-        next>this = ≤-pred $ ≤-step $ next-number-is-greater-Others xs ¬max d+o≥2
+        next>this = <⇒≤ $ next-number-is-greater-Others xs ¬max d+o≥2
     in
     start
         ⟦ digit+1-n x greatest gap gap>0 ∷ next ⟧
