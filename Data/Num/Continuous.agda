@@ -36,11 +36,10 @@ open DecTotalOrder decTotalOrder using (reflexive) renaming (refl to ≤-refl)
 Continuous : ∀ b d o → Set
 Continuous b d o = (xs : Num b d o) → Incrementable xs
 
-
 data ContinuousCond : ℕ → ℕ → ℕ → Set where
     continuousCond : ∀ {b} {d} {o}
         → NonBoundedCond b d o
-        → (abundant : d ≥ (1 ⊔ o) * b)
+        → (abundant : Abundant b d o)
         → ContinuousCond b d o
 
 
@@ -51,7 +50,7 @@ Continuous-Others-¬Maximum : ∀ {b d o}
 Continuous-Others-¬Maximum {b} {d} {o} d+o≥2 xs = ¬Bounded⇒¬Maximum xs (NonBoundedCond⇒¬Bounded (Others b d o d+o≥2))
 
 Continuous-Others-Incremental : ∀ {b d o}
-    → (abundant : suc d ≥ (1 ⊔ o) * suc b)
+    → (abundant : Abundant (suc b) (suc d) o)
     → (d+o≥2 : 2 ≤ suc (d + o))
     → (xs : Num (suc b) (suc d) o)
     → let
@@ -204,6 +203,27 @@ ContinuousCond⇒Continuous (continuousCond (Others b d o d+o≥2) prop) xs
     = (next-number-Others xs (Continuous-Others-¬Maximum d+o≥2 xs) d+o≥2) , Continuous-Others-Incremental prop d+o≥2 xs
 ContinuousCond⇒Continuous (continuousCond (NoDigits b d) prop) xs
     = NoDigits-explode xs
+
+Bounded⇒¬Continuous : ∀ {b d o}
+    → Bounded b d o
+    → ¬ (Continuous b d o)
+Bounded⇒¬Continuous (xs , max) claim = contradiction (claim xs) (Maximum⇒¬Incrementable xs max)
+
+Others∧¬Abundant⇒¬Continuous : ∀ {b d o}
+    → (d+o≥2 : 2 ≤ suc (d + o))
+    → ¬ (Abundant (suc b) (suc d) o)
+    → ¬ (Continuous (suc b) (suc d) o)
+Others∧¬Abundant⇒¬Continuous {b} {d} {o} d+o≥2 ¬abundant claim = {!   !}
+
+Continuous? : ∀ b d o → Dec (Continuous b d o)
+Continuous? b d o with boundedView b d o
+Continuous? b d o | IsBounded cond = no (Bounded⇒¬Continuous (BoundedCond⇒Bounded cond))
+Continuous? _ _ _ | IsntBounded (Others b d o d+o≥2) with Abundant? (suc b) (suc d) o
+Continuous? _ _ _ | IsntBounded (Others b d o d+o≥2) | yes abundant
+    = yes (λ xs → (next-number-Others xs (Continuous-Others-¬Maximum d+o≥2 xs) d+o≥2) , (Continuous-Others-Incremental abundant d+o≥2 xs))
+Continuous? _ _ _ | IsntBounded (Others b d o d+o≥2) | no ¬abundant
+    = no (Others∧¬Abundant⇒¬Continuous d+o≥2 ¬abundant)
+Continuous? _ _ _ | IsntBounded (NoDigits b o) = yes (λ xs → NoDigits-explode xs)
 
 -- begin
 --     {!   !}

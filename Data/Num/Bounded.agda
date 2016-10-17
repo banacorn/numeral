@@ -141,10 +141,10 @@ NoDigits-explode (() ∙   )
 NoDigits-explode (() ∷ xs)
 
 AllZeros-explode : ∀ {a} {Whatever : Set a} {b}
-    → (xs : Num (suc b) 1 0)
+    → (xs : Num b 1 0)
     → ¬ (Maximum xs)
     → Whatever
-AllZeros-explode {b} xs ¬max = contradiction (AllZeros-Maximum xs) ¬max
+AllZeros-explode xs ¬max = contradiction (AllZeros-Maximum xs) ¬max
 
 NoDigits-¬Bounded : ∀ b o → ¬ (Bounded b 0 o)
 NoDigits-¬Bounded b o (xs , claim) = NoDigits-explode xs
