@@ -377,24 +377,16 @@ next-number-is-LUB-NullBase {d} {o} (x ∷ xs) ys ¬max prop | Others bound | no
         Fin.toℕ x + suc o + ⟦ xs ⟧ * suc b
     □
 
-next-number-is-LUB-d+o≥2 : ∀ {b d o}
-    → (xs : Num (suc b) (suc d) o)
+temp : ∀ {b d o}
+    → (x y : Digit (suc d) )
     → (ys : Num (suc b) (suc d) o)
-    → (¬max : ¬ (Maximum xs))
+    → (¬max : ¬ (Maximum {suc b} {suc d} {o} (x ∙)))
     → (d+o≥2 : 2 ≤ suc (d + o))
-    → ⟦ ys ⟧ > ⟦ xs ⟧
-    → ⟦ ys ⟧ ≥ ⟦ next-number-Others xs ¬max d+o≥2 ⟧
-next-number-is-LUB-d+o≥2 {b} {d} {o} (x ∙) ys ¬max d+o≥2 prop with Others-view-single b d o x
-next-number-is-LUB-d+o≥2 {b} {d} {o} (x ∙) ys ¬max d+o≥2 prop | NeedNoCarry ¬greatest =
-    start
-        Digit-toℕ (digit+1 x ¬greatest) o
-    ≈⟨ Digit-toℕ-digit+1 x ¬greatest ⟩
-        suc (Digit-toℕ x o)
-    ≤⟨ prop ⟩
-        ⟦ ys ⟧
-    □
-next-number-is-LUB-d+o≥2 {b} {d} {o} (x ∙) (y ∙) ¬max d+o≥2 prop | Gapped greatest gapped = contradiction prop (>⇒≰ (s≤s (greatest-of-all o x y greatest)))
-next-number-is-LUB-d+o≥2 {b} {d} {o} (x ∙) (y ∷ ys) ¬max d+o≥2 prop | Gapped greatest gapped =
+    → (prop : ⟦ y ∷ ys ⟧ > ⟦ _∙ {suc b} {suc d} {o} x ⟧)
+    → (Greatest x)
+    → (gapped : suc d ≤ (1 ⊔ o) * suc b)
+    → ⟦ y ∷ ys ⟧ ≥ o + (Digit-toℕ (1⊔o d o d+o≥2) o) * suc b
+temp {b} {d} {o} x y ys ¬max d+o≥2 prop greatest gapped =
     let
         ⟦ys⟧>0 = tail-mono-strict-Null x y ys greatest prop
     in
@@ -407,7 +399,38 @@ next-number-is-LUB-d+o≥2 {b} {d} {o} (x ∙) (y ∷ ys) ¬max d+o≥2 prop | G
     ≤⟨ +n-mono (⟦ ys ⟧ * suc b) (m≤n+m o (Fin.toℕ y)) ⟩
         Digit-toℕ y o + ⟦ ys ⟧ * suc b
     □
-next-number-is-LUB-d+o≥2 {b} {d} {o} (x ∙) ys ¬max d+o≥2 prop | ¬Gapped greatest ¬gapped =
+
+next-number-is-LUB-Others : ∀ {b d o}
+    → (xs : Num (suc b) (suc d) o)
+    → (ys : Num (suc b) (suc d) o)
+    → (¬max : ¬ (Maximum xs))
+    → (d+o≥2 : 2 ≤ suc (d + o))
+    → ⟦ ys ⟧ > ⟦ xs ⟧
+    → ⟦ ys ⟧ ≥ ⟦ next-number-Others xs ¬max d+o≥2 ⟧
+next-number-is-LUB-Others {b} {d} {o} (x ∙) ys ¬max d+o≥2 prop with Others-view-single b d o x
+next-number-is-LUB-Others {b} {d} {o} (x ∙) ys ¬max d+o≥2 prop | NeedNoCarry ¬greatest =
+    start
+        Digit-toℕ (digit+1 x ¬greatest) o
+    ≈⟨ Digit-toℕ-digit+1 x ¬greatest ⟩
+        suc (Digit-toℕ x o)
+    ≤⟨ prop ⟩
+        ⟦ ys ⟧
+    □
+next-number-is-LUB-Others {b} {d} {o} (x ∙) (y ∙) ¬max d+o≥2 prop | Gapped greatest gapped = contradiction prop (>⇒≰ (s≤s (greatest-of-all o x y greatest)))
+next-number-is-LUB-Others {b} {d} {o} (x ∙) (y ∷ ys) ¬max d+o≥2 prop | Gapped greatest gapped = temp {b} {d} {o} x y ys ¬max d+o≥2 prop greatest gapped
+    -- let
+    --     ⟦ys⟧>0 = tail-mono-strict-Null x y ys greatest prop
+    -- in
+    -- start
+    --     o + (Digit-toℕ (1⊔o d o d+o≥2) o) * suc b
+    -- ≈⟨ cong (λ w → o + w * suc b) (Digit-toℕ-1⊔o d o d+o≥2) ⟩
+    --     o + (1 ⊔ o) * suc b
+    -- ≤⟨ n+-mono o (*n-mono (suc b) (≥1⊔o ys d+o≥2 ⟦ys⟧>0)) ⟩
+    --     o + ⟦ ys ⟧ * suc b
+    -- ≤⟨ +n-mono (⟦ ys ⟧ * suc b) (m≤n+m o (Fin.toℕ y)) ⟩
+    --     Digit-toℕ y o + ⟦ ys ⟧ * suc b
+    -- □
+next-number-is-LUB-Others {b} {d} {o} (x ∙) ys ¬max d+o≥2 prop | ¬Gapped greatest ¬gapped =
     let
         lower-bound : (1 ⊔ o) * suc b > 0
         lower-bound = m≤m⊔n 1 o *-mono s≤s z≤n
@@ -435,8 +458,8 @@ next-number-is-LUB-d+o≥2 {b} {d} {o} (x ∙) ys ¬max d+o≥2 prop | ¬Gapped 
     ≤⟨ prop ⟩
         ⟦ ys ⟧
     □
-next-number-is-LUB-d+o≥2 {b} {d} {o} (x ∷ xs) ys ¬max d+o≥2 prop with Others-view x xs ¬max d+o≥2
-next-number-is-LUB-d+o≥2 {b} {d} {o} (x ∷ xs) ys ¬max d+o≥2 prop | NeedNoCarry ¬greatest =
+next-number-is-LUB-Others {b} {d} {o} (x ∷ xs) ys ¬max d+o≥2 prop with Others-view x xs ¬max d+o≥2
+next-number-is-LUB-Others {b} {d} {o} (x ∷ xs) ys ¬max d+o≥2 prop | NeedNoCarry ¬greatest =
     start
         Digit-toℕ (digit+1 x ¬greatest) o + ⟦ xs ⟧ * suc b
     ≈⟨ cong (λ w → w + ⟦ xs ⟧ * suc b) (Digit-toℕ-digit+1 x ¬greatest) ⟩
@@ -444,7 +467,7 @@ next-number-is-LUB-d+o≥2 {b} {d} {o} (x ∷ xs) ys ¬max d+o≥2 prop | NeedNo
     ≤⟨ prop ⟩
         ⟦ ys ⟧
     □
-next-number-is-LUB-d+o≥2 {b} {d} {o} (x ∷ xs) (y ∙) ¬max d+o≥2 prop | Gapped greatest gapped = contradiction prop $ >⇒≰ $
+next-number-is-LUB-Others {b} {d} {o} (x ∷ xs) (y ∙) ¬max d+o≥2 prop | Gapped greatest gapped = contradiction prop $ >⇒≰ $
     start
         suc (Fin.toℕ y + o)
     ≤⟨ s≤s (greatest-of-all o x y greatest) ⟩
@@ -452,7 +475,7 @@ next-number-is-LUB-d+o≥2 {b} {d} {o} (x ∷ xs) (y ∙) ¬max d+o≥2 prop | G
     ≤⟨ m≤m+n (suc (Fin.toℕ x + o)) (⟦ xs ⟧ * suc b) ⟩
         suc (Fin.toℕ x + o + ⟦ xs ⟧ * suc b)
     □
-next-number-is-LUB-d+o≥2 {b} {d} {o} (x ∷ xs) (y ∷ ys) ¬max d+o≥2 prop | Gapped greatest gapped =
+next-number-is-LUB-Others {b} {d} {o} (x ∷ xs) (y ∷ ys) ¬max d+o≥2 prop | Gapped greatest gapped =
     let
         ¬max = next-number-¬Maximum xs d+o≥2
         next = next-number-Others xs ¬max d+o≥2
@@ -460,12 +483,12 @@ next-number-is-LUB-d+o≥2 {b} {d} {o} (x ∷ xs) (y ∷ ys) ¬max d+o≥2 prop 
     in
     start
         ⟦ z ∷ next ⟧
-    ≤⟨ n+-mono o (*n-mono (suc b) (next-number-is-LUB-d+o≥2 xs ys ¬max d+o≥2 ⟦y'∷ys⟧>⟦x'∷xs⟧)) ⟩
+    ≤⟨ n+-mono o (*n-mono (suc b) (next-number-is-LUB-Others xs ys ¬max d+o≥2 ⟦y'∷ys⟧>⟦x'∷xs⟧)) ⟩
         o + ⟦ ys ⟧ * suc b
     ≤⟨ +n-mono (⟦ ys ⟧ * suc b) (m≤n+m o (Fin.toℕ y)) ⟩
         Digit-toℕ y o + ⟦ ys ⟧ * suc b
     □
-next-number-is-LUB-d+o≥2 {b} {d} {o} (x ∷ xs) (y ∙) ¬max d+o≥2 prop | ¬Gapped greatest ¬gapped = contradiction prop $ >⇒≰ $
+next-number-is-LUB-Others {b} {d} {o} (x ∷ xs) (y ∙) ¬max d+o≥2 prop | ¬Gapped greatest ¬gapped = contradiction prop $ >⇒≰ $
     start
         suc (Fin.toℕ y + o)
     ≤⟨ s≤s (greatest-of-all o x y greatest) ⟩
@@ -473,7 +496,7 @@ next-number-is-LUB-d+o≥2 {b} {d} {o} (x ∷ xs) (y ∙) ¬max d+o≥2 prop | �
     ≤⟨ m≤m+n (suc (Fin.toℕ x + o)) (⟦ xs ⟧ * suc b) ⟩
         suc (Fin.toℕ x + o + ⟦ xs ⟧ * suc b)
     □
-next-number-is-LUB-d+o≥2 {b} {d} {o} (x ∷ xs) (y ∷ ys) ¬max d+o≥2 prop | ¬Gapped greatest ¬gapped =
+next-number-is-LUB-Others {b} {d} {o} (x ∷ xs) (y ∷ ys) ¬max d+o≥2 prop | ¬Gapped greatest ¬gapped =
     let
         ¬max = next-number-¬Maximum xs d+o≥2
         next = next-number-Others xs ¬max d+o≥2
@@ -523,7 +546,7 @@ next-number-is-LUB : ∀ {b d o}
 next-number-is-LUB {b} {d} {o} xs ys ¬max prop with boundedView b d o
 next-number-is-LUB xs ys ¬max prop | IsBounded (NullBase d o) = next-number-is-LUB-NullBase xs ys ¬max prop
 next-number-is-LUB xs ys ¬max prop | IsBounded (AllZeros b) = AllZeros-explode xs ¬max
-next-number-is-LUB xs ys ¬max prop | IsntBounded (Others b d o d+o≥2) = next-number-is-LUB-d+o≥2 xs ys ¬max d+o≥2 prop
+next-number-is-LUB xs ys ¬max prop | IsntBounded (Others b d o d+o≥2) = next-number-is-LUB-Others xs ys ¬max d+o≥2 prop
 next-number-is-LUB xs ys ¬max prop | IsntBounded (NoDigits b o) = NoDigits-explode xs
 
 -- begin
