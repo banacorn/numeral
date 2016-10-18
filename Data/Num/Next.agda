@@ -377,29 +377,6 @@ next-number-is-LUB-NullBase {d} {o} (x ∷ xs) ys ¬max prop | Others bound | no
         Fin.toℕ x + suc o + ⟦ xs ⟧ * suc b
     □
 
-temp : ∀ {b d o}
-    → (x y : Digit (suc d) )
-    → (ys : Num (suc b) (suc d) o)
-    → (¬max : ¬ (Maximum {suc b} {suc d} {o} (x ∙)))
-    → (d+o≥2 : 2 ≤ suc (d + o))
-    → (prop : ⟦ y ∷ ys ⟧ > ⟦ _∙ {suc b} {suc d} {o} x ⟧)
-    → (Greatest x)
-    → (gapped : suc d ≤ (1 ⊔ o) * suc b)
-    → ⟦ y ∷ ys ⟧ ≥ o + (Digit-toℕ (1⊔o d o d+o≥2) o) * suc b
-temp {b} {d} {o} x y ys ¬max d+o≥2 prop greatest gapped =
-    let
-        ⟦ys⟧>0 = tail-mono-strict-Null x y ys greatest prop
-    in
-    start
-        o + (Digit-toℕ (1⊔o d o d+o≥2) o) * suc b
-    ≈⟨ cong (λ w → o + w * suc b) (Digit-toℕ-1⊔o d o d+o≥2) ⟩
-        o + (1 ⊔ o) * suc b
-    ≤⟨ n+-mono o (*n-mono (suc b) (≥1⊔o ys d+o≥2 ⟦ys⟧>0)) ⟩
-        o + ⟦ ys ⟧ * suc b
-    ≤⟨ +n-mono (⟦ ys ⟧ * suc b) (m≤n+m o (Fin.toℕ y)) ⟩
-        Digit-toℕ y o + ⟦ ys ⟧ * suc b
-    □
-
 next-number-is-LUB-Others : ∀ {b d o}
     → (xs : Num (suc b) (suc d) o)
     → (ys : Num (suc b) (suc d) o)
@@ -417,19 +394,19 @@ next-number-is-LUB-Others {b} {d} {o} (x ∙) ys ¬max d+o≥2 prop | NeedNoCarr
         ⟦ ys ⟧
     □
 next-number-is-LUB-Others {b} {d} {o} (x ∙) (y ∙) ¬max d+o≥2 prop | Gapped greatest gapped = contradiction prop (>⇒≰ (s≤s (greatest-of-all o x y greatest)))
-next-number-is-LUB-Others {b} {d} {o} (x ∙) (y ∷ ys) ¬max d+o≥2 prop | Gapped greatest gapped = temp {b} {d} {o} x y ys ¬max d+o≥2 prop greatest gapped
-    -- let
-    --     ⟦ys⟧>0 = tail-mono-strict-Null x y ys greatest prop
-    -- in
-    -- start
-    --     o + (Digit-toℕ (1⊔o d o d+o≥2) o) * suc b
-    -- ≈⟨ cong (λ w → o + w * suc b) (Digit-toℕ-1⊔o d o d+o≥2) ⟩
-    --     o + (1 ⊔ o) * suc b
-    -- ≤⟨ n+-mono o (*n-mono (suc b) (≥1⊔o ys d+o≥2 ⟦ys⟧>0)) ⟩
-    --     o + ⟦ ys ⟧ * suc b
-    -- ≤⟨ +n-mono (⟦ ys ⟧ * suc b) (m≤n+m o (Fin.toℕ y)) ⟩
-    --     Digit-toℕ y o + ⟦ ys ⟧ * suc b
-    -- □
+next-number-is-LUB-Others {b} {d} {o} (x ∙) (y ∷ ys) ¬max d+o≥2 prop | Gapped greatest gapped =
+    let
+        ⟦ys⟧>0 = tail-mono-strict-Null x y ys greatest prop
+    in
+    start
+        o + (Digit-toℕ (1⊔o d o d+o≥2) o) * suc b
+    ≈⟨ cong (λ w → o + w * suc b) (Digit-toℕ-1⊔o d o d+o≥2) ⟩
+        o + (1 ⊔ o) * suc b
+    ≤⟨ n+-mono o (*n-mono (suc b) (≥1⊔o ys d+o≥2 ⟦ys⟧>0)) ⟩
+        o + ⟦ ys ⟧ * suc b
+    ≤⟨ +n-mono (⟦ ys ⟧ * suc b) (m≤n+m o (Fin.toℕ y)) ⟩
+        Digit-toℕ y o + ⟦ ys ⟧ * suc b
+    □
 next-number-is-LUB-Others {b} {d} {o} (x ∙) ys ¬max d+o≥2 prop | ¬Gapped greatest ¬gapped =
     let
         lower-bound : (1 ⊔ o) * suc b > 0

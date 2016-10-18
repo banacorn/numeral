@@ -317,6 +317,45 @@ next-number-suc-Others-Sparse (x ∷ xs) ¬max ¬greatest ¬abundant d+o≥2 | �
 --     {!   !}
 -- □
 
+¬Incrementable⇒Difference≥2 : ∀ {b d o}
+    → (xs : Num (suc b) (suc d) o)
+    → (¬max : ¬ (Maximum xs))
+    → ¬ (Incrementable xs)
+    → ⟦ next-number xs ¬max ⟧ ≥ 2 + ⟦ xs ⟧
+¬Incrementable⇒Difference≥2 xs ¬max ¬incr with cmp (⟦ next-number xs ¬max ⟧ ∸ ⟦ xs ⟧) 1
+¬Incrementable⇒Difference≥2 xs ¬max ¬incr | tri< (s≤s p) ¬q ¬r = contradiction ⟦next⟧>⟦xs⟧ (≤⇒≯ ⟦next⟧≤⟦xs⟧)
+    where
+        ⟦next⟧>⟦xs⟧ : ⟦ next-number xs ¬max ⟧ > ⟦ xs ⟧
+        ⟦next⟧>⟦xs⟧ = next-number-is-greater xs ¬max
+
+        ⟦next⟧≤⟦xs⟧ : ⟦ next-number xs ¬max ⟧ ≤ ⟦ xs ⟧
+        ⟦next⟧≤⟦xs⟧ =
+            start
+                ⟦ next-number xs ¬max ⟧
+            ≈⟨ sym (m∸n+n≡m (<⇒≤ ⟦next⟧>⟦xs⟧)) ⟩
+                (⟦ next-number xs ¬max ⟧ ∸ ⟦ xs ⟧) + ⟦ xs ⟧
+            ≤⟨ +n-mono ⟦ xs ⟧ p ⟩
+                ⟦ xs ⟧
+            □
+¬Incrementable⇒Difference≥2 xs ¬max ¬incr | tri≈ ¬p q ¬r = {!   !}
+    where
+        ⟦next⟧>⟦xs⟧ : ⟦ next-number xs ¬max ⟧ > ⟦ xs ⟧
+        ⟦next⟧>⟦xs⟧ = next-number-is-greater xs ¬max
+        incr : ⟦ next-number xs ¬max ⟧ ≡ suc ⟦ xs ⟧
+        incr =
+            begin
+                ⟦ next-number xs ¬max ⟧
+            ≡⟨ sym (m∸n+n≡m {!   !}) ⟩
+                {!   !}
+            ≡⟨ {!   !} ⟩
+                {!   !}
+            ≡⟨ {!   !} ⟩
+                {!   !}
+            ≡⟨ {!   !} ⟩
+                suc ⟦ xs ⟧
+            ∎
+¬Incrementable⇒Difference≥2 xs ¬max ¬incr | tri> ¬a ¬b c = {!   !}
+
 next-number-suc-Others : ∀ {b d o}
     → (xs : Num (suc b) (suc d) o)
     → (¬max : ¬ (Maximum xs))
@@ -324,20 +363,19 @@ next-number-suc-Others : ∀ {b d o}
     → (¬abundant : ¬ (Abundant (suc b) (suc d) o))
     → (d+o≥2 : 2 ≤ suc (d + o))
     → ¬ (Incrementable xs)
--- next-number-suc-Others {b} {d} {o} xs ¬max greatest ¬abundant d+o≥2 (evidence , claim) = {!   !}
-next-number-suc-Others {b} {d} {o} (x ∙) ¬max greatest ¬abundant d+o≥2 (evidence , claim) with Others-view-single b d o x
-next-number-suc-Others {b} {d} {o} (x ∙) ¬max greatest ¬abundant d+o≥2 (evidence , claim) | NeedNoCarry ¬greatest = contradiction greatest ¬greatest
-next-number-suc-Others {b} {d} {o} (x ∙) ¬max greatest ¬abundant d+o≥2 ((y ∙) , claim) | Gapped _ gapped = contradiction (m≡1+n⇒m>n claim) (>⇒≰ (s≤s (greatest-of-all o x y greatest)))
-next-number-suc-Others {b} {d} {o} (x ∙) ¬max greatest ¬abundant d+o≥2 (y ∷ ys , claim) | Gapped _ gapped
-    = {!   !}
+next-number-suc-Others {b} {d} {o} xs ¬max greatest ¬abundant d+o≥2 (evidence , claim) with next-number-is-LUB-Others xs evidence ¬max d+o≥2 (m≡1+n⇒m>n claim)
+next-number-suc-Others {b} {d} {o} (x ∙) ¬max greatest ¬abundant d+o≥2 (evidence , claim) | next-LUB with Others-view-single b d o x
+next-number-suc-Others {b} {d} {o} (x ∙) ¬max greatest ¬abundant d+o≥2 (evidence , claim) | next-LUB | NeedNoCarry ¬greatest = contradiction greatest ¬greatest
+next-number-suc-Others {b} {d} {o} (x ∙) ¬max greatest₁ ¬abundant d+o≥2 (evidence , claim) | next-LUB | Gapped greatest gapped
+    = contradiction ⟦next⟧>⟦evidence⟧ ⟦next⟧≯⟦evidence⟧
     where
         next : Num (suc b) (suc d) o
         next = z ∷ 1⊔o d o d+o≥2 ∙
 
-        ⟦next⟧>⟦evidence⟧ : ⟦ next ⟧ > ⟦ y ∷ ys ⟧
+        ⟦next⟧>⟦evidence⟧ : ⟦ next ⟧ > ⟦ evidence ⟧
         ⟦next⟧>⟦evidence⟧ =
             start
-                suc ⟦ y ∷ ys ⟧
+                suc ⟦ evidence ⟧
             ≈⟨ cong suc claim ⟩
                 suc (suc (Fin.toℕ x + o))
             ≈⟨ cong (λ w → suc w + o) greatest ⟩
@@ -350,47 +388,65 @@ next-number-suc-Others {b} {d} {o} (x ∙) ¬max greatest ¬abundant d+o≥2 (y 
                 o + Digit-toℕ (1⊔o d o d+o≥2) o * suc b
             □
 
-        prop : ⟦ y ∷ ys ⟧ > ⟦ _∙ {suc b} x ⟧
-        prop = m≡1+n⇒m>n claim
+        ⟦next⟧≯⟦evidence⟧ : ⟦ next ⟧ ≯ ⟦ evidence ⟧
+        ⟦next⟧≯⟦evidence⟧ = ≤⇒≯ next-LUB
+next-number-suc-Others {b} {d} {o} (x ∙) ¬max greatest₁ ¬abundant d+o≥2 (evidence , claim) | next-LUB | ¬Gapped greatest ¬gapped = contradiction (<⇒≤ ¬gapped) ¬abundant
+next-number-suc-Others {b} {d} {o} (x ∷ xs) ¬max greatest ¬abundant d+o≥2 (evidence , claim) | next-LUB with Others-view x xs ¬max d+o≥2
+next-number-suc-Others {b} {d} {o} (x ∷ xs) ¬max greatest ¬abundant d+o≥2 (evidence , claim) | next-LUB | NeedNoCarry ¬greatest = contradiction greatest ¬greatest
+next-number-suc-Others {b} {d} {o} (x ∷ xs) ¬max greatest ¬abundant d+o≥2 (evidence , claim) | next-LUB | Gapped _ gapped
+    -- = contradiction ⟦next⟧>⟦evidence⟧ ⟦next⟧≯⟦evidence⟧
+    = {!   !}
+    where
+        ¬max-xs : ¬ (Maximum xs)
+        ¬max-xs = next-number-¬Maximum xs d+o≥2
 
-        ⟦next⟧≯⟦evidence⟧ : ⟦ next ⟧ ≤ ⟦ y ∷ ys ⟧
-        ⟦next⟧≯⟦evidence⟧ = next-number-is-LUB-Others {! _∙ {suc b} {suc d} {o} x  !} (y ∷ ys) ¬max d+o≥2 prop -- next-number-is-LUB-Others {! x ∙  !} evidence ¬max d+o≥2 {!   !}
+        next-xs : Num (suc b) (suc d) o
+        next-xs = next-number-Others xs ¬max-xs d+o≥2
 
-    -- = contradiction ⟦next⟧>⟦evidence⟧ (≤⇒≯ ⟦next⟧≯⟦evidence⟧)
-    -- where
-    --     next : Num (suc b) (suc d) o
-    --     next = z ∷ 1⊔o d o d+o≥2 ∙
-    --
-    --     ⟦next⟧>⟦evidence⟧ : ⟦ next ⟧ > ⟦ y ∷ ys ⟧
-    --     ⟦next⟧>⟦evidence⟧ =
-    --         start
-    --             suc ⟦ y ∷ ys ⟧
-    --         ≈⟨ cong suc claim ⟩
-    --             suc (suc (Fin.toℕ x + o))
-    --         ≈⟨ cong (λ w → suc w + o) greatest ⟩
-    --             suc (suc (d + o))
-    --         ≈⟨ +-comm (suc (suc d)) o ⟩
-    --             o + suc (suc d)
-    --         ≤⟨ n+-mono o (≰⇒> ¬abundant) ⟩
-    --             o + (suc zero ⊔ o) * suc b
-    --         ≈⟨ cong (λ w → o + w * suc b) (sym (Digit-toℕ-1⊔o d o d+o≥2)) ⟩
-    --             o + Digit-toℕ (1⊔o d o d+o≥2) o * suc b
-    --         □
-    --
-    --     prop : ⟦ y ∷ ys ⟧ > ⟦ _∙ {suc b} x ⟧
-    --     prop = m≡1+n⇒m>n claim
-    --
-    --     ⟦next⟧≯⟦evidence⟧ : ⟦ next ⟧ ≤ ⟦ y ∷ ys ⟧
-    --     ⟦next⟧≯⟦evidence⟧ = temp x y ys ¬max d+o≥2 prop greatest gapped -- next-number-is-LUB-Others {! x ∙  !} evidence ¬max d+o≥2 {!   !}
+        next : Num (suc b) (suc d) o
+        next = z ∷ next-xs
 
-next-number-suc-Others (x ∙) ¬max greatest ¬abundant d+o≥2 (evidence , claim) | ¬Gapped _ ¬gapped = contradiction (<⇒≤ ¬gapped) ¬abundant
-next-number-suc-Others {b} {d} {o} (x ∷ xs) ¬max greatest ¬abundant d+o≥2 (evidence , claim) = {!   !}
-    -- where
-    --     next : Num (suc b) (suc d) o
-    --     next = next-number-Others xs ¬max d+o≥2
-    --
-    --     ⟦next⟧>⟦evidence⟧ : ⟦ next ⟧ > ⟦ evidence ⟧
-    --     ⟦next⟧>⟦evidence⟧ = {!   !}
+        ⟦next-xs⟧>1+⟦xs⟧ : ⟦ next-xs ⟧ > suc ⟦ xs ⟧
+        ⟦next-xs⟧>1+⟦xs⟧ = ≥∧≢⇒> {!   !} {! next-number-suc-Others   !}
+
+        ⟦next⟧>⟦evidence⟧ : ⟦ next ⟧ > ⟦ evidence ⟧
+        ⟦next⟧>⟦evidence⟧ =
+            start
+                suc ⟦ evidence ⟧
+            ≈⟨ cong suc claim ⟩
+                suc (suc (Fin.toℕ x + o + ⟦ xs ⟧ * suc b))
+            ≤⟨ {!   !} ⟩
+                {!   !}
+            ≤⟨ {!   !} ⟩
+                {!   !}
+            ≤⟨ {!   !} ⟩
+                {!   !}
+            ≤⟨ {!   !} ⟩
+                {!   !}
+            ≤⟨ {!   !} ⟩
+                {!   !}
+            ≈⟨ cong (λ w → o + w * suc b) (sym {!    !}) ⟩
+                o + ⟦ next-xs ⟧ * suc b
+            □
+            -- start
+            --     suc ⟦ evidence ⟧
+            -- ≈⟨ cong suc claim ⟩
+            --     suc (suc (Fin.toℕ x + o))
+            -- ≈⟨ cong (λ w → suc w + o) greatest ⟩
+            --     suc (suc (d + o))
+            -- ≈⟨ +-comm (suc (suc d)) o ⟩
+            --     o + suc (suc d)
+            -- ≤⟨ n+-mono o (≰⇒> ¬abundant) ⟩
+            --     o + (suc zero ⊔ o) * suc b
+            -- ≈⟨ cong (λ w → o + w * suc b) (sym (Digit-toℕ-1⊔o d o d+o≥2)) ⟩
+            --     o + Digit-toℕ (1⊔o d o d+o≥2) o * suc b
+            -- □
+
+        ⟦next⟧≯⟦evidence⟧ : ⟦ next ⟧ ≯ ⟦ evidence ⟧
+        ⟦next⟧≯⟦evidence⟧ = ≤⇒≯ next-LUB
+next-number-suc-Others (x ∷ xs) ¬max greatest ¬abundant d+o≥2 (evidence , claim) | next-LUB | ¬Gapped _ ¬gapped = {!   !}
+
+
 
 data IncrementableCond : (b d o : ℕ) (xs : Num b d o) → Set where
     NullBase : ∀ {d o}
