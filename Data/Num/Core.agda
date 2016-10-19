@@ -401,11 +401,11 @@ Maximum {b} {d} {o} xs = ∀ (ys : Num b d o) → ⟦ xs ⟧ ≥ ⟦ ys ⟧
 Bounded : ∀ b d o → Set
 Bounded b d o = Σ[ xs ∈ Num b d o ] Maximum xs
 
-Abundant : ∀ b d o → Set
-Abundant b d o = d ≥ (1 ⊔ o) * b
-
-Abundant? : ∀ b d o → Dec (Abundant b d o)
-Abundant? b d o = (1 ⊔ o) * b ≤? d
+-- Abundant : ∀ b d o → Set
+-- Abundant b d o = d ≥ (1 ⊔ o) * b
+--
+-- Abundant? : ∀ b d o → Dec (Abundant b d o)
+-- Abundant? b d o = (1 ⊔ o) * b ≤? d
 
 -- start
 --     {!   !}
