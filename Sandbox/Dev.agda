@@ -705,7 +705,7 @@ mutual
     incrementableView xs | no ¬max | IsntBounded (Others b d o d+o≥2) | yes greatest
         = Cond (Others ¬max greatest d+o≥2 (abundance xs))
     incrementableView xs | no ¬max | IsntBounded (Others b d o d+o≥2) | no ¬greatest
-        = Cond (Others-LSD-¬Greatest ¬max ¬greatest {!   !})
+        = Cond (Others-LSD-¬Greatest ¬max ¬greatest d+o≥2)
     incrementableView xs | no ¬max | IsntBounded (NoDigits b o)
         = NoDigits-explode xs
 
@@ -734,22 +734,89 @@ mutual
         → (xs : Num b d o)
         → (incr : True (Incrementable? xs))
         → Num b d o
-    increment xs incr = proj₁ (toWitness incr)
+    increment {b} {d} {o} xs incr with boundedView b d o
+    increment xs incr | IsBounded (NullBase d o) = {!   !}
+    increment xs incr | IsBounded (AllZeros b) = {!   !}
+    increment xs incr | IsntBounded (Others b d o d+o≥2) with incrementableView xs
+    increment xs incr | IsntBounded (Others b d o d+o≥2) | Cond (AlreadyMaximum max) = {!   !}
+    increment xs incr | IsntBounded (Others b d o d+o≥3) | Cond (Others-LSD-¬Greatest ¬max ¬greatest d+o≥2) = {!   !}
+    increment xs incr | IsntBounded (Others b d o d+o≥3) | Cond (Others ¬max greatest d+o≥2 abundance) = {!   !}
+    increment xs incr | IsntBounded (NoDigits b o) = {!   !}
+    -- increment xs incr with incrementableView xs
+    -- increment xs incr | Cond (AlreadyMaximum max) = {!   !}
+    -- increment xs incr | Cond (NullBase ¬max) = {!   !}
+    -- increment xs incr | Cond (Others-LSD-¬Greatest ¬max ¬greatest d+o≥2) = next-number-Others xs ¬max d+o≥2
+    -- increment xs incr | Cond (Others ¬max greatest d+o≥2 abundance) = {!   !}
 
     increment-next-number : ∀ {b d o}
         → (xs : Num b d o)
         → (¬max : ¬ (Maximum xs))
         → (incr : True (Incrementable? xs))
         → increment xs incr ≡ next-number xs ¬max
-    increment-next-number xs ¬max incr with incrementableView xs
-    increment-next-number xs ¬max ()   | Cond (AlreadyMaximum max)
-    increment-next-number xs ¬max incr | Cond (NullBase _) = refl
-    increment-next-number xs ¬max incr | Cond (Others-LSD-¬Greatest _ ¬greatest d+o≥2) = {!   !}
-    increment-next-number xs ¬max incr | Cond (Others _ greatest d+o≥2 (Abundant abundant)) = {!   !}
-    increment-next-number _  ¬max ()   | Cond (Others _ greatest d+o≥2 (NotAbundantSingle ¬abundant))
-    increment-next-number _  ¬max ()   | Cond (Others _ greatest d+o≥2 (NotAbundant ¬abundant ¬incr))
-    increment-next-number _  ¬max incr | Cond (Others _ greatest d+o≥2 (Enough enough _)) = {!   !}
-    increment-next-number _  ¬max ()   | Cond (Others _ greatest d+o≥2 (NotEnough ¬enough incr))
+    increment-next-number {b} {d} {o} xs ¬max incr with boundedView b d o
+    increment-next-number xs ¬max incr | IsBounded cond = {!   !}
+    increment-next-number xs ¬max incr | IsntBounded (Others b d o d+o≥2) with incrementableView xs
+    increment-next-number xs ¬max incr | IsntBounded (Others b d o d+o≥2) | Cond (AlreadyMaximum max) = {!   !}
+    increment-next-number xs ¬max₁ incr | IsntBounded (Others b d o d+o≥3) | Cond (Others-LSD-¬Greatest ¬max ¬greatest d+o≥2) = {!   !}
+    increment-next-number xs ¬max₁ incr | IsntBounded (Others b d o d+o≥3) | Cond (Others ¬max greatest d+o≥2 abundance) = {!   !}
+    increment-next-number xs ¬max incr | IsntBounded (NoDigits b o) = {!   !}
+    -- increment-next-number xs ¬max incr | Cond (AlreadyMaximum max) = {!   !}
+    -- increment-next-number xs ¬max₁ incr | Cond (NullBase ¬max) = {!   !}
+    -- increment-next-number xs ¬max₁ incr | Cond (Others-LSD-¬Greatest ¬max ¬greatest d+o≥2) = {!    !}
+    -- increment-next-number xs ¬max₁ incr | Cond (Others ¬max greatest d+o≥2 abundance) = {!   !}
+    -- increment-next-number {b} {d} {o} xs ¬max incr | yes (next , proof) with incrementableView xs
+    -- increment-next-number xs ¬max incr | yes (next , proof) | Cond (AlreadyMaximum max) = {!   !}
+    -- increment-next-number xs ¬max₁ incr | yes (next , proof) | Cond (NullBase ¬max) = {!   !}
+    -- increment-next-number {suc b} {suc d} {o} xs ¬max₁ incr | yes (next , proof) | Cond (Others-LSD-¬Greatest ¬max ¬greatest d+o≥2) with boundedView (suc b) (suc d) o
+    -- increment-next-number {suc .b} {suc .0} xs ¬max₁ incr | yes (next , proof) | Cond (Others-LSD-¬Greatest ¬max ¬greatest d+o≥2) | IsBounded (AllZeros b) = {!   !}
+    -- increment-next-number {suc .b} {suc .d} xs ¬max₁ incr | yes (next , proof) | Cond (Others-LSD-¬Greatest ¬max ¬greatest d+o≥3) | IsntBounded (Others b d o d+o≥2) = {!   !}
+    -- increment-next-number xs ¬max₁ incr | yes (next , proof) | Cond (Others ¬max greatest d+o≥2 abundance) = {!   !}
+    -- increment-next-number xs ¬max () | no ¬p
+    -- increment-next-number {b} {d} {o} xs ¬max incr with incrementableView xs | boundedView b d o
+    -- increment-next-number xs ¬max incr | Cond (AlreadyMaximum max) | q = {!   !}
+    -- increment-next-number xs ¬max₁ incr | Cond (NullBase ¬max) | q = {!   !}
+    -- increment-next-number xs ¬max₁ incr | Cond (Others-LSD-¬Greatest ¬max ¬greatest d+o≥2) | IsBounded cond = {!   !}
+    -- increment-next-number xs ¬max₁ incr | Cond (Others-LSD-¬Greatest ¬max ¬greatest d+o≥2) | IsntBounded (Others b d o d+o≥3) = {! refl   !}
+    -- increment-next-number xs ¬max₁ incr | Cond (Others ¬max greatest d+o≥2 abundance) | q = {!   !}
+
+    -- increment-next-number {b} {d} {o} xs ¬max incr with boundedView b d o | incrementableView xs
+    -- increment-next-number xs ¬max incr | IsBounded cond | q = {!   !}
+    -- increment-next-number xs ¬max incr | IsntBounded (Others b d o d+o≥2) | Cond (AlreadyMaximum max) = {!   !}
+    -- increment-next-number xs ¬max₁ incr | IsntBounded (Others b d o d+o≥2) | Cond (Others-LSD-¬Greatest ¬max ¬greatest d+o≥3) = {!   !}
+    -- increment-next-number xs ¬max₁ incr | IsntBounded (Others b d o d+o≥2) | Cond (Others ¬max greatest d+o≥3 abundance) = {!   !}
+    -- increment-next-number xs ¬max incr | IsntBounded (NoDigits b o) | q = {!   !}
+    -- increment-next-number xs ¬max incr | IsBounded cond = {!   !}
+    -- increment-next-number xs ¬max incr | IsntBounded (Others b d o d+o≥2) = {!   !}
+    -- -- increment-next-number xs ¬max incr | IsntBounded (Others b d o d+o≥2) with incrementableView xs
+    -- -- increment-next-number xs ¬max incr | IsntBounded (Others b d o d+o≥2) | Cond (AlreadyMaximum max) = {!   !}
+    -- -- increment-next-number xs ¬max₁ incr | IsntBounded (Others b d o d+o≥3) | Cond (Others-LSD-¬Greatest ¬max ¬greatest d+o≥2) = {!   !}
+    -- -- increment-next-number xs ¬max₁ incr | IsntBounded (Others b d o d+o≥3) | Cond (Others ¬max greatest d+o≥2 abundance) = {!   !}
+    -- increment-next-number xs ¬max incr | IsntBounded (NoDigits b o) = {!   !}
+    -- increment-next-number {b} {d} {o} xs ¬max incr with incrementableView xs
+    -- increment-next-number xs ¬max incr | Cond (AlreadyMaximum max) = {!   !}
+    -- increment-next-number xs ¬max₁ incr | Cond (NullBase ¬max) = {!   !}
+    -- increment-next-number {suc b} {suc d} {o} xs ¬max₁ incr | Cond (Others-LSD-¬Greatest ¬max ¬greatest d+o≥2) with boundedView (suc b) (suc d) o
+    -- increment-next-number {suc .b} {suc .0} xs ¬max₁ incr | Cond (Others-LSD-¬Greatest ¬max ¬greatest d+o≥2) | IsBounded (AllZeros b) = {!   !}
+    -- increment-next-number {suc .b} {suc .d} xs ¬max₁ incr | Cond (Others-LSD-¬Greatest ¬max ¬greatest d+o≥3) | IsntBounded (Others b d o d+o≥2) = {!   !}
+    -- increment-next-number xs ¬max₁ incr | Cond (Others ¬max greatest d+o≥2 abundance) = {!   !}
+    -- increment-next-number xs ¬max incr | Cond x = {!   !}
+    -- increment-next-number {b} {d} {o} xs ¬max incr with incrementableView xs | boundedView b d o
+    -- increment-next-number xs ¬max incr | Cond (AlreadyMaximum max) | q = {!   !}
+    -- increment-next-number xs ¬max₁ incr | Cond (NullBase ¬max) | q = {!   !}
+    -- increment-next-number xs ¬max₁ incr | Cond (Others-LSD-¬Greatest ¬max ¬greatest d+o≥2) | IsBounded (AllZeros b) = {!   !}
+    -- increment-next-number xs ¬max₁ incr | Cond (Others-LSD-¬Greatest ¬max ¬greatest d+o≥2) | IsntBounded (Others b d o d+o≥3) = {!   !}
+    -- increment-next-number xs ¬max₁ incr | Cond (Others ¬max greatest d+o≥2 abundance) | q = {!   !}
+    -- increment-next-number {b} {d} {o} xs ¬max incr with incrementableView xs
+    -- increment-next-number xs ¬max ()   | Cond (AlreadyMaximum max)
+    -- increment-next-number xs ¬max incr | Cond (NullBase _) = refl
+    -- increment-next-number {suc b} {suc d} {o} xs ¬max incr | Cond (Others-LSD-¬Greatest _ ¬greatest d+o≥2) with boundedView (suc b) (suc d) o
+    -- increment-next-number {suc .b} {suc .0} xs ¬max₁ incr | Cond (Others-LSD-¬Greatest ¬max ¬greatest d+o≥2) | IsBounded (AllZeros b) = {!   !}
+    -- increment-next-number {suc .b} {suc .d} xs ¬max₁ incr | Cond (Others-LSD-¬Greatest ¬max ¬greatest d+o≥3) | IsntBounded (Others b d o d+o≥2) = {!   !}
+    -- increment-next-number xs ¬max incr | Cond (Others _ greatest d+o≥2 (Abundant abundant)) = {!   !}
+    -- increment-next-number _  ¬max ()   | Cond (Others _ greatest d+o≥2 (NotAbundantSingle ¬abundant))
+    -- increment-next-number _  ¬max ()   | Cond (Others _ greatest d+o≥2 (NotAbundant ¬abundant ¬incr))
+    -- increment-next-number _  ¬max incr | Cond (Others _ greatest d+o≥2 (Enough enough _)) = {!   !}
+    -- increment-next-number _  ¬max ()   | Cond (Others _ greatest d+o≥2 (NotEnough ¬enough incr))
 
 
 -- start
