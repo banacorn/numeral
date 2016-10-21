@@ -52,9 +52,9 @@ next-number-suc-NullBase : ∀ {d o}
     → (¬max : ¬ (Maximum xs))
     → ⟦ next-number-NullBase xs ¬max ⟧ ≡ suc ⟦ xs ⟧
 next-number-suc-NullBase {d} {o} xs ¬max with NullBase-view d o
-next-number-suc-NullBase {_} {_} xs       ¬max | AllZeros = contradiction (AllZeros-Maximum xs) ¬max
+next-number-suc-NullBase {_} {_} xs       ¬max | AllZeros = contradiction (Maximum-AllZeros xs) ¬max
 next-number-suc-NullBase {d} {o} xs       ¬max | Others bound with Greatest? (lsd xs)
-next-number-suc-NullBase {d} {o} xs       ¬max | Others bound | yes greatest = contradiction (NullBase-Maximum xs greatest) ¬max
+next-number-suc-NullBase {d} {o} xs       ¬max | Others bound | yes greatest = contradiction (Maximum-NullBase-Greatest xs greatest) ¬max
 next-number-suc-NullBase {d} {o} (x ∙)    ¬max | Others bound | no ¬greatest =
     begin
         Digit-toℕ (digit+1 x ¬greatest) o
@@ -383,11 +383,11 @@ Incrementable? : ∀ {b d o}
     → Dec (Incrementable xs)
 Incrementable? xs with Maximum? xs
 Incrementable? xs | yes max = no (Maximum⇒¬Incrementable xs max)
-Incrementable? {b} {d} {o} xs | no ¬max with boundedView b d o
+Incrementable? {b} {d} {o} xs | no ¬max with numView b d o
 Incrementable? xs | no ¬max | NullBase d o
     = yes ((next-number-NullBase xs ¬max) , (next-number-suc-NullBase xs ¬max))
 Incrementable? xs | no ¬max | NoDigits b o = no (NoDigits-explode xs)
-Incrementable? xs | no ¬max | AllZeros b = no (AllZeros-explode xs ¬max)
+Incrementable? xs | no ¬max | AllZeros b = no (contradiction (Maximum-AllZeros xs) ¬max)
 Incrementable? xs | no ¬max | Others b d o d+o≥2 with Greatest? (lsd xs)
 Incrementable? xs | no ¬max | Others b d o d+o≥2 | yes greatest
     = Incrementable?-Others xs ¬max greatest d+o≥2
@@ -423,7 +423,7 @@ increment-next-number : ∀ {b d o}
     → increment xs incr ≡ next-number xs ¬max
 increment-next-number xs ¬max incr with Maximum? xs
 increment-next-number xs ¬max () | yes max
-increment-next-number {b} {d} {o} xs ¬max incr | no _  with boundedView b d o
+increment-next-number {b} {d} {o} xs ¬max incr | no _  with numView b d o
 increment-next-number xs _ incr | no ¬max | NullBase d o = refl
 increment-next-number xs _ ()   | no ¬max | NoDigits b o
 increment-next-number xs _ ()   | no ¬max | AllZeros b
