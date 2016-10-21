@@ -30,24 +30,18 @@ open DecTotalOrder decTotalOrder using (reflexive) renaming (refl to ≤-refl)
 ------------------------------------------------------------------------
 -- Views
 
-data BoundedCond : ℕ → ℕ → ℕ → Set where
-    NullBase    : ∀ d o → BoundedCond 0       (suc d) o
-    AllZeros    : ∀ b   → BoundedCond (suc b) 1       0
-
-data NonBoundedCond : ℕ → ℕ → ℕ → Set where
-    Others      : ∀ b d o → (d+o≥2 : suc d + o ≥ 2) → NonBoundedCond (suc b) (suc d) o
-    NoDigits    : ∀ b   o                           → NonBoundedCond b       0       o
-
 data BoundedView : ℕ → ℕ → ℕ → Set where
-    IsBounded   : ∀ {b d o} → (cond :    BoundedCond b d o) → BoundedView b d o
-    IsntBounded : ∀ {b d o} → (cond : NonBoundedCond b d o) → BoundedView b d o
+    NullBase    : ∀   d o                           → BoundedView 0       (suc d) o
+    NoDigits    : ∀ b o                             → BoundedView b       0       o
+    AllZeros    : ∀ b                               → BoundedView (suc b) 1       0
+    Others      : ∀ b d o → (d+o≥2 : suc d + o ≥ 2) → BoundedView (suc b) (suc d) o
 
 boundedView : ∀ b d o → BoundedView b d o
-boundedView b       zero          o       = IsntBounded (NoDigits b o)
-boundedView zero    (suc d)       o       = IsBounded (NullBase d o)
-boundedView (suc b) (suc zero)    zero    = IsBounded (AllZeros b)
-boundedView (suc b) (suc zero)    (suc o) = IsntBounded (Others b zero (suc o) (s≤s (s≤s z≤n)))
-boundedView (suc b) (suc (suc d)) o       = IsntBounded (Others b (suc d) o (s≤s (s≤s z≤n)))
+boundedView b       zero          o       = NoDigits b o
+boundedView zero    (suc d)       o       = NullBase d o
+boundedView (suc b) (suc zero)    zero    = AllZeros b
+boundedView (suc b) (suc zero)    (suc o) = Others b zero (suc o) (s≤s (s≤s z≤n))
+boundedView (suc b) (suc (suc d)) o       = Others b (suc d) o (s≤s (s≤s z≤n))
 ------------------------------------------------------------------------
 -- Relations between Conditions and Predicates
 
@@ -149,27 +143,17 @@ AllZeros-explode xs ¬max = contradiction (AllZeros-Maximum xs) ¬max
 NoDigits-¬Bounded : ∀ b o → ¬ (Bounded b 0 o)
 NoDigits-¬Bounded b o (xs , claim) = NoDigits-explode xs
 
-BoundedCond⇒Bounded : ∀ {b d o} → BoundedCond b d o → Bounded b d o
-BoundedCond⇒Bounded (NullBase d o) = (greatest-digit d ∙) , NullBase-Maximum (greatest-digit d ∙) (greatest-digit-is-the-Greatest d)
-BoundedCond⇒Bounded (AllZeros b)   = (z ∙) , (AllZeros-Maximum (z ∙))
+Bounded? : ∀ b d o → Dec (Bounded b d o)
+Bounded? b d o with boundedView b d o
+Bounded? .0       .(suc d) o  | NullBase d .o
+    = yes ((greatest-digit d ∙) , (NullBase-Maximum (greatest-digit d ∙) (greatest-digit-is-the-Greatest d)))
+Bounded? b        .0       o  | NoDigits .b .o
+    = no (NoDigits-¬Bounded b o)
+Bounded? .(suc b) .1       .0 | AllZeros b
+    = yes ((z ∙) , (AllZeros-Maximum (z ∙)))
+Bounded? .(suc b) .(suc d) o  | Others b d .o d+o≥2
+    = no (Others-¬Bounded b d o (≤-pred d+o≥2))
 
-NonBoundedCond⇒¬Bounded : ∀ {b d o} → NonBoundedCond b d o → ¬ (Bounded b d o)
-NonBoundedCond⇒¬Bounded (Others b d o d+o≥2) = Others-¬Bounded b d o (≤-pred d+o≥2)
-NonBoundedCond⇒¬Bounded (NoDigits b o)       = NoDigits-¬Bounded b o
-
-Bounded⇒BoundedCond : ∀ {b d o} → Bounded b d o → BoundedCond b d o
-Bounded⇒BoundedCond {b} {d} {o} bounded with boundedView b d o
-Bounded⇒BoundedCond bounded | IsBounded condition   = condition
-Bounded⇒BoundedCond bounded | IsntBounded condition = contradiction bounded (NonBoundedCond⇒¬Bounded condition)
-
-¬Bounded⇒NonBoundedCond : ∀ {b d o} → ¬ (Bounded b  d o) → NonBoundedCond b d o
-¬Bounded⇒NonBoundedCond {b} {d} {o} ¬bounded with boundedView b d o
-¬Bounded⇒NonBoundedCond ¬bounded | IsBounded condition   = contradiction (BoundedCond⇒Bounded condition) ¬bounded
-¬Bounded⇒NonBoundedCond ¬bounded | IsntBounded condition = condition
-
-Bounded? : ∀ {b d o} → BoundedView b d o → Dec (Bounded b d o)
-Bounded? (IsBounded condition)   = yes (BoundedCond⇒Bounded condition)
-Bounded? (IsntBounded condition) = no (NonBoundedCond⇒¬Bounded condition)
 
 
 --------------------------------------------------------------------------------

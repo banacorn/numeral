@@ -311,10 +311,10 @@ next-number : ∀ {b d o}
     → ¬ (Maximum xs)
     → Num b d o
 next-number {b} {d} {o} xs ¬max with boundedView b d o
-next-number xs ¬max | IsBounded   (NullBase d o) = next-number-NullBase xs ¬max
-next-number xs ¬max | IsBounded   (AllZeros b) = AllZeros-explode xs ¬max
-next-number xs ¬max | IsntBounded (Others b d o d+o≥2) = next-number-Others xs ¬max d+o≥2
-next-number xs ¬max | IsntBounded (NoDigits b o) = NoDigits-explode xs
+next-number xs ¬max | NullBase d o = next-number-NullBase xs ¬max
+next-number xs ¬max | NoDigits b o = NoDigits-explode xs
+next-number xs ¬max | AllZeros b = AllZeros-explode xs ¬max
+next-number xs ¬max | Others b d o d+o≥2 = next-number-Others xs ¬max d+o≥2
 
 next-number-is-greater-NullBase : ∀ {d o}
     → (xs : Num 0 (suc d) o)
@@ -332,10 +332,10 @@ next-number-is-greater : ∀ {b d o}
     → (¬max : ¬ (Maximum xs))
     → ⟦ next-number xs ¬max ⟧ > ⟦ xs ⟧
 next-number-is-greater {b} {d} {o} xs ¬max with boundedView b d o
-next-number-is-greater xs ¬max | IsBounded (NullBase d o) = next-number-is-greater-NullBase xs ¬max
-next-number-is-greater xs ¬max | IsBounded (AllZeros b) = AllZeros-explode xs ¬max
-next-number-is-greater xs ¬max | IsntBounded (Others b d o d+o≥2) = next-number-is-greater-Others xs ¬max d+o≥2
-next-number-is-greater xs ¬max | IsntBounded (NoDigits b o) = NoDigits-explode xs
+next-number-is-greater xs ¬max | NullBase d o = next-number-is-greater-NullBase xs ¬max
+next-number-is-greater xs ¬max | NoDigits b o = NoDigits-explode xs
+next-number-is-greater xs ¬max | AllZeros b = AllZeros-explode xs ¬max
+next-number-is-greater xs ¬max | Others b d o d+o≥2 = next-number-is-greater-Others xs ¬max d+o≥2
 
 
 next-number-is-LUB-NullBase : ∀ {d o}
@@ -525,10 +525,10 @@ next-number-is-LUB : ∀ {b d o}
     → ⟦ ys ⟧ > ⟦ xs ⟧
     → ⟦ ys ⟧ ≥ ⟦ next-number xs ¬max ⟧
 next-number-is-LUB {b} {d} {o} xs ys ¬max prop with boundedView b d o
-next-number-is-LUB xs ys ¬max prop | IsBounded (NullBase d o) = next-number-is-LUB-NullBase xs ys ¬max prop
-next-number-is-LUB xs ys ¬max prop | IsBounded (AllZeros b) = AllZeros-explode xs ¬max
-next-number-is-LUB xs ys ¬max prop | IsntBounded (Others b d o d+o≥2) = next-number-is-LUB-Others xs ys ¬max d+o≥2 prop
-next-number-is-LUB xs ys ¬max prop | IsntBounded (NoDigits b o) = NoDigits-explode xs
+next-number-is-LUB xs ys ¬max prop | NullBase d o = next-number-is-LUB-NullBase xs ys ¬max prop
+next-number-is-LUB xs ys ¬max prop | NoDigits b o = NoDigits-explode xs
+next-number-is-LUB xs ys ¬max prop | AllZeros b = AllZeros-explode xs ¬max
+next-number-is-LUB xs ys ¬max prop | Others b d o d+o≥2 = next-number-is-LUB-Others xs ys ¬max d+o≥2 prop
 
 -- begin
 --     {!   !}

@@ -42,9 +42,8 @@ Maximum-unique max xs max-max xs-max = IsPartialOrder.antisym isPartialOrder
 Maximum? : ∀ {b d o}
     → (xs : Num b d o)
     → Dec (Maximum xs)
-Maximum? {b} {d} {o} xs with boundedView b d o
-Maximum? xs | IsBounded cond with BoundedCond⇒Bounded cond
-Maximum? xs | IsBounded cond | max , claim with ⟦ max ⟧ ≟ ⟦ xs ⟧
-Maximum? xs | IsBounded cond | max , claim | yes p rewrite p = yes claim
-Maximum? xs | IsBounded cond | max , claim | no ¬p = no (contraposition (Maximum-unique max xs claim) ¬p)
-Maximum? xs | IsntBounded cond = no (¬Bounded⇒¬Maximum xs (NonBoundedCond⇒¬Bounded cond))
+Maximum? {b} {d} {o} xs with Bounded? b d o
+Maximum? xs | yes (max , claim) with ⟦ max ⟧ ≟ ⟦ xs ⟧
+Maximum? xs | yes (max , claim) | yes p rewrite p = yes claim
+Maximum? xs | yes (max , claim) | no ¬p = no (contraposition (Maximum-unique max xs claim) ¬p)
+Maximum? xs | no ¬bounded = no (¬Bounded⇒¬Maximum xs ¬bounded)
