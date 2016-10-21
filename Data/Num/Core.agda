@@ -244,37 +244,39 @@ data Num : ℕ → ℕ → ℕ → Set where
 ⟦_⟧ {_} {_} {o} (x ∙)    = Digit-toℕ x o
 ⟦_⟧ {b} {_} {o} (x ∷ xs) = Digit-toℕ x o + ⟦ xs ⟧ * b
 
+-- the least significant digit
 lsd : ∀ {b d o} → (xs : Num b d o) → Digit d
 lsd (x ∙   ) = x
 lsd (x ∷ xs) = x
 
 
--- ⟦x∷xs⟧≥⟦xs⟧ :  ∀ {b d o}
---     → (x : Fin d) (xs : Num (suc b) d o)
---     → (xs! : ¬ (Null xs))
---     → ⟦ x ∷ xs ⟧ ≥ ⟦ xs ⟧ xs!
--- ⟦x∷xs⟧≥⟦xs⟧             x ∙         xs! = contradiction tt xs!
--- ⟦x∷xs⟧≥⟦xs⟧ {b} {d} {o} x (x' ∷ xs) xs! =
---     start
---         ⟦ x' ∷ xs ⟧
---     ≈⟨ sym (*-right-identity ⟦ x' ∷ xs ⟧) ⟩
---         ⟦ x' ∷ xs ⟧ * 1
---     ≤⟨ n*-mono ⟦ x' ∷ xs ⟧ (s≤s z≤n) ⟩
---         ⟦ x' ∷ xs ⟧ * suc b
---     ≤⟨ m≤n+m (⟦ x' ∷ xs ⟧ * suc b) (Fin.toℕ x + o) ⟩
---         Fin.toℕ x + o + ⟦ x' ∷ xs ⟧ * suc b
---     □
+------------------------------------------------------------------------
+-- View of Num
+------------------------------------------------------------------------
 
+data NumView : ℕ → ℕ → ℕ → Set where
+    NullBase    : ∀   d o                           → NumView 0       (suc d) o
+    NoDigits    : ∀ b o                             → NumView b       0       o
+    AllZeros    : ∀ b                               → NumView (suc b) 1       0
+    Others      : ∀ b d o → (d+o≥2 : suc d + o ≥ 2) → NumView (suc b) (suc d) o
 
--- start
---     {!   !}
--- ≤⟨ {!   !} ⟩
---     {!   !}
--- ≤⟨ {!   !} ⟩
---     {!   !}
--- ≤⟨ {!   !} ⟩
---     {!   !}
--- □
+numView : ∀ b d o → NumView b d o
+numView b       zero          o       = NoDigits b o
+numView zero    (suc d)       o       = NullBase d o
+numView (suc b) (suc zero)    zero    = AllZeros b
+numView (suc b) (suc zero)    (suc o) = Others b zero (suc o) (s≤s (s≤s z≤n))
+numView (suc b) (suc (suc d)) o       = Others b (suc d) o (s≤s (s≤s z≤n))
+
+NoDigits-explode : ∀ {b o a} {Whatever : Set a}
+    → (xs : Num b 0 o)
+    → Whatever
+NoDigits-explode (() ∙   )
+NoDigits-explode (() ∷ xs)
+
+------------------------------------------------------------------------
+-- Properties of Num
+------------------------------------------------------------------------
+
 n∷-mono-strict : ∀ {b d o}
     → (x : Fin d) (xs : Num (suc b) d o)
     → (y : Fin d) (ys : Num (suc b) d o)
@@ -341,8 +343,6 @@ tail-mono-strict-Null {b} {_} {o} x y ys greatest p
                 ⟦ y ∷ ys ⟧
             □
 
-
-
 ------------------------------------------------------------------------
 -- Relations
 ------------------------------------------------------------------------
@@ -394,12 +394,6 @@ tail-mono-strict-Null {b} {_} {o} x y ys greatest p
 -- Predicates on Num
 ------------------------------------------------------------------------
 
-Maximum : ∀ {b d o} → (xs : Num b d o) → Set
-Maximum {b} {d} {o} xs = ∀ (ys : Num b d o) → ⟦ xs ⟧ ≥ ⟦ ys ⟧
-
--- a system is bounded if there exists the greatest number
-Bounded : ∀ b d o → Set
-Bounded b d o = Σ[ xs ∈ Num b d o ] Maximum xs
 
 -- Abundant : ∀ b d o → Set
 -- Abundant b d o = d ≥ (1 ⊔ o) * b
