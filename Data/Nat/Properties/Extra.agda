@@ -363,6 +363,31 @@ m∸[o∸n]+o≡m+n m n o n≤o o∸n≤m =
         m + n
     ∎
 
+m≥n+o⇒m∸o≥n : ∀ m n o → m ≥ n + o → m ∸ o ≥ n
+m≥n+o⇒m∸o≥n m n o p =
+    start
+        n
+    ≈⟨ sym (m+n∸n≡m n o) ⟩
+        n + o ∸ o
+    ≤⟨ ∸-mono {n + o} {m} {o} p ≤-refl ⟩
+        m ∸ o
+    □
+
+-- m≡1+n⇒m∸n≡1 : ∀ m n → m ≡ 1 + n → m ∸ n ≡ 1
+-- m≡1+n⇒m∸n≡1 m n p =
+--     begin
+--         {!   !}
+--     ≡⟨ {!   !} ⟩
+--         {!   !}
+--     ≡⟨ {!   !} ⟩
+--         {!   !}
+--     ≡⟨ {!   !} ⟩
+--         {!   !}
+--     ≡⟨ {!   !} ⟩
+--         {!   !}
+--     ∎
+
+
 -- start
 --     {!   !}
 -- ≤⟨ {!   !} ⟩

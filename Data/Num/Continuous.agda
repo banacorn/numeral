@@ -36,21 +36,78 @@ open DecTotalOrder decTotalOrder using (reflexive) renaming (refl to ≤-refl)
 Continuous : ∀ b d o → Set
 Continuous b d o = (xs : Num b d o) → Incrementable xs
 
-
 Bounded⇒¬Continuous : ∀ {b d o}
     → Bounded b d o
     → ¬ (Continuous b d o)
 Bounded⇒¬Continuous (xs , max) claim = contradiction (claim xs) (Maximum⇒¬Incrementable xs max)
 
+Continuous-Others-Gapped-counter-example : ∀ {b d o}
+    → (xs : Num (suc b) (suc d) o)
+    → (xs ≡ greatest-digit d ∙)
+    → (d+o≥2 : 2 ≤ suc (d + o))
+    → (gapped : suc (suc d) ≤ (1 ⊔ o) * suc b)
+    → ¬ (Incrementable {suc b} {_} {o} xs)
+Continuous-Others-Gapped-counter-example {b} {d} {o} (x ∙) eq d+o≥2 gapped with Others-view-single b d o x | next-number-Others-¬Incrementable-lemma {b} (x ∙) (Maximum-Others (x ∙) d+o≥2) d+o≥2
+Continuous-Others-Gapped-counter-example {b} {d} {o} (_ ∙) refl d+o≥2 gapped | NeedNoCarry ¬greatest | lemma = contradiction (greatest-digit-is-the-Greatest d) ¬greatest
+Continuous-Others-Gapped-counter-example {b} {d} {o} (x ∙) eq d+o≥2 gapped | Gapped greatest _ | lemma = lemma prop
+    where
+        prop : o + Digit-toℕ (1⊔o d o d+o≥2) o * suc b > suc (Digit-toℕ x o)
+        prop = next-number-suc-Others-Gapped-Single x greatest d+o≥2 gapped
+Continuous-Others-Gapped-counter-example {b} {d} {o} (x ∙) eq d+o≥2 gapped | ¬Gapped greatest ¬gapped | lemma = contradiction gapped (>⇒≰ (s≤s ¬gapped))
+Continuous-Others-Gapped-counter-example (x ∷ xs) () d+o≥2 gapped incr
+
+Continuous-Others-Gapped : ∀ b d o
+    → (d+o≥2 : 2 ≤ suc (d + o))
+    → (gapped : suc (suc d) ≤ (1 ⊔ o) * suc b)
+    → ¬ (Continuous (suc b) (suc d) o)
+Continuous-Others-Gapped b d o d+o≥2 gapped cont
+    = contradiction (cont counter-example) (Continuous-Others-Gapped-counter-example (greatest-digit d ∙) refl d+o≥2 gapped)
+    where
+        counter-example : Num (suc b) (suc d) o
+        counter-example = greatest-digit d ∙
+
+Continuous-Others-¬Gapped : ∀ b d o
+    → (d+o≥2 : 2 ≤ suc (d + o))
+    → (¬gapped : suc (suc d) ≰ (1 ⊔ o) * suc b)
+    → Continuous (suc b) (suc d) o
+Continuous-Others-¬Gapped b d o d+o≥2 ¬gapped (x ∙) with Others-view-single b d o x
+Continuous-Others-¬Gapped b d o d+o≥2 ¬gapped (x ∙) | NeedNoCarry ¬greatest
+    = next , next-number-increment
+    where
+        ¬max : ¬ (Maximum (x ∙))
+        ¬max = Maximum-Others {b} (x ∙) d+o≥2
+        next : Num (suc b) (suc d) o
+        next = next-number-Others (x ∙) ¬max d+o≥2
+        next-number-increment : ⟦ next-number-Others (x ∙) ¬max d+o≥2 ⟧ ≡ suc (Fin.toℕ x + o)
+        next-number-increment = next-number-suc-Others-LSD-¬Greatest (x ∙) ¬max ¬greatest d+o≥2
+Continuous-Others-¬Gapped b d o d+o≥2 ¬gapped (x ∙) | Gapped greatest gapped
+    = contradiction gapped ¬gapped
+Continuous-Others-¬Gapped b d o d+o≥2 ¬gapped (x ∙) | ¬Gapped greatest _
+    = next , next-number-suc-Others-¬Gapped-Single {b} x greatest d+o≥2 (≤-pred $ ≰⇒> ¬gapped)
+    where
+        lower-bound : (1 ⊔ o) * suc b > 0
+        lower-bound = m≤m⊔n 1 o *-mono s≤s z≤n
+        next : Num (suc b) (suc d) o
+        next = digit+1-n x greatest ((1 ⊔ o) * suc b) lower-bound ∷ 1⊔o d o d+o≥2 ∙
+Continuous-Others-¬Gapped b d o d+o≥2 ¬gapped (x ∷ xs) with Others-view x xs (Maximum-Others (x ∷ xs) d+o≥2) d+o≥2
+Continuous-Others-¬Gapped b d o d+o≥2 ¬gapped (x ∷ xs) | NeedNoCarry ¬greatest = {!   !}
+Continuous-Others-¬Gapped b d o d+o≥2 ¬gapped (x ∷ xs) | Gapped greatest gapped
+    = contradiction gapped {!   !}
+Continuous-Others-¬Gapped b d o d+o≥2 ¬gapped (x ∷ xs) | ¬Gapped greatest _ = {!   !}
+
+Continuous-Others : ∀ b d o
+    → (d+o≥2 : 2 ≤ suc (d + o))
+    → Dec (Continuous (suc b) (suc d) o)
+Continuous-Others b d o d+o≥2 with suc (suc d) ≤? (1 ⊔ o) * suc b
+Continuous-Others b d o d+o≥2 | yes gapped = no (Continuous-Others-Gapped b d o d+o≥2 gapped)
+Continuous-Others b d o d+o≥2 | no ¬gapped = yes (Continuous-Others-¬Gapped b d o d+o≥2 ¬gapped)
 
 Continuous? : ∀ b d o → Dec (Continuous b d o)
-Continuous? b d o with Bounded? b d o
-Continuous? b d o | yes bounded = no (Bounded⇒¬Continuous bounded)
-Continuous? b d o | no ¬bounded = {!   !}
--- Continuous? _ _ _ | NullBase d o = no (Bounded⇒¬Continuous {!   !})
--- Continuous? _ _ _ | NoDigits b o = {!   !}
--- Continuous? _ _ _ | AllZeros b = no {!   !}
--- Continuous? _ _ _ | Others b d o d+o≥2 = {!   !}
+Continuous? b d o with numView b d o
+Continuous? _ _ _ | NullBase d o = no (Bounded⇒¬Continuous (Bounded-NullBase d o))
+Continuous? _ _ _ | NoDigits b o = yes (λ xs → NoDigits-explode xs)
+Continuous? _ _ _ | AllZeros b = no (Bounded⇒¬Continuous (Bounded-AllZeros b))
+Continuous? _ _ _ | Others b d o d+o≥2 = {!   !}
 
 -- data ContinuousCond : ℕ → ℕ → ℕ → Set where
 --     continuousCond : ∀ {b} {d} {o}

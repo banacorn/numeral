@@ -33,8 +33,15 @@ open DecTotalOrder decTotalOrder using (reflexive) renaming (refl to ≤-refl)
 Bounded : ∀ b d o → Set
 Bounded b d o = Σ[ xs ∈ Num b d o ] Maximum xs
 
+Bounded-NullBase : ∀ d o → Bounded 0 (suc d) o
+Bounded-NullBase d o = (greatest-digit d ∙) , (Maximum-NullBase-Greatest (greatest-digit d ∙) (greatest-digit-is-the-Greatest d))
+
 Bounded-NoDigits : ∀ b o → ¬ (Bounded b 0 o)
 Bounded-NoDigits b o (xs , claim) = NoDigits-explode xs
+
+Bounded-AllZeros : ∀ b → Bounded (suc b) 1 0
+Bounded-AllZeros b = (z ∙) , Maximum-AllZeros (z ∙)
+-- Bounded-NullBase d o = (greatest-digit d ∙) , (Maximum-NullBase-Greatest (greatest-digit d ∙) (greatest-digit-is-the-Greatest d))
 
 Bounded-Others : ∀ b d o → 2 ≤ suc (d + o) → ¬ (Bounded (suc b) (suc d) o)
 Bounded-Others b d o d+o≥2 (xs , claim) = contradiction p ¬p
@@ -61,11 +68,11 @@ Bounded-Others b d o d+o≥2 (xs , claim) = contradiction p ¬p
 Bounded? : ∀ b d o → Dec (Bounded b d o)
 Bounded? b d o with numView b d o
 Bounded? _ _ _ | NullBase d o
-    = yes ((greatest-digit d ∙) , (Maximum-NullBase-Greatest (greatest-digit d ∙) (greatest-digit-is-the-Greatest d)))
+    = yes (Bounded-NullBase d o)
 Bounded? _ _ _ | NoDigits b o
     = no (Bounded-NoDigits b o)
 Bounded? _ _ _ | AllZeros b
-    = yes ((z ∙) , Maximum-AllZeros (z ∙))
+    = yes (Bounded-AllZeros b)
 Bounded? _ _ _ | Others b d o d+o≥2
     = no (Bounded-Others b d o d+o≥2)
 
