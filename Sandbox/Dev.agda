@@ -4,7 +4,7 @@ open import Data.Num.Core
 open import Data.Num.Bounded
 open import Data.Num.Maximum
 open import Data.Num.Next
--- open import Data.Num.Incrementable
+open import Data.Num.Incrementable
 -- open import Data.Num.Continuous
 
 open import Data.Bool
@@ -33,24 +33,51 @@ open ≡-Reasoning
 open ≤-Reasoning renaming (begin_ to start_; _∎ to _□; _≡⟨_⟩_ to _≈⟨_⟩_)
 open DecTotalOrder decTotalOrder using (reflexive) renaming (refl to ≤-refl)
 
--- next-number-suc-Others-LSD-¬Greatest : ∀ {b d o}
---     → (xs : Num (suc b) (suc d) o)
---     → (¬max : ¬ (Maximum xs))
---     → (¬greatest : ¬ (Greatest (lsd xs)))
---     → (d+o≥2 : 2 ≤ suc (d + o))
---     → ⟦ next-number-Others xs ¬max d+o≥2 ⟧ ≡ suc ⟦ xs ⟧
--- next-number-suc-Others-LSD-¬Greatest {b} {d} {o} (x ∙) ¬max ¬greatest d+o≥2 with Others-view-single b d o x
--- next-number-suc-Others-LSD-¬Greatest {b} {d} {o} (x ∙) ¬max ¬greatest d+o≥2 | NeedNoCarry _
---     = next-number-Others-NeedNoCarry-Single {b} {d} {o} x ¬greatest
--- next-number-suc-Others-LSD-¬Greatest {b} {d} {o} (x ∙) ¬max ¬greatest d+o≥2 | Gapped greatest gapped
---     = contradiction greatest ¬greatest
--- next-number-suc-Others-LSD-¬Greatest {b} {d} {o} (x ∙) ¬max ¬greatest d+o≥2 | ¬Gapped greatest ¬gapped
---     = contradiction greatest ¬greatest
--- next-number-suc-Others-LSD-¬Greatest {b} {d} {o} (x ∷ xs) ¬max ¬greatest d+o≥2 with Others-view x xs ¬max d+o≥2
--- next-number-suc-Others-LSD-¬Greatest {b} {d} {o} (x ∷ xs) ¬max ¬greatest d+o≥2 | NeedNoCarry _
---     = next-number-Others-NeedNoCarry x xs ¬greatest
--- next-number-suc-Others-LSD-¬Greatest {b} {d} {o} (x ∷ xs) ¬max ¬greatest d+o≥2 | Gapped greatest gapped
---     = contradiction greatest ¬greatest
--- next-number-suc-Others-LSD-¬Greatest {b} {d} {o} (x ∷ xs) ¬max ¬greatest d+o≥2 | ¬Gapped greatest ¬gapped
---     = contradiction greatest ¬greatest
---
+Incrementable?-Others : ∀ {b d o}
+    → (xs : Num (suc b) (suc d) o)
+    → (¬max : ¬ (Maximum xs))
+    → (greatest : Greatest (lsd xs))
+    → (d+o≥2 : 2 ≤ suc (d + o))
+    → Dec (Incrementable xs)
+Incrementable?-Others {b} {d} {o} xs ¬max greatest d+o≥2 with othersView xs ¬max d+o≥2 | next-number-Others-¬Incrementable-lemma xs ¬max d+o≥2
+Incrementable?-Others xs ¬max greatest d+o≥2 | NeedNoCarry b d o ¬greatest | lemma
+    = no (contradiction greatest ¬greatest)
+Incrementable?-Others (x ∙) ¬max greatest d+o≥2 | Gapped b d o _ ¬abundant | lemma
+    = no (lemma (next-number-suc-Others-Gapped-Single x greatest d+o≥2 (≰⇒> ¬abundant)))
+Incrementable?-Others (x ∷ xs) ¬max greatest d+o≥2 | Gapped b d o _ ¬abundant | lemma
+    = no (lemma (next-number-suc-Others-Gapped x xs greatest d+o≥2 (≰⇒> ¬abundant)))
+Incrementable?-Others (x ∙) ¬max greatest₁ d+o≥2 | ¬Gapped b d o greatest abundant | lemma
+    = yes (next , next-number-suc-Others-¬Gapped-Single x greatest d+o≥2 abundant)
+    where
+        lower-bound : (1 ⊔ o) * suc b > 0
+        lower-bound = m≤m⊔n 1 o *-mono s≤s z≤n
+        next : Num (suc b) (suc d) o
+        next = digit+1-n x greatest ((1 ⊔ o) * suc b) lower-bound ∷ 1⊔o d o d+o≥2 ∙
+Incrementable?-Others (x ∷ xs) ¬max greatest₁ d+o≥2 | ¬Gapped b d o greatest abundant | lemma
+    = yes (next , next-number-suc-Others-¬Gapped x xs greatest d+o≥2 (s≤s abundant))
+    where
+        ¬max-xs : ¬ (Maximum xs)
+        ¬max-xs = Maximum-Others xs d+o≥2
+
+        next-xs : Num (suc b) (suc d) o
+        next-xs = next-number-Others xs ¬max-xs d+o≥2
+
+        gap : ℕ
+        gap = (⟦ next-xs ⟧ ∸ ⟦ xs ⟧) * suc b
+
+        gap-lower-bound : gap > 0
+        gap-lower-bound = (start
+                1
+            ≤⟨ s≤s (reflexive (sym (n∸n≡0 ⟦ xs ⟧))) ⟩
+                suc (⟦ xs ⟧ ∸ ⟦ xs ⟧)
+            ≈⟨ sym (+-∸-assoc 1 {⟦ xs ⟧} ≤-refl) ⟩
+                suc ⟦ xs ⟧ ∸ ⟦ xs ⟧
+            ≤⟨ ∸-mono {suc ⟦ xs ⟧} {⟦ next-xs ⟧} {⟦ xs ⟧} (next-number-is-greater-Others xs ¬max-xs d+o≥2) ≤-refl ⟩
+                ⟦ next-xs ⟧ ∸ ⟦ xs ⟧
+            □) *-mono (s≤s {0} {b} z≤n)
+
+        gap-upper-bound : gap ≤ suc d
+        gap-upper-bound = abundant
+
+        next : Num (suc b) (suc d) o
+        next = digit+1-n x greatest gap gap-lower-bound ∷ next-xs
