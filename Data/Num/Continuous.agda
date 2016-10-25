@@ -101,13 +101,13 @@ Continuous-Others-¬Gapped b d o d+o≥2 ¬gapped (x ∷ xs) | NeedNoCarry ¬gre
 Continuous-Others-¬Gapped b d o d+o≥2 ¬gapped (x ∷ xs) | Gapped greatest gapped
     = contradiction gapped (>⇒≰ ¬gapped')
     where
-        ¬gapped' : suc (suc d) > (⟦ next-number-Others xs (next-number-¬Maximum xs d+o≥2) d+o≥2 ⟧ ∸ ⟦ xs ⟧) * suc b
+        ¬gapped' : suc (suc d) > (⟦ next-number-Others xs (Maximum-Others xs d+o≥2) d+o≥2 ⟧ ∸ ⟦ xs ⟧) * suc b
         ¬gapped' = subsume-¬Gapped xs d+o≥2 (≰⇒> ¬gapped)
 Continuous-Others-¬Gapped b d o d+o≥2 _ (x ∷ xs) | ¬Gapped greatest ¬gapped
     = next , proof
     where
         ¬max-xs : ¬ (Maximum xs)
-        ¬max-xs = next-number-¬Maximum xs d+o≥2
+        ¬max-xs = Maximum-Others xs d+o≥2
 
         next-xs : Num (suc b) (suc d) o
         next-xs = next-number-Others xs ¬max-xs d+o≥2
@@ -246,7 +246,7 @@ Continuous? _ _ _ | Others b d o d+o≥2 = Continuous-Others b d o d+o≥2
 --         ∎
 -- Continuous-Others-Incremental {b} {d} {o} abundant d+o≥2 (x ∷ xs) | Gapped greatest gapped =
 --         let
---             ¬max = next-number-¬Maximum xs d+o≥2
+--             ¬max = Maximum-Others xs d+o≥2
 --             next = next-number-Others xs ¬max d+o≥2
 --             next>xs = ≤-pred $ ≤-step $ next-number-is-greater-Others xs ¬max d+o≥2
 --             ⟦next⟧∸⟦xs⟧≡1 : ⟦ next ⟧ ∸ ⟦ xs ⟧ ≡ 1
@@ -300,7 +300,7 @@ Continuous? _ _ _ | Others b d o d+o≥2 = Continuous-Others b d o d+o≥2
 --         ∎
 -- Continuous-Others-Incremental {b} {d} {o} abundant d+o≥2 (x ∷ xs) | ¬Gapped greatest ¬gapped =
 --     let
---         ¬max = next-number-¬Maximum xs d+o≥2
+--         ¬max = Maximum-Others xs d+o≥2
 --         next = next-number-Others xs ¬max d+o≥2
 --         gap = (⟦ next ⟧ ∸ ⟦ xs ⟧) * suc b
 --         gap>0 = (start

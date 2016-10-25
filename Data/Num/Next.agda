@@ -61,12 +61,6 @@ next-number-1⊔o-upper-bound : ∀ m n → 2 ≤ suc m + n → m + n ≥ 1 ⊔ 
 next-number-1⊔o-upper-bound m zero    q = ≤-pred q
 next-number-1⊔o-upper-bound m (suc n) q = m≤n+m (suc n) m
 
-next-number-¬Maximum : ∀ {b d o}
-    → (xs : Num (suc b) (suc d) o)
-    → (d+o≥2 : 2 ≤ suc (d + o))
-    → ¬ (Maximum xs)
-next-number-¬Maximum {b} {d} {o} xs d+o≥2 = ¬Bounded⇒¬Maximum xs (Bounded-Others b d o d+o≥2)
-
 mutual
 
     data Others-View-Single : (b d o : ℕ) (x : Digit d) → Set where
@@ -97,7 +91,7 @@ mutual
             → {xs : Num (suc b) (suc d) o}
             → {d+o≥2 : 2 ≤ suc (d + o)}
             → (greatest : Greatest x)
-            →   let ¬max = next-number-¬Maximum xs d+o≥2
+            →   let ¬max = Maximum-Others xs d+o≥2
                     next = next-number-Others xs ¬max d+o≥2
                 in  (gapped : suc d < (⟦ next ⟧ ∸ ⟦ xs ⟧) * suc b)
             → Others-View (suc b) (suc d) o x xs d+o≥2
@@ -106,7 +100,7 @@ mutual
             → {xs : Num (suc b) (suc d) o}
             → {d+o≥2 : 2 ≤ suc (d + o)}
             → (greatest : Greatest x)
-            →   let ¬max = next-number-¬Maximum xs d+o≥2
+            →   let ¬max = Maximum-Others xs d+o≥2
                     next = next-number-Others xs ¬max d+o≥2
                 in  (¬gapped : suc d ≥ (⟦ next ⟧ ∸ ⟦ xs ⟧) * suc b)
             → Others-View (suc b) (suc d) o x xs d+o≥2
@@ -127,7 +121,7 @@ mutual
         → (d+o≥2 : 2 ≤ suc (d + o))
         → Others-View (suc b) (suc d) o x xs d+o≥2
     Others-view {b} {d} {o} x xs ¬max d+o≥2 with Greatest? x
-    Others-view {b} {d} {o} x xs ¬max d+o≥2 | yes greatest with suc (suc d) ≤? (⟦ next-number-Others xs (next-number-¬Maximum xs d+o≥2) d+o≥2 ⟧ ∸ ⟦ xs ⟧) * suc b
+    Others-view {b} {d} {o} x xs ¬max d+o≥2 | yes greatest with suc (suc d) ≤? (⟦ next-number-Others xs (Maximum-Others xs d+o≥2) d+o≥2 ⟧ ∸ ⟦ xs ⟧) * suc b
     Others-view {b} {d} {o} x xs ¬max d+o≥2 | yes greatest | yes gapped = Gapped greatest gapped
     Others-view {b} {d} {o} x xs ¬max d+o≥2 | yes greatest | no ¬gapped = ¬Gapped greatest (≤-pred $ ≰⇒> ¬gapped)
     Others-view {b} {d} {o} x xs ¬max d+o≥2 | no ¬greatest = NeedNoCarry ¬greatest
@@ -156,12 +150,12 @@ mutual
         = digit+1 x ¬greatest ∷ xs
     next-number-Others (x ∷ xs) ¬max d+o≥2 | Gapped greatest gapped =
         let
-            ¬max = next-number-¬Maximum xs d+o≥2
+            ¬max = Maximum-Others xs d+o≥2
             next = next-number-Others xs ¬max d+o≥2
         in z ∷ next
     next-number-Others {b} {d} {o} (x ∷ xs) ¬max d+o≥2 | ¬Gapped greatest ¬gapped =
         let
-            ¬max = next-number-¬Maximum xs d+o≥2
+            ¬max = Maximum-Others xs d+o≥2
             next = next-number-Others xs ¬max d+o≥2
             gap = (⟦ next ⟧ ∸ ⟦ xs ⟧) * suc b
             gap>0 = (start
@@ -245,7 +239,7 @@ mutual
     next-number-is-greater-Others {b} {d} {o} (x ∷ xs) ¬max d+o≥2 | Gapped greatest gapped =
         let
             ¬max-xs : ¬ (Maximum xs)
-            ¬max-xs = next-number-¬Maximum xs d+o≥2
+            ¬max-xs = Maximum-Others xs d+o≥2
             next-xs : Num (suc b) (suc d) o
             next-xs = next-number-Others xs ¬max-xs d+o≥2
             next-xs>xs : ⟦ next-xs ⟧ > ⟦ xs ⟧
@@ -270,7 +264,7 @@ mutual
             □
     next-number-is-greater-Others {b} {d} {o} (x ∷ xs) ¬max d+o≥2 | ¬Gapped greatest ¬gapped =
         let
-            ¬max = next-number-¬Maximum xs d+o≥2
+            ¬max = Maximum-Others xs d+o≥2
             next = next-number-Others xs ¬max d+o≥2
             gap = (⟦ next ⟧ ∸ ⟦ xs ⟧) * suc b
             gap>0 = (start
@@ -470,7 +464,7 @@ next-number-is-LUB-Others {b} {d} {o} (x ∷ xs) (y ∙) ¬max d+o≥2 prop | Ga
     □
 next-number-is-LUB-Others {b} {d} {o} (x ∷ xs) (y ∷ ys) ¬max d+o≥2 prop | Gapped greatest gapped =
     let
-        ¬max = next-number-¬Maximum xs d+o≥2
+        ¬max = Maximum-Others xs d+o≥2
         next = next-number-Others xs ¬max d+o≥2
         ⟦y'∷ys⟧>⟦x'∷xs⟧ = tail-mono-strict x xs y ys greatest prop
     in
@@ -491,7 +485,7 @@ next-number-is-LUB-Others {b} {d} {o} (x ∷ xs) (y ∙) ¬max d+o≥2 prop | ¬
     □
 next-number-is-LUB-Others {b} {d} {o} (x ∷ xs) (y ∷ ys) ¬max d+o≥2 prop | ¬Gapped greatest ¬gapped =
     let
-        ¬max = next-number-¬Maximum xs d+o≥2
+        ¬max = Maximum-Others xs d+o≥2
         next = next-number-Others xs ¬max d+o≥2
         gap = (⟦ next ⟧ ∸ ⟦ xs ⟧) * suc b
         gap>0 = (start
