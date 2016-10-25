@@ -288,23 +288,6 @@ next-number-suc-Others-¬Gapped {b} {d} {o} x xs greatest d+o≥2 ¬gapped = pro
                 suc ⟦ x ∷ xs ⟧
             ∎
 
-
-next-number-suc-Others-¬Greatest : ∀ {b d o}
-    → (xs : Num (suc b) (suc d) o)
-    → (¬max : ¬ (Maximum xs))
-    → (¬greatest : ¬ (Greatest (lsd xs)))
-    → (d+o≥2 : 2 ≤ suc (d + o))
-    → ⟦ next-number-Others xs ¬max d+o≥2 ⟧ ≡ suc ⟦ xs ⟧
-next-number-suc-Others-¬Greatest xs ¬max ¬greatest d+o≥2 with othersView xs ¬max d+o≥2
-next-number-suc-Others-¬Greatest (x ∙)    ¬max ¬greatest d+o≥2 | NeedNoCarry b d o _
-    = next-number-Others-NeedNoCarry-Single {b} x ¬greatest
-next-number-suc-Others-¬Greatest (x ∷ xs) ¬max ¬greatest d+o≥2 | NeedNoCarry b d o _
-    = next-number-Others-NeedNoCarry x xs ¬greatest
-next-number-suc-Others-¬Greatest xs ¬max ¬greatest d+o≥2 | Gapped b d o greatest ¬abundant
-    = contradiction greatest ¬greatest
-next-number-suc-Others-¬Greatest xs ¬max ¬greatest d+o≥2 | ¬Gapped b d o greatest abundant
-    = contradiction greatest ¬greatest
-
 next-number-Others-¬Incrementable-lemma : ∀ {b d o}
     → (xs : Num (suc b) (suc d) o)
     → (¬max : ¬ (Maximum xs))
@@ -332,24 +315,25 @@ next-number-Others-¬Incrementable-lemma {b} {d} {o} xs ¬max d+o≥2 prop (incr
 Incrementable?-Others : ∀ {b d o}
     → (xs : Num (suc b) (suc d) o)
     → (¬max : ¬ (Maximum xs))
-    → (greatest : Greatest (lsd xs))
     → (d+o≥2 : 2 ≤ suc (d + o))
     → Dec (Incrementable xs)
-Incrementable?-Others {b} {d} {o} xs ¬max greatest d+o≥2 with othersView xs ¬max d+o≥2 | next-number-Others-¬Incrementable-lemma xs ¬max d+o≥2
-Incrementable?-Others xs ¬max greatest d+o≥2 | NeedNoCarry b d o ¬greatest | lemma
-    = no (contradiction greatest ¬greatest)
-Incrementable?-Others (x ∙) ¬max greatest d+o≥2 | Gapped b d o _ ¬abundant | lemma
+Incrementable?-Others xs ¬max d+o≥2 with othersView xs ¬max d+o≥2 | next-number-Others-¬Incrementable-lemma xs ¬max d+o≥2
+Incrementable?-Others (x ∙) ¬max d+o≥2 | NeedNoCarry b d o ¬greatest | lemma
+    = yes ((digit+1 x ¬greatest ∙) , (next-number-Others-NeedNoCarry-Single {b} x ¬greatest))
+Incrementable?-Others (x ∷ xs) ¬max d+o≥2 | NeedNoCarry b d o ¬greatest | lemma
+    = yes ((digit+1 x ¬greatest ∷ xs) , (next-number-Others-NeedNoCarry x xs ¬greatest))
+Incrementable?-Others (x ∙) ¬max d+o≥2 | Gapped b d o greatest ¬abundant | lemma
     = no (lemma (next-number-suc-Others-Gapped-Single x greatest d+o≥2 (≰⇒> ¬abundant)))
-Incrementable?-Others (x ∷ xs) ¬max greatest d+o≥2 | Gapped b d o _ ¬abundant | lemma
+Incrementable?-Others (x ∷ xs) ¬max d+o≥2 | Gapped b d o greatest ¬abundant | lemma
     = no (lemma (next-number-suc-Others-Gapped x xs greatest d+o≥2 (≰⇒> ¬abundant)))
-Incrementable?-Others (x ∙) ¬max greatest₁ d+o≥2 | ¬Gapped b d o greatest abundant | lemma
+Incrementable?-Others (x ∙) ¬max d+o≥2 | ¬Gapped b d o greatest abundant | lemma
     = yes (next , next-number-suc-Others-¬Gapped-Single x greatest d+o≥2 abundant)
     where
         lower-bound : (1 ⊔ o) * suc b > 0
         lower-bound = m≤m⊔n 1 o *-mono s≤s z≤n
         next : Num (suc b) (suc d) o
         next = digit+1-n x greatest ((1 ⊔ o) * suc b) lower-bound ∷ 1⊔o d o d+o≥2 ∙
-Incrementable?-Others (x ∷ xs) ¬max greatest₁ d+o≥2 | ¬Gapped b d o greatest abundant | lemma
+Incrementable?-Others (x ∷ xs) ¬max d+o≥2 | ¬Gapped b d o greatest abundant | lemma
     = yes (next , next-number-suc-Others-¬Gapped x xs greatest d+o≥2 (s≤s abundant))
     where
         ¬max-xs : ¬ (Maximum xs)
@@ -390,11 +374,8 @@ Incrementable? xs | no ¬max | NoDigits b o
     = no (NoDigits-explode xs)
 Incrementable? xs | no ¬max | AllZeros b
     = no (contradiction (Maximum-AllZeros xs) ¬max)
-Incrementable? xs | no ¬max | Others b d o d+o≥2 with Greatest? (lsd xs)
-Incrementable? xs | no ¬max | Others b d o d+o≥2 | yes greatest
-    = Incrementable?-Others xs ¬max greatest d+o≥2
-Incrementable? xs | no ¬max | Others b d o d+o≥2 | no ¬greatest
-    = yes ((next-number-Others xs ¬max d+o≥2) , (next-number-suc-Others-¬Greatest xs ¬max ¬greatest d+o≥2))
+Incrementable? xs | no ¬max | Others b d o d+o≥2
+    = Incrementable?-Others xs ¬max d+o≥2
 
 increment : ∀ {b d o}
     → (xs : Num b d o)
@@ -402,59 +383,35 @@ increment : ∀ {b d o}
     → Num b d o
 increment xs incr = proj₁ $ toWitness incr
 
-increment-next-number-Others : ∀ {b d o}
+increment-next-number-Others' : ∀ {b d o}
     → (xs : Num (suc b) (suc d) o)
     → (¬max : ¬ (Maximum xs))
-    → (greatest : Greatest (lsd xs))
     → (d+o≥2 : 2 ≤ suc (d + o))
-    → (incr : True (Incrementable?-Others xs ¬max greatest d+o≥2))
+    → (incr : True (Incrementable?-Others xs ¬max d+o≥2))
     → proj₁ (toWitness incr) ≡ next-number-Others xs ¬max d+o≥2
-increment-next-number-Others {b} {d} {o} xs ¬max greatest d+o≥2 incr with othersView xs ¬max d+o≥2
-increment-next-number-Others xs       ¬max greatest d+o≥2 () | NeedNoCarry b d o ¬greatest
-increment-next-number-Others (x ∙)    ¬max greatest d+o≥2 () | Gapped b d o _ ¬abundant
-increment-next-number-Others (x ∷ xs) ¬max greatest d+o≥2 () | Gapped b d o _ ¬abundant
-increment-next-number-Others (x ∙)    ¬max greatest d+o≥2 incr | ¬Gapped b d o _ abundant = refl
-increment-next-number-Others (x ∷ xs) ¬max greatest d+o≥2 incr | ¬Gapped b d o _ abundant = refl
+increment-next-number-Others' xs       ¬max d+o≥2 incr with othersView xs ¬max d+o≥2
+increment-next-number-Others' (x ∙)    ¬max d+o≥2 incr | NeedNoCarry b d o ¬greatest = refl
+increment-next-number-Others' (x ∷ xs) ¬max d+o≥2 incr | NeedNoCarry b d o ¬greatest = refl
+increment-next-number-Others' (x ∙)    ¬max d+o≥2 ()   | Gapped b d o greatest ¬abundant
+increment-next-number-Others' (x ∷ xs) ¬max d+o≥2 ()   | Gapped b d o greatest ¬abundant
+increment-next-number-Others' (x ∙)    ¬max d+o≥2 incr | ¬Gapped b d o greatest abundant = refl
+increment-next-number-Others' (x ∷ xs) ¬max d+o≥2 incr | ¬Gapped b d o greatest abundant = refl
 
--- increment-next-number : ∀ {b d o}
---     → (xs : Num b d o)
---     → (¬max : ¬ (Maximum xs))
---     → (incr : True (Incrementable? xs))
---     → increment xs incr ≡ next-number xs ¬max
--- increment-next-number xs ¬max incr with Maximum? xs
--- increment-next-number xs ¬max () | yes max
--- increment-next-number {b} {d} {o} xs ¬max incr | no _  with numView b d o
--- increment-next-number xs _ incr | no ¬max | NullBase d o = refl
--- increment-next-number xs _ ()   | no ¬max | NoDigits b o
--- increment-next-number xs _ ()   | no ¬max | AllZeros b
--- increment-next-number xs _ incr | no ¬max | Others b d o d+o≥2 with Greatest? (lsd xs)
--- increment-next-number xs _ incr | no ¬max | Others b d o d+o≥2 | yes greatest
---     = increment-next-number-Others xs ¬max greatest d+o≥2 incr
--- increment-next-number xs _ incr | no ¬max | Others b d o d+o≥2 | no ¬greatest = refl
---
---
--- -- begin
--- --     {!   !}
--- -- ≡⟨ {!   !} ⟩
--- --     {!   !}
--- -- ≡⟨ {!   !} ⟩
--- --     {!   !}
--- -- ≡⟨ {!   !} ⟩
--- --     {!   !}
--- -- ≡⟨ {!   !} ⟩
--- --     {!   !}
--- -- ∎
---
--- -- start
--- --     {!   !}
--- -- ≤⟨ {!   !} ⟩
--- --     {!   !}
--- -- ≤⟨ {!   !} ⟩
--- --     {!   !}
--- -- ≤⟨ {!   !} ⟩
--- --     {!   !}
--- -- □
---
+increment-next-number : ∀ {b d o}
+    → (xs : Num b d o)
+    → (¬max : ¬ (Maximum xs))
+    → (incr : True (Incrementable? xs))
+    → increment xs incr ≡ next-number xs ¬max
+increment-next-number xs ¬max incr with Maximum? xs
+increment-next-number xs ¬max () | yes max
+increment-next-number {b} {d} {o} xs ¬max incr | no _  with numView b d o
+increment-next-number xs _ incr | no ¬max | NullBase d o = refl
+increment-next-number xs _ ()   | no ¬max | NoDigits b o
+increment-next-number xs _ ()   | no ¬max | AllZeros b
+increment-next-number xs _ incr | no ¬max | Others b d o d+o≥2
+    = increment-next-number-Others' xs ¬max d+o≥2 incr
+
+
 -- subsume-¬Gapped-prim : ∀ {b d o}
 --     → (xs : Num (suc b) (suc d) o)
 --     → (d+o≥2 : 2 ≤ suc (d + o))
