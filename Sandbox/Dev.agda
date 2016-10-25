@@ -4,7 +4,7 @@ open import Data.Num.Core
 open import Data.Num.Bounded
 open import Data.Num.Maximum
 open import Data.Num.Next
-open import Data.Num.Incrementable
+-- open import Data.Num.Incrementable
 -- open import Data.Num.Continuous
 
 open import Data.Bool
@@ -32,34 +32,3 @@ open import Relation.Binary.PropositionalEquality
 open ≡-Reasoning
 open ≤-Reasoning renaming (begin_ to start_; _∎ to _□; _≡⟨_⟩_ to _≈⟨_⟩_)
 open DecTotalOrder decTotalOrder using (reflexive) renaming (refl to ≤-refl)
-
--- start
---     {!   !}
--- ≈⟨ {!   !} ⟩
---     {!   !}
--- ≈⟨ {!   !} ⟩
---     {!   !}
--- ≈⟨ {!   !} ⟩
---     {!   !}
--- □
-
--- begin
---     {!   !}
--- ≡⟨ {!   !} ⟩
---     {!   !}
--- ≡⟨ {!   !} ⟩
---     {!   !}
--- ≡⟨ {!   !} ⟩
---     {!   !}
--- ≡⟨ {!   !} ⟩
---     {!   !}
--- ∎
--- start
---     {!   !}
--- ≤⟨ {!   !} ⟩
---     {!   !}
--- ≤⟨ {!   !} ⟩
---     {!   !}
--- ≤⟨ {!   !} ⟩
---     {!   !}
--- □
