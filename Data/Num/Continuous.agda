@@ -90,10 +90,76 @@ Continuous-Others-¬Gapped b d o d+o≥2 ¬gapped (x ∙) | ¬Gapped greatest _
         next : Num (suc b) (suc d) o
         next = digit+1-n x greatest ((1 ⊔ o) * suc b) lower-bound ∷ 1⊔o d o d+o≥2 ∙
 Continuous-Others-¬Gapped b d o d+o≥2 ¬gapped (x ∷ xs) with Others-view x xs (Maximum-Others (x ∷ xs) d+o≥2) d+o≥2
-Continuous-Others-¬Gapped b d o d+o≥2 ¬gapped (x ∷ xs) | NeedNoCarry ¬greatest = {!   !}
+Continuous-Others-¬Gapped b d o d+o≥2 ¬gapped (x ∷ xs) | NeedNoCarry ¬greatest
+    = next , proof
+    where
+        next : Num (suc b) (suc d) o
+        next = digit+1 x ¬greatest ∷ xs
+
+        proof : ⟦ next ⟧ ≡ suc ⟦ x ∷ xs ⟧
+        proof = cong (λ w → w + ⟦ xs ⟧ * suc b) (Digit-toℕ-digit+1 x ¬greatest)
 Continuous-Others-¬Gapped b d o d+o≥2 ¬gapped (x ∷ xs) | Gapped greatest gapped
-    = contradiction gapped {!   !}
-Continuous-Others-¬Gapped b d o d+o≥2 ¬gapped (x ∷ xs) | ¬Gapped greatest _ = {!   !}
+    = contradiction gapped (>⇒≰ ¬gapped')
+    where
+        ¬gapped' : suc (suc d) > (⟦ next-number-Others xs (next-number-¬Maximum xs d+o≥2) d+o≥2 ⟧ ∸ ⟦ xs ⟧) * suc b
+        ¬gapped' = subsume-¬Gapped xs d+o≥2 (≰⇒> ¬gapped)
+Continuous-Others-¬Gapped b d o d+o≥2 _ (x ∷ xs) | ¬Gapped greatest ¬gapped
+    = next , proof
+    where
+        ¬max-xs : ¬ (Maximum xs)
+        ¬max-xs = next-number-¬Maximum xs d+o≥2
+
+        next-xs : Num (suc b) (suc d) o
+        next-xs = next-number-Others xs ¬max-xs d+o≥2
+
+        gap : ℕ
+        gap = (⟦ next-xs ⟧ ∸ ⟦ xs ⟧) * suc b
+
+        lower-bound : gap > 0
+        lower-bound = (start
+                1
+            ≤⟨ s≤s (reflexive (sym (n∸n≡0 ⟦ xs ⟧))) ⟩
+                suc (⟦ xs ⟧ ∸ ⟦ xs ⟧)
+            ≈⟨ sym (+-∸-assoc 1 {⟦ xs ⟧} ≤-refl) ⟩
+                suc ⟦ xs ⟧ ∸ ⟦ xs ⟧
+            ≤⟨ ∸-mono {suc ⟦ xs ⟧} {⟦ next-xs ⟧} {⟦ xs ⟧} (next-number-is-greater-Others xs ¬max-xs d+o≥2) ≤-refl ⟩
+                ⟦ next-xs ⟧ ∸ ⟦ xs ⟧
+            □) *-mono (s≤s {0} {b} z≤n)
+
+        upper-bound : gap ≤ suc d
+        upper-bound = ¬gapped
+
+        next : Num (suc b) (suc d) o
+        next = digit+1-n x greatest gap lower-bound ∷ next-xs
+
+        ⟦next-xs⟧>⟦xs⟧ : ⟦ next-xs ⟧ > ⟦ xs ⟧
+        ⟦next-xs⟧>⟦xs⟧ = next-number-is-greater-Others xs ¬max-xs d+o≥2
+
+        upper-bound' : ⟦ next-xs ⟧ * suc b ∸ ⟦ xs ⟧ * suc b ≤ suc (Digit-toℕ x o)
+        upper-bound' =
+            start
+                ⟦ next-xs ⟧ * suc b ∸ ⟦ xs ⟧ * suc b
+            ≈⟨ sym (*-distrib-∸ʳ (suc b) ⟦ next-xs ⟧ ⟦ xs ⟧) ⟩
+                (⟦ next-xs ⟧ ∸ ⟦ xs ⟧) * suc b
+            ≤⟨ upper-bound ⟩
+                suc d
+            ≤⟨ m≤m+n (suc d) o ⟩
+                suc d + o
+            ≈⟨ cong (λ w → w + o) (sym greatest) ⟩
+                suc (Digit-toℕ x o)
+            □
+
+        proof : ⟦ next ⟧ ≡ suc ⟦ x ∷ xs ⟧
+        proof =
+            begin
+                ⟦ next ⟧
+            ≡⟨ cong (λ w → w + ⟦ next-xs ⟧ * suc b) (Digit-toℕ-digit+1-n x greatest gap lower-bound upper-bound) ⟩
+                suc (Digit-toℕ x o) ∸ gap + ⟦ next-xs ⟧ * suc b
+            ≡⟨ cong (λ w → suc (Digit-toℕ x o) ∸ w + ⟦ next-xs ⟧ * suc b) (*-distrib-∸ʳ (suc b) ⟦ next-xs ⟧ ⟦ xs ⟧) ⟩
+                suc (Digit-toℕ x o) ∸ (⟦ next-xs ⟧ * suc b ∸ ⟦ xs ⟧ * suc b) + ⟦ next-xs ⟧ * suc b
+            ≡⟨ m∸[o∸n]+o≡m+n (suc (Digit-toℕ x o)) (⟦ xs ⟧ * suc b) (⟦ next-xs ⟧ * suc b) (*n-mono (suc b) (<⇒≤ ⟦next-xs⟧>⟦xs⟧)) upper-bound' ⟩
+                suc ⟦ x ∷ xs ⟧
+            ∎
 
 Continuous-Others : ∀ b d o
     → (d+o≥2 : 2 ≤ suc (d + o))
@@ -107,7 +173,7 @@ Continuous? b d o with numView b d o
 Continuous? _ _ _ | NullBase d o = no (Bounded⇒¬Continuous (Bounded-NullBase d o))
 Continuous? _ _ _ | NoDigits b o = yes (λ xs → NoDigits-explode xs)
 Continuous? _ _ _ | AllZeros b = no (Bounded⇒¬Continuous (Bounded-AllZeros b))
-Continuous? _ _ _ | Others b d o d+o≥2 = {!   !}
+Continuous? _ _ _ | Others b d o d+o≥2 = Continuous-Others b d o d+o≥2
 
 -- data ContinuousCond : ℕ → ℕ → ℕ → Set where
 --     continuousCond : ∀ {b} {d} {o}
