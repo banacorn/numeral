@@ -57,13 +57,12 @@ next-number-NullBase (x ∙   ) ¬max | Others bound | no ¬greatest = digit+1 x
 next-number-NullBase (x ∷ xs) ¬max | Others bound | no ¬greatest = digit+1 x ¬greatest ∷ xs
 
 mutual
-
-    Abundant : ∀ {b d o}
+    Gapped : ∀ {b d o}
         → (xs : Num (suc b) (suc d) o)
         → (d+o≥2 : 2 ≤ suc (d + o))
         → Set
-    Abundant {b} {d} {o} (x ∙)    _     = (1 ⊔ o)                * suc b ≤ suc d
-    Abundant {b} {d} {o} (x ∷ xs) d+o≥2 = (⟦ next-xs ⟧ ∸ ⟦ xs ⟧) * suc b ≤ suc d
+    Gapped {b} {d} {o} (x ∙)    _     = suc d < (1 ⊔ o)                * suc b
+    Gapped {b} {d} {o} (x ∷ xs) d+o≥2 = suc d < (⟦ next-xs ⟧ ∸ ⟦ xs ⟧) * suc b
         where
             ¬max-xs : ¬ (Maximum xs)
             ¬max-xs = Maximum-Others xs d+o≥2
@@ -71,12 +70,12 @@ mutual
             next-xs : Num (suc b) (suc d) o
             next-xs = next-number-Others xs ¬max-xs d+o≥2
 
-    Abundant? : ∀ {b d o}
+    Gapped? : ∀ {b d o}
         → (xs : Num (suc b) (suc d) o)
         → (d+o≥2 : 2 ≤ suc (d + o))
-        → Dec (Abundant {b} {d} {o} xs d+o≥2)
-    Abundant? {b} {d} {o} (x ∙)    _     = (1 ⊔ o)                * suc b ≤? suc d
-    Abundant? {b} {d} {o} (x ∷ xs) d+o≥2 = (⟦ next-xs ⟧ ∸ ⟦ xs ⟧) * suc b ≤? suc d
+        → Dec (Gapped {b} {d} {o} xs d+o≥2)
+    Gapped? {b} {d} {o} (x ∙)    _     = suc (suc d) ≤? (1 ⊔ o)                * suc b
+    Gapped? {b} {d} {o} (x ∷ xs) d+o≥2 = suc (suc d) ≤? (⟦ next-xs ⟧ ∸ ⟦ xs ⟧) * suc b
         where
             ¬max-xs : ¬ (Maximum xs)
             ¬max-xs = Maximum-Others xs d+o≥2
@@ -91,17 +90,17 @@ mutual
             → {d+o≥2 : 2 ≤ suc (d + o)}
             → (¬greatest : ¬ (Greatest (lsd xs)))
             → OthersView (suc b) (suc d) o xs d+o≥2
-        Gapped : ∀ b d o
+        IsGapped : ∀ b d o
             → {xs : Num (suc b) (suc d) o}
             → {d+o≥2 : 2 ≤ suc (d + o)}
             → (greatest : Greatest (lsd xs))
-            → (¬abundant : ¬ (Abundant xs d+o≥2))
+            → (gapped : Gapped xs d+o≥2)
             → OthersView (suc b) (suc d) o xs d+o≥2
-        ¬Gapped : ∀ b d o
+        NotGapped : ∀ b d o
             → {xs : Num (suc b) (suc d) o}
             → {d+o≥2 : 2 ≤ suc (d + o)}
             → (greatest : Greatest (lsd xs))
-            → (abundant : Abundant xs d+o≥2)
+            → (¬gapped : ¬ (Gapped xs d+o≥2))
             → OthersView (suc b) (suc d) o xs d+o≥2
 
     othersView : ∀ {b d o}
@@ -110,9 +109,9 @@ mutual
         → (d+o≥2 : 2 ≤ suc (d + o))
         → OthersView (suc b) (suc d) o xs d+o≥2
     othersView {b} {d} {o} xs ¬max d+o≥2 with Greatest? (lsd xs)
-    othersView {b} {d} {o} xs ¬max d+o≥2 | yes greatest with Abundant? xs d+o≥2
-    othersView {b} {d} {o} xs ¬max d+o≥2 | yes greatest | yes abundant = ¬Gapped b d o greatest abundant
-    othersView {b} {d} {o} xs ¬max d+o≥2 | yes greatest | no ¬abundant = Gapped b d o greatest ¬abundant
+    othersView {b} {d} {o} xs ¬max d+o≥2 | yes greatest with Gapped? xs d+o≥2
+    othersView {b} {d} {o} xs ¬max d+o≥2 | yes greatest | yes gapped = IsGapped b d o greatest gapped
+    othersView {b} {d} {o} xs ¬max d+o≥2 | yes greatest | no ¬gapped = NotGapped b d o greatest ¬gapped
     othersView {b} {d} {o} xs ¬max d+o≥2 | no ¬greatest = NeedNoCarry b d o ¬greatest
 
     next-number-Others : ∀ {b d o}
@@ -125,9 +124,9 @@ mutual
         = digit+1 x ¬greatest ∙
     next-number-Others (x ∷ xs) ¬max d+o≥2 | NeedNoCarry b d o ¬greatest
         = digit+1 x ¬greatest ∷ xs
-    next-number-Others (x ∙)    ¬max d+o≥2 | Gapped b d o greatest ¬abundant
+    next-number-Others (x ∙)    ¬max d+o≥2 | IsGapped b d o greatest gapped
         = z ∷ LCD d o d+o≥2 ∙
-    next-number-Others (x ∷ xs) ¬max d+o≥2 | Gapped b d o greatest ¬abundant
+    next-number-Others (x ∷ xs) ¬max d+o≥2 | IsGapped b d o greatest gapped
         = z ∷ next-xs
         where
             ¬max-xs : ¬ (Maximum xs)
@@ -135,13 +134,13 @@ mutual
 
             next-xs : Num (suc b) (suc d) o
             next-xs = next-number-Others xs ¬max-xs d+o≥2
-    next-number-Others (x ∙)    ¬max d+o≥2 | ¬Gapped b d o greatest abundant
+    next-number-Others (x ∙)    ¬max d+o≥2 | NotGapped b d o greatest ¬gapped
         = digit+1-n x greatest ((1 ⊔ o) * suc b) lower-bound ∷ LCD d o d+o≥2 ∙
         where
             lower-bound : (1 ⊔ o) * suc b > 0
             lower-bound = m≤m⊔n 1 o *-mono s≤s z≤n
 
-    next-number-Others (x ∷ xs) ¬max d+o≥2 | ¬Gapped b d o greatest abundant
+    next-number-Others (x ∷ xs) ¬max d+o≥2 | NotGapped b d o greatest ¬gapped
         = digit+1-n x greatest gap lower-bound ∷ next-xs
         where
             ¬max-xs : ¬ (Maximum xs)
@@ -164,11 +163,6 @@ mutual
                     ⟦ next-xs ⟧ ∸ ⟦ xs ⟧
                 □) *-mono (s≤s {0} {b} z≤n)
 
-            upper-bound : gap ≤ suc d
-            upper-bound = abundant
-
-
-
     next-number-is-greater-Others : ∀ {b d o}
         → (xs : Num (suc b) (suc d) o)
         → (¬max : ¬ (Maximum xs))
@@ -179,19 +173,19 @@ mutual
         = reflexive $ sym (Digit-toℕ-digit+1 x ¬greatest)
     next-number-is-greater-Others (x ∷ xs) ¬max d+o≥2 | NeedNoCarry b d o ¬greatest
         = reflexive $ cong (λ w → w + ⟦ xs ⟧ * suc b) (sym (Digit-toℕ-digit+1 x ¬greatest))
-    next-number-is-greater-Others (x ∙) ¬max d+o≥2 | Gapped b d o greatest ¬abundant =
+    next-number-is-greater-Others (x ∙) ¬max d+o≥2 | IsGapped b d o greatest gapped =
         start
             suc (Fin.toℕ x + o)
         ≈⟨ cong (λ w → w + o) greatest ⟩
             suc d + o
         ≈⟨ +-comm (suc d) o ⟩
             o + suc d
-        ≤⟨ n+-mono o (<⇒≤ (≰⇒> ¬abundant)) ⟩
+        ≤⟨ n+-mono o (<⇒≤ gapped) ⟩
             o + (suc zero ⊔ o) * suc b
         ≈⟨ cong (λ w → o + w * suc b) (sym (LCD-toℕ d o d+o≥2)) ⟩
             o + (Digit-toℕ (LCD d o d+o≥2) o) * suc b
         □
-    next-number-is-greater-Others (x ∷ xs) ¬max d+o≥2 | Gapped b d o greatest ¬abundant =
+    next-number-is-greater-Others (x ∷ xs) ¬max d+o≥2 | IsGapped b d o greatest gapped =
         start
             suc (Digit-toℕ x o) + ⟦ xs ⟧ * suc b
         ≈⟨ cong (λ w → suc w + ⟦ xs ⟧ * suc b) (toℕ-greatest x greatest) ⟩
@@ -200,7 +194,7 @@ mutual
             suc d + (o + ⟦ xs ⟧ * suc b)
         ≈⟨ a+[b+c]≡b+[a+c] (suc d) o (⟦ xs ⟧ * suc b) ⟩
             o + (suc d + ⟦ xs ⟧ * suc b)
-        ≤⟨ n+-mono o (+n-mono (⟦ xs ⟧ * suc b) (<⇒≤ (≰⇒> ¬abundant))) ⟩
+        ≤⟨ n+-mono o (+n-mono (⟦ xs ⟧ * suc b) (<⇒≤ gapped)) ⟩
             o + ((⟦ next-xs ⟧ ∸ ⟦ xs ⟧) * suc b + ⟦ xs ⟧ * suc b)
         ≈⟨ cong (λ w → o + w) (sym (distribʳ-*-+ (suc b) (⟦ next-xs ⟧ ∸ ⟦ xs ⟧) ⟦ xs ⟧)) ⟩
             o + (⟦ next-xs ⟧ ∸ ⟦ xs ⟧ + ⟦ xs ⟧) * suc b
@@ -219,7 +213,7 @@ mutual
             next-xs>xs : ⟦ next-xs ⟧ > ⟦ xs ⟧
             next-xs>xs = next-number-is-greater-Others xs ¬max-xs d+o≥2
 
-    next-number-is-greater-Others (x ∙) ¬max d+o≥2 | ¬Gapped b d o greatest abundant =
+    next-number-is-greater-Others (x ∙) ¬max d+o≥2 | NotGapped b d o greatest ¬gapped =
         start
             suc (Fin.toℕ x + o)
         ≈⟨ sym (m∸n+n≡m {_} {(suc zero ⊔ o) * suc b} upper-bound') ⟩
@@ -231,7 +225,7 @@ mutual
         □
         where
             upper-bound : (suc zero ⊔ o) * suc b ≤ suc d
-            upper-bound = abundant
+            upper-bound = ≤-pred (≰⇒> ¬gapped)
 
             lower-bound : 1 ≤ (suc zero ⊔ o) * suc b
             lower-bound = m≤m⊔n (suc zero) o *-mono s≤s z≤n
@@ -247,7 +241,7 @@ mutual
                 ≤⟨ m≤m+n (suc (Fin.toℕ x)) o ⟩
                     suc (Fin.toℕ x + o)
                 □
-    next-number-is-greater-Others (x ∷ xs) ¬max d+o≥2 | ¬Gapped b d o greatest abundant =
+    next-number-is-greater-Others (x ∷ xs) ¬max d+o≥2 | NotGapped b d o greatest ¬gapped =
         start
             suc ⟦ x ∷ xs ⟧
         ≈⟨ sym (m∸[o∸n]+o≡m+n (suc (Digit-toℕ x o)) (⟦ xs ⟧ * suc b) (⟦ next-xs ⟧ * suc b) (*n-mono (suc b) (<⇒≤ ⟦next-xs⟧>⟦xs⟧)) upper-bound') ⟩
@@ -279,7 +273,7 @@ mutual
                 □) *-mono (s≤s {0} {b} z≤n)
 
             upper-bound : gap ≤ suc d
-            upper-bound = abundant
+            upper-bound = ≤-pred (≰⇒> ¬gapped)
 
             next-x : Digit (suc d)
             next-x = digit+1-n x greatest gap lower-bound
@@ -304,6 +298,19 @@ mutual
                     suc (Digit-toℕ x o)
                 □
 
+-- the gap between 
+gap : ∀ {b d o}
+    → (xs : Num (suc b) (suc d) o)
+    → (d+o≥2 : 2 ≤ suc (d + o))
+    → ℕ
+gap {b} {d} {o} (x ∙) d+o≥2 = (1 ⊔ o)                * suc b
+gap {b} {d} {o} (x ∷ xs) d+o≥2 = (⟦ next-xs ⟧ ∸ ⟦ xs ⟧) * suc b
+    where
+        ¬max-xs : ¬ (Maximum xs)
+        ¬max-xs = Maximum-Others xs d+o≥2
+
+        next-xs : Num (suc b) (suc d) o
+        next-xs = next-number-Others xs ¬max-xs d+o≥2
 
 next-number : ∀ {b d o}
     → (xs : Num b d o)
@@ -314,6 +321,7 @@ next-number xs ¬max | NullBase d o = next-number-NullBase xs ¬max
 next-number xs ¬max | NoDigits b o = NoDigits-explode xs
 next-number xs ¬max | AllZeros b = contradiction (Maximum-AllZeros xs) ¬max
 next-number xs ¬max | Others b d o d+o≥2 = next-number-Others xs ¬max d+o≥2
+
 
 --------------------------------------------------------------------------------
 -- next-number-is-greater
@@ -397,9 +405,9 @@ next-number-is-LUB-Others (x ∷ xs) ys ¬max d+o≥2 prop | NeedNoCarry b d o �
     ≤⟨ prop ⟩
         ⟦ ys ⟧
     □
-next-number-is-LUB-Others (x ∙) (y ∙) ¬max d+o≥2 prop | Gapped b d o greatest ¬abundant
+next-number-is-LUB-Others (x ∙) (y ∙) ¬max d+o≥2 prop | IsGapped b d o greatest gapped
     = contradiction prop (>⇒≰ (s≤s (greatest-of-all o x y greatest)))
-next-number-is-LUB-Others (x ∙) (y ∷ ys) ¬max d+o≥2 prop | Gapped b d o greatest ¬abundant =
+next-number-is-LUB-Others (x ∙) (y ∷ ys) ¬max d+o≥2 prop | IsGapped b d o greatest gapped =
     let
         ⟦ys⟧>0 = tail-mono-strict-Null x y ys greatest prop
     in
@@ -433,7 +441,7 @@ next-number-is-LUB-Others (x ∙) (y ∷ ys) ¬max d+o≥2 prop | Gapped b d o g
         ys-lower-bound = ≥1⊔o ys d+o≥2 (tail-mono-strict-Null x y ys greatest prop)
 
 
-next-number-is-LUB-Others (x ∷ xs) (y ∙) ¬max d+o≥2 prop | Gapped b d o greatest ¬abundant = contradiction prop $ >⇒≰ $
+next-number-is-LUB-Others (x ∷ xs) (y ∙) ¬max d+o≥2 prop | IsGapped b d o greatest gapped = contradiction prop $ >⇒≰ $
     start
         suc (Fin.toℕ y + o)
     ≤⟨ s≤s (greatest-of-all o x y greatest) ⟩
@@ -441,7 +449,7 @@ next-number-is-LUB-Others (x ∷ xs) (y ∙) ¬max d+o≥2 prop | Gapped b d o g
     ≤⟨ m≤m+n (suc (Fin.toℕ x + o)) (⟦ xs ⟧ * suc b) ⟩
         suc (Fin.toℕ x + o + ⟦ xs ⟧ * suc b)
     □
-next-number-is-LUB-Others (x ∷ xs) (y ∷ ys) ¬max d+o≥2 prop | Gapped b d o greatest ¬abundant =
+next-number-is-LUB-Others (x ∷ xs) (y ∷ ys) ¬max d+o≥2 prop | IsGapped b d o greatest gapped =
     start
         o + ⟦ next-xs ⟧ * suc b
     ≤⟨ n+-mono o (*n-mono (suc b) ⟦next-xs⟧≤⟦ys⟧) ⟩
@@ -463,7 +471,7 @@ next-number-is-LUB-Others (x ∷ xs) (y ∷ ys) ¬max d+o≥2 prop | Gapped b d 
         ⟦next-xs⟧≤⟦ys⟧ = next-number-is-LUB-Others xs ys ¬max-xs d+o≥2 ⟦xs⟧<⟦ys⟧
 
 
-next-number-is-LUB-Others (x ∙) ys ¬max d+o≥2 prop | ¬Gapped b d o greatest abundant =
+next-number-is-LUB-Others (x ∙) ys ¬max d+o≥2 prop | NotGapped b d o greatest ¬gapped =
     start
         Digit-toℕ (digit+1-n x greatest ((1 ⊔ o) * suc b) lower-bound) o + (Digit-toℕ (LCD d o d+o≥2) o) * suc b
     ≈⟨ cong (λ w → Digit-toℕ (digit+1-n x greatest ((1 ⊔ o) * suc b) lower-bound) o + w * suc b) (LCD-toℕ d o d+o≥2) ⟩
@@ -477,7 +485,7 @@ next-number-is-LUB-Others (x ∙) ys ¬max d+o≥2 prop | ¬Gapped b d o greates
     □
     where
         upper-bound : (suc zero ⊔ o) * suc b ≤ suc d
-        upper-bound = abundant
+        upper-bound = ≤-pred (≰⇒> ¬gapped)
 
         lower-bound : 1 ≤ (suc zero ⊔ o) * suc b
         lower-bound = m≤m⊔n (suc zero) o *-mono s≤s z≤n
@@ -493,7 +501,7 @@ next-number-is-LUB-Others (x ∙) ys ¬max d+o≥2 prop | ¬Gapped b d o greates
             ≤⟨ m≤m+n (suc (Fin.toℕ x)) o ⟩
                 suc (Fin.toℕ x + o)
             □
-next-number-is-LUB-Others (x ∷ xs) (y ∙) ¬max d+o≥2 prop | ¬Gapped b d o greatest abundant = contradiction prop $ >⇒≰ $
+next-number-is-LUB-Others (x ∷ xs) (y ∙) ¬max d+o≥2 prop | NotGapped b d o greatest ¬gapped = contradiction prop $ >⇒≰ $
     start
         suc (Fin.toℕ y + o)
     ≤⟨ s≤s (greatest-of-all o x y greatest) ⟩
@@ -501,11 +509,11 @@ next-number-is-LUB-Others (x ∷ xs) (y ∙) ¬max d+o≥2 prop | ¬Gapped b d o
     ≤⟨ m≤m+n (suc (Fin.toℕ x + o)) (⟦ xs ⟧ * suc b) ⟩
         suc (Fin.toℕ x + o + ⟦ xs ⟧ * suc b)
     □
-next-number-is-LUB-Others (x ∷ xs) (y ∷ ys) ¬max d+o≥2 prop | ¬Gapped b d o greatest abundant =
+next-number-is-LUB-Others (x ∷ xs) (y ∷ ys) ¬max d+o≥2 prop | NotGapped b d o greatest ¬gapped =
     start
-        ⟦ digit+1-n x greatest gap lower-bound ∷ next-xs ⟧
-    ≈⟨ cong (λ w → w + ⟦ next-xs ⟧ * suc b) (Digit-toℕ-digit+1-n x greatest gap lower-bound upper-bound) ⟩
-        suc (Digit-toℕ x o) ∸ gap + ⟦ next-xs ⟧ * suc b
+        ⟦ digit+1-n x greatest (gap (x ∷ xs) d+o≥2) lower-bound ∷ next-xs ⟧
+    ≈⟨ cong (λ w → w + ⟦ next-xs ⟧ * suc b) (Digit-toℕ-digit+1-n x greatest (gap (x ∷ xs) d+o≥2) lower-bound upper-bound) ⟩
+        suc (Digit-toℕ x o) ∸ gap (x ∷ xs) d+o≥2 + ⟦ next-xs ⟧ * suc b
     ≈⟨ cong (λ w → suc (Digit-toℕ x o) ∸ w + ⟦ next-xs ⟧ * suc b) (*-distrib-∸ʳ (suc b) ⟦ next-xs ⟧ ⟦ xs ⟧) ⟩
         suc (Digit-toℕ x o) ∸ (⟦ next-xs ⟧ * suc b ∸ ⟦ xs ⟧ * suc b) + ⟦ next-xs ⟧ * suc b
     ≈⟨ m∸[o∸n]+o≡m+n (suc (Digit-toℕ x o)) (⟦ xs ⟧ * suc b) (⟦ next-xs ⟧ * suc b) (*n-mono (suc b) (<⇒≤ ⟦next-xs⟧>⟦xs⟧)) upper-bound' ⟩
@@ -520,10 +528,7 @@ next-number-is-LUB-Others (x ∷ xs) (y ∷ ys) ¬max d+o≥2 prop | ¬Gapped b 
         next-xs : Num (suc b) (suc d) o
         next-xs = next-number-Others xs ¬max-xs d+o≥2
 
-        gap : ℕ
-        gap = (⟦ next-xs ⟧ ∸ ⟦ xs ⟧) * suc b
-
-        lower-bound : gap > 0
+        lower-bound : gap (x ∷ xs) d+o≥2 > 0
         lower-bound = (start
                 1
             ≤⟨ s≤s (reflexive (sym (n∸n≡0 ⟦ xs ⟧))) ⟩
@@ -534,14 +539,14 @@ next-number-is-LUB-Others (x ∷ xs) (y ∷ ys) ¬max d+o≥2 prop | ¬Gapped b 
                 ⟦ next-xs ⟧ ∸ ⟦ xs ⟧
             □) *-mono (s≤s {0} {b} z≤n)
 
-        upper-bound : gap ≤ suc d
-        upper-bound = abundant
+        upper-bound : gap (x ∷ xs) d+o≥2 ≤ suc d
+        upper-bound = ≤-pred (≰⇒> ¬gapped)
 
         next-x : Digit (suc d)
-        next-x = digit+1-n x greatest gap lower-bound
+        next-x = digit+1-n x greatest (gap (x ∷ xs) d+o≥2) lower-bound
 
         next : Num (suc b) (suc d) o
-        next = digit+1-n x greatest gap lower-bound ∷ next-xs
+        next = digit+1-n x greatest (gap (x ∷ xs) d+o≥2) lower-bound ∷ next-xs
 
         ⟦next-xs⟧>⟦xs⟧ : ⟦ next-xs ⟧ > ⟦ xs ⟧
         ⟦next-xs⟧>⟦xs⟧ = next-number-is-greater-Others xs ¬max-xs d+o≥2

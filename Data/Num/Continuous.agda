@@ -49,12 +49,12 @@ Continuous-Others-Gapped-counter-example {b} {d} {o} d+o≥2 gapped
     with othersView {b} (greatest-digit d ∙) (Maximum-Others (greatest-digit d ∙) d+o≥2) d+o≥2
     | next-number-Others-¬Incrementable-lemma {b} (greatest-digit d ∙) (Maximum-Others (greatest-digit d ∙) d+o≥2) d+o≥2
 Continuous-Others-Gapped-counter-example d+o≥2 gapped | NeedNoCarry b d o ¬greatest | lemma = contradiction (greatest-digit-is-the-Greatest d) ¬greatest
-Continuous-Others-Gapped-counter-example d+o≥2 gapped | Gapped b d o greatest ¬abundant | lemma
+Continuous-Others-Gapped-counter-example d+o≥2 gapped | IsGapped b d o greatest gapped | lemma
     = lemma prop
     where
         prop : o + Digit-toℕ (LCD d o d+o≥2) o * suc b > suc (Fin.toℕ (Fin.fromℕ d) + o)
         prop = next-number-suc-Others-Gapped-Single (Fin.fromℕ d) greatest d+o≥2 (≰⇒> ¬abundant)
-Continuous-Others-Gapped-counter-example d+o≥2 gapped  | ¬Gapped b d o greatest abundant | lemma = contradiction abundant gapped
+Continuous-Others-Gapped-counter-example d+o≥2 gapped  | NotGapped b d o greatest ¬gapped | lemma = contradiction abundant gapped
 
 Continuous-Others-Gapped : ∀ b d o
     → (d+o≥2 : 2 ≤ suc (d + o))
@@ -81,14 +81,14 @@ Continuous-Others-¬Gapped d+o≥2 ¬gapped (x ∙) | NeedNoCarry b d o ¬greate
         next-number-increment : ⟦ next ⟧ ≡ suc (Fin.toℕ x + o)
         next-number-increment = {!  next-number-suc-Others-NeedNoCarry-Single x ¬greatest !}
 Continuous-Others-¬Gapped d+o≥2 ¬gapped (x ∷ xs) | NeedNoCarry b d o ¬greatest = {!   !}
-Continuous-Others-¬Gapped d+o≥2 ¬gapped (x ∙) | Gapped b d o greatest ¬abundant = contradiction (≰⇒> ¬abundant) ¬gapped
-Continuous-Others-¬Gapped d+o≥2 ¬gapped (x ∷ xs) | Gapped b d o greatest ¬abundant
+Continuous-Others-¬Gapped d+o≥2 ¬gapped (x ∙) | IsGapped b d o greatest gapped = contradiction (≰⇒> ¬abundant) ¬gapped
+Continuous-Others-¬Gapped d+o≥2 ¬gapped (x ∷ xs) | IsGapped b d o greatest gapped
     = contradiction gapped (>⇒≰ ¬gapped')
     where
         ¬gapped' : suc (suc d) > (⟦ next-number-Others xs (Maximum-Others xs d+o≥2) d+o≥2 ⟧ ∸ ⟦ xs ⟧) * suc b
         ¬gapped' = subsume-¬Gapped xs d+o≥2 (≰⇒> ¬gapped)
     -- = contradiction {!   !} ¬gapped
-Continuous-Others-¬Gapped d+o≥2 ¬gapped xs | ¬Gapped b d o greatest abundant = {!   !}
+Continuous-Others-¬Gapped d+o≥2 ¬gapped xs | NotGapped b d o greatest ¬gapped = {!   !}
 --
 -- Continuous-Others-¬Gapped : ∀ b d o
 --     → (d+o≥2 : 2 ≤ suc (d + o))

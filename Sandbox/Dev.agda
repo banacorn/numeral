@@ -46,14 +46,14 @@ Incrementable?-Others (x ∙) ¬max greatest d+o≥2 | Gapped b d o _ ¬abundant
     = no (lemma (next-number-suc-Others-Gapped-Single x greatest d+o≥2 (≰⇒> ¬abundant)))
 Incrementable?-Others (x ∷ xs) ¬max greatest d+o≥2 | Gapped b d o _ ¬abundant | lemma
     = no (lemma (next-number-suc-Others-Gapped x xs greatest d+o≥2 (≰⇒> ¬abundant)))
-Incrementable?-Others (x ∙) ¬max greatest₁ d+o≥2 | ¬Gapped b d o greatest abundant | lemma
+Incrementable?-Others (x ∙) ¬max greatest₁ d+o≥2 | NotGapped b d o greatest ¬gapped | lemma
     = yes (next , next-number-suc-Others-¬Gapped-Single x greatest d+o≥2 abundant)
     where
         lower-bound : (1 ⊔ o) * suc b > 0
         lower-bound = m≤m⊔n 1 o *-mono s≤s z≤n
         next : Num (suc b) (suc d) o
         next = digit+1-n x greatest ((1 ⊔ o) * suc b) lower-bound ∷ LCD d o d+o≥2 ∙
-Incrementable?-Others (x ∷ xs) ¬max greatest₁ d+o≥2 | ¬Gapped b d o greatest abundant | lemma
+Incrementable?-Others (x ∷ xs) ¬max greatest₁ d+o≥2 | NotGapped b d o greatest ¬gapped | lemma
     = yes (next , next-number-suc-Others-¬Gapped x xs greatest d+o≥2 (s≤s abundant))
     where
         ¬max-xs : ¬ (Maximum xs)
