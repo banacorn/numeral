@@ -81,17 +81,17 @@ next-number-Others-NeedNoCarry-Single {b} {d} {o} x ¬greatest = proof
         proof : ⟦ next ⟧ ≡ suc ⟦ _∙ {suc b} x ⟧
         proof = Digit-toℕ-digit+1 x ¬greatest
 
--- ⟦ z ∷ 1⊔o d o d+o≥2 ∙ ⟧ > suc ⟦ x ∙ ⟧
+-- ⟦ z ∷ LCD d o d+o≥2 ∙ ⟧ > suc ⟦ x ∙ ⟧
 next-number-suc-Others-Gapped-Single : ∀ {b d o}
     → (x : Digit (suc d))
     → (greatest : Greatest x)
     → (d+o≥2 : 2 ≤ suc (d + o))
     → (gapped : suc (suc d) ≤ (1 ⊔ o) * suc b)
-    → o + (Digit-toℕ (1⊔o d o d+o≥2) o) * suc b > suc (Digit-toℕ x o)
+    → o + (Digit-toℕ (LCD d o d+o≥2) o) * suc b > suc (Digit-toℕ x o)
 next-number-suc-Others-Gapped-Single {b} {d} {o} x greatest d+o≥2 gapped = proof
     where
         next : Num (suc b) (suc d) o
-        next = z ∷ 1⊔o d o d+o≥2 ∙
+        next = z ∷ LCD d o d+o≥2 ∙
 
         proof : ⟦ next ⟧ > suc (Digit-toℕ x o)
         proof = start
@@ -102,18 +102,18 @@ next-number-suc-Others-Gapped-Single {b} {d} {o} x greatest d+o≥2 gapped = pro
                 o + suc (suc d)
             ≤⟨ n+-mono o gapped ⟩
                 o + (suc zero ⊔ o) * suc b
-            ≈⟨ cong (λ w → o + w * suc b) (sym (Digit-toℕ-1⊔o d o d+o≥2)) ⟩
-                o + (Digit-toℕ (1⊔o d o d+o≥2) o) * suc b
+            ≈⟨ cong (λ w → o + w * suc b) (sym (LCD-toℕ d o d+o≥2)) ⟩
+                o + (Digit-toℕ (LCD d o d+o≥2) o) * suc b
             □
 
--- ⟦ digit+1-n x greatest ((1 ⊔ o) * suc b) lower-bound ∷ 1⊔o d o d+o≥2 ∙ ⟧ ≡ suc ⟦ x ∙ ⟧
+-- ⟦ digit+1-n x greatest ((1 ⊔ o) * suc b) lower-bound ∷ LCD d o d+o≥2 ∙ ⟧ ≡ suc ⟦ x ∙ ⟧
 next-number-suc-Others-¬Gapped-Single : ∀ {b d o}
     → (x : Digit (suc d))
     → (greatest : Greatest x)
     → (d+o≥2 : 2 ≤ suc (d + o))
     → (gapped : (1 ⊔ o) * suc b ≤ suc d)
     → Digit-toℕ (digit+1-n x greatest ((1 ⊔ o) * suc b) (m≤m⊔n 1 o *-mono s≤s z≤n)) o
-        + Digit-toℕ (1⊔o d o d+o≥2) o * suc b ≡ suc (Digit-toℕ x o)
+        + Digit-toℕ (LCD d o d+o≥2) o * suc b ≡ suc (Digit-toℕ x o)
 next-number-suc-Others-¬Gapped-Single {b} {d} {o} x greatest d+o≥2 gapped = proof
     where
         lower-bound : (1 ⊔ o) * suc b > 0
@@ -132,13 +132,13 @@ next-number-suc-Others-¬Gapped-Single {b} {d} {o} x greatest d+o≥2 gapped = p
             □
 
         next : Num (suc b) (suc d) o
-        next = digit+1-n x greatest ((1 ⊔ o) * suc b) lower-bound ∷ 1⊔o d o d+o≥2 ∙
+        next = digit+1-n x greatest ((1 ⊔ o) * suc b) lower-bound ∷ LCD d o d+o≥2 ∙
 
         proof : ⟦ next ⟧ ≡ suc (Digit-toℕ x o)
         proof =
             begin
-                Digit-toℕ (digit+1-n x greatest ((1 ⊔ o) * suc b) lower-bound) o + Digit-toℕ (1⊔o d o d+o≥2) o * suc b
-            ≡⟨ cong (λ w → Digit-toℕ (digit+1-n x greatest ((1 ⊔ o) * suc b) lower-bound) o + w * suc b) (Digit-toℕ-1⊔o d o d+o≥2) ⟩
+                Digit-toℕ (digit+1-n x greatest ((1 ⊔ o) * suc b) lower-bound) o + Digit-toℕ (LCD d o d+o≥2) o * suc b
+            ≡⟨ cong (λ w → Digit-toℕ (digit+1-n x greatest ((1 ⊔ o) * suc b) lower-bound) o + w * suc b) (LCD-toℕ d o d+o≥2) ⟩
                 Digit-toℕ (digit+1-n x greatest ((1 ⊔ o) * suc b) lower-bound) o + (1 ⊔ o) * suc b
             ≡⟨ cong (λ w → w + (1 ⊔ o) * suc b) (Digit-toℕ-digit+1-n x greatest ((1 ⊔ o) * suc b) lower-bound upper-bound) ⟩
                 suc (Fin.toℕ x + o) ∸ (1 ⊔ o) * suc b + (1 ⊔ o) * suc b
@@ -332,7 +332,7 @@ Incrementable?-Others (x ∙) ¬max d+o≥2 | ¬Gapped b d o greatest abundant |
         lower-bound : (1 ⊔ o) * suc b > 0
         lower-bound = m≤m⊔n 1 o *-mono s≤s z≤n
         next : Num (suc b) (suc d) o
-        next = digit+1-n x greatest ((1 ⊔ o) * suc b) lower-bound ∷ 1⊔o d o d+o≥2 ∙
+        next = digit+1-n x greatest ((1 ⊔ o) * suc b) lower-bound ∷ LCD d o d+o≥2 ∙
 Incrementable?-Others (x ∷ xs) ¬max d+o≥2 | ¬Gapped b d o greatest abundant | lemma
     = yes (next , next-number-suc-Others-¬Gapped x xs greatest d+o≥2 (s≤s abundant))
     where
@@ -432,7 +432,7 @@ increment-next-number xs _ incr | no ¬max | Others b d o d+o≥2
 --     = contradiction gapped (>⇒≰ ¬gapped)
 -- subsume-¬Gapped-prim {b} {d} {o} (x ∙) d+o≥2 _ | ¬Gapped greatest ¬gapped =
 --     start
---         ⟦ digit+1-n x greatest ((1 ⊔ o) * suc b) lower-bound ∷ 1⊔o d o d+o≥2 ∙ ⟧ ∸ Digit-toℕ x o
+--         ⟦ digit+1-n x greatest ((1 ⊔ o) * suc b) lower-bound ∷ LCD d o d+o≥2 ∙ ⟧ ∸ Digit-toℕ x o
 --     ≈⟨ cong (λ w → w ∸ Digit-toℕ x o) (next-number-suc-Others-¬Gapped-Single x greatest d+o≥2 ¬gapped) ⟩
 --         suc (Fin.toℕ x + o) ∸ (Fin.toℕ x + o)
 --     ≈⟨ m+n∸n≡m (suc zero) (Fin.toℕ x + o) ⟩
@@ -532,10 +532,10 @@ increment-next-number xs _ incr | no ¬max | Others b d o d+o≥2
 --     start
 --         suc (suc d)
 --     ≤⟨ gapped ⟩
---         (⟦ digit+1-n x greatest ((1 ⊔ o) * suc b) lower-bound ∷ 1⊔o d o d+o≥2 ∙ ⟧ ∸ Digit-toℕ x o) * suc b
+--         (⟦ digit+1-n x greatest ((1 ⊔ o) * suc b) lower-bound ∷ LCD d o d+o≥2 ∙ ⟧ ∸ Digit-toℕ x o) * suc b
 --     ≤⟨ *n-mono (suc b) $
 --         start
---             ⟦ digit+1-n x greatest ((1 ⊔ o) * suc b) lower-bound ∷ 1⊔o d o d+o≥2 ∙ ⟧ ∸ Digit-toℕ x o
+--             ⟦ digit+1-n x greatest ((1 ⊔ o) * suc b) lower-bound ∷ LCD d o d+o≥2 ∙ ⟧ ∸ Digit-toℕ x o
 --         ≈⟨ cong (λ w → w ∸ Digit-toℕ x o) (next-number-suc-Others-¬Gapped-Single x greatest d+o≥2 ¬gapped) ⟩
 --             suc (Fin.toℕ x + o) ∸ (Fin.toℕ x + o)
 --         ≈⟨ m+n∸n≡m (suc zero) (Fin.toℕ x + o) ⟩

@@ -52,7 +52,7 @@ Incrementable?-Others (x ∙) ¬max greatest₁ d+o≥2 | ¬Gapped b d o greates
         lower-bound : (1 ⊔ o) * suc b > 0
         lower-bound = m≤m⊔n 1 o *-mono s≤s z≤n
         next : Num (suc b) (suc d) o
-        next = digit+1-n x greatest ((1 ⊔ o) * suc b) lower-bound ∷ 1⊔o d o d+o≥2 ∙
+        next = digit+1-n x greatest ((1 ⊔ o) * suc b) lower-bound ∷ LCD d o d+o≥2 ∙
 Incrementable?-Others (x ∷ xs) ¬max greatest₁ d+o≥2 | ¬Gapped b d o greatest abundant | lemma
     = yes (next , next-number-suc-Others-¬Gapped x xs greatest d+o≥2 (s≤s abundant))
     where

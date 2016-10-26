@@ -155,6 +155,35 @@ Least? (s x) = no (λ z₁ → z₁)
 least-digit : ∀ {d} → Digit (suc d)
 least-digit = z
 
+LCD-upper-bound : ∀ m n → 2 ≤ suc m + n → m + n ≥ 1 ⊔ n
+LCD-upper-bound m zero    q = ≤-pred q
+LCD-upper-bound m (suc n) q = m≤n+m (suc n) m
+
+LCD-lower-bound : ∀ o → o ≤ 1 ⊔ o
+LCD-lower-bound o =
+    start
+        o
+    ≤⟨ m≤m⊔n o (suc zero) ⟩
+        o ⊔ suc zero
+    ≈⟨ ⊔-comm o (suc zero) ⟩
+        suc zero ⊔ o
+    □
+
+-- the least carried digit, 1 `max` o, in case that the least digit "o" is 0
+LCD : ∀ d o → 2 ≤ suc d + o → Digit (suc d)
+LCD d o d+o≥2 = Digit-fromℕ (1 ⊔ o) o (LCD-upper-bound d o d+o≥2)
+
+LCD-toℕ : ∀ d o
+    → (d+o≥2 : 2 ≤ suc (d + o))
+    → Digit-toℕ (LCD d o d+o≥2) o ≡ 1 ⊔ o
+LCD-toℕ d o d+o≥2 = Digit-toℕ-fromℕ {d} {o} (1 ⊔ o) upper-bound lower-bound
+    where
+        lower-bound : o ≤ 1 ⊔ o
+        lower-bound = LCD-lower-bound o
+
+        upper-bound : d + o ≥ 1 ⊔ o
+        upper-bound = LCD-upper-bound d o d+o≥2
+
 --------------------------------------------------------------------------------
 -- Functions on Digits
 --------------------------------------------------------------------------------

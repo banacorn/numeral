@@ -56,33 +56,6 @@ next-number-NullBase xs       ¬max | Others bound | yes greatest = contradictio
 next-number-NullBase (x ∙   ) ¬max | Others bound | no ¬greatest = digit+1 x ¬greatest ∙
 next-number-NullBase (x ∷ xs) ¬max | Others bound | no ¬greatest = digit+1 x ¬greatest ∷ xs
 
-next-number-1⊔o-upper-bound : ∀ m n → 2 ≤ suc m + n → m + n ≥ 1 ⊔ n
-next-number-1⊔o-upper-bound m zero    q = ≤-pred q
-next-number-1⊔o-upper-bound m (suc n) q = m≤n+m (suc n) m
-
--- 1 `max` o, in case that the least digit "o" is 0, which is too small
-1⊔o : ∀ d o → 2 ≤ suc (d + o) → Digit (suc d)
-1⊔o d o d+o≥2 = Digit-fromℕ (1 ⊔ o) o (next-number-1⊔o-upper-bound d o d+o≥2)
-
-Digit-toℕ-1⊔o : ∀ d o
-    → (d+o≥2 : 2 ≤ suc (d + o))
-    → Digit-toℕ (1⊔o d o d+o≥2) o ≡ 1 ⊔ o
-Digit-toℕ-1⊔o d o d+o≥2 = Digit-toℕ-fromℕ {d} {o} (1 ⊔ o) upper-bound lower-bound
-    where
-        lower-bound : o ≤ 1 ⊔ o
-        lower-bound =
-            start
-                o
-            ≤⟨ m≤m⊔n o (suc zero) ⟩
-                o ⊔ suc zero
-            ≈⟨ ⊔-comm o (suc zero) ⟩
-                suc zero ⊔ o
-            □
-        upper-bound : d + o ≥ 1 ⊔ o
-        upper-bound = next-number-1⊔o-upper-bound d o d+o≥2
-
-
-
 mutual
 
     Abundant : ∀ {b d o}
@@ -153,7 +126,7 @@ mutual
     next-number-Others (x ∷ xs) ¬max d+o≥2 | NeedNoCarry b d o ¬greatest
         = digit+1 x ¬greatest ∷ xs
     next-number-Others (x ∙)    ¬max d+o≥2 | Gapped b d o greatest ¬abundant
-        = z ∷ 1⊔o d o d+o≥2 ∙
+        = z ∷ LCD d o d+o≥2 ∙
     next-number-Others (x ∷ xs) ¬max d+o≥2 | Gapped b d o greatest ¬abundant
         = z ∷ next-xs
         where
@@ -163,7 +136,7 @@ mutual
             next-xs : Num (suc b) (suc d) o
             next-xs = next-number-Others xs ¬max-xs d+o≥2
     next-number-Others (x ∙)    ¬max d+o≥2 | ¬Gapped b d o greatest abundant
-        = digit+1-n x greatest ((1 ⊔ o) * suc b) lower-bound ∷ 1⊔o d o d+o≥2 ∙
+        = digit+1-n x greatest ((1 ⊔ o) * suc b) lower-bound ∷ LCD d o d+o≥2 ∙
         where
             lower-bound : (1 ⊔ o) * suc b > 0
             lower-bound = m≤m⊔n 1 o *-mono s≤s z≤n
@@ -215,8 +188,8 @@ mutual
             o + suc d
         ≤⟨ n+-mono o (<⇒≤ (≰⇒> ¬abundant)) ⟩
             o + (suc zero ⊔ o) * suc b
-        ≈⟨ cong (λ w → o + w * suc b) (sym (Digit-toℕ-1⊔o d o d+o≥2)) ⟩
-            o + (Digit-toℕ (1⊔o d o d+o≥2) o) * suc b
+        ≈⟨ cong (λ w → o + w * suc b) (sym (LCD-toℕ d o d+o≥2)) ⟩
+            o + (Digit-toℕ (LCD d o d+o≥2) o) * suc b
         □
     next-number-is-greater-Others (x ∷ xs) ¬max d+o≥2 | Gapped b d o greatest ¬abundant =
         start
@@ -251,10 +224,10 @@ mutual
             suc (Fin.toℕ x + o)
         ≈⟨ sym (m∸n+n≡m {_} {(suc zero ⊔ o) * suc b} upper-bound') ⟩
             suc (Fin.toℕ x + o) ∸ (suc zero ⊔ o) * suc b + (suc zero ⊔ o) * suc b
-        ≈⟨ cong (λ w → suc (Fin.toℕ x + o) ∸ (suc zero ⊔ o) * suc b + w * suc b) (sym (Digit-toℕ-1⊔o d o d+o≥2)) ⟩
-            suc (Fin.toℕ x + o) ∸ (suc zero ⊔ o) * suc b + (Digit-toℕ (1⊔o d o d+o≥2) o) * suc b
-        ≈⟨ cong (λ w → w + (Digit-toℕ (1⊔o d o d+o≥2) o) * suc b) (sym (Digit-toℕ-digit+1-n x greatest ((1 ⊔ o) * suc b) lower-bound upper-bound)) ⟩
-            Digit-toℕ (digit+1-n x greatest ((1 ⊔ o) * suc b) lower-bound) o + (Digit-toℕ (1⊔o d o d+o≥2) o) * suc b
+        ≈⟨ cong (λ w → suc (Fin.toℕ x + o) ∸ (suc zero ⊔ o) * suc b + w * suc b) (sym (LCD-toℕ d o d+o≥2)) ⟩
+            suc (Fin.toℕ x + o) ∸ (suc zero ⊔ o) * suc b + (Digit-toℕ (LCD d o d+o≥2) o) * suc b
+        ≈⟨ cong (λ w → w + (Digit-toℕ (LCD d o d+o≥2) o) * suc b) (sym (Digit-toℕ-digit+1-n x greatest ((1 ⊔ o) * suc b) lower-bound upper-bound)) ⟩
+            Digit-toℕ (digit+1-n x greatest ((1 ⊔ o) * suc b) lower-bound) o + (Digit-toℕ (LCD d o d+o≥2) o) * suc b
         □
         where
             upper-bound : (suc zero ⊔ o) * suc b ≤ suc d
@@ -431,8 +404,8 @@ next-number-is-LUB-Others (x ∙) (y ∷ ys) ¬max d+o≥2 prop | Gapped b d o g
         ⟦ys⟧>0 = tail-mono-strict-Null x y ys greatest prop
     in
     start
-        o + (Digit-toℕ (1⊔o d o d+o≥2) o) * suc b
-    ≈⟨ cong (λ w → o + w * suc b) (Digit-toℕ-1⊔o d o d+o≥2) ⟩
+        o + (Digit-toℕ (LCD d o d+o≥2) o) * suc b
+    ≈⟨ cong (λ w → o + w * suc b) (LCD-toℕ d o d+o≥2) ⟩
         o + (1 ⊔ o) * suc b
     ≤⟨ n+-mono o (*n-mono (suc b) ys-lower-bound) ⟩
         o + ⟦ ys ⟧ * suc b
@@ -492,8 +465,8 @@ next-number-is-LUB-Others (x ∷ xs) (y ∷ ys) ¬max d+o≥2 prop | Gapped b d 
 
 next-number-is-LUB-Others (x ∙) ys ¬max d+o≥2 prop | ¬Gapped b d o greatest abundant =
     start
-        Digit-toℕ (digit+1-n x greatest ((1 ⊔ o) * suc b) lower-bound) o + (Digit-toℕ (1⊔o d o d+o≥2) o) * suc b
-    ≈⟨ cong (λ w → Digit-toℕ (digit+1-n x greatest ((1 ⊔ o) * suc b) lower-bound) o + w * suc b) (Digit-toℕ-1⊔o d o d+o≥2) ⟩
+        Digit-toℕ (digit+1-n x greatest ((1 ⊔ o) * suc b) lower-bound) o + (Digit-toℕ (LCD d o d+o≥2) o) * suc b
+    ≈⟨ cong (λ w → Digit-toℕ (digit+1-n x greatest ((1 ⊔ o) * suc b) lower-bound) o + w * suc b) (LCD-toℕ d o d+o≥2) ⟩
         Digit-toℕ (digit+1-n x greatest ((1 ⊔ o) * suc b) lower-bound) o + (1 ⊔ o) * suc b
     ≈⟨ cong (λ w → w + (1 ⊔ o) * suc b) (Digit-toℕ-digit+1-n x greatest ((1 ⊔ o) * suc b) lower-bound upper-bound) ⟩
         suc (Fin.toℕ x + o) ∸ (1 ⊔ o) * suc b + (1 ⊔ o) * suc b
