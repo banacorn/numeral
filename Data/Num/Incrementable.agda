@@ -69,11 +69,11 @@ next-number-suc-NullBase {d} {o} (x ∷ xs) ¬max | Others bound | no ¬greatest
     ∎
 
 -- ⟦ digit+1 x ¬greatest ∙ ⟧ ≡ suc ⟦ x ∙ ⟧
-next-number-Others-NeedNoCarry-Single : ∀ {b d o}
+next-number-suc-Others-NeedNoCarry-Single : ∀ {b d o}
     → (x : Digit (suc d))
     → (¬greatest : ¬ (Greatest x))
     → Digit-toℕ (digit+1 x ¬greatest) o ≡ suc (Digit-toℕ x o)
-next-number-Others-NeedNoCarry-Single {b} {d} {o} x ¬greatest = proof
+next-number-suc-Others-NeedNoCarry-Single {b} {d} {o} x ¬greatest = proof
     where
         next : Num (suc b) (suc d) o
         next = digit+1 x ¬greatest ∙
@@ -194,12 +194,12 @@ next-number-suc-Others-Gapped {b} {d} {o} x xs greatest d+o≥2 gapped = proof
 
 
 -- ⟦ digit+1 x ¬greatest ∷ xs ⟧ ≡ suc ⟦ x ∷ xs ⟧
-next-number-Others-NeedNoCarry : ∀ {b d o}
+next-number-suc-Others-NeedNoCarry : ∀ {b d o}
     → (x : Digit (suc d))
     → (xs : Num (suc b) (suc d) o)
     → (¬greatest : ¬ (Greatest x))
     → ⟦ digit+1 x ¬greatest ∷ xs ⟧ ≡ suc ⟦ x ∷ xs ⟧
-next-number-Others-NeedNoCarry {b} {d} {o} x xs ¬greatest = proof
+next-number-suc-Others-NeedNoCarry {b} {d} {o} x xs ¬greatest = proof
     where
         next : Num (suc b) (suc d) o
         next = digit+1 x ¬greatest ∷ xs
@@ -319,9 +319,9 @@ Incrementable?-Others : ∀ {b d o}
     → Dec (Incrementable xs)
 Incrementable?-Others xs ¬max d+o≥2 with othersView xs ¬max d+o≥2 | next-number-Others-¬Incrementable-lemma xs ¬max d+o≥2
 Incrementable?-Others (x ∙) ¬max d+o≥2 | NeedNoCarry b d o ¬greatest | lemma
-    = yes ((digit+1 x ¬greatest ∙) , (next-number-Others-NeedNoCarry-Single {b} x ¬greatest))
+    = yes ((digit+1 x ¬greatest ∙) , (next-number-suc-Others-NeedNoCarry-Single {b} x ¬greatest))
 Incrementable?-Others (x ∷ xs) ¬max d+o≥2 | NeedNoCarry b d o ¬greatest | lemma
-    = yes ((digit+1 x ¬greatest ∷ xs) , (next-number-Others-NeedNoCarry x xs ¬greatest))
+    = yes ((digit+1 x ¬greatest ∷ xs) , (next-number-suc-Others-NeedNoCarry x xs ¬greatest))
 Incrementable?-Others (x ∙) ¬max d+o≥2 | Gapped b d o greatest ¬abundant | lemma
     = no (lemma (next-number-suc-Others-Gapped-Single x greatest d+o≥2 (≰⇒> ¬abundant)))
 Incrementable?-Others (x ∷ xs) ¬max d+o≥2 | Gapped b d o greatest ¬abundant | lemma
@@ -383,19 +383,19 @@ increment : ∀ {b d o}
     → Num b d o
 increment xs incr = proj₁ $ toWitness incr
 
-increment-next-number-Others' : ∀ {b d o}
+increment-next-number-Others : ∀ {b d o}
     → (xs : Num (suc b) (suc d) o)
     → (¬max : ¬ (Maximum xs))
     → (d+o≥2 : 2 ≤ suc (d + o))
     → (incr : True (Incrementable?-Others xs ¬max d+o≥2))
     → proj₁ (toWitness incr) ≡ next-number-Others xs ¬max d+o≥2
-increment-next-number-Others' xs       ¬max d+o≥2 incr with othersView xs ¬max d+o≥2
-increment-next-number-Others' (x ∙)    ¬max d+o≥2 incr | NeedNoCarry b d o ¬greatest = refl
-increment-next-number-Others' (x ∷ xs) ¬max d+o≥2 incr | NeedNoCarry b d o ¬greatest = refl
-increment-next-number-Others' (x ∙)    ¬max d+o≥2 ()   | Gapped b d o greatest ¬abundant
-increment-next-number-Others' (x ∷ xs) ¬max d+o≥2 ()   | Gapped b d o greatest ¬abundant
-increment-next-number-Others' (x ∙)    ¬max d+o≥2 incr | ¬Gapped b d o greatest abundant = refl
-increment-next-number-Others' (x ∷ xs) ¬max d+o≥2 incr | ¬Gapped b d o greatest abundant = refl
+increment-next-number-Others xs       ¬max d+o≥2 incr with othersView xs ¬max d+o≥2
+increment-next-number-Others (x ∙)    ¬max d+o≥2 incr | NeedNoCarry b d o ¬greatest = refl
+increment-next-number-Others (x ∷ xs) ¬max d+o≥2 incr | NeedNoCarry b d o ¬greatest = refl
+increment-next-number-Others (x ∙)    ¬max d+o≥2 ()   | Gapped b d o greatest ¬abundant
+increment-next-number-Others (x ∷ xs) ¬max d+o≥2 ()   | Gapped b d o greatest ¬abundant
+increment-next-number-Others (x ∙)    ¬max d+o≥2 incr | ¬Gapped b d o greatest abundant = refl
+increment-next-number-Others (x ∷ xs) ¬max d+o≥2 incr | ¬Gapped b d o greatest abundant = refl
 
 increment-next-number : ∀ {b d o}
     → (xs : Num b d o)
@@ -409,218 +409,215 @@ increment-next-number xs _ incr | no ¬max | NullBase d o = refl
 increment-next-number xs _ ()   | no ¬max | NoDigits b o
 increment-next-number xs _ ()   | no ¬max | AllZeros b
 increment-next-number xs _ incr | no ¬max | Others b d o d+o≥2
-    = increment-next-number-Others' xs ¬max d+o≥2 incr
+    = increment-next-number-Others xs ¬max d+o≥2 incr
 
 
--- subsume-¬Gapped-prim : ∀ {b d o}
---     → (xs : Num (suc b) (suc d) o)
---     → (d+o≥2 : 2 ≤ suc (d + o))
---     → (¬gapped : suc (suc d) > (1 ⊔ o) * suc b)
---     → 1 ⊔ o ≥ ⟦ next-number-Others xs (Maximum-Others xs d+o≥2) d+o≥2 ⟧ ∸ ⟦ xs ⟧
--- subsume-¬Gapped-prim {b} {d} {o} (x ∙) d+o≥2 ¬gapped with Others-view-single b d o x
--- subsume-¬Gapped-prim {b} {d} {o} (x ∙) d+o≥2 ¬gapped | NeedNoCarry ¬greatest =
---     start
---         Digit-toℕ (digit+1 x ¬greatest) o ∸ Digit-toℕ x o
---     ≈⟨ cong (λ w → w ∸ Digit-toℕ x o) (next-number-Others-NeedNoCarry-Single {b} x ¬greatest) ⟩
---         suc (Fin.toℕ x + o) ∸ (Fin.toℕ x + o)
---     ≈⟨ m+n∸n≡m (suc zero) (Fin.toℕ x + o) ⟩
---         suc zero
---     ≤⟨ m≤m⊔n 1 o ⟩
---         suc zero ⊔ o
---     □
--- subsume-¬Gapped-prim {b} {d} {o} (x ∙) d+o≥2 ¬gapped | Gapped greatest gapped
---     = contradiction gapped (>⇒≰ ¬gapped)
--- subsume-¬Gapped-prim {b} {d} {o} (x ∙) d+o≥2 _ | ¬Gapped greatest ¬gapped =
---     start
---         ⟦ digit+1-n x greatest ((1 ⊔ o) * suc b) lower-bound ∷ LCD d o d+o≥2 ∙ ⟧ ∸ Digit-toℕ x o
---     ≈⟨ cong (λ w → w ∸ Digit-toℕ x o) (next-number-suc-Others-¬Gapped-Single x greatest d+o≥2 ¬gapped) ⟩
---         suc (Fin.toℕ x + o) ∸ (Fin.toℕ x + o)
---     ≈⟨ m+n∸n≡m (suc zero) (Fin.toℕ x + o) ⟩
---         suc zero
---     ≤⟨ m≤m⊔n 1 o ⟩
---         suc zero ⊔ o
---     □
---     where
---         lower-bound : (1 ⊔ o) * suc b > 0
---         lower-bound = m≤m⊔n 1 o *-mono s≤s z≤n
--- subsume-¬Gapped-prim {b} {d} {o} (x ∷ xs) d+o≥2 ¬gapped with Others-view x xs (Maximum-Others (x ∷ xs) d+o≥2) d+o≥2
--- subsume-¬Gapped-prim {b} {d} {o} (x ∷ xs) d+o≥2 ¬gapped | NeedNoCarry ¬greatest =
---     start
---         ⟦ digit+1 x ¬greatest ∷ xs ⟧ ∸ ⟦ x ∷ xs ⟧
---     ≈⟨ cong (λ w → w ∸ ⟦ x ∷ xs ⟧) (next-number-Others-NeedNoCarry x xs ¬greatest) ⟩
---         suc ⟦ x ∷ xs ⟧ ∸ ⟦ x ∷ xs ⟧
---     ≈⟨ m+n∸n≡m (suc zero) ⟦ x ∷ xs ⟧ ⟩
---         suc zero
---     ≤⟨ m≤m⊔n 1 o ⟩
---         suc zero ⊔ o
---     □
--- subsume-¬Gapped-prim {b} {d} {o} (x ∷ xs) d+o≥2 ¬gapped | Gapped greatest gapped
---     = contradiction refl (<⇒≢ p)
---     where
---         p : (suc zero ⊔ o) * suc b < (suc zero ⊔ o) * suc b
---         p =
---             start
---                 suc ((suc zero ⊔ o) * suc b)
---             ≤⟨ ¬gapped ⟩
---                 suc (suc d)
---             ≤⟨ gapped ⟩
---                 (⟦ next-number-Others xs (Maximum-Others xs d+o≥2) d+o≥2 ⟧ ∸ ⟦ xs ⟧) * suc b
---             ≤⟨ *n-mono (suc b) (subsume-¬Gapped-prim xs d+o≥2 ¬gapped) ⟩
---                 (suc zero ⊔ o) * suc b
---             □
--- subsume-¬Gapped-prim {b} {d} {o} (x ∷ xs) d+o≥2 _ | ¬Gapped greatest ¬gapped =
---     start
---         ⟦ digit+1-n x greatest gap lower-bound ∷ next-xs ⟧ ∸ ⟦ x ∷ xs ⟧
---     ≈⟨ cong (λ w → w ∸ ⟦ x ∷ xs ⟧) (next-number-suc-Others-¬Gapped x xs greatest d+o≥2 (s≤s ¬gapped)) ⟩
---         suc ⟦ x ∷ xs ⟧ ∸ ⟦ x ∷ xs ⟧
---     ≈⟨ m+n∸n≡m (suc zero) ⟦ x ∷ xs ⟧ ⟩
---         suc zero
---     ≤⟨ m≤m⊔n 1 o ⟩
---         suc zero ⊔ o
---     □
---     where
---         ¬max-xs : ¬ (Maximum xs)
---         ¬max-xs = Maximum-Others xs d+o≥2
---
---         next-xs : Num (suc b) (suc d) o
---         next-xs = next-number-Others xs ¬max-xs d+o≥2
---
---         gap : ℕ
---         gap = (⟦ next-xs ⟧ ∸ ⟦ xs ⟧) * suc b
---
---         lower-bound : gap > 0
---         lower-bound = (start
---                 1
---             ≤⟨ s≤s (reflexive (sym (n∸n≡0 ⟦ xs ⟧))) ⟩
---                 suc (⟦ xs ⟧ ∸ ⟦ xs ⟧)
---             ≈⟨ sym (+-∸-assoc 1 {⟦ xs ⟧} ≤-refl) ⟩
---                 suc ⟦ xs ⟧ ∸ ⟦ xs ⟧
---             ≤⟨ ∸-mono {suc ⟦ xs ⟧} {⟦ next-xs ⟧} {⟦ xs ⟧} (next-number-is-greater-Others xs ¬max-xs d+o≥2) ≤-refl ⟩
---                 ⟦ next-xs ⟧ ∸ ⟦ xs ⟧
---             □) *-mono (s≤s {0} {b} z≤n)
---
---         next : Num (suc b) (suc d) o
---         next = digit+1-n x greatest gap lower-bound ∷ next-xs
---
--- -- → 1 ⊔ o ≥ ⟦ next-number-Others xs (Maximum-Others xs d+o≥2) d+o≥2 ⟧ ∸ ⟦ xs ⟧
--- subsume-Gapped : ∀ {b d o}
---     → (xs : Num (suc b) (suc d) o)
---     → (d+o≥2 : 2 ≤ suc (d + o))
---     → suc (suc d) ≤ (⟦ next-number-Others xs (Maximum-Others xs d+o≥2) d+o≥2 ⟧ ∸ ⟦ xs ⟧) * suc b
---     → suc (suc d) ≤ (1 ⊔ o) * suc b
--- subsume-Gapped {b} {d} {o} (x ∙) d+o≥2 gapped with Others-view-single b d o x
--- subsume-Gapped {b} {d} {o} (x ∙) d+o≥2 gapped | NeedNoCarry ¬greatest =
---     start
---         suc (suc d)
---     ≤⟨ gapped ⟩
---         (Digit-toℕ (digit+1 x ¬greatest) o ∸ Digit-toℕ x o) * suc b
---     ≤⟨ *n-mono (suc b) $
---         start
---             Digit-toℕ (digit+1 x ¬greatest) o ∸ Digit-toℕ x o
---         ≈⟨ cong (λ w → w ∸ Digit-toℕ x o) (next-number-Others-NeedNoCarry-Single {b} x ¬greatest) ⟩
---             suc (Fin.toℕ x + o) ∸ (Fin.toℕ x + o)
---         ≈⟨ m+n∸n≡m (suc zero) (Fin.toℕ x + o) ⟩
---             suc zero
---         ≤⟨ m≤m⊔n 1 o ⟩
---             suc zero ⊔ o
---         □
---     ⟩
---         (suc zero ⊔ o) * suc b
---     □
--- subsume-Gapped {b} {d} {o} (x ∙) d+o≥2 _ | Gapped greatest gapped = gapped
--- subsume-Gapped {b} {d} {o} (x ∙) d+o≥2 gapped | ¬Gapped greatest ¬gapped =
---     start
---         suc (suc d)
---     ≤⟨ gapped ⟩
---         (⟦ digit+1-n x greatest ((1 ⊔ o) * suc b) lower-bound ∷ LCD d o d+o≥2 ∙ ⟧ ∸ Digit-toℕ x o) * suc b
---     ≤⟨ *n-mono (suc b) $
---         start
---             ⟦ digit+1-n x greatest ((1 ⊔ o) * suc b) lower-bound ∷ LCD d o d+o≥2 ∙ ⟧ ∸ Digit-toℕ x o
---         ≈⟨ cong (λ w → w ∸ Digit-toℕ x o) (next-number-suc-Others-¬Gapped-Single x greatest d+o≥2 ¬gapped) ⟩
---             suc (Fin.toℕ x + o) ∸ (Fin.toℕ x + o)
---         ≈⟨ m+n∸n≡m (suc zero) (Fin.toℕ x + o) ⟩
---             suc zero
---         ≤⟨ m≤m⊔n 1 o ⟩
---             suc zero ⊔ o
---         □
---     ⟩
---         (suc zero ⊔ o) * suc b
---     □
---     where
---         lower-bound : (1 ⊔ o) * suc b > 0
---         lower-bound = m≤m⊔n 1 o *-mono s≤s z≤n
--- subsume-Gapped {b} {d} {o} (x ∷ xs) d+o≥2 gapped with Others-view x xs (Maximum-Others (x ∷ xs) d+o≥2) d+o≥2
--- subsume-Gapped {b} {d} {o} (x ∷ xs) d+o≥2 gapped | NeedNoCarry ¬greatest =
---     start
---         suc (suc d)
---     ≤⟨ gapped ⟩
---         (⟦ digit+1 x ¬greatest ∷ xs ⟧ ∸ ⟦ x ∷ xs ⟧) * suc b
---     ≤⟨ *n-mono (suc b) $
---         start
---             ⟦ digit+1 x ¬greatest ∷ xs ⟧ ∸ ⟦ x ∷ xs ⟧
---         ≈⟨ cong (λ w → w ∸ ⟦ x ∷ xs ⟧) (next-number-Others-NeedNoCarry x xs ¬greatest) ⟩
---             suc ⟦ x ∷ xs ⟧ ∸ ⟦ x ∷ xs ⟧
---         ≈⟨ m+n∸n≡m (suc zero) ⟦ x ∷ xs ⟧ ⟩
---             suc zero
---         ≤⟨ m≤m⊔n 1 o ⟩
---             suc zero ⊔ o
---         □
---     ⟩
---         (suc zero ⊔ o) * suc b
---     □
--- subsume-Gapped {b} {d} {o} (x ∷ xs) d+o≥2 gapped | Gapped greatest gapped-xs = subsume-Gapped xs d+o≥2 gapped-xs
--- subsume-Gapped {b} {d} {o} (x ∷ xs) d+o≥2 gapped | ¬Gapped greatest ¬gapped =
---     start
---         suc (suc d)
---     ≤⟨ gapped ⟩
---         (⟦ digit+1-n x greatest gap lower-bound ∷ next-xs ⟧ ∸ ⟦ x ∷ xs ⟧) * suc b
---     ≤⟨ *n-mono (suc b) $
---         start
---             ⟦ digit+1-n x greatest gap lower-bound ∷ next-xs ⟧ ∸ ⟦ x ∷ xs ⟧
---         ≈⟨ cong (λ w → w ∸ ⟦ x ∷ xs ⟧) (next-number-suc-Others-¬Gapped x xs greatest d+o≥2 (s≤s ¬gapped)) ⟩
---             suc ⟦ x ∷ xs ⟧ ∸ ⟦ x ∷ xs ⟧
---         ≈⟨ m+n∸n≡m (suc zero) ⟦ x ∷ xs ⟧ ⟩
---             suc zero
---         ≤⟨ m≤m⊔n 1 o ⟩
---             suc zero ⊔ o
---         □
---     ⟩
---         (suc zero ⊔ o) * suc b
---     □
---     where
---         ¬max-xs : ¬ (Maximum xs)
---         ¬max-xs = Maximum-Others xs d+o≥2
---
---         next-xs : Num (suc b) (suc d) o
---         next-xs = next-number-Others xs ¬max-xs d+o≥2
---
---         gap : ℕ
---         gap = (⟦ next-xs ⟧ ∸ ⟦ xs ⟧) * suc b
---
---         lower-bound : gap > 0
---         lower-bound = (start
---                 1
---             ≤⟨ s≤s (reflexive (sym (n∸n≡0 ⟦ xs ⟧))) ⟩
---                 suc (⟦ xs ⟧ ∸ ⟦ xs ⟧)
---             ≈⟨ sym (+-∸-assoc 1 {⟦ xs ⟧} ≤-refl) ⟩
---                 suc ⟦ xs ⟧ ∸ ⟦ xs ⟧
---             ≤⟨ ∸-mono {suc ⟦ xs ⟧} {⟦ next-xs ⟧} {⟦ xs ⟧} (next-number-is-greater-Others xs ¬max-xs d+o≥2) ≤-refl ⟩
---                 ⟦ next-xs ⟧ ∸ ⟦ xs ⟧
---             □) *-mono (s≤s {0} {b} z≤n)
---
---         next : Num (suc b) (suc d) o
---         next = digit+1-n x greatest gap lower-bound ∷ next-xs
---
--- subsume-¬Gapped : ∀ {b d o}
---     → (xs : Num (suc b) (suc d) o)
---     → (d+o≥2 : 2 ≤ suc (d + o))
---     → suc (suc d) > (1 ⊔ o) * suc b
---     → suc (suc d) > (⟦ next-number-Others xs (Maximum-Others xs d+o≥2) d+o≥2 ⟧ ∸ ⟦ xs ⟧) * suc b
--- subsume-¬Gapped {b} {d} {o} xs d+o≥2 ¬gapped =
---     start
---         suc ((⟦ next-number-Others xs (Maximum-Others xs d+o≥2) d+o≥2 ⟧ ∸ ⟦ xs ⟧) * suc b)
---     ≤⟨ s≤s (*n-mono (suc b) (subsume-¬Gapped-prim xs d+o≥2 ¬gapped)) ⟩
---         suc ((suc zero ⊔ o) * suc b)
---     ≤⟨ ¬gapped ⟩
---         suc (suc d)
---     □
+subsume-¬Gapped-prim : ∀ {b d o}
+    → (xs : Num (suc b) (suc d) o)
+    → (d+o≥2 : 2 ≤ suc (d + o))
+    → (¬gapped : suc (suc d) > (1 ⊔ o) * suc b)
+    → 1 ⊔ o ≥ ⟦ next-number-Others xs (Maximum-Others xs d+o≥2) d+o≥2 ⟧ ∸ ⟦ xs ⟧
+subsume-¬Gapped-prim xs d+o≥2 ¬gapped with othersView xs (Maximum-Others xs d+o≥2) d+o≥2
+subsume-¬Gapped-prim (x ∙) d+o≥2 ¬gapped | NeedNoCarry b d o ¬greatest =
+    start
+        Digit-toℕ (digit+1 x ¬greatest) o ∸ Digit-toℕ x o
+    ≈⟨ cong (λ w → w ∸ Digit-toℕ x o) (next-number-suc-Others-NeedNoCarry-Single {b} x ¬greatest) ⟩
+        suc (Fin.toℕ x + o) ∸ (Fin.toℕ x + o)
+    ≈⟨ m+n∸n≡m (suc zero) (Fin.toℕ x + o) ⟩
+        suc zero
+    ≤⟨ m≤m⊔n 1 o ⟩
+        suc zero ⊔ o
+    □
+subsume-¬Gapped-prim (x ∷ xs) d+o≥2 ¬gapped | NeedNoCarry b d o ¬greatest =
+    start
+        ⟦ digit+1 x ¬greatest ∷ xs ⟧ ∸ ⟦ x ∷ xs ⟧
+    ≈⟨ cong (λ w → w ∸ ⟦ x ∷ xs ⟧) (next-number-suc-Others-NeedNoCarry x xs ¬greatest) ⟩
+        suc ⟦ x ∷ xs ⟧ ∸ ⟦ x ∷ xs ⟧
+    ≈⟨ m+n∸n≡m (suc zero) ⟦ x ∷ xs ⟧ ⟩
+        suc zero
+    ≤⟨ m≤m⊔n 1 o ⟩
+        suc zero ⊔ o
+    □
+subsume-¬Gapped-prim (x ∙) d+o≥2 ¬gapped | Gapped b d o greatest ¬abundant
+    = contradiction (≤-pred ¬gapped) ¬abundant
+subsume-¬Gapped-prim (x ∷ xs) d+o≥2 ¬gapped | Gapped b d o greatest ¬abundant
+    = contradiction refl (<⇒≢ p)
+    where
+        p : (suc zero ⊔ o) * suc b < (suc zero ⊔ o) * suc b
+        p =
+            start
+                suc ((suc zero ⊔ o) * suc b)
+            ≤⟨ ¬gapped ⟩
+                suc (suc d)
+            ≤⟨ {!   !} ⟩
+                (⟦ next-number-Others xs (Maximum-Others xs d+o≥2) d+o≥2 ⟧ ∸ ⟦ xs ⟧) * suc b
+            ≤⟨ *n-mono (suc b) (subsume-¬Gapped-prim xs d+o≥2 ¬gapped) ⟩
+                (suc zero ⊔ o) * suc b
+            □
+subsume-¬Gapped-prim (x ∙) d+o≥2 ¬gapped | ¬Gapped b d o greatest abundant =
+    start
+        ⟦ digit+1-n x greatest ((1 ⊔ o) * suc b) lower-bound ∷ LCD d o d+o≥2 ∙ ⟧ ∸ Digit-toℕ x o
+    ≈⟨ cong (λ w → w ∸ Digit-toℕ x o) (next-number-suc-Others-¬Gapped-Single x greatest d+o≥2 {!   !}) ⟩
+        suc (Fin.toℕ x + o) ∸ (Fin.toℕ x + o)
+    ≈⟨ m+n∸n≡m (suc zero) (Fin.toℕ x + o) ⟩
+        suc zero
+    ≤⟨ m≤m⊔n 1 o ⟩
+        suc zero ⊔ o
+    □
+    where
+        lower-bound : (1 ⊔ o) * suc b > 0
+        lower-bound = m≤m⊔n 1 o *-mono s≤s z≤n
+subsume-¬Gapped-prim (x ∷ xs) d+o≥2 ¬gapped | ¬Gapped b d o greatest abundant =
+    start
+        ⟦ digit+1-n x greatest gap lower-bound ∷ next-xs ⟧ ∸ ⟦ x ∷ xs ⟧
+    ≈⟨ cong (λ w → w ∸ ⟦ x ∷ xs ⟧) (next-number-suc-Others-¬Gapped x xs greatest d+o≥2 {!   !}) ⟩
+        suc ⟦ x ∷ xs ⟧ ∸ ⟦ x ∷ xs ⟧
+    ≈⟨ m+n∸n≡m (suc zero) ⟦ x ∷ xs ⟧ ⟩
+        suc zero
+    ≤⟨ m≤m⊔n 1 o ⟩
+        suc zero ⊔ o
+    □
+    where
+        ¬max-xs : ¬ (Maximum xs)
+        ¬max-xs = Maximum-Others xs d+o≥2
+
+        next-xs : Num (suc b) (suc d) o
+        next-xs = next-number-Others xs ¬max-xs d+o≥2
+
+        gap : ℕ
+        gap = (⟦ next-xs ⟧ ∸ ⟦ xs ⟧) * suc b
+
+        lower-bound : gap > 0
+        lower-bound = (start
+                1
+            ≤⟨ s≤s (reflexive (sym (n∸n≡0 ⟦ xs ⟧))) ⟩
+                suc (⟦ xs ⟧ ∸ ⟦ xs ⟧)
+            ≈⟨ sym (+-∸-assoc 1 {⟦ xs ⟧} ≤-refl) ⟩
+                suc ⟦ xs ⟧ ∸ ⟦ xs ⟧
+            ≤⟨ ∸-mono {suc ⟦ xs ⟧} {⟦ next-xs ⟧} {⟦ xs ⟧} (next-number-is-greater-Others xs ¬max-xs d+o≥2) ≤-refl ⟩
+                ⟦ next-xs ⟧ ∸ ⟦ xs ⟧
+            □) *-mono (s≤s {0} {b} z≤n)
+
+        next : Num (suc b) (suc d) o
+        next = digit+1-n x greatest gap lower-bound ∷ next-xs
+
+subsume-Gapped : ∀ {b d o}
+    → (xs : Num (suc b) (suc d) o)
+    → (d+o≥2 : 2 ≤ suc (d + o))
+    → suc (suc d) ≤ (⟦ next-number-Others xs (Maximum-Others xs d+o≥2) d+o≥2 ⟧ ∸ ⟦ xs ⟧) * suc b
+    → suc (suc d) ≤ (1 ⊔ o) * suc b
+subsume-Gapped xs d+o≥2 gapped with othersView xs (Maximum-Others xs d+o≥2) d+o≥2
+subsume-Gapped (x ∙) d+o≥2 gapped | NeedNoCarry b d o ¬greatest =
+    start
+        suc (suc d)
+    ≤⟨ gapped ⟩
+        (Digit-toℕ (digit+1 x ¬greatest) o ∸ Digit-toℕ x o) * suc b
+    ≤⟨ *n-mono (suc b) $
+        start
+            Digit-toℕ (digit+1 x ¬greatest) o ∸ Digit-toℕ x o
+        ≈⟨ cong (λ w → w ∸ Digit-toℕ x o) (next-number-suc-Others-NeedNoCarry-Single {b} x ¬greatest) ⟩
+            suc (Fin.toℕ x + o) ∸ (Fin.toℕ x + o)
+        ≈⟨ m+n∸n≡m (suc zero) (Fin.toℕ x + o) ⟩
+            suc zero
+        ≤⟨ m≤m⊔n 1 o ⟩
+            suc zero ⊔ o
+        □
+    ⟩
+        (suc zero ⊔ o) * suc b
+    □
+subsume-Gapped (x ∷ xs) d+o≥2 gapped | NeedNoCarry b d o ¬greatest =
+    start
+        suc (suc d)
+    ≤⟨ gapped ⟩
+        (⟦ digit+1 x ¬greatest ∷ xs ⟧ ∸ ⟦ x ∷ xs ⟧) * suc b
+    ≤⟨ *n-mono (suc b) $
+        start
+            ⟦ digit+1 x ¬greatest ∷ xs ⟧ ∸ ⟦ x ∷ xs ⟧
+        ≈⟨ cong (λ w → w ∸ ⟦ x ∷ xs ⟧) (next-number-suc-Others-NeedNoCarry x xs ¬greatest) ⟩
+            suc ⟦ x ∷ xs ⟧ ∸ ⟦ x ∷ xs ⟧
+        ≈⟨ m+n∸n≡m (suc zero) ⟦ x ∷ xs ⟧ ⟩
+            suc zero
+        ≤⟨ m≤m⊔n 1 o ⟩
+            suc zero ⊔ o
+        □
+    ⟩
+        (suc zero ⊔ o) * suc b
+    □
+subsume-Gapped (x ∙) d+o≥2 gapped | Gapped b d o greatest ¬abundant = ≰⇒> ¬abundant
+subsume-Gapped (x ∷ xs) d+o≥2 gapped | Gapped b d o greatest ¬abundant = subsume-Gapped xs d+o≥2 {!   !}
+subsume-Gapped (x ∙) d+o≥2 gapped | ¬Gapped b d o greatest abundant =
+    start
+        suc (suc d)
+    ≤⟨ gapped ⟩
+        (⟦ digit+1-n x greatest ((1 ⊔ o) * suc b) lower-bound ∷ LCD d o d+o≥2 ∙ ⟧ ∸ Digit-toℕ x o) * suc b
+    ≤⟨ *n-mono (suc b) $
+        start
+            ⟦ digit+1-n x greatest ((1 ⊔ o) * suc b) lower-bound ∷ LCD d o d+o≥2 ∙ ⟧ ∸ Digit-toℕ x o
+        ≈⟨ cong (λ w → w ∸ Digit-toℕ x o) (next-number-suc-Others-¬Gapped-Single x greatest d+o≥2 {!   !}) ⟩
+            suc (Fin.toℕ x + o) ∸ (Fin.toℕ x + o)
+        ≈⟨ m+n∸n≡m (suc zero) (Fin.toℕ x + o) ⟩
+            suc zero
+        ≤⟨ m≤m⊔n 1 o ⟩
+            suc zero ⊔ o
+        □
+    ⟩
+        (suc zero ⊔ o) * suc b
+    □
+    where
+        lower-bound : (1 ⊔ o) * suc b > 0
+        lower-bound = m≤m⊔n 1 o *-mono s≤s z≤n
+subsume-Gapped (x ∷ xs) d+o≥2 gapped | ¬Gapped b d o greatest abundant =
+    start
+        suc (suc d)
+    ≤⟨ gapped ⟩
+        (⟦ digit+1-n x greatest gap lower-bound ∷ next-xs ⟧ ∸ ⟦ x ∷ xs ⟧) * suc b
+    ≤⟨ *n-mono (suc b) $
+        start
+            ⟦ digit+1-n x greatest gap lower-bound ∷ next-xs ⟧ ∸ ⟦ x ∷ xs ⟧
+        ≈⟨ cong (λ w → w ∸ ⟦ x ∷ xs ⟧) (next-number-suc-Others-¬Gapped x xs greatest d+o≥2 (s≤s {!   !})) ⟩
+            suc ⟦ x ∷ xs ⟧ ∸ ⟦ x ∷ xs ⟧
+        ≈⟨ m+n∸n≡m (suc zero) ⟦ x ∷ xs ⟧ ⟩
+            suc zero
+        ≤⟨ m≤m⊔n 1 o ⟩
+            suc zero ⊔ o
+        □
+    ⟩
+        (suc zero ⊔ o) * suc b
+    □
+    where
+        ¬max-xs : ¬ (Maximum xs)
+        ¬max-xs = Maximum-Others xs d+o≥2
+
+        next-xs : Num (suc b) (suc d) o
+        next-xs = next-number-Others xs ¬max-xs d+o≥2
+
+        gap : ℕ
+        gap = (⟦ next-xs ⟧ ∸ ⟦ xs ⟧) * suc b
+
+        lower-bound : gap > 0
+        lower-bound = (start
+                1
+            ≤⟨ s≤s (reflexive (sym (n∸n≡0 ⟦ xs ⟧))) ⟩
+                suc (⟦ xs ⟧ ∸ ⟦ xs ⟧)
+            ≈⟨ sym (+-∸-assoc 1 {⟦ xs ⟧} ≤-refl) ⟩
+                suc ⟦ xs ⟧ ∸ ⟦ xs ⟧
+            ≤⟨ ∸-mono {suc ⟦ xs ⟧} {⟦ next-xs ⟧} {⟦ xs ⟧} (next-number-is-greater-Others xs ¬max-xs d+o≥2) ≤-refl ⟩
+                ⟦ next-xs ⟧ ∸ ⟦ xs ⟧
+            □) *-mono (s≤s {0} {b} z≤n)
+
+        next : Num (suc b) (suc d) o
+        next = digit+1-n x greatest gap lower-bound ∷ next-xs
+
+subsume-¬Gapped : ∀ {b d o}
+    → (xs : Num (suc b) (suc d) o)
+    → (d+o≥2 : 2 ≤ suc (d + o))
+    → suc (suc d) > (1 ⊔ o) * suc b
+    → suc (suc d) > (⟦ next-number-Others xs (Maximum-Others xs d+o≥2) d+o≥2 ⟧ ∸ ⟦ xs ⟧) * suc b
+subsume-¬Gapped {b} {d} {o} xs d+o≥2 ¬gapped =
+    start
+        suc ((⟦ next-number-Others xs (Maximum-Others xs d+o≥2) d+o≥2 ⟧ ∸ ⟦ xs ⟧) * suc b)
+    ≤⟨ s≤s (*n-mono (suc b) (subsume-¬Gapped-prim xs d+o≥2 ¬gapped)) ⟩
+        suc ((suc zero ⊔ o) * suc b)
+    ≤⟨ ¬gapped ⟩
+        suc (suc d)
+    □
