@@ -138,7 +138,14 @@ mutual
         = digit+1-n x greatest ((1 ⊔ o) * suc b) lower-bound ∷ LCD d o d+o≥2 ∙
         where
             lower-bound : (1 ⊔ o) * suc b > 0
-            lower-bound = m≤m⊔n 1 o *-mono s≤s z≤n
+            lower-bound =
+                start
+                    1
+                ≈⟨ refl ⟩
+                    1 * 1
+                ≤⟨ m≤m⊔n 1 o *-mono s≤s z≤n ⟩
+                    (1 ⊔ o) * suc b
+                □
 
     next-number-Others (x ∷ xs) ¬max d+o≥2 | NotGapped b d o greatest ¬gapped
         = digit+1-n x greatest gap lower-bound ∷ next-xs
@@ -153,15 +160,16 @@ mutual
             gap = (⟦ next-xs ⟧ ∸ ⟦ xs ⟧) * suc b
 
             lower-bound : gap > 0
-            lower-bound = (start
+            lower-bound =
+                start
                     1
-                ≤⟨ s≤s (reflexive (sym (n∸n≡0 ⟦ xs ⟧))) ⟩
-                    suc (⟦ xs ⟧ ∸ ⟦ xs ⟧)
-                ≈⟨ sym (+-∸-assoc 1 {⟦ xs ⟧} ≤-refl) ⟩
-                    suc ⟦ xs ⟧ ∸ ⟦ xs ⟧
-                ≤⟨ ∸-mono {suc ⟦ xs ⟧} {⟦ next-xs ⟧} {⟦ xs ⟧} (next-number-is-greater-Others xs ¬max-xs d+o≥2) ≤-refl ⟩
-                    ⟦ next-xs ⟧ ∸ ⟦ xs ⟧
-                □) *-mono (s≤s {0} {b} z≤n)
+                ≈⟨ refl ⟩
+                    1 * 1
+                ≤⟨ n*-mono 1 (s≤s {zero} {b} z≤n) ⟩
+                    1 * suc b
+                ≤⟨ *n-mono (suc b) (m≥n+o⇒m∸o≥n ⟦ next-xs ⟧ 1 ⟦ xs ⟧ (next-number-is-greater-Others xs ¬max-xs d+o≥2)) ⟩
+                    (⟦ next-xs ⟧ ∸ ⟦ xs ⟧) * suc b
+                □
 
     next-number-is-greater-Others : ∀ {b d o}
         → (xs : Num (suc b) (suc d) o)
@@ -228,7 +236,13 @@ mutual
             upper-bound = ≤-pred (≰⇒> ¬gapped)
 
             lower-bound : 1 ≤ (suc zero ⊔ o) * suc b
-            lower-bound = m≤m⊔n (suc zero) o *-mono s≤s z≤n
+            lower-bound = start
+                    1
+                ≈⟨ refl ⟩
+                    1 * 1
+                ≤⟨ m≤m⊔n 1 o *-mono s≤s z≤n ⟩
+                    (1 ⊔ o) * suc b
+                □
 
             upper-bound' : (suc zero ⊔ o) * suc b ≤ suc (Digit-toℕ x o)
             upper-bound' =
@@ -262,15 +276,16 @@ mutual
             gap = (⟦ next-xs ⟧ ∸ ⟦ xs ⟧) * suc b
 
             lower-bound : gap > 0
-            lower-bound = (start
+            lower-bound =
+                start
                     1
-                ≤⟨ s≤s (reflexive (sym (n∸n≡0 ⟦ xs ⟧))) ⟩
-                    suc (⟦ xs ⟧ ∸ ⟦ xs ⟧)
-                ≈⟨ sym (+-∸-assoc 1 {⟦ xs ⟧} ≤-refl) ⟩
-                    suc ⟦ xs ⟧ ∸ ⟦ xs ⟧
-                ≤⟨ ∸-mono {suc ⟦ xs ⟧} {⟦ next-xs ⟧} {⟦ xs ⟧} (next-number-is-greater-Others xs ¬max-xs d+o≥2) ≤-refl ⟩
-                    ⟦ next-xs ⟧ ∸ ⟦ xs ⟧
-                □) *-mono (s≤s {0} {b} z≤n)
+                ≈⟨ refl ⟩
+                    1 * 1
+                ≤⟨ n*-mono 1 (s≤s {zero} {b} z≤n) ⟩
+                    1 * suc b
+                ≤⟨ *n-mono (suc b) (m≥n+o⇒m∸o≥n ⟦ next-xs ⟧ 1 ⟦ xs ⟧ (next-number-is-greater-Others xs ¬max-xs d+o≥2)) ⟩
+                    (⟦ next-xs ⟧ ∸ ⟦ xs ⟧) * suc b
+                □
 
             upper-bound : gap ≤ suc d
             upper-bound = ≤-pred (≰⇒> ¬gapped)
@@ -298,7 +313,6 @@ mutual
                     suc (Digit-toℕ x o)
                 □
 
--- the gap between
 gap : ∀ {b d o}
     → (xs : Num (suc b) (suc d) o)
     → (d+o≥2 : 2 ≤ suc (d + o))
@@ -514,7 +528,7 @@ next-number-is-LUB-Others (x ∙) ys ¬max d+o≥2 prop | NotGapped b d o greate
     □
     where
         lower-bound : gap (x ∙) d+o≥2 > 0
-        lower-bound = {! gap>0 {b} (x ∙) d+o≥2   !}
+        lower-bound = gap>0 {b} {d} {o} (x ∙) d+o≥2
 
         upper-bound' : gap (x ∙) d+o≥2 ≤ suc (Digit-toℕ x o)
         upper-bound' =
@@ -555,15 +569,7 @@ next-number-is-LUB-Others (x ∷ xs) (y ∷ ys) ¬max d+o≥2 prop | NotGapped b
         next-xs = next-number-Others xs ¬max-xs d+o≥2
 
         lower-bound : gap (x ∷ xs) d+o≥2 > 0
-        lower-bound = (start
-                1
-            ≤⟨ s≤s (reflexive (sym (n∸n≡0 ⟦ xs ⟧))) ⟩
-                suc (⟦ xs ⟧ ∸ ⟦ xs ⟧)
-            ≈⟨ sym (+-∸-assoc 1 {⟦ xs ⟧} ≤-refl) ⟩
-                suc ⟦ xs ⟧ ∸ ⟦ xs ⟧
-            ≤⟨ ∸-mono {suc ⟦ xs ⟧} {⟦ next-xs ⟧} {⟦ xs ⟧} (next-number-is-greater-Others xs ¬max-xs d+o≥2) ≤-refl ⟩
-                ⟦ next-xs ⟧ ∸ ⟦ xs ⟧
-            □) *-mono (s≤s {0} {b} z≤n)
+        lower-bound = gap>0 (x ∷ xs) d+o≥2
 
         upper-bound : gap (x ∷ xs) d+o≥2 ≤ suc d
         upper-bound = ≤-pred (≰⇒> ¬gapped)

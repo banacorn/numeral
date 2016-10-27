@@ -111,17 +111,18 @@ next-number-suc-Others-¬Gapped-Single : ∀ {b d o}
     → (x : Digit (suc d))
     → (greatest : Greatest x)
     → (d+o≥2 : 2 ≤ suc (d + o))
-    → (gapped : Gapped {b} (x ∙) d+o≥2)
-    → Digit-toℕ (digit+1-n x greatest ((1 ⊔ o) * suc b) (m≤m⊔n 1 o *-mono s≤s z≤n)) o
+    → (¬gapped : ¬ (Gapped {b} (x ∙) d+o≥2))
+    → Digit-toℕ (digit+1-n x greatest (gap {b} (x ∙) d+o≥2) (gap>0 (x ∙) d+o≥2)) o
         + Digit-toℕ (LCD d o d+o≥2) o * suc b ≡ suc (Digit-toℕ x o)
-next-number-suc-Others-¬Gapped-Single {b} {d} {o} x greatest d+o≥2 gapped = proof
+next-number-suc-Others-¬Gapped-Single {b} {d} {o} x greatest d+o≥2 ¬gapped = proof
     where
-        lower-bound : (1 ⊔ o) * suc b > 0
-        lower-bound = m≤m⊔n 1 o *-mono s≤s z≤n
-        upper-bound : (1 ⊔ o) * suc b ≤ suc d
-        upper-bound = {!   !}
+        lower-bound : gap (x ∙) d+o≥2 > 0
+        lower-bound = gap>0 (x ∙) d+o≥2
 
-        upper-bound' : (1 ⊔ o) * suc b ≤ suc (Fin.toℕ x + o)
+        upper-bound : gap (x ∙) d+o≥2 ≤ suc d
+        upper-bound = ≤-pred $ ≰⇒> ¬gapped
+
+        upper-bound' : gap (x ∙) d+o≥2 ≤ suc (Fin.toℕ x + o)
         upper-bound' = start
                 (1 ⊔ o) * suc b
             ≤⟨ upper-bound ⟩
@@ -133,7 +134,7 @@ next-number-suc-Others-¬Gapped-Single {b} {d} {o} x greatest d+o≥2 gapped = p
             □
 
         next : Num (suc b) (suc d) o
-        next = digit+1-n x greatest ((1 ⊔ o) * suc b) lower-bound ∷ LCD d o d+o≥2 ∙
+        next = digit+1-n x greatest (gap (x ∙) d+o≥2) lower-bound ∷ LCD d o d+o≥2 ∙
 
         proof : ⟦ next ⟧ ≡ suc (Digit-toℕ x o)
         proof =
@@ -158,7 +159,7 @@ next-number-suc-Others-Gapped : ∀ {b d o}
         ¬max-xs = Maximum-Others xs d+o≥2
         next-xs = next-number-Others xs ¬max-xs d+o≥2
       in
-        (gapped : suc (suc d) ≤ (⟦ next-xs ⟧ ∸ ⟦ xs ⟧) * suc b)
+        (gapped : Gapped (x ∷ xs) d+o≥2)
     → o + ⟦ next-xs ⟧ * suc b > suc ⟦ x ∷ xs ⟧
 next-number-suc-Others-Gapped {b} {d} {o} x xs greatest d+o≥2 gapped = proof
     where
@@ -217,20 +218,9 @@ next-number-suc-Others-¬Gapped : ∀ {b d o}
     → let
         ¬max-xs = Maximum-Others xs d+o≥2
         next-xs = next-number-Others xs ¬max-xs d+o≥2
-        gap = (⟦ next-xs ⟧ ∸ ⟦ xs ⟧) * suc b
-        gap>0 = (start
-                1
-            ≤⟨ s≤s (reflexive (sym (n∸n≡0 ⟦ xs ⟧))) ⟩
-                suc (⟦ xs ⟧ ∸ ⟦ xs ⟧)
-            ≈⟨ sym (+-∸-assoc 1 {⟦ xs ⟧} ≤-refl) ⟩
-                suc ⟦ xs ⟧ ∸ ⟦ xs ⟧
-            ≤⟨ ∸-mono {suc ⟦ xs ⟧} {⟦ next-xs ⟧} {⟦ xs ⟧} (next-number-is-greater-Others xs ¬max-xs d+o≥2) ≤-refl ⟩
-                ⟦ next-xs ⟧ ∸ ⟦ xs ⟧
-            □) *-mono (s≤s {0} {b} z≤n)
-        next = digit+1-n x greatest gap gap>0 ∷ next-xs
+        next = digit+1-n x greatest (gap (x ∷ xs) d+o≥2) (gap>0 (x ∷ xs) d+o≥2) ∷ next-xs
       in
-
-      (¬gapped : suc (suc d) > gap)
+      (¬gapped : ¬ (Gapped (x ∷ xs) d+o≥2))
     → ⟦ next ⟧ ≡ suc ⟦ x ∷ xs ⟧
 next-number-suc-Others-¬Gapped {b} {d} {o} x xs greatest d+o≥2 ¬gapped = proof
     where
@@ -240,22 +230,14 @@ next-number-suc-Others-¬Gapped {b} {d} {o} x xs greatest d+o≥2 ¬gapped = pro
         next-xs : Num (suc b) (suc d) o
         next-xs = next-number-Others xs ¬max-xs d+o≥2
 
-        lower-bound : {!   !} > 0
-        lower-bound = (start
-                1
-            ≤⟨ s≤s (reflexive (sym (n∸n≡0 ⟦ xs ⟧))) ⟩
-                suc (⟦ xs ⟧ ∸ ⟦ xs ⟧)
-            ≈⟨ sym (+-∸-assoc 1 {⟦ xs ⟧} ≤-refl) ⟩
-                suc ⟦ xs ⟧ ∸ ⟦ xs ⟧
-            ≤⟨ ∸-mono {suc ⟦ xs ⟧} {⟦ next-xs ⟧} {⟦ xs ⟧} (next-number-is-greater-Others xs ¬max-xs d+o≥2) ≤-refl ⟩
-                ⟦ next-xs ⟧ ∸ ⟦ xs ⟧
-            □) *-mono (s≤s {0} {b} z≤n)
+        lower-bound : gap (x ∷ xs) d+o≥2 > 0
+        lower-bound = gap>0 (x ∷ xs) d+o≥2
 
-        upper-bound : {!   !} ≤ suc d
-        upper-bound = ≤-pred ¬gapped
+        upper-bound : gap (x ∷ xs) d+o≥2 ≤ suc d
+        upper-bound = ≤-pred $ ≰⇒> ¬gapped
 
         next : Num (suc b) (suc d) o
-        next = digit+1-n x greatest {!   !} lower-bound ∷ next-xs
+        next = digit+1-n x greatest (gap (x ∷ xs) d+o≥2) lower-bound ∷ next-xs
 
         ⟦next-xs⟧>⟦xs⟧ : ⟦ next-xs ⟧ > ⟦ xs ⟧
         ⟦next-xs⟧>⟦xs⟧ = next-number-is-greater-Others xs ¬max-xs d+o≥2
@@ -278,8 +260,8 @@ next-number-suc-Others-¬Gapped {b} {d} {o} x xs greatest d+o≥2 ¬gapped = pro
         proof =
             begin
                 ⟦ next ⟧
-            ≡⟨ cong (λ w → w + ⟦ next-xs ⟧ * suc b) (Digit-toℕ-digit+1-n x greatest {!   !} lower-bound upper-bound) ⟩
-                suc (Digit-toℕ x o) ∸ {!   !} + ⟦ next-xs ⟧ * suc b
+            ≡⟨ cong (λ w → w + ⟦ next-xs ⟧ * suc b) (Digit-toℕ-digit+1-n x greatest (gap (x ∷ xs) d+o≥2) lower-bound upper-bound) ⟩
+                suc (Digit-toℕ x o) ∸ gap (x ∷ xs) d+o≥2 + ⟦ next-xs ⟧ * suc b
             ≡⟨ cong (λ w → suc (Digit-toℕ x o) ∸ w + ⟦ next-xs ⟧ * suc b) (*-distrib-∸ʳ (suc b) ⟦ next-xs ⟧ ⟦ xs ⟧) ⟩
                 suc (Digit-toℕ x o) ∸ (⟦ next-xs ⟧ * suc b ∸ ⟦ xs ⟧ * suc b) + ⟦ next-xs ⟧ * suc b
             ≡⟨ m∸[o∸n]+o≡m+n (suc (Digit-toℕ x o)) (⟦ xs ⟧ * suc b) (⟦ next-xs ⟧ * suc b) (*n-mono (suc b) (<⇒≤ ⟦next-xs⟧>⟦xs⟧)) upper-bound' ⟩
@@ -321,18 +303,16 @@ Incrementable?-Others (x ∙) ¬max d+o≥2 | NeedNoCarry b d o ¬greatest | lem
 Incrementable?-Others (x ∷ xs) ¬max d+o≥2 | NeedNoCarry b d o ¬greatest | lemma
     = yes ((digit+1 x ¬greatest ∷ xs) , (next-number-suc-Others-NeedNoCarry x xs ¬greatest))
 Incrementable?-Others (x ∙) ¬max d+o≥2 | IsGapped b d o greatest gapped | lemma
-    = no (lemma (next-number-suc-Others-Gapped-Single x greatest d+o≥2 {!   !}))
+    = no (lemma (next-number-suc-Others-Gapped-Single x greatest d+o≥2 gapped))
 Incrementable?-Others (x ∷ xs) ¬max d+o≥2 | IsGapped b d o greatest gapped | lemma
-    = no (lemma (next-number-suc-Others-Gapped x xs greatest d+o≥2 {!   !}))
+    = no (lemma (next-number-suc-Others-Gapped x xs greatest d+o≥2 gapped))
 Incrementable?-Others (x ∙) ¬max d+o≥2 | NotGapped b d o greatest ¬gapped | lemma
-    = yes (next , next-number-suc-Others-¬Gapped-Single x greatest d+o≥2 {!   !})
-    where
-        lower-bound : (1 ⊔ o) * suc b > 0
-        lower-bound = m≤m⊔n 1 o *-mono s≤s z≤n
-        next : Num (suc b) (suc d) o
-        next = digit+1-n x greatest ((1 ⊔ o) * suc b) lower-bound ∷ LCD d o d+o≥2 ∙
+    = yes (
+        digit+1-n x greatest (gap (x ∙) d+o≥2) (gap>0 (x ∙) d+o≥2) ∷ LCD d o d+o≥2 ∙
+    ,   next-number-suc-Others-¬Gapped-Single x greatest d+o≥2 ¬gapped
+    )
 Incrementable?-Others (x ∷ xs) ¬max d+o≥2 | NotGapped b d o greatest ¬gapped | lemma
-    = yes (next , next-number-suc-Others-¬Gapped x xs greatest d+o≥2 {!   !})
+    = yes (next , next-number-suc-Others-¬Gapped x xs greatest d+o≥2 ¬gapped)
     where
         ¬max-xs : ¬ (Maximum xs)
         ¬max-xs = Maximum-Others xs d+o≥2
@@ -340,22 +320,8 @@ Incrementable?-Others (x ∷ xs) ¬max d+o≥2 | NotGapped b d o greatest ¬gapp
         next-xs : Num (suc b) (suc d) o
         next-xs = next-number-Others xs ¬max-xs d+o≥2
 
-        gap-lower-bound : {!   !} > 0
-        gap-lower-bound = (start
-                1
-            ≤⟨ s≤s (reflexive (sym (n∸n≡0 ⟦ xs ⟧))) ⟩
-                suc (⟦ xs ⟧ ∸ ⟦ xs ⟧)
-            ≈⟨ sym (+-∸-assoc 1 {⟦ xs ⟧} ≤-refl) ⟩
-                suc ⟦ xs ⟧ ∸ ⟦ xs ⟧
-            ≤⟨ ∸-mono {suc ⟦ xs ⟧} {⟦ next-xs ⟧} {⟦ xs ⟧} (next-number-is-greater-Others xs ¬max-xs d+o≥2) ≤-refl ⟩
-                ⟦ next-xs ⟧ ∸ ⟦ xs ⟧
-            □) *-mono (s≤s {0} {b} z≤n)
-
-        gap-upper-bound : {!   !} ≤ suc d
-        gap-upper-bound = {!   !}
-
         next : Num (suc b) (suc d) o
-        next = digit+1-n x greatest {!   !} gap-lower-bound ∷ next-xs
+        next = digit+1-n x greatest (gap (x ∷ xs) d+o≥2) (gap>0 (x ∷ xs) d+o≥2) ∷ next-xs
 
 Incrementable? : ∀ {b d o}
     → (xs : Num b d o)
@@ -434,7 +400,7 @@ subsume-¬Gapped-prim (x ∷ xs) d+o≥2 ¬gapped | NeedNoCarry b d o ¬greatest
         suc zero ⊔ o
     □
 subsume-¬Gapped-prim (x ∙) d+o≥2 ¬gapped | IsGapped b d o greatest gapped
-    = contradiction (≤-pred ¬gapped) {!   !}
+    = contradiction gapped (>⇒≰ ¬gapped)
 subsume-¬Gapped-prim (x ∷ xs) d+o≥2 ¬gapped | IsGapped b d o greatest gapped
     = contradiction refl (<⇒≢ p)
     where
@@ -444,28 +410,25 @@ subsume-¬Gapped-prim (x ∷ xs) d+o≥2 ¬gapped | IsGapped b d o greatest gapp
                 suc ((suc zero ⊔ o) * suc b)
             ≤⟨ ¬gapped ⟩
                 suc (suc d)
-            ≤⟨ {!   !} ⟩
+            ≤⟨ gapped ⟩
                 (⟦ next-number-Others xs (Maximum-Others xs d+o≥2) d+o≥2 ⟧ ∸ ⟦ xs ⟧) * suc b
             ≤⟨ *n-mono (suc b) (subsume-¬Gapped-prim xs d+o≥2 ¬gapped) ⟩
                 (suc zero ⊔ o) * suc b
             □
-subsume-¬Gapped-prim (x ∙) d+o≥2 ¬gapped | NotGapped b d o greatest _ =
+subsume-¬Gapped-prim (x ∙) d+o≥2 _ | NotGapped b d o greatest ¬gapped =
     start
-        ⟦ digit+1-n x greatest ((1 ⊔ o) * suc b) lower-bound ∷ LCD d o d+o≥2 ∙ ⟧ ∸ Digit-toℕ x o
-    ≈⟨ cong (λ w → w ∸ Digit-toℕ x o) (next-number-suc-Others-¬Gapped-Single x greatest d+o≥2 {!   !}) ⟩
+        ⟦ digit+1-n x greatest (gap (x ∙) d+o≥2) (gap>0 (x ∙) d+o≥2) ∷ LCD d o d+o≥2 ∙ ⟧ ∸ Digit-toℕ x o
+    ≈⟨ cong (λ w → w ∸ Digit-toℕ x o) (next-number-suc-Others-¬Gapped-Single x greatest d+o≥2 ¬gapped) ⟩
         suc (Fin.toℕ x + o) ∸ (Fin.toℕ x + o)
     ≈⟨ m+n∸n≡m (suc zero) (Fin.toℕ x + o) ⟩
         suc zero
     ≤⟨ m≤m⊔n 1 o ⟩
         suc zero ⊔ o
     □
-    where
-        lower-bound : (1 ⊔ o) * suc b > 0
-        lower-bound = m≤m⊔n 1 o *-mono s≤s z≤n
-subsume-¬Gapped-prim (x ∷ xs) d+o≥2 ¬gapped | NotGapped b d o greatest _ =
+subsume-¬Gapped-prim (x ∷ xs) d+o≥2 _ | NotGapped b d o greatest ¬gapped =
     start
-        ⟦ digit+1-n x greatest {!   !} lower-bound ∷ next-xs ⟧ ∸ ⟦ x ∷ xs ⟧
-    ≈⟨ cong (λ w → w ∸ ⟦ x ∷ xs ⟧) (next-number-suc-Others-¬Gapped x xs greatest d+o≥2 {!   !}) ⟩
+        ⟦ digit+1-n x greatest (gap (x ∷ xs) d+o≥2) (gap>0 (x ∷ xs) d+o≥2) ∷ next-xs ⟧ ∸ ⟦ x ∷ xs ⟧
+    ≈⟨ cong (λ w → w ∸ ⟦ x ∷ xs ⟧) (next-number-suc-Others-¬Gapped x xs greatest d+o≥2 ¬gapped) ⟩
         suc ⟦ x ∷ xs ⟧ ∸ ⟦ x ∷ xs ⟧
     ≈⟨ m+n∸n≡m (suc zero) ⟦ x ∷ xs ⟧ ⟩
         suc zero
@@ -479,19 +442,8 @@ subsume-¬Gapped-prim (x ∷ xs) d+o≥2 ¬gapped | NotGapped b d o greatest _ =
         next-xs : Num (suc b) (suc d) o
         next-xs = next-number-Others xs ¬max-xs d+o≥2
 
-        lower-bound : {!   !} > 0
-        lower-bound = (start
-                1
-            ≤⟨ s≤s (reflexive (sym (n∸n≡0 ⟦ xs ⟧))) ⟩
-                suc (⟦ xs ⟧ ∸ ⟦ xs ⟧)
-            ≈⟨ sym (+-∸-assoc 1 {⟦ xs ⟧} ≤-refl) ⟩
-                suc ⟦ xs ⟧ ∸ ⟦ xs ⟧
-            ≤⟨ ∸-mono {suc ⟦ xs ⟧} {⟦ next-xs ⟧} {⟦ xs ⟧} (next-number-is-greater-Others xs ¬max-xs d+o≥2) ≤-refl ⟩
-                ⟦ next-xs ⟧ ∸ ⟦ xs ⟧
-            □) *-mono (s≤s {0} {b} z≤n)
-
         next : Num (suc b) (suc d) o
-        next = digit+1-n x greatest {!   !} lower-bound ∷ next-xs
+        next = digit+1-n x greatest (gap (x ∷ xs) d+o≥2) (gap>0 (x ∷ xs) d+o≥2) ∷ next-xs
 
 subsume-Gapped : ∀ {b d o}
     → (xs : Num (suc b) (suc d) o)
@@ -535,17 +487,17 @@ subsume-Gapped (x ∷ xs) d+o≥2 gapped | NeedNoCarry b d o ¬greatest =
     ⟩
         (suc zero ⊔ o) * suc b
     □
-subsume-Gapped (x ∙) d+o≥2 gapped | IsGapped b d o greatest _ = {!   !}
-subsume-Gapped (x ∷ xs) d+o≥2 gapped | IsGapped b d o greatest _ = subsume-Gapped xs d+o≥2 {!   !}
+subsume-Gapped (x ∙) d+o≥2 _ | IsGapped b d o greatest gapped = gapped
+subsume-Gapped (x ∷ xs) d+o≥2 _ | IsGapped b d o greatest gapped = subsume-Gapped xs d+o≥2 gapped
 subsume-Gapped (x ∙) d+o≥2 gapped | NotGapped b d o greatest ¬gapped =
     start
         suc (suc d)
     ≤⟨ gapped ⟩
-        (⟦ digit+1-n x greatest ((1 ⊔ o) * suc b) lower-bound ∷ LCD d o d+o≥2 ∙ ⟧ ∸ Digit-toℕ x o) * suc b
+        (⟦ digit+1-n x greatest (gap (x ∙) d+o≥2) (gap>0 (x ∙) d+o≥2) ∷ LCD d o d+o≥2 ∙ ⟧ ∸ Digit-toℕ x o) * suc b
     ≤⟨ *n-mono (suc b) $
         start
-            ⟦ digit+1-n x greatest ((1 ⊔ o) * suc b) lower-bound ∷ LCD d o d+o≥2 ∙ ⟧ ∸ Digit-toℕ x o
-        ≈⟨ cong (λ w → w ∸ Digit-toℕ x o) (next-number-suc-Others-¬Gapped-Single x greatest d+o≥2 {!   !}) ⟩
+            ⟦ digit+1-n x greatest (gap (x ∙) d+o≥2) (gap>0 (x ∙) d+o≥2) ∷ LCD d o d+o≥2 ∙ ⟧ ∸ Digit-toℕ x o
+        ≈⟨ cong (λ w → w ∸ Digit-toℕ x o) (next-number-suc-Others-¬Gapped-Single x greatest d+o≥2 ¬gapped) ⟩
             suc (Fin.toℕ x + o) ∸ (Fin.toℕ x + o)
         ≈⟨ m+n∸n≡m (suc zero) (Fin.toℕ x + o) ⟩
             suc zero
@@ -555,18 +507,15 @@ subsume-Gapped (x ∙) d+o≥2 gapped | NotGapped b d o greatest ¬gapped =
     ⟩
         (suc zero ⊔ o) * suc b
     □
-    where
-        lower-bound : (1 ⊔ o) * suc b > 0
-        lower-bound = m≤m⊔n 1 o *-mono s≤s z≤n
 subsume-Gapped (x ∷ xs) d+o≥2 gapped | NotGapped b d o greatest ¬gapped =
     start
         suc (suc d)
     ≤⟨ gapped ⟩
-        (⟦ digit+1-n x greatest {!   !} lower-bound ∷ next-xs ⟧ ∸ ⟦ x ∷ xs ⟧) * suc b
+        (⟦ digit+1-n x greatest (gap (x ∷ xs) d+o≥2) (gap>0 (x ∷ xs) d+o≥2) ∷ next-xs ⟧ ∸ ⟦ x ∷ xs ⟧) * suc b
     ≤⟨ *n-mono (suc b) $
         start
-            ⟦ digit+1-n x greatest {!   !} lower-bound ∷ next-xs ⟧ ∸ ⟦ x ∷ xs ⟧
-        ≈⟨ cong (λ w → w ∸ ⟦ x ∷ xs ⟧) (next-number-suc-Others-¬Gapped x xs greatest d+o≥2 (s≤s {!   !})) ⟩
+            ⟦ digit+1-n x greatest (gap (x ∷ xs) d+o≥2) (gap>0 (x ∷ xs) d+o≥2) ∷ next-xs ⟧ ∸ ⟦ x ∷ xs ⟧
+        ≈⟨ cong (λ w → w ∸ ⟦ x ∷ xs ⟧) (next-number-suc-Others-¬Gapped x xs greatest d+o≥2 ¬gapped) ⟩
             suc ⟦ x ∷ xs ⟧ ∸ ⟦ x ∷ xs ⟧
         ≈⟨ m+n∸n≡m (suc zero) ⟦ x ∷ xs ⟧ ⟩
             suc zero
@@ -583,19 +532,8 @@ subsume-Gapped (x ∷ xs) d+o≥2 gapped | NotGapped b d o greatest ¬gapped =
         next-xs : Num (suc b) (suc d) o
         next-xs = next-number-Others xs ¬max-xs d+o≥2
 
-        lower-bound : {!   !} > 0
-        lower-bound = (start
-                1
-            ≤⟨ s≤s (reflexive (sym (n∸n≡0 ⟦ xs ⟧))) ⟩
-                suc (⟦ xs ⟧ ∸ ⟦ xs ⟧)
-            ≈⟨ sym (+-∸-assoc 1 {⟦ xs ⟧} ≤-refl) ⟩
-                suc ⟦ xs ⟧ ∸ ⟦ xs ⟧
-            ≤⟨ ∸-mono {suc ⟦ xs ⟧} {⟦ next-xs ⟧} {⟦ xs ⟧} (next-number-is-greater-Others xs ¬max-xs d+o≥2) ≤-refl ⟩
-                ⟦ next-xs ⟧ ∸ ⟦ xs ⟧
-            □) *-mono (s≤s {0} {b} z≤n)
-
         next : Num (suc b) (suc d) o
-        next = digit+1-n x greatest {!   !} lower-bound ∷ next-xs
+        next = digit+1-n x greatest (gap (x ∷ xs) d+o≥2) (gap>0 (x ∷ xs) d+o≥2) ∷ next-xs
 
 subsume-¬Gapped : ∀ {b d o}
     → (xs : Num (suc b) (suc d) o)
