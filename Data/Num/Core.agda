@@ -287,14 +287,14 @@ data NumView : ℕ → ℕ → ℕ → Set where
     NullBase    : ∀   d o                           → NumView 0       (suc d) o
     NoDigits    : ∀ b o                             → NumView b       0       o
     AllZeros    : ∀ b                               → NumView (suc b) 1       0
-    Others      : ∀ b d o → (d+o≥2 : suc d + o ≥ 2) → NumView (suc b) (suc d) o
+    Proper      : ∀ b d o → (d+o≥2 : suc d + o ≥ 2) → NumView (suc b) (suc d) o
 
 numView : ∀ b d o → NumView b d o
 numView b       zero          o       = NoDigits b o
 numView zero    (suc d)       o       = NullBase d o
 numView (suc b) (suc zero)    zero    = AllZeros b
-numView (suc b) (suc zero)    (suc o) = Others b zero (suc o) (s≤s (s≤s z≤n))
-numView (suc b) (suc (suc d)) o       = Others b (suc d) o (s≤s (s≤s z≤n))
+numView (suc b) (suc zero)    (suc o) = Proper b zero (suc o) (s≤s (s≤s z≤n))
+numView (suc b) (suc (suc d)) o       = Proper b (suc d) o (s≤s (s≤s z≤n))
 
 NoDigits-explode : ∀ {b o a} {Whatever : Set a}
     → (xs : Num b 0 o)
