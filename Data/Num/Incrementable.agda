@@ -297,7 +297,7 @@ Incrementable?-Others : ∀ {b d o}
     → (¬max : ¬ (Maximum xs))
     → (d+o≥2 : 2 ≤ suc (d + o))
     → Dec (Incrementable xs)
-Incrementable?-Others xs ¬max d+o≥2 with othersView xs ¬max d+o≥2 | next-number-Others-¬Incrementable-lemma xs ¬max d+o≥2
+Incrementable?-Others xs ¬max d+o≥2 with nextView xs ¬max d+o≥2 | next-number-Others-¬Incrementable-lemma xs ¬max d+o≥2
 Incrementable?-Others (x ∙) ¬max d+o≥2 | NeedNoCarry b d o ¬greatest | lemma
     = yes ((digit+1 x ¬greatest ∙) , (next-number-suc-Others-NeedNoCarry-Single {b} x ¬greatest))
 Incrementable?-Others (x ∷ xs) ¬max d+o≥2 | NeedNoCarry b d o ¬greatest | lemma
@@ -350,7 +350,7 @@ increment-next-number-Others : ∀ {b d o}
     → (d+o≥2 : 2 ≤ suc (d + o))
     → (incr : True (Incrementable?-Others xs ¬max d+o≥2))
     → proj₁ (toWitness incr) ≡ next-number-Others xs ¬max d+o≥2
-increment-next-number-Others xs       ¬max d+o≥2 incr with othersView xs ¬max d+o≥2
+increment-next-number-Others xs       ¬max d+o≥2 incr with nextView xs ¬max d+o≥2
 increment-next-number-Others (x ∙)    ¬max d+o≥2 incr | NeedNoCarry b d o ¬greatest = refl
 increment-next-number-Others (x ∷ xs) ¬max d+o≥2 incr | NeedNoCarry b d o ¬greatest = refl
 increment-next-number-Others (x ∙)    ¬max d+o≥2 ()   | IsGapped b d o greatest gapped
@@ -378,7 +378,7 @@ subsume-¬Gapped-prim : ∀ {b d o}
     → (d+o≥2 : 2 ≤ suc (d + o))
     → (¬gapped : suc (suc d) > (1 ⊔ o) * suc b)
     → 1 ⊔ o ≥ ⟦ next-number-Others xs (Maximum-Others xs d+o≥2) d+o≥2 ⟧ ∸ ⟦ xs ⟧
-subsume-¬Gapped-prim xs d+o≥2 ¬gapped with othersView xs (Maximum-Others xs d+o≥2) d+o≥2
+subsume-¬Gapped-prim xs d+o≥2 ¬gapped with nextView xs (Maximum-Others xs d+o≥2) d+o≥2
 subsume-¬Gapped-prim (x ∙) d+o≥2 ¬gapped | NeedNoCarry b d o ¬greatest =
     start
         Digit-toℕ (digit+1 x ¬greatest) o ∸ Digit-toℕ x o
@@ -450,7 +450,7 @@ subsume-Gapped : ∀ {b d o}
     → (d+o≥2 : 2 ≤ suc (d + o))
     → suc (suc d) ≤ (⟦ next-number-Others xs (Maximum-Others xs d+o≥2) d+o≥2 ⟧ ∸ ⟦ xs ⟧) * suc b
     → suc (suc d) ≤ (1 ⊔ o) * suc b
-subsume-Gapped xs d+o≥2 gapped with othersView xs (Maximum-Others xs d+o≥2) d+o≥2
+subsume-Gapped xs d+o≥2 gapped with nextView xs (Maximum-Others xs d+o≥2) d+o≥2
 subsume-Gapped (x ∙) d+o≥2 gapped | NeedNoCarry b d o ¬greatest =
     start
         suc (suc d)

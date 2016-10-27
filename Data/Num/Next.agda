@@ -83,43 +83,42 @@ mutual
             next-xs : Num (suc b) (suc d) o
             next-xs = next-number-Others xs ¬max-xs d+o≥2
 
-
-    data OthersView : (b d o : ℕ) (xs : Num b d o) (d+o≥2 : 2 ≤ d + o) → Set where
+    data NextView : (b d o : ℕ) (xs : Num b d o) (d+o≥2 : 2 ≤ d + o) → Set where
         NeedNoCarry : ∀ b d o
             → {xs : Num (suc b) (suc d) o}
             → {d+o≥2 : 2 ≤ suc (d + o)}
             → (¬greatest : ¬ (Greatest (lsd xs)))
-            → OthersView (suc b) (suc d) o xs d+o≥2
+            → NextView (suc b) (suc d) o xs d+o≥2
         IsGapped : ∀ b d o
             → {xs : Num (suc b) (suc d) o}
             → {d+o≥2 : 2 ≤ suc (d + o)}
             → (greatest : Greatest (lsd xs))
             → (gapped : Gapped xs d+o≥2)
-            → OthersView (suc b) (suc d) o xs d+o≥2
+            → NextView (suc b) (suc d) o xs d+o≥2
         NotGapped : ∀ b d o
             → {xs : Num (suc b) (suc d) o}
             → {d+o≥2 : 2 ≤ suc (d + o)}
             → (greatest : Greatest (lsd xs))
             → (¬gapped : ¬ (Gapped xs d+o≥2))
-            → OthersView (suc b) (suc d) o xs d+o≥2
+            → NextView (suc b) (suc d) o xs d+o≥2
 
-    othersView : ∀ {b d o}
+    nextView : ∀ {b d o}
         → (xs : Num (suc b) (suc d) o)
         → ¬ (Maximum xs)
         → (d+o≥2 : 2 ≤ suc (d + o))
-        → OthersView (suc b) (suc d) o xs d+o≥2
-    othersView {b} {d} {o} xs ¬max d+o≥2 with Greatest? (lsd xs)
-    othersView {b} {d} {o} xs ¬max d+o≥2 | yes greatest with Gapped? xs d+o≥2
-    othersView {b} {d} {o} xs ¬max d+o≥2 | yes greatest | yes gapped = IsGapped b d o greatest gapped
-    othersView {b} {d} {o} xs ¬max d+o≥2 | yes greatest | no ¬gapped = NotGapped b d o greatest ¬gapped
-    othersView {b} {d} {o} xs ¬max d+o≥2 | no ¬greatest = NeedNoCarry b d o ¬greatest
+        → NextView (suc b) (suc d) o xs d+o≥2
+    nextView {b} {d} {o} xs ¬max d+o≥2 with Greatest? (lsd xs)
+    nextView {b} {d} {o} xs ¬max d+o≥2 | yes greatest with Gapped? xs d+o≥2
+    nextView {b} {d} {o} xs ¬max d+o≥2 | yes greatest | yes gapped = IsGapped b d o greatest gapped
+    nextView {b} {d} {o} xs ¬max d+o≥2 | yes greatest | no ¬gapped = NotGapped b d o greatest ¬gapped
+    nextView {b} {d} {o} xs ¬max d+o≥2 | no ¬greatest = NeedNoCarry b d o ¬greatest
 
     next-number-Others : ∀ {b d o}
         → (xs : Num (suc b) (suc d) o)
         → (¬max : ¬ (Maximum xs))
         → (d+o≥2 : 2 ≤ suc (d + o))
         → Num (suc b) (suc d) o
-    next-number-Others xs ¬max d+o≥2 with othersView xs ¬max d+o≥2
+    next-number-Others xs ¬max d+o≥2 with nextView xs ¬max d+o≥2
     next-number-Others (x ∙)    ¬max d+o≥2 | NeedNoCarry b d o ¬greatest
         = digit+1 x ¬greatest ∙
     next-number-Others (x ∷ xs) ¬max d+o≥2 | NeedNoCarry b d o ¬greatest
@@ -176,7 +175,7 @@ mutual
         → (¬max : ¬ (Maximum xs))
         → (d+o≥2 : 2 ≤ suc (d + o))
         → ⟦ next-number-Others xs ¬max d+o≥2 ⟧ > ⟦ xs ⟧
-    next-number-is-greater-Others xs ¬max d+o≥2 with othersView xs ¬max d+o≥2
+    next-number-is-greater-Others xs ¬max d+o≥2 with nextView xs ¬max d+o≥2
     next-number-is-greater-Others (x ∙) ¬max d+o≥2 | NeedNoCarry b d o ¬greatest
         = reflexive $ sym (Digit-toℕ-digit+1 x ¬greatest)
     next-number-is-greater-Others (x ∷ xs) ¬max d+o≥2 | NeedNoCarry b d o ¬greatest
@@ -356,6 +355,42 @@ gap>0 {b} {d} {o} (x ∷ xs) d+o≥2 =
         next-xs = next-number-Others xs ¬max-xs d+o≥2
 
 
+
+
+
+-- digit+1-n with gap
+-- jump : ∀ {b d o}
+--     → (xs : Num (suc b) (suc d) o)
+--     → (greatest : Greatest (lsd xs))
+--     → (d+o≥2 : 2 ≤ suc (d + o))
+--     → Digit (suc d)
+-- jump xs greatest d+o≥2 = digit+1-n (lsd xs) greatest (gap xs d+o≥2) (gap>0 xs d+o≥2)
+--
+-- jump-toℕ : ∀ {b d o}
+--     → (xs : Num (suc b) (suc d) o)
+--     → (greatest : Greatest (lsd xs))
+--     → (d+o≥2 : 2 ≤ suc (d + o))
+--     → Digit-toℕ (jump xs greatest d+o≥2) o ≡ suc (Digit-toℕ (lsd xs) o) ∸ gap xs d+o≥2
+-- jump-toℕ xs greatest d+o≥2 =
+--     begin
+--         {! ⟦ digit+1-n (lsd xs) greatest (gap xs d+o≥2) ⟧ !}
+--     ≡⟨ {!   !} ⟩
+--         {!   !}
+--     ≡⟨ {!   !} ⟩
+--         {!   !}
+--     ≡⟨ {!   !} ⟩
+--         {!   !}
+--     ≡⟨ {!   !} ⟩
+--         {!   !}
+--     ∎
+--
+--         ⟦ digit+1-n x greatest (gap (x ∷ xs) d+o≥2) lower-bound ∷ next-xs ⟧
+--     ≈⟨ cong (λ w → w + ⟦ next-xs ⟧ * suc b) (Digit-toℕ-digit+1-n x greatest (gap (x ∷ xs) d+o≥2) lower-bound upper-bound) ⟩
+--         suc (Digit-toℕ x o) ∸ gap (x ∷ xs) d+o≥2 + ⟦ next-xs ⟧ * suc b
+--     ≈⟨ cong (λ w → suc (Digit-toℕ x o) ∸ w + ⟦ next-xs ⟧ * suc b) (*-distrib-∸ʳ (suc b) ⟦ next-xs ⟧ ⟦ xs ⟧) ⟩
+--         suc (Digit-toℕ x o) ∸ (⟦ next-xs ⟧ * suc b ∸ ⟦ xs ⟧ * suc b) + ⟦ next-xs ⟧ * suc b
+--     ≈⟨ m∸[o∸n]+o≡m+n (suc (Digit-toℕ x o)) (⟦ xs ⟧ * suc b) (⟦ next-xs ⟧ * suc b) (*n-mono (suc b) (<⇒≤ ⟦next-xs⟧>⟦xs⟧)) upper-bound' ⟩
+--         suc (Digit-toℕ x o) + ⟦ xs ⟧ * suc b
 next-number : ∀ {b d o}
     → (xs : Num b d o)
     → ¬ (Maximum xs)
@@ -391,6 +426,9 @@ next-number-is-greater xs ¬max | NoDigits b o = NoDigits-explode xs
 next-number-is-greater xs ¬max | AllZeros b = contradiction (Maximum-AllZeros xs) ¬max
 next-number-is-greater xs ¬max | Others b d o d+o≥2 = next-number-is-greater-Others xs ¬max d+o≥2
 
+--------------------------------------------------------------------------------
+--
+--------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
 -- next-number-is-LUB
@@ -431,7 +469,7 @@ next-number-is-LUB-Others : ∀ {b d o}
     → (d+o≥2 : 2 ≤ suc (d + o))
     → ⟦ ys ⟧ > ⟦ xs ⟧
     → ⟦ ys ⟧ ≥ ⟦ next-number-Others xs ¬max d+o≥2 ⟧
-next-number-is-LUB-Others xs ys ¬max d+o≥2 prop with othersView xs ¬max d+o≥2
+next-number-is-LUB-Others xs ys ¬max d+o≥2 prop with nextView xs ¬max d+o≥2
 next-number-is-LUB-Others (x ∙) ys ¬max d+o≥2 prop | NeedNoCarry b d o ¬greatest =
     start
         Digit-toℕ (digit+1 x ¬greatest) o
