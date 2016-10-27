@@ -298,12 +298,12 @@ mutual
                     suc (Digit-toℕ x o)
                 □
 
--- the gap between 
+-- the gap between
 gap : ∀ {b d o}
     → (xs : Num (suc b) (suc d) o)
     → (d+o≥2 : 2 ≤ suc (d + o))
     → ℕ
-gap {b} {d} {o} (x ∙) d+o≥2 = (1 ⊔ o)                * suc b
+gap {b} {d} {o} (x ∙)    d+o≥2 = (1 ⊔ o)                * suc b
 gap {b} {d} {o} (x ∷ xs) d+o≥2 = (⟦ next-xs ⟧ ∸ ⟦ xs ⟧) * suc b
     where
         ¬max-xs : ¬ (Maximum xs)
@@ -311,6 +311,36 @@ gap {b} {d} {o} (x ∷ xs) d+o≥2 = (⟦ next-xs ⟧ ∸ ⟦ xs ⟧) * suc b
 
         next-xs : Num (suc b) (suc d) o
         next-xs = next-number-Others xs ¬max-xs d+o≥2
+
+gap>0 : ∀ {b d o}
+    → (xs : Num (suc b) (suc d) o)
+    → (d+o≥2 : 2 ≤ suc (d + o))
+    → gap xs d+o≥2 > 0
+gap>0 {b} {d} {o} (x ∙)    d+o≥2 =
+    start
+        1
+    ≈⟨ refl ⟩
+        1 * 1
+    ≤⟨ m≤m⊔n 1 o *-mono s≤s z≤n ⟩
+        (1 ⊔ o) * suc b
+    □
+gap>0 {b} {d} {o} (x ∷ xs) d+o≥2 =
+    start
+        1
+    ≈⟨ refl ⟩
+        1 * 1
+    ≤⟨ n*-mono 1 (s≤s {zero} {b} z≤n) ⟩
+        1 * suc b
+    ≤⟨ *n-mono (suc b) (m≥n+o⇒m∸o≥n ⟦ next-xs ⟧ 1 ⟦ xs ⟧ (next-number-is-greater-Others xs ¬max-xs d+o≥2)) ⟩
+        (⟦ next-xs ⟧ ∸ ⟦ xs ⟧) * suc b
+    □
+    where
+        ¬max-xs : ¬ (Maximum xs)
+        ¬max-xs = Maximum-Others xs d+o≥2
+
+        next-xs : Num (suc b) (suc d) o
+        next-xs = next-number-Others xs ¬max-xs d+o≥2
+
 
 next-number : ∀ {b d o}
     → (xs : Num b d o)
@@ -321,7 +351,6 @@ next-number xs ¬max | NullBase d o = next-number-NullBase xs ¬max
 next-number xs ¬max | NoDigits b o = NoDigits-explode xs
 next-number xs ¬max | AllZeros b = contradiction (Maximum-AllZeros xs) ¬max
 next-number xs ¬max | Others b d o d+o≥2 = next-number-Others xs ¬max d+o≥2
-
 
 --------------------------------------------------------------------------------
 -- next-number-is-greater
@@ -473,28 +502,25 @@ next-number-is-LUB-Others (x ∷ xs) (y ∷ ys) ¬max d+o≥2 prop | IsGapped b 
 
 next-number-is-LUB-Others (x ∙) ys ¬max d+o≥2 prop | NotGapped b d o greatest ¬gapped =
     start
-        Digit-toℕ (digit+1-n x greatest ((1 ⊔ o) * suc b) lower-bound) o + (Digit-toℕ (LCD d o d+o≥2) o) * suc b
-    ≈⟨ cong (λ w → Digit-toℕ (digit+1-n x greatest ((1 ⊔ o) * suc b) lower-bound) o + w * suc b) (LCD-toℕ d o d+o≥2) ⟩
-        Digit-toℕ (digit+1-n x greatest ((1 ⊔ o) * suc b) lower-bound) o + (1 ⊔ o) * suc b
-    ≈⟨ cong (λ w → w + (1 ⊔ o) * suc b) (Digit-toℕ-digit+1-n x greatest ((1 ⊔ o) * suc b) lower-bound upper-bound) ⟩
-        suc (Fin.toℕ x + o) ∸ (1 ⊔ o) * suc b + (1 ⊔ o) * suc b
+        Digit-toℕ (digit+1-n x greatest (gap (x ∙) d+o≥2) lower-bound) o + (Digit-toℕ (LCD d o d+o≥2) o) * suc b
+    ≈⟨ cong (λ w → Digit-toℕ (digit+1-n x greatest (gap (x ∙) d+o≥2) lower-bound) o + w * suc b) (LCD-toℕ d o d+o≥2) ⟩
+        Digit-toℕ (digit+1-n x greatest (gap {b} (x ∙) d+o≥2) lower-bound) o + gap {b} (x ∙) d+o≥2
+    ≈⟨ cong (λ w → w + gap {b} (x ∙) d+o≥2) (Digit-toℕ-digit+1-n x greatest (gap {b} (x ∙) d+o≥2) lower-bound (≤-pred $ ≰⇒> ¬gapped)) ⟩
+        suc (Fin.toℕ x + o) ∸ gap {b} (x ∙) d+o≥2 + gap {b} (x ∙) d+o≥2
     ≈⟨ m∸n+n≡m upper-bound' ⟩
         suc (Fin.toℕ x + o)
     ≤⟨ prop ⟩
         ⟦ ys ⟧
     □
     where
-        upper-bound : (suc zero ⊔ o) * suc b ≤ suc d
-        upper-bound = ≤-pred (≰⇒> ¬gapped)
+        lower-bound : gap (x ∙) d+o≥2 > 0
+        lower-bound = {! gap>0 {b} (x ∙) d+o≥2   !}
 
-        lower-bound : 1 ≤ (suc zero ⊔ o) * suc b
-        lower-bound = m≤m⊔n (suc zero) o *-mono s≤s z≤n
-
-        upper-bound' : (suc zero ⊔ o) * suc b ≤ suc (Digit-toℕ x o)
+        upper-bound' : gap (x ∙) d+o≥2 ≤ suc (Digit-toℕ x o)
         upper-bound' =
             start
                 (suc zero ⊔ o) * suc b
-            ≤⟨ upper-bound ⟩
+            ≤⟨ ≤-pred $ ≰⇒> ¬gapped ⟩
                 suc d
             ≈⟨ sym greatest ⟩
                 suc (Fin.toℕ x)

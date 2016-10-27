@@ -119,7 +119,8 @@ next-number-suc-Others-¬Gapped-Single {b} {d} {o} x greatest d+o≥2 gapped = p
         lower-bound : (1 ⊔ o) * suc b > 0
         lower-bound = m≤m⊔n 1 o *-mono s≤s z≤n
         upper-bound : (1 ⊔ o) * suc b ≤ suc d
-        upper-bound = gapped
+        upper-bound = {!   !}
+
         upper-bound' : (1 ⊔ o) * suc b ≤ suc (Fin.toℕ x + o)
         upper-bound' = start
                 (1 ⊔ o) * suc b
@@ -239,10 +240,7 @@ next-number-suc-Others-¬Gapped {b} {d} {o} x xs greatest d+o≥2 ¬gapped = pro
         next-xs : Num (suc b) (suc d) o
         next-xs = next-number-Others xs ¬max-xs d+o≥2
 
-        gap : ℕ
-        gap = (⟦ next-xs ⟧ ∸ ⟦ xs ⟧) * suc b
-
-        lower-bound : gap > 0
+        lower-bound : {!   !} > 0
         lower-bound = (start
                 1
             ≤⟨ s≤s (reflexive (sym (n∸n≡0 ⟦ xs ⟧))) ⟩
@@ -253,11 +251,11 @@ next-number-suc-Others-¬Gapped {b} {d} {o} x xs greatest d+o≥2 ¬gapped = pro
                 ⟦ next-xs ⟧ ∸ ⟦ xs ⟧
             □) *-mono (s≤s {0} {b} z≤n)
 
-        upper-bound : gap ≤ suc d
+        upper-bound : {!   !} ≤ suc d
         upper-bound = ≤-pred ¬gapped
 
         next : Num (suc b) (suc d) o
-        next = digit+1-n x greatest gap lower-bound ∷ next-xs
+        next = digit+1-n x greatest {!   !} lower-bound ∷ next-xs
 
         ⟦next-xs⟧>⟦xs⟧ : ⟦ next-xs ⟧ > ⟦ xs ⟧
         ⟦next-xs⟧>⟦xs⟧ = next-number-is-greater-Others xs ¬max-xs d+o≥2
@@ -280,8 +278,8 @@ next-number-suc-Others-¬Gapped {b} {d} {o} x xs greatest d+o≥2 ¬gapped = pro
         proof =
             begin
                 ⟦ next ⟧
-            ≡⟨ cong (λ w → w + ⟦ next-xs ⟧ * suc b) (Digit-toℕ-digit+1-n x greatest gap lower-bound upper-bound) ⟩
-                suc (Digit-toℕ x o) ∸ gap + ⟦ next-xs ⟧ * suc b
+            ≡⟨ cong (λ w → w + ⟦ next-xs ⟧ * suc b) (Digit-toℕ-digit+1-n x greatest {!   !} lower-bound upper-bound) ⟩
+                suc (Digit-toℕ x o) ∸ {!   !} + ⟦ next-xs ⟧ * suc b
             ≡⟨ cong (λ w → suc (Digit-toℕ x o) ∸ w + ⟦ next-xs ⟧ * suc b) (*-distrib-∸ʳ (suc b) ⟦ next-xs ⟧ ⟦ xs ⟧) ⟩
                 suc (Digit-toℕ x o) ∸ (⟦ next-xs ⟧ * suc b ∸ ⟦ xs ⟧ * suc b) + ⟦ next-xs ⟧ * suc b
             ≡⟨ m∸[o∸n]+o≡m+n (suc (Digit-toℕ x o)) (⟦ xs ⟧ * suc b) (⟦ next-xs ⟧ * suc b) (*n-mono (suc b) (<⇒≤ ⟦next-xs⟧>⟦xs⟧)) upper-bound' ⟩
@@ -342,10 +340,7 @@ Incrementable?-Others (x ∷ xs) ¬max d+o≥2 | NotGapped b d o greatest ¬gapp
         next-xs : Num (suc b) (suc d) o
         next-xs = next-number-Others xs ¬max-xs d+o≥2
 
-        gap : ℕ
-        gap = (⟦ next-xs ⟧ ∸ ⟦ xs ⟧) * suc b
-
-        gap-lower-bound : gap > 0
+        gap-lower-bound : {!   !} > 0
         gap-lower-bound = (start
                 1
             ≤⟨ s≤s (reflexive (sym (n∸n≡0 ⟦ xs ⟧))) ⟩
@@ -356,11 +351,11 @@ Incrementable?-Others (x ∷ xs) ¬max d+o≥2 | NotGapped b d o greatest ¬gapp
                 ⟦ next-xs ⟧ ∸ ⟦ xs ⟧
             □) *-mono (s≤s {0} {b} z≤n)
 
-        gap-upper-bound : gap ≤ suc d
+        gap-upper-bound : {!   !} ≤ suc d
         gap-upper-bound = {!   !}
 
         next : Num (suc b) (suc d) o
-        next = digit+1-n x greatest gap gap-lower-bound ∷ next-xs
+        next = digit+1-n x greatest {!   !} gap-lower-bound ∷ next-xs
 
 Incrementable? : ∀ {b d o}
     → (xs : Num b d o)
@@ -469,7 +464,7 @@ subsume-¬Gapped-prim (x ∙) d+o≥2 ¬gapped | NotGapped b d o greatest _ =
         lower-bound = m≤m⊔n 1 o *-mono s≤s z≤n
 subsume-¬Gapped-prim (x ∷ xs) d+o≥2 ¬gapped | NotGapped b d o greatest _ =
     start
-        ⟦ digit+1-n x greatest gap lower-bound ∷ next-xs ⟧ ∸ ⟦ x ∷ xs ⟧
+        ⟦ digit+1-n x greatest {!   !} lower-bound ∷ next-xs ⟧ ∸ ⟦ x ∷ xs ⟧
     ≈⟨ cong (λ w → w ∸ ⟦ x ∷ xs ⟧) (next-number-suc-Others-¬Gapped x xs greatest d+o≥2 {!   !}) ⟩
         suc ⟦ x ∷ xs ⟧ ∸ ⟦ x ∷ xs ⟧
     ≈⟨ m+n∸n≡m (suc zero) ⟦ x ∷ xs ⟧ ⟩
@@ -484,10 +479,7 @@ subsume-¬Gapped-prim (x ∷ xs) d+o≥2 ¬gapped | NotGapped b d o greatest _ =
         next-xs : Num (suc b) (suc d) o
         next-xs = next-number-Others xs ¬max-xs d+o≥2
 
-        gap : ℕ
-        gap = (⟦ next-xs ⟧ ∸ ⟦ xs ⟧) * suc b
-
-        lower-bound : gap > 0
+        lower-bound : {!   !} > 0
         lower-bound = (start
                 1
             ≤⟨ s≤s (reflexive (sym (n∸n≡0 ⟦ xs ⟧))) ⟩
@@ -499,7 +491,7 @@ subsume-¬Gapped-prim (x ∷ xs) d+o≥2 ¬gapped | NotGapped b d o greatest _ =
             □) *-mono (s≤s {0} {b} z≤n)
 
         next : Num (suc b) (suc d) o
-        next = digit+1-n x greatest gap lower-bound ∷ next-xs
+        next = digit+1-n x greatest {!   !} lower-bound ∷ next-xs
 
 subsume-Gapped : ∀ {b d o}
     → (xs : Num (suc b) (suc d) o)
@@ -570,10 +562,10 @@ subsume-Gapped (x ∷ xs) d+o≥2 gapped | NotGapped b d o greatest ¬gapped =
     start
         suc (suc d)
     ≤⟨ gapped ⟩
-        (⟦ digit+1-n x greatest gap lower-bound ∷ next-xs ⟧ ∸ ⟦ x ∷ xs ⟧) * suc b
+        (⟦ digit+1-n x greatest {!   !} lower-bound ∷ next-xs ⟧ ∸ ⟦ x ∷ xs ⟧) * suc b
     ≤⟨ *n-mono (suc b) $
         start
-            ⟦ digit+1-n x greatest gap lower-bound ∷ next-xs ⟧ ∸ ⟦ x ∷ xs ⟧
+            ⟦ digit+1-n x greatest {!   !} lower-bound ∷ next-xs ⟧ ∸ ⟦ x ∷ xs ⟧
         ≈⟨ cong (λ w → w ∸ ⟦ x ∷ xs ⟧) (next-number-suc-Others-¬Gapped x xs greatest d+o≥2 (s≤s {!   !})) ⟩
             suc ⟦ x ∷ xs ⟧ ∸ ⟦ x ∷ xs ⟧
         ≈⟨ m+n∸n≡m (suc zero) ⟦ x ∷ xs ⟧ ⟩
@@ -591,10 +583,7 @@ subsume-Gapped (x ∷ xs) d+o≥2 gapped | NotGapped b d o greatest ¬gapped =
         next-xs : Num (suc b) (suc d) o
         next-xs = next-number-Others xs ¬max-xs d+o≥2
 
-        gap : ℕ
-        gap = (⟦ next-xs ⟧ ∸ ⟦ xs ⟧) * suc b
-
-        lower-bound : gap > 0
+        lower-bound : {!   !} > 0
         lower-bound = (start
                 1
             ≤⟨ s≤s (reflexive (sym (n∸n≡0 ⟦ xs ⟧))) ⟩
@@ -606,7 +595,7 @@ subsume-Gapped (x ∷ xs) d+o≥2 gapped | NotGapped b d o greatest ¬gapped =
             □) *-mono (s≤s {0} {b} z≤n)
 
         next : Num (suc b) (suc d) o
-        next = digit+1-n x greatest gap lower-bound ∷ next-xs
+        next = digit+1-n x greatest {!   !} lower-bound ∷ next-xs
 
 subsume-¬Gapped : ∀ {b d o}
     → (xs : Num (suc b) (suc d) o)
