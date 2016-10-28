@@ -47,33 +47,34 @@ Maximum⇒¬Incrementable : ∀ {b d o}
 Maximum⇒¬Incrementable xs max (evidence , claim)
     = contradiction (max evidence) (>⇒≰ (m≡1+n⇒m>n claim))
 
-next-number-suc-NullBase : ∀ {d o}
+next-number-NullBase-lemma : ∀ {d o}
     → (xs : Num 0 (suc d) o)
     → (¬max : ¬ (Maximum xs))
     → ⟦ next-number-NullBase xs ¬max ⟧ ≡ suc ⟦ xs ⟧
-next-number-suc-NullBase {d} {o} xs ¬max with NullBase-view d o
-next-number-suc-NullBase {_} {_} xs       ¬max | AllZeros = contradiction (Maximum-AllZeros xs) ¬max
-next-number-suc-NullBase {d} {o} xs       ¬max | Others bound with Greatest? (lsd xs)
-next-number-suc-NullBase {d} {o} xs       ¬max | Others bound | yes greatest = contradiction (Maximum-NullBase-Greatest xs greatest) ¬max
-next-number-suc-NullBase {d} {o} (x ∙)    ¬max | Others bound | no ¬greatest =
+next-number-NullBase-lemma {d} {o} xs ¬max with NullBase-view d o
+next-number-NullBase-lemma {_} {_} xs       ¬max | AllZeros = contradiction (Maximum-AllZeros xs) ¬max
+next-number-NullBase-lemma {d} {o} xs       ¬max | Others bound with Greatest? (lsd xs)
+next-number-NullBase-lemma {d} {o} xs       ¬max | Others bound | yes greatest = contradiction (Maximum-NullBase-Greatest xs greatest) ¬max
+next-number-NullBase-lemma {d} {o} (x ∙)    ¬max | Others bound | no ¬greatest =
     begin
         Digit-toℕ (digit+1 x ¬greatest) o
     ≡⟨ Digit-toℕ-digit+1 x ¬greatest ⟩
         suc (Fin.toℕ x + o)
     ∎
-next-number-suc-NullBase {d} {o} (x ∷ xs) ¬max | Others bound | no ¬greatest =
+next-number-NullBase-lemma {d} {o} (x ∷ xs) ¬max | Others bound | no ¬greatest =
     begin
         Digit-toℕ (digit+1 x ¬greatest) o + ⟦ xs ⟧ * zero
     ≡⟨ cong (λ w → w + ⟦ xs ⟧ * zero) (Digit-toℕ-digit+1 x ¬greatest) ⟩
         suc (Fin.toℕ x + o + ⟦ xs ⟧ * zero)
     ∎
 
-next-number-Others-¬Incrementable-lemma : ∀ {b d o}
+IsGapped⇒¬Incrementable : ∀ {b d o}
     → (xs : Num (suc b) (suc d) o)
+    → (greatest : Greatest (lsd xs))
     → (d+o≥2 : 2 ≤ suc (d + o))
-    → ⟦ next-number-Proper xs d+o≥2 ⟧ > suc ⟦ xs ⟧
+    → (gapped : Gapped xs d+o≥2)
     → ¬ (Incrementable xs)
-next-number-Others-¬Incrementable-lemma {b} {d} {o} xs d+o≥2 prop (incremented , claim)
+IsGapped⇒¬Incrementable {b} {d} {o} xs greatest d+o≥2 gapped (incremented , claim)
     = contradiction ⟦next⟧>⟦incremented⟧ ⟦next⟧≯⟦incremented⟧
     where
         next : Num (suc b) (suc d) o
@@ -85,18 +86,24 @@ next-number-Others-¬Incrementable-lemma {b} {d} {o} xs d+o≥2 prop (incremente
                 suc ⟦ incremented ⟧
             ≈⟨ cong suc claim ⟩
                 suc (suc ⟦ xs ⟧)
-            ≤⟨ prop ⟩
+            ≤⟨ next-number-Proper-IsGapped-lemma xs greatest d+o≥2 gapped ⟩
+                ⟦ next-number-Proper-IsGapped xs d+o≥2 gapped ⟧
+            ≈⟨ cong ⟦_⟧ (sym (next-number-Proper-IsGapped-redirect xs greatest d+o≥2 gapped)) ⟩
                 ⟦ next-number-Proper xs d+o≥2 ⟧
             □
+
         ⟦next⟧≯⟦incremented⟧ : ⟦ next ⟧ ≯ ⟦ incremented ⟧
         ⟦next⟧≯⟦incremented⟧ = ≤⇒≯ $ next-number-is-LUB-Proper xs incremented d+o≥2 (m≡1+n⇒m>n claim)
+
+
+
 
 Incrementable?-Proper : ∀ {b d o}
     → (xs : Num (suc b) (suc d) o)
     → (d+o≥2 : 2 ≤ suc (d + o))
     → Dec (Incrementable xs)
-Incrementable?-Proper xs d+o≥2 with nextView xs d+o≥2 | next-number-Others-¬Incrementable-lemma xs d+o≥2
-Incrementable?-Proper xs d+o≥2 | NeedNoCarry b d o ¬greatest | lemma
+Incrementable?-Proper xs d+o≥2 with nextView xs d+o≥2
+Incrementable?-Proper xs d+o≥2 | NeedNoCarry b d o ¬greatest
     = yes ((next-number-Proper xs d+o≥2) , (begin
             ⟦ next-number-Proper xs d+o≥2 ⟧
         ≡⟨ cong ⟦_⟧ (next-number-Proper-NeedNoCarry-redirect xs ¬greatest d+o≥2) ⟩
@@ -104,9 +111,9 @@ Incrementable?-Proper xs d+o≥2 | NeedNoCarry b d o ¬greatest | lemma
         ≡⟨ next-number-Proper-NeedNoCarry-lemma xs ¬greatest d+o≥2 ⟩
             suc ⟦ xs ⟧
         ∎))
-Incrementable?-Proper xs d+o≥2 | IsGapped b d o greatest gapped | lemma
-    = no (lemma (next-number-Proper-IsGapped-lemma xs greatest d+o≥2 gapped))
-Incrementable?-Proper xs d+o≥2 | NotGapped b d o greatest ¬gapped | lemma
+Incrementable?-Proper xs d+o≥2 | IsGapped b d o greatest gapped
+    = no (IsGapped⇒¬Incrementable xs greatest d+o≥2 gapped)
+Incrementable?-Proper xs d+o≥2 | NotGapped b d o greatest ¬gapped
     = yes ((next-number-Proper xs d+o≥2) , (begin
             ⟦ next-number-Proper xs d+o≥2 ⟧
         ≡⟨ cong ⟦_⟧ (next-number-Proper-NotGapped-redirect xs greatest d+o≥2 ¬gapped) ⟩
@@ -123,7 +130,7 @@ Incrementable? xs with Maximum? xs
 Incrementable? xs | yes max = no (Maximum⇒¬Incrementable xs max)
 Incrementable? {b} {d} {o} xs | no ¬max with numView b d o
 Incrementable? xs | no ¬max | NullBase d o
-    = yes ((next-number-NullBase xs ¬max) , (next-number-suc-NullBase xs ¬max))
+    = yes ((next-number-NullBase xs ¬max) , (next-number-NullBase-lemma xs ¬max))
 Incrementable? xs | no ¬max | NoDigits b o
     = no (NoDigits-explode xs)
 Incrementable? xs | no ¬max | AllZeros b
