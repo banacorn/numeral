@@ -74,18 +74,13 @@ Continuous-Others-¬Gapped : ∀ {b d o}
     → Continuous (suc b) (suc d) o
 Continuous-Others-¬Gapped d+o≥2 ¬gapped xs with nextView xs d+o≥2
 Continuous-Others-¬Gapped d+o≥2 ¬gapped xs | NeedNoCarry b d o ¬greatest
-    = (next-number-Proper xs d+o≥2) , {! begin
-        {!  !}
-    ≡⟨ {!   !} ⟩
-        {!   !}
-    ≡⟨ {!   !} ⟩
-        {!   !}
-    ≡⟨ {!   !} ⟩
-        {!   !}
-    ≡⟨ {!   !} ⟩
-        {!   !}
-    ∎   !}
-    -- = next-number-Proper-NeedNoCarry xs ¬greatest d+o≥2 , next-number-Proper-NeedNoCarry-lemma xs ¬greatest d+o≥2
+    = (next-number-Proper xs d+o≥2) , (begin
+            ⟦ next-number-Proper xs d+o≥2 ⟧
+        ≡⟨ cong ⟦_⟧ (next-number-Proper-NeedNoCarry-redirect xs ¬greatest d+o≥2) ⟩
+            ⟦ next-number-Proper-NeedNoCarry xs ¬greatest d+o≥2 ⟧
+        ≡⟨ next-number-Proper-NeedNoCarry-lemma xs ¬greatest d+o≥2 ⟩
+            suc ⟦ xs ⟧
+        ∎)
 Continuous-Others-¬Gapped d+o≥2 ¬gapped (x ∙) | IsGapped b d o greatest gapped = contradiction gapped ¬gapped
 Continuous-Others-¬Gapped d+o≥2 ¬gapped (x ∷ xs) | IsGapped b d o greatest gapped
     = contradiction gapped (>⇒≰ ¬gapped')
