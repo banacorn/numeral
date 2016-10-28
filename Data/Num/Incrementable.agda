@@ -68,19 +68,6 @@ next-number-suc-NullBase {d} {o} (x ∷ xs) ¬max | Others bound | no ¬greatest
         suc (Fin.toℕ x + o + ⟦ xs ⟧ * zero)
     ∎
 
--- ⟦ digit+1 x ¬greatest ∙ ⟧ ≡ suc ⟦ x ∙ ⟧
-next-number-suc-Others-NeedNoCarry-Single : ∀ {b d o}
-    → (x : Digit (suc d))
-    → (¬greatest : ¬ (Greatest x))
-    → Digit-toℕ (digit+1 x ¬greatest) o ≡ suc (Digit-toℕ x o)
-next-number-suc-Others-NeedNoCarry-Single {b} {d} {o} x ¬greatest = proof
-    where
-        next : Num (suc b) (suc d) o
-        next = digit+1 x ¬greatest ∙
-
-        proof : ⟦ next ⟧ ≡ suc ⟦ _∙ {suc b} x ⟧
-        proof = Digit-toℕ-digit+1 x ¬greatest
-
 -- ⟦ z ∷ LCD d o d+o≥2 ∙ ⟧ > suc ⟦ x ∙ ⟧
 next-number-suc-Others-Gapped-Single : ∀ {b d o}
     → (x : Digit (suc d))
@@ -187,21 +174,6 @@ next-number-suc-Others-Gapped {b} {d} {o} x xs greatest d+o≥2 gapped = proof
                 ⟦ z ∷ next-xs ⟧
             □
 
-
--- ⟦ digit+1 x ¬greatest ∷ xs ⟧ ≡ suc ⟦ x ∷ xs ⟧
-next-number-suc-Others-NeedNoCarry : ∀ {b d o}
-    → (x : Digit (suc d))
-    → (xs : Num (suc b) (suc d) o)
-    → (¬greatest : ¬ (Greatest x))
-    → ⟦ digit+1 x ¬greatest ∷ xs ⟧ ≡ suc ⟦ x ∷ xs ⟧
-next-number-suc-Others-NeedNoCarry {b} {d} {o} x xs ¬greatest = proof
-    where
-        next : Num (suc b) (suc d) o
-        next = digit+1 x ¬greatest ∷ xs
-
-        proof : ⟦ next ⟧ ≡ suc ⟦ x ∷ xs ⟧
-        proof = cong (λ w → w + ⟦ xs ⟧ * suc b) (Digit-toℕ-digit+1 x ¬greatest)
-
 -- ⟦ digit+1-n x greatest gap gap>0 ∷ next ∙ ⟧ ≡ suc ⟦ x ∷ xs ⟧
 next-number-suc-Others-¬Gapped : ∀ {b d o}
     → (x : Digit (suc d))
@@ -289,10 +261,8 @@ Incrementable?-Proper : ∀ {b d o}
     → (d+o≥2 : 2 ≤ suc (d + o))
     → Dec (Incrementable xs)
 Incrementable?-Proper xs d+o≥2 with nextView xs d+o≥2 | next-number-Others-¬Incrementable-lemma xs d+o≥2
-Incrementable?-Proper (x ∙)    d+o≥2 | NeedNoCarry b d o ¬greatest | lemma
-    = yes ((digit+1 x ¬greatest ∙) , (next-number-suc-Others-NeedNoCarry-Single {b} x ¬greatest))
-Incrementable?-Proper (x ∷ xs) d+o≥2 | NeedNoCarry b d o ¬greatest | lemma
-    = yes ((digit+1 x ¬greatest ∷ xs) , (next-number-suc-Others-NeedNoCarry x xs ¬greatest))
+Incrementable?-Proper xs    d+o≥2 | NeedNoCarry b d o ¬greatest | lemma
+    = yes ((next-number-Proper-NeedNoCarry xs ¬greatest d+o≥2) , (next-number-Proper-NeedNoCarry-lemma xs ¬greatest d+o≥2))
 Incrementable?-Proper (x ∙)    d+o≥2 | IsGapped b d o greatest gapped | lemma
     = no (lemma (next-number-suc-Others-Gapped-Single x greatest d+o≥2 gapped))
 Incrementable?-Proper (x ∷ xs) d+o≥2 | IsGapped b d o greatest gapped | lemma
@@ -369,22 +339,12 @@ subsume-¬Gapped-prim : ∀ {b d o}
     → (¬gapped : suc (suc d) > (1 ⊔ o) * suc b)
     → 1 ⊔ o ≥ ⟦ next-number-Proper xs d+o≥2 ⟧ ∸ ⟦ xs ⟧
 subsume-¬Gapped-prim xs d+o≥2 ¬gapped with nextView xs d+o≥2
-subsume-¬Gapped-prim (x ∙) d+o≥2 ¬gapped | NeedNoCarry b d o ¬greatest =
+subsume-¬Gapped-prim xs d+o≥2 ¬gapped | NeedNoCarry b d o ¬greatest =
     start
-        Digit-toℕ (digit+1 x ¬greatest) o ∸ Digit-toℕ x o
-    ≈⟨ cong (λ w → w ∸ Digit-toℕ x o) (next-number-suc-Others-NeedNoCarry-Single {b} x ¬greatest) ⟩
-        suc (Fin.toℕ x + o) ∸ (Fin.toℕ x + o)
-    ≈⟨ m+n∸n≡m (suc zero) (Fin.toℕ x + o) ⟩
-        suc zero
-    ≤⟨ m≤m⊔n 1 o ⟩
-        suc zero ⊔ o
-    □
-subsume-¬Gapped-prim (x ∷ xs) d+o≥2 ¬gapped | NeedNoCarry b d o ¬greatest =
-    start
-        ⟦ digit+1 x ¬greatest ∷ xs ⟧ ∸ ⟦ x ∷ xs ⟧
-    ≈⟨ cong (λ w → w ∸ ⟦ x ∷ xs ⟧) (next-number-suc-Others-NeedNoCarry x xs ¬greatest) ⟩
-        suc ⟦ x ∷ xs ⟧ ∸ ⟦ x ∷ xs ⟧
-    ≈⟨ m+n∸n≡m (suc zero) ⟦ x ∷ xs ⟧ ⟩
+        ⟦ next-number-Proper-NeedNoCarry xs ¬greatest d+o≥2 ⟧ ∸ ⟦ xs ⟧
+    ≈⟨ cong (λ w → w ∸ ⟦ xs ⟧) (next-number-Proper-NeedNoCarry-lemma xs ¬greatest d+o≥2) ⟩
+        suc ⟦ xs ⟧ ∸ ⟦ xs ⟧
+    ≈⟨ m+n∸n≡m (suc zero) ⟦ xs ⟧ ⟩
         suc zero
     ≤⟨ m≤m⊔n 1 o ⟩
         suc zero ⊔ o
@@ -441,40 +401,22 @@ subsume-Gapped : ∀ {b d o}
     → suc (suc d) ≤ (⟦ next-number-Proper xs d+o≥2 ⟧ ∸ ⟦ xs ⟧) * suc b
     → suc (suc d) ≤ (1 ⊔ o) * suc b
 subsume-Gapped xs d+o≥2 gapped with nextView xs d+o≥2
-subsume-Gapped (x ∙) d+o≥2 gapped | NeedNoCarry b d o ¬greatest =
+subsume-Gapped xs d+o≥2 gapped | NeedNoCarry b d o ¬greatest =
     start
         suc (suc d)
     ≤⟨ gapped ⟩
-        (Digit-toℕ (digit+1 x ¬greatest) o ∸ Digit-toℕ x o) * suc b
+        (⟦ next-number-Proper-NeedNoCarry xs ¬greatest d+o≥2 ⟧ ∸ ⟦ xs ⟧) * suc b
     ≤⟨ *n-mono (suc b) $
         start
-            Digit-toℕ (digit+1 x ¬greatest) o ∸ Digit-toℕ x o
-        ≈⟨ cong (λ w → w ∸ Digit-toℕ x o) (next-number-suc-Others-NeedNoCarry-Single {b} x ¬greatest) ⟩
-            suc (Fin.toℕ x + o) ∸ (Fin.toℕ x + o)
-        ≈⟨ m+n∸n≡m (suc zero) (Fin.toℕ x + o) ⟩
+            ⟦ next-number-Proper-NeedNoCarry xs ¬greatest d+o≥2 ⟧ ∸ ⟦ xs ⟧
+        ≈⟨ cong (λ w → w ∸ ⟦ xs ⟧) (next-number-Proper-NeedNoCarry-lemma xs ¬greatest d+o≥2) ⟩
+            suc ⟦ xs ⟧ ∸ ⟦ xs ⟧
+        ≈⟨ m+n∸n≡m (suc zero) ⟦ xs ⟧ ⟩
             suc zero
         ≤⟨ m≤m⊔n 1 o ⟩
             suc zero ⊔ o
         □
-    ⟩
-        (suc zero ⊔ o) * suc b
-    □
-subsume-Gapped (x ∷ xs) d+o≥2 gapped | NeedNoCarry b d o ¬greatest =
-    start
-        suc (suc d)
-    ≤⟨ gapped ⟩
-        (⟦ digit+1 x ¬greatest ∷ xs ⟧ ∸ ⟦ x ∷ xs ⟧) * suc b
-    ≤⟨ *n-mono (suc b) $
-        start
-            ⟦ digit+1 x ¬greatest ∷ xs ⟧ ∸ ⟦ x ∷ xs ⟧
-        ≈⟨ cong (λ w → w ∸ ⟦ x ∷ xs ⟧) (next-number-suc-Others-NeedNoCarry x xs ¬greatest) ⟩
-            suc ⟦ x ∷ xs ⟧ ∸ ⟦ x ∷ xs ⟧
-        ≈⟨ m+n∸n≡m (suc zero) ⟦ x ∷ xs ⟧ ⟩
-            suc zero
-        ≤⟨ m≤m⊔n 1 o ⟩
-            suc zero ⊔ o
-        □
-    ⟩
+     ⟩
         (suc zero ⊔ o) * suc b
     □
 subsume-Gapped (x ∙) d+o≥2 _ | IsGapped b d o greatest gapped = gapped

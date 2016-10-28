@@ -333,43 +333,6 @@ gap>0 {b} {d} {o} (x ∷ xs) d+o≥2 =
         next-xs : Num (suc b) (suc d) o
         next-xs = next-number-Proper xs d+o≥2
 
-
-
-
-
--- digit+1-n with gap
--- jump : ∀ {b d o}
---     → (xs : Num (suc b) (suc d) o)
---     → (greatest : Greatest (lsd xs))
---     → (d+o≥2 : 2 ≤ suc (d + o))
---     → Digit (suc d)
--- jump xs greatest d+o≥2 = digit+1-n (lsd xs) greatest (gap xs d+o≥2) (gap>0 xs d+o≥2)
---
--- jump-toℕ : ∀ {b d o}
---     → (xs : Num (suc b) (suc d) o)
---     → (greatest : Greatest (lsd xs))
---     → (d+o≥2 : 2 ≤ suc (d + o))
---     → Digit-toℕ (jump xs greatest d+o≥2) o ≡ suc (Digit-toℕ (lsd xs) o) ∸ gap xs d+o≥2
--- jump-toℕ xs greatest d+o≥2 =
---     begin
---         {! ⟦ digit+1-n (lsd xs) greatest (gap xs d+o≥2) ⟧ !}
---     ≡⟨ {!   !} ⟩
---         {!   !}
---     ≡⟨ {!   !} ⟩
---         {!   !}
---     ≡⟨ {!   !} ⟩
---         {!   !}
---     ≡⟨ {!   !} ⟩
---         {!   !}
---     ∎
---
---         ⟦ digit+1-n x greatest (gap (x ∷ xs) d+o≥2) lower-bound ∷ next-xs ⟧
---     ≈⟨ cong (λ w → w + ⟦ next-xs ⟧ * suc b) (Digit-toℕ-digit+1-n x greatest (gap (x ∷ xs) d+o≥2) lower-bound upper-bound) ⟩
---         suc (Digit-toℕ x o) ∸ gap (x ∷ xs) d+o≥2 + ⟦ next-xs ⟧ * suc b
---     ≈⟨ cong (λ w → suc (Digit-toℕ x o) ∸ w + ⟦ next-xs ⟧ * suc b) (*-distrib-∸ʳ (suc b) ⟦ next-xs ⟧ ⟦ xs ⟧) ⟩
---         suc (Digit-toℕ x o) ∸ (⟦ next-xs ⟧ * suc b ∸ ⟦ xs ⟧ * suc b) + ⟦ next-xs ⟧ * suc b
---     ≈⟨ m∸[o∸n]+o≡m+n (suc (Digit-toℕ x o)) (⟦ xs ⟧ * suc b) (⟦ next-xs ⟧ * suc b) (*n-mono (suc b) (<⇒≤ ⟦next-xs⟧>⟦xs⟧)) upper-bound' ⟩
---         suc (Digit-toℕ x o) + ⟦ xs ⟧ * suc b
 next-number : ∀ {b d o}
     → (xs : Num b d o)
     → ¬ (Maximum xs)
@@ -409,21 +372,39 @@ next-number-is-greater xs ¬max | Proper b d o d+o≥2 = next-number-is-greater-
 -- Properties of next-number on Proper Numbers
 --------------------------------------------------------------------------------
 
--- next-number-Proper-NeedNoCarry-redirect : ∀ {b d o}
---     → {xs : Num (suc b) (suc d) o}
---     → {d+o≥2 : 2 ≤ suc (d + o)}
---     → (¬greatest : ¬ (Greatest (lsd xs)))
---     → next-number-Proper xs  ≡
+-- ¬ Greatest ⇒ NeedNoCarry
+next-number-Proper-NeedNoCarry-redirect : ∀ {b d o}
+    → {xs : Num (suc b) (suc d) o}
+    → {d+o≥2 : 2 ≤ suc (d + o)}
+    → (¬greatest : ¬ (Greatest (lsd xs)))
+    → next-number-Proper xs d+o≥2 ≡ next-number-Proper-NeedNoCarry xs ¬greatest d+o≥2
+next-number-Proper-NeedNoCarry-redirect {_} {_} {_} {xs} {d+o≥2} ¬greatest with nextView xs d+o≥2
+next-number-Proper-NeedNoCarry-redirect ¬greatest | NeedNoCarry b d o _ = refl
+next-number-Proper-NeedNoCarry-redirect ¬greatest | IsGapped b d o greatest gapped = contradiction greatest ¬greatest
+next-number-Proper-NeedNoCarry-redirect ¬greatest | NotGapped b d o greatest ¬gapped = contradiction greatest ¬greatest
 
+next-number-Proper-NeedNoCarry-lemma : ∀ {b d o}
+    → (xs : Num (suc b) (suc d) o)
+    → (¬greatest : ¬ (Greatest (lsd xs)))
+    → (d+o≥2 : 2 ≤ suc (d + o))
+    → ⟦ next-number-Proper-NeedNoCarry xs ¬greatest d+o≥2 ⟧ ≡ suc ⟦ xs ⟧
+next-number-Proper-NeedNoCarry-lemma {b} {d} {o} (x ∙) ¬greatest d+o≥2 =
+    begin
+        -- ⟦ digit+1 x ¬greatest ∙ ⟧
+        Digit-toℕ (digit+1 x ¬greatest) o
+    ≡⟨ Digit-toℕ-digit+1 x ¬greatest ⟩
+        -- suc ⟦ x ∙ ⟧
+        suc (Digit-toℕ x o)
+    ∎
+next-number-Proper-NeedNoCarry-lemma {b} {d} {o} (x ∷ xs) ¬greatest d+o≥2 =
+    begin
+        -- ⟦ digit+1 x ¬greatest ∷ xs ⟧
+        Digit-toℕ (digit+1 x ¬greatest) o + ⟦ xs ⟧ * suc b
+    ≡⟨ cong (λ w → w + ⟦ xs ⟧ * suc b) (Digit-toℕ-digit+1 x ¬greatest) ⟩
+        -- suc ⟦ x ∷ xs ⟧
+        suc (Digit-toℕ x o) + ⟦ xs ⟧ * suc b
+    ∎
 
--- next-number-Proper-NeedNoCarry-lemma : ∀ b d o
---     → {xs : Num (suc b) (suc d) o}
---     → {d+o≥2 : 2 ≤ suc (d + o)}
---     → (¬greatest : ¬ (Greatest (lsd xs)))
---     → NextView (suc b) (suc d) o xs d+o≥2
--- next-number-Proper-NeedNoCarry-lemma = {!   !}
---
---         NeedNoCarry
 
 --------------------------------------------------------------------------------
 -- next-number-is-LUB
@@ -464,19 +445,11 @@ next-number-is-LUB-Proper : ∀ {b d o}
     → ⟦ ys ⟧ > ⟦ xs ⟧
     → ⟦ ys ⟧ ≥ ⟦ next-number-Proper xs d+o≥2 ⟧
 next-number-is-LUB-Proper xs ys d+o≥2 prop with nextView xs d+o≥2
-next-number-is-LUB-Proper (x ∙) ys d+o≥2 prop | NeedNoCarry b d o ¬greatest =
+next-number-is-LUB-Proper xs ys d+o≥2 prop | NeedNoCarry b d o ¬greatest =
     start
-        Digit-toℕ (digit+1 x ¬greatest) o
-    ≈⟨ Digit-toℕ-digit+1 x ¬greatest ⟩
-        suc (Digit-toℕ x o)
-    ≤⟨ prop ⟩
-        ⟦ ys ⟧
-    □
-next-number-is-LUB-Proper (x ∷ xs) ys d+o≥2 prop | NeedNoCarry b d o ¬greatest =
-    start
-        Digit-toℕ (digit+1 x ¬greatest) o + ⟦ xs ⟧ * suc b
-    ≈⟨ cong (λ w → w + ⟦ xs ⟧ * suc b) (Digit-toℕ-digit+1 x ¬greatest) ⟩
-        suc (Digit-toℕ x o) + ⟦ xs ⟧ * suc b
+        ⟦ next-number-Proper-NeedNoCarry xs ¬greatest d+o≥2 ⟧
+    ≈⟨ next-number-Proper-NeedNoCarry-lemma xs ¬greatest d+o≥2 ⟩
+        suc ⟦ xs ⟧
     ≤⟨ prop ⟩
         ⟦ ys ⟧
     □
