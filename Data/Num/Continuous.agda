@@ -71,7 +71,7 @@ Continuous-Proper-¬Gapped d+o≥2 ¬gapped xs with nextView xs d+o≥2
 Continuous-Proper-¬Gapped d+o≥2 ¬gapped xs | NeedNoCarry b d o ¬greatest
     = (next-number-Proper xs d+o≥2) , (begin
             ⟦ next-number-Proper xs d+o≥2 ⟧
-        ≡⟨ cong ⟦_⟧ (next-number-Proper-NeedNoCarry-redirect xs ¬greatest d+o≥2) ⟩
+        ≡⟨ cong ⟦_⟧ (next-number-Proper-refine xs d+o≥2 (NeedNoCarry b d o ¬greatest)) ⟩
             ⟦ next-number-Proper-NeedNoCarry xs ¬greatest d+o≥2 ⟧
         ≡⟨ next-number-Proper-NeedNoCarry-lemma xs ¬greatest d+o≥2 ⟩
             suc ⟦ xs ⟧
@@ -85,7 +85,7 @@ Continuous-Proper-¬Gapped d+o≥2 ¬gapped (x ∷ xs) | IsGapped b d o greatest
 Continuous-Proper-¬Gapped d+o≥2 _ xs | NotGapped b d o greatest ¬gapped
     = (next-number-Proper xs d+o≥2) , (begin
         ⟦ next-number-Proper xs d+o≥2 ⟧
-    ≡⟨ cong ⟦_⟧ (next-number-Proper-NotGapped-redirect xs greatest d+o≥2 ¬gapped) ⟩
+    ≡⟨ cong ⟦_⟧ (next-number-Proper-refine xs d+o≥2 (NotGapped b d o greatest ¬gapped)) ⟩
         ⟦ next-number-Proper-NotGapped xs greatest d+o≥2 ¬gapped ⟧
     ≡⟨ next-number-Proper-NotGapped-lemma xs greatest d+o≥2 ¬gapped ⟩
         suc ⟦ xs ⟧

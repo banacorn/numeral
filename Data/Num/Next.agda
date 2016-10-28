@@ -384,16 +384,33 @@ next-number-is-greater xs ¬max | Proper b d o d+o≥2 = next-number-is-greater-
 -- Properties of next-number on Proper Numbers
 --------------------------------------------------------------------------------
 
--- ¬ Greatest ⇒ NeedNoCarry
-next-number-Proper-NeedNoCarry-redirect : ∀ {b d o}
+next-number-Proper-refine-target : ∀ {b d o}
     → (xs : Num (suc b) (suc d) o)
-    → (¬greatest : ¬ (Greatest (lsd xs)))
     → (d+o≥2 : 2 ≤ suc (d + o))
-    → next-number-Proper xs d+o≥2 ≡ next-number-Proper-NeedNoCarry xs ¬greatest d+o≥2
-next-number-Proper-NeedNoCarry-redirect xs ¬greatest d+o≥2 with nextView xs d+o≥2
-next-number-Proper-NeedNoCarry-redirect xs ¬greatest d+o≥2 | NeedNoCarry b d o _ = refl
-next-number-Proper-NeedNoCarry-redirect xs ¬greatest d+o≥2 | IsGapped b d o greatest gapped = contradiction greatest ¬greatest
-next-number-Proper-NeedNoCarry-redirect xs ¬greatest d+o≥2 | NotGapped b d o greatest ¬gapped = contradiction greatest ¬greatest
+    → NextView (suc b) (suc d) o xs d+o≥2
+    → Set
+next-number-Proper-refine-target xs d+o≥2 (NeedNoCarry b d o ¬greatest) = next-number-Proper xs d+o≥2 ≡ next-number-Proper-NeedNoCarry xs ¬greatest d+o≥2
+next-number-Proper-refine-target xs d+o≥2 (IsGapped b d o greatest gapped) = next-number-Proper xs d+o≥2 ≡ next-number-Proper-IsGapped xs d+o≥2 gapped
+next-number-Proper-refine-target xs d+o≥2 (NotGapped b d o greatest ¬gapped) = next-number-Proper xs d+o≥2 ≡ next-number-Proper-NotGapped xs greatest d+o≥2 ¬gapped
+
+next-number-Proper-refine : ∀ {b d o}
+    → (xs : Num (suc b) (suc d) o)
+    → (d+o≥2 : 2 ≤ suc (d + o))
+    → (view : NextView (suc b) (suc d) o xs d+o≥2)
+    → next-number-Proper-refine-target xs d+o≥2 view
+next-number-Proper-refine xs d+o≥2 (NeedNoCarry b d o ¬greatest) with nextView xs d+o≥2
+next-number-Proper-refine xs d+o≥2 (NeedNoCarry b d o ¬greatest) | NeedNoCarry _ _ _ _ = refl
+next-number-Proper-refine xs d+o≥2 (NeedNoCarry b d o ¬greatest) | IsGapped _ _ _ greatest _ = contradiction greatest ¬greatest
+next-number-Proper-refine xs d+o≥2 (NeedNoCarry b d o ¬greatest) | NotGapped _ _ _ greatest _ = contradiction greatest ¬greatest
+next-number-Proper-refine xs d+o≥2 (IsGapped b d o greatest gapped) with nextView xs d+o≥2
+next-number-Proper-refine xs d+o≥2 (IsGapped b d o greatest gapped) | NeedNoCarry _ _ _ ¬greatest = contradiction greatest ¬greatest
+next-number-Proper-refine xs d+o≥2 (IsGapped b d o greatest gapped) | IsGapped _ _ _ _ _ = refl
+next-number-Proper-refine xs d+o≥2 (IsGapped b d o greatest gapped) | NotGapped _ _ _ _ ¬gapped = contradiction gapped ¬gapped
+next-number-Proper-refine xs d+o≥2 (NotGapped b d o greatest ¬gapped) with nextView xs d+o≥2
+next-number-Proper-refine xs d+o≥2 (NotGapped b d o greatest ¬gapped) | NeedNoCarry _ _ _ ¬greatest = contradiction greatest ¬greatest
+next-number-Proper-refine xs d+o≥2 (NotGapped b d o greatest ¬gapped) | IsGapped _ _ _ _ gapped = contradiction gapped ¬gapped
+next-number-Proper-refine xs d+o≥2 (NotGapped b d o greatest ¬gapped) | NotGapped _ _ _ _ _ = refl
+
 
 next-number-Proper-NeedNoCarry-lemma : ∀ {b d o}
     → (xs : Num (suc b) (suc d) o)
@@ -414,21 +431,6 @@ next-number-Proper-NeedNoCarry-lemma {b} {d} {o} (x ∷ xs) ¬greatest d+o≥2 =
     ≡⟨ cong (λ w → w + ⟦ xs ⟧ * suc b) (Digit-toℕ-digit+1 x ¬greatest) ⟩
         suc (Digit-toℕ x o) + ⟦ xs ⟧ * suc b
     ∎
-
--- Greatest ∧ Gapped ⇒ IsGapped
-next-number-Proper-IsGapped-redirect : ∀ {b d o}
-    → (xs : Num (suc b) (suc d) o)
-    → (greatest : Greatest (lsd xs))
-    → (d+o≥2 : 2 ≤ suc (d + o))
-    → (gapped : Gapped xs d+o≥2)
-    → next-number-Proper xs d+o≥2 ≡ next-number-Proper-IsGapped xs d+o≥2 gapped
-next-number-Proper-IsGapped-redirect xs greatest d+o≥2 gapped with nextView xs d+o≥2
-next-number-Proper-IsGapped-redirect xs greatest d+o≥2 gapped | NeedNoCarry b d o ¬greatest
-    = contradiction greatest ¬greatest
-next-number-Proper-IsGapped-redirect xs greatest d+o≥2 gapped | IsGapped b d o _ _
-    = refl
-next-number-Proper-IsGapped-redirect xs greatest d+o≥2 gapped | NotGapped b d o _ ¬gapped
-    = contradiction gapped ¬gapped
 
 next-number-Proper-IsGapped-lemma : ∀ {b d o}
     → (xs : Num (suc b) (suc d) o)
@@ -481,20 +483,6 @@ next-number-Proper-IsGapped-lemma {b} {d} {o} (x ∷ xs) greatest d+o≥2 gapped
                 ⟦ z ∷ next-xs ⟧
             □
 
--- Greatest ∧ ¬Gapped ⇒ NotGapped
-next-number-Proper-NotGapped-redirect : ∀ {b d o}
-    → (xs : Num (suc b) (suc d) o)
-    → (greatest : Greatest (lsd xs))
-    → (d+o≥2 : 2 ≤ suc (d + o))
-    → (¬gapped : ¬ (Gapped xs d+o≥2))
-    → next-number-Proper xs d+o≥2 ≡ next-number-Proper-NotGapped xs greatest d+o≥2 ¬gapped
-next-number-Proper-NotGapped-redirect xs greatest d+o≥2 ¬gapped with nextView xs d+o≥2
-next-number-Proper-NotGapped-redirect xs greatest d+o≥2 ¬gapped | NeedNoCarry b d o ¬greatest
-    = contradiction greatest ¬greatest
-next-number-Proper-NotGapped-redirect xs greatest₁ d+o≥2 ¬gapped | IsGapped b d o greatest gapped
-    = contradiction gapped ¬gapped
-next-number-Proper-NotGapped-redirect xs greatest₁ d+o≥2 ¬gapped | NotGapped b d o greatest _
-    = refl
 next-number-Proper-NotGapped-lemma : ∀ {b d o}
     → (xs : Num (suc b) (suc d) o)
     → (greatest : Greatest (lsd xs))

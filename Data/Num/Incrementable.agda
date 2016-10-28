@@ -88,7 +88,7 @@ IsGapped⇒¬Incrementable {b} {d} {o} xs greatest d+o≥2 gapped (incremented ,
                 suc (suc ⟦ xs ⟧)
             ≤⟨ next-number-Proper-IsGapped-lemma xs greatest d+o≥2 gapped ⟩
                 ⟦ next-number-Proper-IsGapped xs d+o≥2 gapped ⟧
-            ≈⟨ cong ⟦_⟧ (sym (next-number-Proper-IsGapped-redirect xs greatest d+o≥2 gapped)) ⟩
+            ≈⟨ cong ⟦_⟧ (sym (next-number-Proper-refine xs d+o≥2 (IsGapped b d o greatest gapped))) ⟩
                 ⟦ next-number-Proper xs d+o≥2 ⟧
             □
 
@@ -106,7 +106,7 @@ Incrementable?-Proper xs d+o≥2 with nextView xs d+o≥2
 Incrementable?-Proper xs d+o≥2 | NeedNoCarry b d o ¬greatest
     = yes ((next-number-Proper xs d+o≥2) , (begin
             ⟦ next-number-Proper xs d+o≥2 ⟧
-        ≡⟨ cong ⟦_⟧ (next-number-Proper-NeedNoCarry-redirect xs ¬greatest d+o≥2) ⟩
+        ≡⟨ cong ⟦_⟧ (next-number-Proper-refine xs d+o≥2 (NeedNoCarry b d o ¬greatest)) ⟩
             ⟦ next-number-Proper-NeedNoCarry xs ¬greatest d+o≥2 ⟧
         ≡⟨ next-number-Proper-NeedNoCarry-lemma xs ¬greatest d+o≥2 ⟩
             suc ⟦ xs ⟧
@@ -116,7 +116,7 @@ Incrementable?-Proper xs d+o≥2 | IsGapped b d o greatest gapped
 Incrementable?-Proper xs d+o≥2 | NotGapped b d o greatest ¬gapped
     = yes ((next-number-Proper xs d+o≥2) , (begin
             ⟦ next-number-Proper xs d+o≥2 ⟧
-        ≡⟨ cong ⟦_⟧ (next-number-Proper-NotGapped-redirect xs greatest d+o≥2 ¬gapped) ⟩
+        ≡⟨ cong ⟦_⟧ (next-number-Proper-refine xs d+o≥2 (NotGapped b d o greatest ¬gapped)) ⟩
             ⟦ next-number-Proper-NotGapped xs greatest d+o≥2 ¬gapped ⟧
         ≡⟨ next-number-Proper-NotGapped-lemma xs greatest d+o≥2 ¬gapped ⟩
             suc ⟦ xs ⟧
@@ -152,13 +152,13 @@ increment-next-number-Proper : ∀ {b d o}
 increment-next-number-Proper xs d+o≥2 incr with nextView xs d+o≥2
 increment-next-number-Proper xs d+o≥2 incr | NeedNoCarry b d o ¬greatest = begin
         next-number-Proper xs d+o≥2
-    ≡⟨ next-number-Proper-NeedNoCarry-redirect xs ¬greatest d+o≥2 ⟩
+    ≡⟨ next-number-Proper-refine xs d+o≥2 (NeedNoCarry b d o ¬greatest) ⟩
         next-number-Proper-NeedNoCarry xs ¬greatest d+o≥2
     ∎
 increment-next-number-Proper xs d+o≥2 ()   | IsGapped b d o greatest gapped
 increment-next-number-Proper xs d+o≥2 incr | NotGapped b d o greatest ¬gapped = begin
         next-number-Proper xs d+o≥2
-    ≡⟨ next-number-Proper-NotGapped-redirect xs greatest d+o≥2 ¬gapped ⟩
+    ≡⟨ next-number-Proper-refine xs d+o≥2 (NotGapped b d o greatest ¬gapped) ⟩
         next-number-Proper-NotGapped xs greatest d+o≥2 ¬gapped
     ∎
 
