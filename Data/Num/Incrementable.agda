@@ -262,7 +262,13 @@ Incrementable?-Proper : ∀ {b d o}
     → Dec (Incrementable xs)
 Incrementable?-Proper xs d+o≥2 with nextView xs d+o≥2 | next-number-Others-¬Incrementable-lemma xs d+o≥2
 Incrementable?-Proper xs    d+o≥2 | NeedNoCarry b d o ¬greatest | lemma
-    = yes ((next-number-Proper-NeedNoCarry xs ¬greatest d+o≥2) , (next-number-Proper-NeedNoCarry-lemma xs ¬greatest d+o≥2))
+    = yes ((next-number-Proper xs d+o≥2) , (begin
+            ⟦ next-number-Proper xs d+o≥2 ⟧
+        ≡⟨ cong ⟦_⟧ (next-number-Proper-NeedNoCarry-redirect xs ¬greatest d+o≥2) ⟩
+            ⟦ next-number-Proper-NeedNoCarry xs ¬greatest d+o≥2 ⟧
+        ≡⟨ next-number-Proper-NeedNoCarry-lemma xs ¬greatest d+o≥2 ⟩
+            suc ⟦ xs ⟧
+        ∎))
 Incrementable?-Proper (x ∙)    d+o≥2 | IsGapped b d o greatest gapped | lemma
     = no (lemma (next-number-suc-Others-Gapped-Single x greatest d+o≥2 gapped))
 Incrementable?-Proper (x ∷ xs) d+o≥2 | IsGapped b d o greatest gapped | lemma
@@ -311,8 +317,11 @@ increment-next-number-Proper : ∀ {b d o}
     → (incr : True (Incrementable?-Proper xs d+o≥2))
     → proj₁ (toWitness incr) ≡ next-number-Proper xs d+o≥2
 increment-next-number-Proper xs       d+o≥2 incr with nextView xs d+o≥2
-increment-next-number-Proper (x ∙)    d+o≥2 incr | NeedNoCarry b d o ¬greatest = refl
-increment-next-number-Proper (x ∷ xs) d+o≥2 incr | NeedNoCarry b d o ¬greatest = refl
+increment-next-number-Proper xs       d+o≥2 incr | NeedNoCarry b d o ¬greatest = begin
+        next-number-Proper xs d+o≥2
+    ≡⟨ next-number-Proper-NeedNoCarry-redirect xs ¬greatest d+o≥2 ⟩
+        next-number-Proper-NeedNoCarry xs ¬greatest d+o≥2
+    ∎
 increment-next-number-Proper (x ∙)    d+o≥2 ()   | IsGapped b d o greatest gapped
 increment-next-number-Proper (x ∷ xs) d+o≥2 ()   | IsGapped b d o greatest gapped
 increment-next-number-Proper (x ∙)    d+o≥2 incr | NotGapped b d o greatest ¬gapped = refl

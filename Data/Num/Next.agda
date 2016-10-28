@@ -374,14 +374,14 @@ next-number-is-greater xs ¬max | Proper b d o d+o≥2 = next-number-is-greater-
 
 -- ¬ Greatest ⇒ NeedNoCarry
 next-number-Proper-NeedNoCarry-redirect : ∀ {b d o}
-    → {xs : Num (suc b) (suc d) o}
-    → {d+o≥2 : 2 ≤ suc (d + o)}
+    → (xs : Num (suc b) (suc d) o)
     → (¬greatest : ¬ (Greatest (lsd xs)))
+    → (d+o≥2 : 2 ≤ suc (d + o))
     → next-number-Proper xs d+o≥2 ≡ next-number-Proper-NeedNoCarry xs ¬greatest d+o≥2
-next-number-Proper-NeedNoCarry-redirect {_} {_} {_} {xs} {d+o≥2} ¬greatest with nextView xs d+o≥2
-next-number-Proper-NeedNoCarry-redirect ¬greatest | NeedNoCarry b d o _ = refl
-next-number-Proper-NeedNoCarry-redirect ¬greatest | IsGapped b d o greatest gapped = contradiction greatest ¬greatest
-next-number-Proper-NeedNoCarry-redirect ¬greatest | NotGapped b d o greatest ¬gapped = contradiction greatest ¬greatest
+next-number-Proper-NeedNoCarry-redirect xs ¬greatest d+o≥2 with nextView xs d+o≥2
+next-number-Proper-NeedNoCarry-redirect xs ¬greatest d+o≥2 | NeedNoCarry b d o _ = refl
+next-number-Proper-NeedNoCarry-redirect xs ¬greatest d+o≥2 | IsGapped b d o greatest gapped = contradiction greatest ¬greatest
+next-number-Proper-NeedNoCarry-redirect xs ¬greatest d+o≥2 | NotGapped b d o greatest ¬gapped = contradiction greatest ¬greatest
 
 next-number-Proper-NeedNoCarry-lemma : ∀ {b d o}
     → (xs : Num (suc b) (suc d) o)
