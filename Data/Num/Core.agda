@@ -278,6 +278,9 @@ lsd : ∀ {b d o} → (xs : Num b d o) → Digit d
 lsd (x ∙   ) = x
 lsd (x ∷ xs) = x
 
+lsd-toℕ : ∀ {b d o} → (xs : Num b d o) → Digit-toℕ (lsd xs) o ≤ ⟦ xs ⟧
+lsd-toℕ (x ∙) = ≤-refl
+lsd-toℕ {b} {d} {o} (x ∷ xs) = m≤m+n (Digit-toℕ x o) (⟦ xs ⟧ * b)
 
 ------------------------------------------------------------------------
 -- View of Num

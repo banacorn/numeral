@@ -51,10 +51,7 @@ Continuous-Others-Gapped-counter-example {b} {d} {o} d+o≥2 gapped
 Continuous-Others-Gapped-counter-example d+o≥2 gapped | NeedNoCarry b d o ¬greatest | lemma
     = contradiction (greatest-digit-is-the-Greatest d) ¬greatest
 Continuous-Others-Gapped-counter-example d+o≥2 gapped | IsGapped b d o greatest gapped₁ | lemma
-    = lemma prop
-    where
-        prop : o + Digit-toℕ (LCD d o d+o≥2) o * suc b > suc (Fin.toℕ (Fin.fromℕ d) + o)
-        prop = next-number-suc-Others-Gapped-Single (Fin.fromℕ d) greatest d+o≥2 gapped
+    = lemma (next-number-Proper-IsGapped-lemma (greatest-digit d ∙) greatest d+o≥2 gapped)
 Continuous-Others-Gapped-counter-example d+o≥2 gapped  | NotGapped b d o greatest ¬gapped | lemma
     = contradiction gapped ¬gapped
 
@@ -87,7 +84,6 @@ Continuous-Others-¬Gapped d+o≥2 ¬gapped (x ∷ xs) | IsGapped b d o greatest
     where
         ¬gapped' : suc (suc d) > (⟦ next-number-Proper xs d+o≥2 ⟧ ∸ ⟦ xs ⟧) * suc b
         ¬gapped' = subsume-¬Gapped xs d+o≥2 (≰⇒> ¬gapped)
-    -- = contradiction {!   !} ¬gapped
 Continuous-Others-¬Gapped d+o≥2 ¬gapped xs | NotGapped b d o greatest ¬gapped₁ = {!   !}
 --
 -- Continuous-Others-¬Gapped : ∀ b d o

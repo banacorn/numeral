@@ -525,79 +525,63 @@ next-number-is-LUB-Proper xs (y ∙) d+o≥2 prop | IsGapped b d o greatest gapp
             suc (Digit-toℕ y o)
         ≤⟨ s≤s (greatest-of-all o (lsd xs) y greatest) ⟩
             suc (Digit-toℕ (lsd xs) o)
-        ≤⟨ {!   !} ⟩
-            {!   !}
-        ≤⟨ {!   !} ⟩
-            {!   !}
-        ≤⟨ {!   !} ⟩
+        ≤⟨ s≤s (lsd-toℕ xs) ⟩
             suc ⟦ xs ⟧
         □
-next-number-is-LUB-Proper xs (y ∷ ys) d+o≥2 prop | IsGapped b d o greatest gapped = {!   !}
--- next-number-is-LUB-Proper (x ∙) (y ∙) d+o≥2 prop | IsGapped b d o greatest gapped
---     = contradiction prop (>⇒≰ (s≤s (greatest-of-all o x y greatest)))
--- next-number-is-LUB-Proper (x ∙) (y ∷ ys) d+o≥2 prop | IsGapped b d o greatest gapped =
---     let
---         ⟦ys⟧>0 = tail-mono-strict-Null x y ys greatest prop
---     in
---     start
---         o + (Digit-toℕ (LCD d o d+o≥2) o) * suc b
---     ≈⟨ cong (λ w → o + w * suc b) (LCD-toℕ d o d+o≥2) ⟩
---         o + (1 ⊔ o) * suc b
---     ≤⟨ n+-mono o (*n-mono (suc b) ys-lower-bound) ⟩
---         o + ⟦ ys ⟧ * suc b
---     ≤⟨ +n-mono (⟦ ys ⟧ * suc b) (m≤n+m o (Fin.toℕ y)) ⟩
---         Digit-toℕ y o + ⟦ ys ⟧ * suc b
---     □
---     where
---         ≥1⊔o : ∀ {b d o}
---             → (xs : Num (suc b) (suc d) o)
---             → (d+o≥2 : 2 ≤ suc (d + o))
---             → ⟦ xs ⟧ ≥ 1
---             → ⟦ xs ⟧ ≥ 1 ⊔ o
---         ≥1⊔o {_} {_} {zero}  xs d+o≥2 prop = prop
---         ≥1⊔o {_} {_} {suc o} (x ∙) d+o≥2 prop = m≤n+m (suc o) (Fin.toℕ x)
---         ≥1⊔o {b} {_} {suc o} (x ∷ xs) d+o≥2 prop =
---             start
---                 suc o
---             ≤⟨ m≤n+m (suc o) (Fin.toℕ x) ⟩
---                 Fin.toℕ x + suc o
---             ≤⟨ m≤m+n (Fin.toℕ x + suc o) (⟦ xs ⟧ * suc b) ⟩
---                 Fin.toℕ x + suc o + ⟦ xs ⟧ * suc b
---             □
---
---         ys-lower-bound : ⟦ ys ⟧ ≥ 1 ⊔ o
---         ys-lower-bound = ≥1⊔o ys d+o≥2 (tail-mono-strict-Null x y ys greatest prop)
---
---
--- next-number-is-LUB-Proper (x ∷ xs) (y ∙) d+o≥2 prop | IsGapped b d o greatest gapped = contradiction prop $ >⇒≰ $
---     start
---         suc (Fin.toℕ y + o)
---     ≤⟨ s≤s (greatest-of-all o x y greatest) ⟩
---         suc (Fin.toℕ x + o)
---     ≤⟨ m≤m+n (suc (Fin.toℕ x + o)) (⟦ xs ⟧ * suc b) ⟩
---         suc (Fin.toℕ x + o + ⟦ xs ⟧ * suc b)
---     □
--- next-number-is-LUB-Proper (x ∷ xs) (y ∷ ys) d+o≥2 prop | IsGapped b d o greatest gapped =
---     start
---         o + ⟦ next-xs ⟧ * suc b
---     ≤⟨ n+-mono o (*n-mono (suc b) ⟦next-xs⟧≤⟦ys⟧) ⟩
---         o + ⟦ ys ⟧ * suc b
---     ≤⟨ +n-mono (⟦ ys ⟧ * suc b) (m≤n+m o (Fin.toℕ y)) ⟩
---         Digit-toℕ y o + ⟦ ys ⟧ * suc b
---     □
---     where
---         ¬max-xs : ¬ (Maximum xs)
---         ¬max-xs = Maximum-Proper xs d+o≥2
---
---         next-xs : Num (suc b) (suc d) o
---         next-xs = next-number-Proper xs d+o≥2
---
---         ⟦xs⟧<⟦ys⟧ : ⟦ xs ⟧ < ⟦ ys ⟧
---         ⟦xs⟧<⟦ys⟧ = tail-mono-strict x xs y ys greatest prop
---
---         ⟦next-xs⟧≤⟦ys⟧ : ⟦ next-xs ⟧ ≤ ⟦ ys ⟧
---         ⟦next-xs⟧≤⟦ys⟧ = next-number-is-LUB-Proper xs ys d+o≥2 ⟦xs⟧<⟦ys⟧
---
+next-number-is-LUB-Proper (x ∙) (y ∷ ys) d+o≥2 prop | IsGapped b d o greatest gapped =
+    let
+        ⟦ys⟧>0 = tail-mono-strict-Null x y ys greatest prop
+    in
+    start
+        o + (Digit-toℕ (LCD d o d+o≥2) o) * suc b
+    ≈⟨ cong (λ w → o + w * suc b) (LCD-toℕ d o d+o≥2) ⟩
+        o + (1 ⊔ o) * suc b
+    ≤⟨ n+-mono o (*n-mono (suc b) ys-lower-bound) ⟩
+        o + ⟦ ys ⟧ * suc b
+    ≤⟨ +n-mono (⟦ ys ⟧ * suc b) (m≤n+m o (Fin.toℕ y)) ⟩
+        Digit-toℕ y o + ⟦ ys ⟧ * suc b
+    □
+    where
+        ≥1⊔o : ∀ {b d o}
+            → (xs : Num (suc b) (suc d) o)
+            → (d+o≥2 : 2 ≤ suc (d + o))
+            → ⟦ xs ⟧ ≥ 1
+            → ⟦ xs ⟧ ≥ 1 ⊔ o
+        ≥1⊔o {_} {_} {zero}  xs d+o≥2 prop = prop
+        ≥1⊔o {_} {_} {suc o} (x ∙) d+o≥2 prop = m≤n+m (suc o) (Fin.toℕ x)
+        ≥1⊔o {b} {_} {suc o} (x ∷ xs) d+o≥2 prop =
+            start
+                suc o
+            ≤⟨ m≤n+m (suc o) (Fin.toℕ x) ⟩
+                Fin.toℕ x + suc o
+            ≤⟨ m≤m+n (Fin.toℕ x + suc o) (⟦ xs ⟧ * suc b) ⟩
+                Fin.toℕ x + suc o + ⟦ xs ⟧ * suc b
+            □
+
+        ys-lower-bound : ⟦ ys ⟧ ≥ 1 ⊔ o
+        ys-lower-bound = ≥1⊔o ys d+o≥2 (tail-mono-strict-Null x y ys greatest prop)
+
+next-number-is-LUB-Proper (x ∷ xs) (y ∷ ys) d+o≥2 prop | IsGapped b d o greatest gapped =
+    start
+        o + ⟦ next-xs ⟧ * suc b
+    ≤⟨ n+-mono o (*n-mono (suc b) ⟦next-xs⟧≤⟦ys⟧) ⟩
+        o + ⟦ ys ⟧ * suc b
+    ≤⟨ +n-mono (⟦ ys ⟧ * suc b) (m≤n+m o (Fin.toℕ y)) ⟩
+        Digit-toℕ y o + ⟦ ys ⟧ * suc b
+    □
+    where
+        ¬max-xs : ¬ (Maximum xs)
+        ¬max-xs = Maximum-Proper xs d+o≥2
+
+        next-xs : Num (suc b) (suc d) o
+        next-xs = next-number-Proper xs d+o≥2
+
+        ⟦xs⟧<⟦ys⟧ : ⟦ xs ⟧ < ⟦ ys ⟧
+        ⟦xs⟧<⟦ys⟧ = tail-mono-strict x xs y ys greatest prop
+
+        ⟦next-xs⟧≤⟦ys⟧ : ⟦ next-xs ⟧ ≤ ⟦ ys ⟧
+        ⟦next-xs⟧≤⟦ys⟧ = next-number-is-LUB-Proper xs ys d+o≥2 ⟦xs⟧<⟦ys⟧
+
 
 next-number-is-LUB-Proper (x ∙) ys d+o≥2 prop | NotGapped b d o greatest ¬gapped =
     start
