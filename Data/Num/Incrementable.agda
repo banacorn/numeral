@@ -68,109 +68,6 @@ next-number-suc-NullBase {d} {o} (x ∷ xs) ¬max | Others bound | no ¬greatest
         suc (Fin.toℕ x + o + ⟦ xs ⟧ * zero)
     ∎
 
-
--- ⟦ digit+1-n x greatest ((1 ⊔ o) * suc b) lower-bound ∷ LCD d o d+o≥2 ∙ ⟧ ≡ suc ⟦ x ∙ ⟧
-next-number-suc-Others-¬Gapped-Single : ∀ {b d o}
-    → (x : Digit (suc d))
-    → (greatest : Greatest x)
-    → (d+o≥2 : 2 ≤ suc (d + o))
-    → (¬gapped : ¬ (Gapped {b} (x ∙) d+o≥2))
-    → Digit-toℕ (digit+1-n x greatest (gap {b} (x ∙) d+o≥2) (gap>0 (x ∙) d+o≥2)) o
-        + Digit-toℕ (LCD d o d+o≥2) o * suc b ≡ suc (Digit-toℕ x o)
-next-number-suc-Others-¬Gapped-Single {b} {d} {o} x greatest d+o≥2 ¬gapped = proof
-    where
-        lower-bound : gap (x ∙) d+o≥2 > 0
-        lower-bound = gap>0 (x ∙) d+o≥2
-
-        upper-bound : gap (x ∙) d+o≥2 ≤ suc d
-        upper-bound = ≤-pred $ ≰⇒> ¬gapped
-
-        upper-bound' : gap (x ∙) d+o≥2 ≤ suc (Fin.toℕ x + o)
-        upper-bound' = start
-                (1 ⊔ o) * suc b
-            ≤⟨ upper-bound ⟩
-                suc d
-            ≈⟨ sym greatest ⟩
-                suc (Fin.toℕ x)
-            ≤⟨ m≤m+n (suc (Fin.toℕ x)) o ⟩
-                suc (Fin.toℕ x + o)
-            □
-
-        next : Num (suc b) (suc d) o
-        next = digit+1-n x greatest (gap (x ∙) d+o≥2) lower-bound ∷ LCD d o d+o≥2 ∙
-
-        proof : ⟦ next ⟧ ≡ suc (Digit-toℕ x o)
-        proof =
-            begin
-                Digit-toℕ (digit+1-n x greatest ((1 ⊔ o) * suc b) lower-bound) o + Digit-toℕ (LCD d o d+o≥2) o * suc b
-            ≡⟨ cong (λ w → Digit-toℕ (digit+1-n x greatest ((1 ⊔ o) * suc b) lower-bound) o + w * suc b) (LCD-toℕ d o d+o≥2) ⟩
-                Digit-toℕ (digit+1-n x greatest ((1 ⊔ o) * suc b) lower-bound) o + (1 ⊔ o) * suc b
-            ≡⟨ cong (λ w → w + (1 ⊔ o) * suc b) (Digit-toℕ-digit+1-n x greatest ((1 ⊔ o) * suc b) lower-bound upper-bound) ⟩
-                suc (Fin.toℕ x + o) ∸ (1 ⊔ o) * suc b + (1 ⊔ o) * suc b
-            ≡⟨ m∸n+n≡m upper-bound' ⟩
-                suc (Digit-toℕ x o)
-            ∎
-
-
--- ⟦ digit+1-n x greatest gap gap>0 ∷ next ∙ ⟧ ≡ suc ⟦ x ∷ xs ⟧
-next-number-suc-Others-¬Gapped : ∀ {b d o}
-    → (x : Digit (suc d))
-    → (xs : Num (suc b) (suc d) o)
-    → (greatest : Greatest x)
-    → (d+o≥2 : 2 ≤ suc (d + o))
-    → let
-        ¬max-xs = Maximum-Proper xs d+o≥2
-        next-xs = next-number-Proper xs d+o≥2
-        next = digit+1-n x greatest (gap (x ∷ xs) d+o≥2) (gap>0 (x ∷ xs) d+o≥2) ∷ next-xs
-      in
-      (¬gapped : ¬ (Gapped (x ∷ xs) d+o≥2))
-    → ⟦ next ⟧ ≡ suc ⟦ x ∷ xs ⟧
-next-number-suc-Others-¬Gapped {b} {d} {o} x xs greatest d+o≥2 ¬gapped = proof
-    where
-        ¬max-xs : ¬ (Maximum xs)
-        ¬max-xs = Maximum-Proper xs d+o≥2
-
-        next-xs : Num (suc b) (suc d) o
-        next-xs = next-number-Proper xs d+o≥2
-
-        lower-bound : gap (x ∷ xs) d+o≥2 > 0
-        lower-bound = gap>0 (x ∷ xs) d+o≥2
-
-        upper-bound : gap (x ∷ xs) d+o≥2 ≤ suc d
-        upper-bound = ≤-pred $ ≰⇒> ¬gapped
-
-        next : Num (suc b) (suc d) o
-        next = digit+1-n x greatest (gap (x ∷ xs) d+o≥2) lower-bound ∷ next-xs
-
-        ⟦next-xs⟧>⟦xs⟧ : ⟦ next-xs ⟧ > ⟦ xs ⟧
-        ⟦next-xs⟧>⟦xs⟧ = next-number-is-greater-Proper xs d+o≥2
-
-        upper-bound' : ⟦ next-xs ⟧ * suc b ∸ ⟦ xs ⟧ * suc b ≤ suc (Digit-toℕ x o)
-        upper-bound' =
-            start
-                ⟦ next-xs ⟧ * suc b ∸ ⟦ xs ⟧ * suc b
-            ≈⟨ sym (*-distrib-∸ʳ (suc b) ⟦ next-xs ⟧ ⟦ xs ⟧) ⟩
-                (⟦ next-xs ⟧ ∸ ⟦ xs ⟧) * suc b
-            ≤⟨ upper-bound ⟩
-                suc d
-            ≤⟨ m≤m+n (suc d) o ⟩
-                suc d + o
-            ≈⟨ cong (λ w → w + o) (sym greatest) ⟩
-                suc (Digit-toℕ x o)
-            □
-
-        proof : ⟦ next ⟧ ≡ suc ⟦ x ∷ xs ⟧
-        proof =
-            begin
-                ⟦ next ⟧
-            ≡⟨ cong (λ w → w + ⟦ next-xs ⟧ * suc b) (Digit-toℕ-digit+1-n x greatest (gap (x ∷ xs) d+o≥2) lower-bound upper-bound) ⟩
-                suc (Digit-toℕ x o) ∸ gap (x ∷ xs) d+o≥2 + ⟦ next-xs ⟧ * suc b
-            ≡⟨ cong (λ w → suc (Digit-toℕ x o) ∸ w + ⟦ next-xs ⟧ * suc b) (*-distrib-∸ʳ (suc b) ⟦ next-xs ⟧ ⟦ xs ⟧) ⟩
-                suc (Digit-toℕ x o) ∸ (⟦ next-xs ⟧ * suc b ∸ ⟦ xs ⟧ * suc b) + ⟦ next-xs ⟧ * suc b
-            ≡⟨ m∸[o∸n]+o≡m+n (suc (Digit-toℕ x o)) (⟦ xs ⟧ * suc b) (⟦ next-xs ⟧ * suc b) (*n-mono (suc b) (<⇒≤ ⟦next-xs⟧>⟦xs⟧)) upper-bound' ⟩
-                suc ⟦ x ∷ xs ⟧
-            ∎
-
 next-number-Others-¬Incrementable-lemma : ∀ {b d o}
     → (xs : Num (suc b) (suc d) o)
     → (d+o≥2 : 2 ≤ suc (d + o))
@@ -199,7 +96,7 @@ Incrementable?-Proper : ∀ {b d o}
     → (d+o≥2 : 2 ≤ suc (d + o))
     → Dec (Incrementable xs)
 Incrementable?-Proper xs d+o≥2 with nextView xs d+o≥2 | next-number-Others-¬Incrementable-lemma xs d+o≥2
-Incrementable?-Proper xs    d+o≥2 | NeedNoCarry b d o ¬greatest | lemma
+Incrementable?-Proper xs d+o≥2 | NeedNoCarry b d o ¬greatest | lemma
     = yes ((next-number-Proper xs d+o≥2) , (begin
             ⟦ next-number-Proper xs d+o≥2 ⟧
         ≡⟨ cong ⟦_⟧ (next-number-Proper-NeedNoCarry-redirect xs ¬greatest d+o≥2) ⟩
@@ -207,24 +104,17 @@ Incrementable?-Proper xs    d+o≥2 | NeedNoCarry b d o ¬greatest | lemma
         ≡⟨ next-number-Proper-NeedNoCarry-lemma xs ¬greatest d+o≥2 ⟩
             suc ⟦ xs ⟧
         ∎))
-Incrementable?-Proper xs    d+o≥2 | IsGapped b d o greatest gapped | lemma
+Incrementable?-Proper xs d+o≥2 | IsGapped b d o greatest gapped | lemma
     = no (lemma (next-number-Proper-IsGapped-lemma xs greatest d+o≥2 gapped))
-Incrementable?-Proper (x ∙)    d+o≥2 | NotGapped b d o greatest ¬gapped | lemma
-    = yes (
-        digit+1-n x greatest (gap (x ∙) d+o≥2) (gap>0 (x ∙) d+o≥2) ∷ LCD d o d+o≥2 ∙
-    ,   next-number-suc-Others-¬Gapped-Single x greatest d+o≥2 ¬gapped
-    )
-Incrementable?-Proper (x ∷ xs) d+o≥2 | NotGapped b d o greatest ¬gapped | lemma
-    = yes (next , next-number-suc-Others-¬Gapped x xs greatest d+o≥2 ¬gapped)
-    where
-        ¬max-xs : ¬ (Maximum xs)
-        ¬max-xs = Maximum-Proper xs d+o≥2
+Incrementable?-Proper xs d+o≥2 | NotGapped b d o greatest ¬gapped | lemma
+    = yes ((next-number-Proper xs d+o≥2) , (begin
+            ⟦ next-number-Proper xs d+o≥2 ⟧
+        ≡⟨ cong ⟦_⟧ (next-number-Proper-NotGapped-redirect xs greatest d+o≥2 ¬gapped) ⟩
+            ⟦ next-number-Proper-NotGapped xs greatest d+o≥2 ¬gapped ⟧
+        ≡⟨ next-number-Proper-NotGapped-lemma xs greatest d+o≥2 ¬gapped ⟩
+            suc ⟦ xs ⟧
+        ∎))
 
-        next-xs : Num (suc b) (suc d) o
-        next-xs = next-number-Proper xs d+o≥2
-
-        next : Num (suc b) (suc d) o
-        next = digit+1-n x greatest (gap (x ∷ xs) d+o≥2) (gap>0 (x ∷ xs) d+o≥2) ∷ next-xs
 
 Incrementable? : ∀ {b d o}
     → (xs : Num b d o)
@@ -252,15 +142,18 @@ increment-next-number-Proper : ∀ {b d o}
     → (d+o≥2 : 2 ≤ suc (d + o))
     → (incr : True (Incrementable?-Proper xs d+o≥2))
     → proj₁ (toWitness incr) ≡ next-number-Proper xs d+o≥2
-increment-next-number-Proper xs       d+o≥2 incr with nextView xs d+o≥2
-increment-next-number-Proper xs       d+o≥2 incr | NeedNoCarry b d o ¬greatest = begin
+increment-next-number-Proper xs d+o≥2 incr with nextView xs d+o≥2
+increment-next-number-Proper xs d+o≥2 incr | NeedNoCarry b d o ¬greatest = begin
         next-number-Proper xs d+o≥2
     ≡⟨ next-number-Proper-NeedNoCarry-redirect xs ¬greatest d+o≥2 ⟩
         next-number-Proper-NeedNoCarry xs ¬greatest d+o≥2
     ∎
-increment-next-number-Proper xs       d+o≥2 ()   | IsGapped b d o greatest gapped
-increment-next-number-Proper (x ∙)    d+o≥2 incr | NotGapped b d o greatest ¬gapped = refl
-increment-next-number-Proper (x ∷ xs) d+o≥2 incr | NotGapped b d o greatest ¬gapped = refl
+increment-next-number-Proper xs d+o≥2 ()   | IsGapped b d o greatest gapped
+increment-next-number-Proper xs d+o≥2 incr | NotGapped b d o greatest ¬gapped = begin
+        next-number-Proper xs d+o≥2
+    ≡⟨ next-number-Proper-NotGapped-redirect xs greatest d+o≥2 ¬gapped ⟩
+        next-number-Proper-NotGapped xs greatest d+o≥2 ¬gapped
+    ∎
 
 increment-next-number : ∀ {b d o}
     → (xs : Num b d o)
@@ -309,35 +202,16 @@ subsume-¬Gapped-prim (x ∷ xs) d+o≥2 ¬gapped | IsGapped b d o greatest gapp
             ≤⟨ *n-mono (suc b) (subsume-¬Gapped-prim xs d+o≥2 ¬gapped) ⟩
                 (suc zero ⊔ o) * suc b
             □
-subsume-¬Gapped-prim (x ∙) d+o≥2 _ | NotGapped b d o greatest ¬gapped =
+subsume-¬Gapped-prim xs d+o≥2 _ | NotGapped b d o greatest ¬gapped =
     start
-        ⟦ digit+1-n x greatest (gap (x ∙) d+o≥2) (gap>0 (x ∙) d+o≥2) ∷ LCD d o d+o≥2 ∙ ⟧ ∸ Digit-toℕ x o
-    ≈⟨ cong (λ w → w ∸ Digit-toℕ x o) (next-number-suc-Others-¬Gapped-Single x greatest d+o≥2 ¬gapped) ⟩
-        suc (Fin.toℕ x + o) ∸ (Fin.toℕ x + o)
-    ≈⟨ m+n∸n≡m (suc zero) (Fin.toℕ x + o) ⟩
+        ⟦ next-number-Proper-NotGapped xs greatest d+o≥2 ¬gapped ⟧ ∸ ⟦ xs ⟧
+    ≈⟨ cong (λ w → w ∸ ⟦ xs ⟧) (next-number-Proper-NotGapped-lemma xs greatest d+o≥2 ¬gapped) ⟩
+        suc ⟦ xs ⟧ ∸ ⟦ xs ⟧
+    ≈⟨ m+n∸n≡m (suc zero) ⟦ xs ⟧ ⟩
         suc zero
     ≤⟨ m≤m⊔n 1 o ⟩
         suc zero ⊔ o
     □
-subsume-¬Gapped-prim (x ∷ xs) d+o≥2 _ | NotGapped b d o greatest ¬gapped =
-    start
-        ⟦ digit+1-n x greatest (gap (x ∷ xs) d+o≥2) (gap>0 (x ∷ xs) d+o≥2) ∷ next-xs ⟧ ∸ ⟦ x ∷ xs ⟧
-    ≈⟨ cong (λ w → w ∸ ⟦ x ∷ xs ⟧) (next-number-suc-Others-¬Gapped x xs greatest d+o≥2 ¬gapped) ⟩
-        suc ⟦ x ∷ xs ⟧ ∸ ⟦ x ∷ xs ⟧
-    ≈⟨ m+n∸n≡m (suc zero) ⟦ x ∷ xs ⟧ ⟩
-        suc zero
-    ≤⟨ m≤m⊔n 1 o ⟩
-        suc zero ⊔ o
-    □
-    where
-        ¬max-xs : ¬ (Maximum xs)
-        ¬max-xs = Maximum-Proper xs d+o≥2
-
-        next-xs : Num (suc b) (suc d) o
-        next-xs = next-number-Proper xs d+o≥2
-
-        next : Num (suc b) (suc d) o
-        next = digit+1-n x greatest (gap (x ∷ xs) d+o≥2) (gap>0 (x ∷ xs) d+o≥2) ∷ next-xs
 
 subsume-Gapped : ∀ {b d o}
     → (xs : Num (suc b) (suc d) o)
@@ -365,51 +239,24 @@ subsume-Gapped xs d+o≥2 gapped | NeedNoCarry b d o ¬greatest =
     □
 subsume-Gapped (x ∙) d+o≥2 _ | IsGapped b d o greatest gapped = gapped
 subsume-Gapped (x ∷ xs) d+o≥2 _ | IsGapped b d o greatest gapped = subsume-Gapped xs d+o≥2 gapped
-subsume-Gapped (x ∙) d+o≥2 gapped | NotGapped b d o greatest ¬gapped =
+subsume-Gapped xs d+o≥2 gapped | NotGapped b d o greatest ¬gapped =
     start
         suc (suc d)
     ≤⟨ gapped ⟩
-        (⟦ digit+1-n x greatest (gap (x ∙) d+o≥2) (gap>0 (x ∙) d+o≥2) ∷ LCD d o d+o≥2 ∙ ⟧ ∸ Digit-toℕ x o) * suc b
+        (⟦ next-number-Proper-NotGapped xs greatest d+o≥2 ¬gapped ⟧ ∸ ⟦ xs ⟧) * suc b
     ≤⟨ *n-mono (suc b) $
         start
-            ⟦ digit+1-n x greatest (gap (x ∙) d+o≥2) (gap>0 (x ∙) d+o≥2) ∷ LCD d o d+o≥2 ∙ ⟧ ∸ Digit-toℕ x o
-        ≈⟨ cong (λ w → w ∸ Digit-toℕ x o) (next-number-suc-Others-¬Gapped-Single x greatest d+o≥2 ¬gapped) ⟩
-            suc (Fin.toℕ x + o) ∸ (Fin.toℕ x + o)
-        ≈⟨ m+n∸n≡m (suc zero) (Fin.toℕ x + o) ⟩
+            ⟦ next-number-Proper-NotGapped xs greatest d+o≥2 ¬gapped ⟧ ∸ ⟦ xs ⟧
+        ≈⟨ cong (λ w → w ∸ ⟦ xs ⟧) (next-number-Proper-NotGapped-lemma xs greatest d+o≥2 ¬gapped) ⟩
+            suc ⟦ xs ⟧ ∸ ⟦ xs ⟧
+        ≈⟨ m+n∸n≡m (suc zero) ⟦ xs ⟧ ⟩
             suc zero
         ≤⟨ m≤m⊔n 1 o ⟩
             suc zero ⊔ o
         □
-    ⟩
+     ⟩
         (suc zero ⊔ o) * suc b
     □
-subsume-Gapped (x ∷ xs) d+o≥2 gapped | NotGapped b d o greatest ¬gapped =
-    start
-        suc (suc d)
-    ≤⟨ gapped ⟩
-        (⟦ digit+1-n x greatest (gap (x ∷ xs) d+o≥2) (gap>0 (x ∷ xs) d+o≥2) ∷ next-xs ⟧ ∸ ⟦ x ∷ xs ⟧) * suc b
-    ≤⟨ *n-mono (suc b) $
-        start
-            ⟦ digit+1-n x greatest (gap (x ∷ xs) d+o≥2) (gap>0 (x ∷ xs) d+o≥2) ∷ next-xs ⟧ ∸ ⟦ x ∷ xs ⟧
-        ≈⟨ cong (λ w → w ∸ ⟦ x ∷ xs ⟧) (next-number-suc-Others-¬Gapped x xs greatest d+o≥2 ¬gapped) ⟩
-            suc ⟦ x ∷ xs ⟧ ∸ ⟦ x ∷ xs ⟧
-        ≈⟨ m+n∸n≡m (suc zero) ⟦ x ∷ xs ⟧ ⟩
-            suc zero
-        ≤⟨ m≤m⊔n 1 o ⟩
-            suc zero ⊔ o
-        □
-    ⟩
-        (suc zero ⊔ o) * suc b
-    □
-    where
-        ¬max-xs : ¬ (Maximum xs)
-        ¬max-xs = Maximum-Proper xs d+o≥2
-
-        next-xs : Num (suc b) (suc d) o
-        next-xs = next-number-Proper xs d+o≥2
-
-        next : Num (suc b) (suc d) o
-        next = digit+1-n x greatest (gap (x ∷ xs) d+o≥2) (gap>0 (x ∷ xs) d+o≥2) ∷ next-xs
 
 subsume-¬Gapped : ∀ {b d o}
     → (xs : Num (suc b) (suc d) o)

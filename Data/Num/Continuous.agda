@@ -84,7 +84,14 @@ Continuous-Others-¬Gapped d+o≥2 ¬gapped (x ∷ xs) | IsGapped b d o greatest
     where
         ¬gapped' : suc (suc d) > (⟦ next-number-Proper xs d+o≥2 ⟧ ∸ ⟦ xs ⟧) * suc b
         ¬gapped' = subsume-¬Gapped xs d+o≥2 (≰⇒> ¬gapped)
-Continuous-Others-¬Gapped d+o≥2 ¬gapped xs | NotGapped b d o greatest ¬gapped₁ = {!   !}
+Continuous-Others-¬Gapped d+o≥2 _ xs | NotGapped b d o greatest ¬gapped
+    = (next-number-Proper xs d+o≥2) , (begin
+        ⟦ next-number-Proper xs d+o≥2 ⟧
+    ≡⟨ cong ⟦_⟧ (next-number-Proper-NotGapped-redirect xs greatest d+o≥2 ¬gapped) ⟩
+        ⟦ next-number-Proper-NotGapped xs greatest d+o≥2 ¬gapped ⟧
+    ≡⟨ next-number-Proper-NotGapped-lemma xs {!   !} {!   !} {!   !} ⟩
+        suc ⟦ xs ⟧
+    ∎)
 --
 -- Continuous-Others-¬Gapped : ∀ b d o
 --     → (d+o≥2 : 2 ≤ suc (d + o))
