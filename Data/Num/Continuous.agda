@@ -104,3 +104,15 @@ Continuous? _ _ _ | NullBase d o = no (Bounded⇒¬Continuous (Bounded-NullBase 
 Continuous? _ _ _ | NoDigits b o = yes (λ xs → NoDigits-explode xs)
 Continuous? _ _ _ | AllZeros b = no (Bounded⇒¬Continuous (Bounded-AllZeros b))
 Continuous? _ _ _ | Proper b d o d+o≥2 = Continuous-Proper b d o d+o≥2
+
+1+ : ∀ {b d o}
+    → True (Continuous? b d o)
+    → (xs : Num b d o)
+    → Num b d o
+1+ incr xs = proj₁ (toWitness incr xs)
+
+1+-toℕ : ∀ {b d o}
+    → (xs : Num b d o)
+    → (incr : True (Continuous? b d o))
+    → ⟦ 1+ incr xs ⟧ ≡ suc ⟦ xs ⟧
+1+-toℕ xs incr = proj₂ (toWitness incr xs)
