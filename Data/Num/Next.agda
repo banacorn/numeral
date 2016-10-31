@@ -56,26 +56,47 @@ next-number-NullBase xs       ¬max | Others bound | yes greatest = contradictio
 next-number-NullBase (x ∙   ) ¬max | Others bound | no ¬greatest = digit+1 x ¬greatest ∙
 next-number-NullBase (x ∷ xs) ¬max | Others bound | no ¬greatest = digit+1 x ¬greatest ∷ xs
 
+
 mutual
+    Gapped#0 : ∀ b d o → Set
+    Gapped#0 b d o = suc d < (1 ⊔ o)                * suc b
+
+    Gapped#N : ∀ b d o
+        → (xs : Num (suc b) (suc d) o)
+        → (d+o≥2 : 2 ≤ suc (d + o))
+        → Set
+    Gapped#N b d o xs d+o≥2 = suc d < (⟦ next-xs ⟧ ∸ ⟦ xs ⟧) * suc b
+        where
+            next-xs : Num (suc b) (suc d) o
+            next-xs = next-number-Proper xs d+o≥2
+
+    Gapped#0? :  ∀ b d o
+        → Dec (Gapped#0 b d o)
+    Gapped#0? b d o = suc (suc d) ≤? (1 ⊔ o)                * suc b
+
+    Gapped#N? :  ∀ b d o
+        → (xs : Num (suc b) (suc d) o)
+        → (d+o≥2 : 2 ≤ suc (d + o))
+        → Dec (Gapped#N b d o xs d+o≥2)
+    Gapped#N? b d o xs d+o≥2 = suc (suc d) ≤? (⟦ next-xs ⟧ ∸ ⟦ xs ⟧) * suc b
+        where
+            next-xs : Num (suc b) (suc d) o
+            next-xs = next-number-Proper xs d+o≥2
+
+    -- Gap#N
     Gapped : ∀ {b d o}
         → (xs : Num (suc b) (suc d) o)
         → (d+o≥2 : 2 ≤ suc (d + o))
         → Set
-    Gapped {b} {d} {o} (x ∙)    _     = suc d < (1 ⊔ o)                * suc b
-    Gapped {b} {d} {o} (x ∷ xs) d+o≥2 = suc d < (⟦ next-xs ⟧ ∸ ⟦ xs ⟧) * suc b
-        where
-            next-xs : Num (suc b) (suc d) o
-            next-xs = next-number-Proper xs d+o≥2
+    Gapped {b} {d} {o} (x ∙)    _     = Gapped#0 b d o
+    Gapped {b} {d} {o} (x ∷ xs) d+o≥2 = Gapped#N b d o xs d+o≥2
 
     Gapped? : ∀ {b d o}
         → (xs : Num (suc b) (suc d) o)
         → (d+o≥2 : 2 ≤ suc (d + o))
         → Dec (Gapped {b} {d} {o} xs d+o≥2)
-    Gapped? {b} {d} {o} (x ∙)    _     = suc (suc d) ≤? (1 ⊔ o)                * suc b
-    Gapped? {b} {d} {o} (x ∷ xs) d+o≥2 = suc (suc d) ≤? (⟦ next-xs ⟧ ∸ ⟦ xs ⟧) * suc b
-        where
-            next-xs : Num (suc b) (suc d) o
-            next-xs = next-number-Proper xs d+o≥2
+    Gapped? {b} {d} {o} (x ∙)    _     = Gapped#0? b d o
+    Gapped? {b} {d} {o} (x ∷ xs) d+o≥2 = Gapped#N? b d o xs d+o≥2
 
     data NextView : (b d o : ℕ) (xs : Num b d o) (d+o≥2 : 2 ≤ d + o) → Set where
         NeedNoCarry : ∀ b d o

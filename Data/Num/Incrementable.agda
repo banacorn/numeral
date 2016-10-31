@@ -177,59 +177,17 @@ increment-next-number xs _ incr | no ¬max | Proper b d o d+o≥2
     = increment-next-number-Proper xs d+o≥2 incr
 
 
-subsume-¬Gapped-prim : ∀ {b d o}
-    → (xs : Num (suc b) (suc d) o)
-    → (d+o≥2 : 2 ≤ suc (d + o))
-    → (¬gapped : suc (suc d) > (1 ⊔ o) * suc b)
-    → 1 ⊔ o ≥ ⟦ next-number-Proper xs d+o≥2 ⟧ ∸ ⟦ xs ⟧
-subsume-¬Gapped-prim xs d+o≥2 ¬gapped with nextView xs d+o≥2
-subsume-¬Gapped-prim xs d+o≥2 ¬gapped | NeedNoCarry b d o ¬greatest =
-    start
-        ⟦ next-number-Proper-NeedNoCarry xs ¬greatest d+o≥2 ⟧ ∸ ⟦ xs ⟧
-    ≈⟨ cong (λ w → w ∸ ⟦ xs ⟧) (next-number-Proper-NeedNoCarry-lemma xs ¬greatest d+o≥2) ⟩
-        suc ⟦ xs ⟧ ∸ ⟦ xs ⟧
-    ≈⟨ m+n∸n≡m (suc zero) ⟦ xs ⟧ ⟩
-        suc zero
-    ≤⟨ m≤m⊔n 1 o ⟩
-        suc zero ⊔ o
-    □
-subsume-¬Gapped-prim (x ∙) d+o≥2 ¬gapped | IsGapped b d o greatest gapped
-    = contradiction gapped (>⇒≰ ¬gapped)
-subsume-¬Gapped-prim (x ∷ xs) d+o≥2 ¬gapped | IsGapped b d o greatest gapped
-    = contradiction refl (<⇒≢ p)
-    where
-        p : (suc zero ⊔ o) * suc b < (suc zero ⊔ o) * suc b
-        p =
-            start
-                suc ((suc zero ⊔ o) * suc b)
-            ≤⟨ ¬gapped ⟩
-                suc (suc d)
-            ≤⟨ gapped ⟩
-                (⟦ next-number-Proper xs d+o≥2 ⟧ ∸ ⟦ xs ⟧) * suc b
-            ≤⟨ *n-mono (suc b) (subsume-¬Gapped-prim xs d+o≥2 ¬gapped) ⟩
-                (suc zero ⊔ o) * suc b
-            □
-subsume-¬Gapped-prim xs d+o≥2 _ | NotGapped b d o greatest ¬gapped =
-    start
-        ⟦ next-number-Proper-NotGapped xs greatest d+o≥2 ¬gapped ⟧ ∸ ⟦ xs ⟧
-    ≈⟨ cong (λ w → w ∸ ⟦ xs ⟧) (next-number-Proper-NotGapped-lemma xs greatest d+o≥2 ¬gapped) ⟩
-        suc ⟦ xs ⟧ ∸ ⟦ xs ⟧
-    ≈⟨ m+n∸n≡m (suc zero) ⟦ xs ⟧ ⟩
-        suc zero
-    ≤⟨ m≤m⊔n 1 o ⟩
-        suc zero ⊔ o
-    □
 
-subsume-Gapped : ∀ {b d o}
+Gapped#N⇒Gapped#0 : ∀ {b d o}
     → (xs : Num (suc b) (suc d) o)
     → (d+o≥2 : 2 ≤ suc (d + o))
-    → suc (suc d) ≤ (⟦ next-number-Proper xs d+o≥2 ⟧ ∸ ⟦ xs ⟧) * suc b
-    → suc (suc d) ≤ (1 ⊔ o) * suc b
-subsume-Gapped xs d+o≥2 gapped with nextView xs d+o≥2
-subsume-Gapped xs d+o≥2 gapped | NeedNoCarry b d o ¬greatest =
+    → Gapped#N b d o xs d+o≥2
+    → Gapped#0 b d o
+Gapped#N⇒Gapped#0 xs d+o≥2 gapped#N with nextView xs d+o≥2
+Gapped#N⇒Gapped#0 xs d+o≥2 gapped#N | NeedNoCarry b d o ¬greatest =
     start
         suc (suc d)
-    ≤⟨ gapped ⟩
+    ≤⟨ gapped#N ⟩
         (⟦ next-number-Proper-NeedNoCarry xs ¬greatest d+o≥2 ⟧ ∸ ⟦ xs ⟧) * suc b
     ≤⟨ *n-mono (suc b) $
         start
@@ -244,37 +202,30 @@ subsume-Gapped xs d+o≥2 gapped | NeedNoCarry b d o ¬greatest =
      ⟩
         (suc zero ⊔ o) * suc b
     □
-subsume-Gapped (x ∙) d+o≥2 _ | IsGapped b d o greatest gapped = gapped
-subsume-Gapped (x ∷ xs) d+o≥2 _ | IsGapped b d o greatest gapped = subsume-Gapped xs d+o≥2 gapped
-subsume-Gapped xs d+o≥2 gapped | NotGapped b d o greatest ¬gapped =
-    start
-        suc (suc d)
-    ≤⟨ gapped ⟩
-        (⟦ next-number-Proper-NotGapped xs greatest d+o≥2 ¬gapped ⟧ ∸ ⟦ xs ⟧) * suc b
-    ≤⟨ *n-mono (suc b) $
+Gapped#N⇒Gapped#0 (x ∙)    d+o≥2 gapped#N | IsGapped b d o greatest gapped#0 = gapped#0
+Gapped#N⇒Gapped#0 (x ∷ xs) d+o≥2 _        | IsGapped b d o greatest gapped#N = Gapped#N⇒Gapped#0 xs d+o≥2 gapped#N
+Gapped#N⇒Gapped#0 xs d+o≥2 gapped#N | NotGapped b d o greatest ¬gapped =
         start
-            ⟦ next-number-Proper-NotGapped xs greatest d+o≥2 ¬gapped ⟧ ∸ ⟦ xs ⟧
-        ≈⟨ cong (λ w → w ∸ ⟦ xs ⟧) (next-number-Proper-NotGapped-lemma xs greatest d+o≥2 ¬gapped) ⟩
-            suc ⟦ xs ⟧ ∸ ⟦ xs ⟧
-        ≈⟨ m+n∸n≡m (suc zero) ⟦ xs ⟧ ⟩
-            suc zero
-        ≤⟨ m≤m⊔n 1 o ⟩
-            suc zero ⊔ o
+            suc (suc d)
+        ≤⟨ gapped#N ⟩
+            (⟦ next-number-Proper-NotGapped xs greatest d+o≥2 ¬gapped ⟧ ∸ ⟦ xs ⟧) * suc b
+        ≤⟨ *n-mono (suc b) $
+            start
+                ⟦ next-number-Proper-NotGapped xs greatest d+o≥2 ¬gapped ⟧ ∸ ⟦ xs ⟧
+            ≈⟨ cong (λ w → w ∸ ⟦ xs ⟧) (next-number-Proper-NotGapped-lemma xs greatest d+o≥2 ¬gapped) ⟩
+                suc ⟦ xs ⟧ ∸ ⟦ xs ⟧
+            ≈⟨ m+n∸n≡m (suc zero) ⟦ xs ⟧ ⟩
+                suc zero
+            ≤⟨ m≤m⊔n 1 o ⟩
+                suc zero ⊔ o
+            □
+         ⟩
+            (suc zero ⊔ o) * suc b
         □
-     ⟩
-        (suc zero ⊔ o) * suc b
-    □
 
-subsume-¬Gapped : ∀ {b d o}
+¬Gapped#0⇒¬Gapped#N : ∀ {b d o}
     → (xs : Num (suc b) (suc d) o)
     → (d+o≥2 : 2 ≤ suc (d + o))
-    → suc (suc d) > (1 ⊔ o) * suc b
-    → suc (suc d) > (⟦ next-number-Proper xs d+o≥2 ⟧ ∸ ⟦ xs ⟧) * suc b
-subsume-¬Gapped {b} {d} {o} xs d+o≥2 ¬gapped =
-    start
-        suc ((⟦ next-number-Proper xs d+o≥2 ⟧ ∸ ⟦ xs ⟧) * suc b)
-    ≤⟨ s≤s (*n-mono (suc b) (subsume-¬Gapped-prim xs d+o≥2 ¬gapped)) ⟩
-        suc ((suc zero ⊔ o) * suc b)
-    ≤⟨ ¬gapped ⟩
-        suc (suc d)
-    □
+    → ¬ (Gapped#0 b d o)
+    → ¬ (Gapped#N b d o xs d+o≥2)
+¬Gapped#0⇒¬Gapped#N xs d+o≥2 ¬Gapped#0 = contraposition (Gapped#N⇒Gapped#0 xs d+o≥2) ¬Gapped#0

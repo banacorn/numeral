@@ -76,12 +76,9 @@ Continuous-Proper-¬Gapped d+o≥2 ¬gapped xs | NeedNoCarry b d o ¬greatest
         ≡⟨ next-number-Proper-NeedNoCarry-lemma xs ¬greatest d+o≥2 ⟩
             suc ⟦ xs ⟧
         ∎)
-Continuous-Proper-¬Gapped d+o≥2 ¬gapped (x ∙) | IsGapped b d o greatest gapped = contradiction gapped ¬gapped
+Continuous-Proper-¬Gapped d+o≥2 ¬gapped (x ∙)    | IsGapped b d o greatest gapped = contradiction gapped ¬gapped
 Continuous-Proper-¬Gapped d+o≥2 ¬gapped (x ∷ xs) | IsGapped b d o greatest gapped
-    = contradiction gapped (>⇒≰ ¬gapped')
-    where
-        ¬gapped' : suc (suc d) > (⟦ next-number-Proper xs d+o≥2 ⟧ ∸ ⟦ xs ⟧) * suc b
-        ¬gapped' = subsume-¬Gapped xs d+o≥2 (≰⇒> ¬gapped)
+    = contradiction gapped (¬Gapped#0⇒¬Gapped#N xs d+o≥2 ¬gapped)
 Continuous-Proper-¬Gapped d+o≥2 _ xs | NotGapped b d o greatest ¬gapped
     = (next-number-Proper xs d+o≥2) , (begin
         ⟦ next-number-Proper xs d+o≥2 ⟧
@@ -94,9 +91,9 @@ Continuous-Proper-¬Gapped d+o≥2 _ xs | NotGapped b d o greatest ¬gapped
 Continuous-Proper : ∀ b d o
     → (d+o≥2 : 2 ≤ suc (d + o))
     → Dec (Continuous (suc b) (suc d) o)
-Continuous-Proper b d o d+o≥2 with suc (suc d) ≤? (1 ⊔ o) * suc b
-Continuous-Proper b d o d+o≥2 | yes gapped = no (Continuous-Proper-Gapped d+o≥2 gapped)
-Continuous-Proper b d o d+o≥2 | no ¬gapped = yes (Continuous-Proper-¬Gapped d+o≥2 ¬gapped)
+Continuous-Proper b d o d+o≥2 with Gapped#0? b d o
+Continuous-Proper b d o d+o≥2 | yes gapped#0 = no  (Continuous-Proper-Gapped d+o≥2 gapped#0)
+Continuous-Proper b d o d+o≥2 | no ¬gapped#0 = yes (Continuous-Proper-¬Gapped d+o≥2 ¬gapped#0)
 
 Continuous? : ∀ b d o → Dec (Continuous b d o)
 Continuous? b d o with numView b d o
@@ -116,3 +113,10 @@ Continuous? _ _ _ | Proper b d o d+o≥2 = Continuous-Proper b d o d+o≥2
     → (incr : True (Continuous? b d o))
     → ⟦ 1+ incr xs ⟧ ≡ suc ⟦ xs ⟧
 1+-toℕ xs incr = proj₂ (toWitness incr xs)
+
+-- fromℕ : ∀ {b d o}
+--     → (incr : True (Continuous? b d o))
+--     → ℕ
+--     → Num b d o
+-- fromℕ incr zero = {!   !}
+-- fromℕ incr (suc n) = {!   !}
