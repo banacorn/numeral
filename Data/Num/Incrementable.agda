@@ -71,14 +71,14 @@ next-number-NullBase-lemma {d} {o} (x ∷ xs) ¬max | Others bound | no ¬greate
 IsGapped⇒¬Incrementable : ∀ {b d o}
     → (xs : Num (suc b) (suc d) o)
     → (greatest : Greatest (lsd xs))
-    → (d+o≥2 : 2 ≤ suc (d + o))
-    → (gapped : Gapped xs d+o≥2)
+    → (proper : 2 ≤ suc (d + o))
+    → (gapped : Gapped xs proper)
     → ¬ (Incrementable xs)
-IsGapped⇒¬Incrementable {b} {d} {o} xs greatest d+o≥2 gapped (incremented , claim)
+IsGapped⇒¬Incrementable {b} {d} {o} xs greatest proper gapped (incremented , claim)
     = contradiction ⟦next⟧>⟦incremented⟧ ⟦next⟧≯⟦incremented⟧
     where
         next : Num (suc b) (suc d) o
-        next = next-number-Proper xs d+o≥2
+        next = next-number-Proper xs proper
 
         ⟦next⟧>⟦incremented⟧ : ⟦ next ⟧ > ⟦ incremented ⟧
         ⟦next⟧>⟦incremented⟧ =
@@ -86,39 +86,39 @@ IsGapped⇒¬Incrementable {b} {d} {o} xs greatest d+o≥2 gapped (incremented ,
                 suc ⟦ incremented ⟧
             ≈⟨ cong suc claim ⟩
                 suc (suc ⟦ xs ⟧)
-            ≤⟨ next-number-Proper-IsGapped-lemma xs greatest d+o≥2 gapped ⟩
-                ⟦ next-number-Proper-IsGapped xs d+o≥2 gapped ⟧
-            ≈⟨ cong ⟦_⟧ (sym (next-number-Proper-refine xs d+o≥2 (IsGapped b d o greatest gapped))) ⟩
-                ⟦ next-number-Proper xs d+o≥2 ⟧
+            ≤⟨ next-number-Proper-IsGapped-lemma xs greatest proper gapped ⟩
+                ⟦ next-number-Proper-IsGapped xs proper gapped ⟧
+            ≈⟨ cong ⟦_⟧ (sym (next-number-Proper-refine xs proper (IsGapped b d o greatest gapped))) ⟩
+                ⟦ next-number-Proper xs proper ⟧
             □
 
         ⟦next⟧≯⟦incremented⟧ : ⟦ next ⟧ ≯ ⟦ incremented ⟧
-        ⟦next⟧≯⟦incremented⟧ = ≤⇒≯ $ next-number-is-LUB-Proper xs incremented d+o≥2 (m≡1+n⇒m>n claim)
+        ⟦next⟧≯⟦incremented⟧ = ≤⇒≯ $ next-number-is-LUB-Proper xs incremented proper (m≡1+n⇒m>n claim)
 
 
 
 
 Incrementable?-Proper : ∀ {b d o}
     → (xs : Num (suc b) (suc d) o)
-    → (d+o≥2 : 2 ≤ suc (d + o))
+    → (proper : 2 ≤ suc (d + o))
     → Dec (Incrementable xs)
-Incrementable?-Proper xs d+o≥2 with nextView xs d+o≥2
-Incrementable?-Proper xs d+o≥2 | NeedNoCarry b d o ¬greatest
-    = yes ((next-number-Proper xs d+o≥2) , (begin
-            ⟦ next-number-Proper xs d+o≥2 ⟧
-        ≡⟨ cong ⟦_⟧ (next-number-Proper-refine xs d+o≥2 (NeedNoCarry b d o ¬greatest)) ⟩
-            ⟦ next-number-Proper-NeedNoCarry xs ¬greatest d+o≥2 ⟧
-        ≡⟨ next-number-Proper-NeedNoCarry-lemma xs ¬greatest d+o≥2 ⟩
+Incrementable?-Proper xs proper with nextView xs proper
+Incrementable?-Proper xs proper | NeedNoCarry b d o ¬greatest
+    = yes ((next-number-Proper xs proper) , (begin
+            ⟦ next-number-Proper xs proper ⟧
+        ≡⟨ cong ⟦_⟧ (next-number-Proper-refine xs proper (NeedNoCarry b d o ¬greatest)) ⟩
+            ⟦ next-number-Proper-NeedNoCarry xs ¬greatest proper ⟧
+        ≡⟨ next-number-Proper-NeedNoCarry-lemma xs ¬greatest proper ⟩
             suc ⟦ xs ⟧
         ∎))
-Incrementable?-Proper xs d+o≥2 | IsGapped b d o greatest gapped
-    = no (IsGapped⇒¬Incrementable xs greatest d+o≥2 gapped)
-Incrementable?-Proper xs d+o≥2 | NotGapped b d o greatest ¬gapped
-    = yes ((next-number-Proper xs d+o≥2) , (begin
-            ⟦ next-number-Proper xs d+o≥2 ⟧
-        ≡⟨ cong ⟦_⟧ (next-number-Proper-refine xs d+o≥2 (NotGapped b d o greatest ¬gapped)) ⟩
-            ⟦ next-number-Proper-NotGapped xs greatest d+o≥2 ¬gapped ⟧
-        ≡⟨ next-number-Proper-NotGapped-lemma xs greatest d+o≥2 ¬gapped ⟩
+Incrementable?-Proper xs proper | IsGapped b d o greatest gapped
+    = no (IsGapped⇒¬Incrementable xs greatest proper gapped)
+Incrementable?-Proper xs proper | NotGapped b d o greatest ¬gapped
+    = yes ((next-number-Proper xs proper) , (begin
+            ⟦ next-number-Proper xs proper ⟧
+        ≡⟨ cong ⟦_⟧ (next-number-Proper-refine xs proper (NotGapped b d o greatest ¬gapped)) ⟩
+            ⟦ next-number-Proper-NotGapped xs greatest proper ¬gapped ⟧
+        ≡⟨ next-number-Proper-NotGapped-lemma xs greatest proper ¬gapped ⟩
             suc ⟦ xs ⟧
         ∎))
 
@@ -135,8 +135,8 @@ Incrementable? xs | no ¬max | NoDigits b o
     = no (NoDigits-explode xs)
 Incrementable? xs | no ¬max | AllZeros b
     = no (contradiction (Maximum-AllZeros xs) ¬max)
-Incrementable? xs | no ¬max | Proper b d o d+o≥2
-    = Incrementable?-Proper xs d+o≥2
+Incrementable? xs | no ¬max | Proper b d o proper
+    = Incrementable?-Proper xs proper
 
 increment : ∀ {b d o}
     → (xs : Num b d o)
@@ -146,20 +146,20 @@ increment xs incr = proj₁ $ toWitness incr
 
 increment-next-number-Proper : ∀ {b d o}
     → (xs : Num (suc b) (suc d) o)
-    → (d+o≥2 : 2 ≤ suc (d + o))
-    → (incr : True (Incrementable?-Proper xs d+o≥2))
-    → proj₁ (toWitness incr) ≡ next-number-Proper xs d+o≥2
-increment-next-number-Proper xs d+o≥2 incr with nextView xs d+o≥2
-increment-next-number-Proper xs d+o≥2 incr | NeedNoCarry b d o ¬greatest = begin
-        next-number-Proper xs d+o≥2
-    ≡⟨ next-number-Proper-refine xs d+o≥2 (NeedNoCarry b d o ¬greatest) ⟩
-        next-number-Proper-NeedNoCarry xs ¬greatest d+o≥2
+    → (proper : 2 ≤ suc (d + o))
+    → (incr : True (Incrementable?-Proper xs proper))
+    → proj₁ (toWitness incr) ≡ next-number-Proper xs proper
+increment-next-number-Proper xs proper incr with nextView xs proper
+increment-next-number-Proper xs proper incr | NeedNoCarry b d o ¬greatest = begin
+        next-number-Proper xs proper
+    ≡⟨ next-number-Proper-refine xs proper (NeedNoCarry b d o ¬greatest) ⟩
+        next-number-Proper-NeedNoCarry xs ¬greatest proper
     ∎
-increment-next-number-Proper xs d+o≥2 ()   | IsGapped b d o greatest gapped
-increment-next-number-Proper xs d+o≥2 incr | NotGapped b d o greatest ¬gapped = begin
-        next-number-Proper xs d+o≥2
-    ≡⟨ next-number-Proper-refine xs d+o≥2 (NotGapped b d o greatest ¬gapped) ⟩
-        next-number-Proper-NotGapped xs greatest d+o≥2 ¬gapped
+increment-next-number-Proper xs proper ()   | IsGapped b d o greatest gapped
+increment-next-number-Proper xs proper incr | NotGapped b d o greatest ¬gapped = begin
+        next-number-Proper xs proper
+    ≡⟨ next-number-Proper-refine xs proper (NotGapped b d o greatest ¬gapped) ⟩
+        next-number-Proper-NotGapped xs greatest proper ¬gapped
     ∎
 
 increment-next-number : ∀ {b d o}
@@ -173,26 +173,26 @@ increment-next-number {b} {d} {o} xs ¬max incr | no _  with numView b d o
 increment-next-number xs _ incr | no ¬max | NullBase d o = refl
 increment-next-number xs _ ()   | no ¬max | NoDigits b o
 increment-next-number xs _ ()   | no ¬max | AllZeros b
-increment-next-number xs _ incr | no ¬max | Proper b d o d+o≥2
-    = increment-next-number-Proper xs d+o≥2 incr
+increment-next-number xs _ incr | no ¬max | Proper b d o proper
+    = increment-next-number-Proper xs proper incr
 
 
 
 Gapped#N⇒Gapped#0 : ∀ {b d o}
     → (xs : Num (suc b) (suc d) o)
-    → (d+o≥2 : 2 ≤ suc (d + o))
-    → Gapped#N b d o xs d+o≥2
+    → (proper : 2 ≤ suc (d + o))
+    → Gapped#N b d o xs proper
     → Gapped#0 b d o
-Gapped#N⇒Gapped#0 xs d+o≥2 gapped#N with nextView xs d+o≥2
-Gapped#N⇒Gapped#0 xs d+o≥2 gapped#N | NeedNoCarry b d o ¬greatest =
+Gapped#N⇒Gapped#0 xs proper gapped#N with nextView xs proper
+Gapped#N⇒Gapped#0 xs proper gapped#N | NeedNoCarry b d o ¬greatest =
     start
         suc (suc d)
     ≤⟨ gapped#N ⟩
-        (⟦ next-number-Proper-NeedNoCarry xs ¬greatest d+o≥2 ⟧ ∸ ⟦ xs ⟧) * suc b
+        (⟦ next-number-Proper-NeedNoCarry xs ¬greatest proper ⟧ ∸ ⟦ xs ⟧) * suc b
     ≤⟨ *n-mono (suc b) $
         start
-            ⟦ next-number-Proper-NeedNoCarry xs ¬greatest d+o≥2 ⟧ ∸ ⟦ xs ⟧
-        ≈⟨ cong (λ w → w ∸ ⟦ xs ⟧) (next-number-Proper-NeedNoCarry-lemma xs ¬greatest d+o≥2) ⟩
+            ⟦ next-number-Proper-NeedNoCarry xs ¬greatest proper ⟧ ∸ ⟦ xs ⟧
+        ≈⟨ cong (λ w → w ∸ ⟦ xs ⟧) (next-number-Proper-NeedNoCarry-lemma xs ¬greatest proper) ⟩
             suc ⟦ xs ⟧ ∸ ⟦ xs ⟧
         ≈⟨ m+n∸n≡m (suc zero) ⟦ xs ⟧ ⟩
             suc zero
@@ -202,17 +202,17 @@ Gapped#N⇒Gapped#0 xs d+o≥2 gapped#N | NeedNoCarry b d o ¬greatest =
      ⟩
         (suc zero ⊔ o) * suc b
     □
-Gapped#N⇒Gapped#0 (x ∙)    d+o≥2 gapped#N | IsGapped b d o greatest gapped#0 = gapped#0
-Gapped#N⇒Gapped#0 (x ∷ xs) d+o≥2 _        | IsGapped b d o greatest gapped#N = Gapped#N⇒Gapped#0 xs d+o≥2 gapped#N
-Gapped#N⇒Gapped#0 xs d+o≥2 gapped#N | NotGapped b d o greatest ¬gapped =
+Gapped#N⇒Gapped#0 (x ∙)    proper gapped#N | IsGapped b d o greatest gapped#0 = gapped#0
+Gapped#N⇒Gapped#0 (x ∷ xs) proper _        | IsGapped b d o greatest gapped#N = Gapped#N⇒Gapped#0 xs proper gapped#N
+Gapped#N⇒Gapped#0 xs proper gapped#N | NotGapped b d o greatest ¬gapped =
         start
             suc (suc d)
         ≤⟨ gapped#N ⟩
-            (⟦ next-number-Proper-NotGapped xs greatest d+o≥2 ¬gapped ⟧ ∸ ⟦ xs ⟧) * suc b
+            (⟦ next-number-Proper-NotGapped xs greatest proper ¬gapped ⟧ ∸ ⟦ xs ⟧) * suc b
         ≤⟨ *n-mono (suc b) $
             start
-                ⟦ next-number-Proper-NotGapped xs greatest d+o≥2 ¬gapped ⟧ ∸ ⟦ xs ⟧
-            ≈⟨ cong (λ w → w ∸ ⟦ xs ⟧) (next-number-Proper-NotGapped-lemma xs greatest d+o≥2 ¬gapped) ⟩
+                ⟦ next-number-Proper-NotGapped xs greatest proper ¬gapped ⟧ ∸ ⟦ xs ⟧
+            ≈⟨ cong (λ w → w ∸ ⟦ xs ⟧) (next-number-Proper-NotGapped-lemma xs greatest proper ¬gapped) ⟩
                 suc ⟦ xs ⟧ ∸ ⟦ xs ⟧
             ≈⟨ m+n∸n≡m (suc zero) ⟦ xs ⟧ ⟩
                 suc zero
@@ -225,7 +225,7 @@ Gapped#N⇒Gapped#0 xs d+o≥2 gapped#N | NotGapped b d o greatest ¬gapped =
 
 ¬Gapped#0⇒¬Gapped#N : ∀ {b d o}
     → (xs : Num (suc b) (suc d) o)
-    → (d+o≥2 : 2 ≤ suc (d + o))
+    → (proper : 2 ≤ suc (d + o))
     → ¬ (Gapped#0 b d o)
-    → ¬ (Gapped#N b d o xs d+o≥2)
-¬Gapped#0⇒¬Gapped#N xs d+o≥2 ¬Gapped#0 = contraposition (Gapped#N⇒Gapped#0 xs d+o≥2) ¬Gapped#0
+    → ¬ (Gapped#N b d o xs proper)
+¬Gapped#0⇒¬Gapped#N xs proper ¬Gapped#0 = contraposition (Gapped#N⇒Gapped#0 xs proper) ¬Gapped#0

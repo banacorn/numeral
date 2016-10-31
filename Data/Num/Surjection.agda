@@ -1,6 +1,7 @@
 module Data.Num.Surjection where
 
 open import Data.Num.Core
+open import Data.Num.Continuous
 
 open import Data.Nat
 open import Data.Nat.Properties
@@ -30,14 +31,14 @@ open ≤-Reasoning renaming (begin_ to start_; _∎ to _□; _≡⟨_⟩_ to _�
 open DecTotalOrder decTotalOrder using (reflexive) renaming (refl to ≤-refl)
 
 -- fromℕ that preserves equality
--- ℕ⟶Num : ∀ b d o → setoid ℕ ⟶ setoid (Num b d o)
--- ℕ⟶Num b d o = record
---     { _⟨$⟩_ = fromℕ
---     ; cong = cong fromℕ
---     }
---
--- Surjective? : ∀ b d o → Dec (Surjective {!   !})
--- Surjective? b d o = yes {!   !}
+ℕ⟶Num : ∀ b d o → True (Continuous? (suc b) (suc d) o) → setoid ℕ ⟶ setoid (Num (suc b) (suc d) o)
+ℕ⟶Num b d o cont = record
+    { _⟨$⟩_ = fromℕ cont
+    ; cong = cong (fromℕ cont)
+    }
+
+Surjective? : ∀ b d o → Dec (Surjective (ℕ⟶Num b d o cont))
+Surjective? b d o cont = yes {!   !}
 
 
 
