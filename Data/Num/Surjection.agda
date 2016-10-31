@@ -31,16 +31,38 @@ open ≤-Reasoning renaming (begin_ to start_; _∎ to _□; _≡⟨_⟩_ to _�
 open DecTotalOrder decTotalOrder using (reflexive) renaming (refl to ≤-refl)
 
 -- fromℕ that preserves equality
-ℕ⟶Num : ∀ b d o → True (Continuous? (suc b) (suc d) o) → setoid ℕ ⟶ setoid (Num (suc b) (suc d) o)
-ℕ⟶Num b d o cont = record
-    { _⟨$⟩_ = fromℕ cont
-    ; cong = cong (fromℕ cont)
-    }
 
-Surjective? : ∀ b d o → Dec (Surjective (ℕ⟶Num b d o cont))
-Surjective? b d o cont = yes {!   !}
+-- ℕ⟶Num : ∀ {b d o}
+--     → (True (Continuous? b (suc d) o))
+--     → (val : ℕ)
+--     → (True (o ≤? val))
+--     → Num b (suc d) o
 
+-- ℕ⟶Num : ∀ b d o → True (Continuous? b (suc d) o) → setoid ℕ ⟶ setoid (Num b (suc d) o)
+-- ℕ⟶Num b d o cont = record
+--     { _⟨$⟩_ = fromℕ cont
+--     ; cong = cong (fromℕ cont)
+--     }
+--
+-- -- Surjective? : ∀ b d o → (True (Continuous? b (suc d) o)) → Dec (Surjective (ℕ⟶Num b d o))
+-- -- Surjective? b d o with Continuous? b (suc d) o
+-- -- Surjective? b d o | yes cont = {!   !}
+-- -- Surjective? b d o | no ¬cont = {!   !}
+--
+-- Num⟶ℕ-Surjective : ∀ b d o → (cont : True (Continuous? b (suc d) o)) → Surjective (Num⟶ℕ b (suc d) o)
+-- Num⟶ℕ-Surjective b d o cont = record
+--     { from = ℕ⟶Num b d o cont
+--     ; right-inverse-of = {! toℕ-fromℕ cont  !}
+--     }
 
+-- Surjective? : ∀ b d o → Dec (Surjective (Num⟶ℕ b d o))
+-- Surjective? b d o with surjectionView b d o
+-- Surjective? b d o | Surj cond = yes (record
+--     { from = ℕ⟶Num b d o
+--     ; right-inverse-of = toℕ-fromℕ {b} {d} {o} {SurjCond⇒IsSurj cond}
+--     })
+-- Surjective? b d o | NonSurj reason = no (NonSurjCond⇏Surjective reason)
+--
 
 
 

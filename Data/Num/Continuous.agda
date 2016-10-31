@@ -114,12 +114,42 @@ Continuous? _ _ _ | Proper b d o proper = Continuous-Proper b d o proper
     → ⟦ 1+ cont xs ⟧ ≡ suc ⟦ xs ⟧
 1+-toℕ xs cont = proj₂ (toWitness cont xs)
 
+-- -- a partial function that only maps ℕ to Continuous Nums
+fromℕ : ∀ {b d o}
+    → (True (Continuous? b (suc d) o))
+    → ℕ
+    → Num b (suc d) o
+fromℕ cont zero = z ∙
+fromℕ cont (suc n) = 1+ cont (fromℕ cont n)
+
+toℕ-fromℕ : ∀ {b d o}
+    → (cont : True (Continuous? b (suc d) o))
+    → (n : ℕ)
+    → ⟦ fromℕ cont n ⟧ ≡ n + o
+toℕ-fromℕ cont zero = refl
+toℕ-fromℕ {b} {d} {o} cont (suc n) =
+    begin
+        ⟦ 1+ cont (fromℕ cont n) ⟧
+    ≡⟨ 1+-toℕ (fromℕ cont n) cont ⟩
+        suc ⟦ fromℕ cont n ⟧
+    ≡⟨ cong suc (toℕ-fromℕ cont n) ⟩
+        suc (n + o)
+    ∎
 
 
 
+-- -- a partial function that only maps ℕ to Continuous Nums
 -- fromℕ : ∀ {b d o}
---     → (cont : True (Continuous? (suc b) (suc d) o))
---     → ℕ
---     → Num (suc b) (suc d) o
--- fromℕ cont zero = z ∙
--- fromℕ cont (suc n) = 1+ cont (fromℕ cont n)
+--     → (True (Continuous? b (suc d) o))
+--     → (val : ℕ)
+--     → (True (o ≤? val))
+--     → Num b (suc d) o
+-- fromℕ {o = zero} cont zero o≤n = z ∙
+-- fromℕ {o = zero} cont (suc n) o≤n = 1+ cont (fromℕ cont n tt)
+-- fromℕ {o = suc o} cont zero ()
+-- fromℕ {o = suc o} cont (suc n) o≤n with o ≟ n
+-- fromℕ {b} {d} {suc o} cont (suc n) o≤n | yes o≡n = z ∙
+-- fromℕ {b} {d} {suc o} cont (suc n) o≤n | no  o≢n = 1+ cont (fromℕ cont n (fromWitness o<n))
+--     where
+--         o<n : o < n
+--         o<n = ≤∧≢⇒< (≤-pred (toWitness o≤n)) o≢n

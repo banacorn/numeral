@@ -379,15 +379,12 @@ tail-mono-strict-Null {b} {_} {o} x y ys greatest p
 -- Relations
 ------------------------------------------------------------------------
 
--- _≲_ : ∀ {b d o} → Num b d o → Num b d o → Set
--- xs ≲ ys = toℕ xs ≤ toℕ ys
---
--- -- _≋_ : ∀ {b d o} → Num b d o → Num b d o → Set
--- -- xs ≋ ys = toℕ xs ≡ toℕ ys
---
--- -- toℕ that preserves equality
--- Num⟶ℕ : ∀ b d o → setoid (Num b d o) ⟶ setoid ℕ
--- Num⟶ℕ b d o = record { _⟨$⟩_ = toℕ ; cong = cong toℕ }
+_≋_ : ∀ {b d o} → Num b d o → Num b d o → Set
+xs ≋ ys = ⟦ xs ⟧ ≡ ⟦ ys ⟧
+
+-- toℕ that preserves equality
+Num⟶ℕ : ∀ b d o → setoid (Num b d o) ⟶ setoid ℕ
+Num⟶ℕ b d o = record { _⟨$⟩_ = ⟦_⟧ ; cong = cong ⟦_⟧ }
 
 -- begin
 --     {!   !}
