@@ -102,41 +102,6 @@ Continuous? _ _ _ | NoDigits b o = yes (λ xs → NoDigits-explode xs)
 Continuous? _ _ _ | AllZeros b = no (Bounded⇒¬Continuous (Bounded-AllZeros b))
 Continuous? _ _ _ | Proper b d o proper = Continuous-Proper b d o proper
 
-1+ : ∀ {b d o}
-    → True (Continuous? b d o)
-    → (xs : Num b d o)
-    → Num b d o
-1+ cont xs = proj₁ (toWitness cont xs)
-
-1+-toℕ : ∀ {b d o}
-    → (xs : Num b d o)
-    → (cont : True (Continuous? b d o))
-    → ⟦ 1+ cont xs ⟧ ≡ suc ⟦ xs ⟧
-1+-toℕ xs cont = proj₂ (toWitness cont xs)
-
--- -- a partial function that only maps ℕ to Continuous Nums
-fromℕ : ∀ {b d o}
-    → (True (Continuous? b (suc d) o))
-    → ℕ
-    → Num b (suc d) o
-fromℕ cont zero = z ∙
-fromℕ cont (suc n) = 1+ cont (fromℕ cont n)
-
-toℕ-fromℕ : ∀ {b d o}
-    → (cont : True (Continuous? b (suc d) o))
-    → (n : ℕ)
-    → ⟦ fromℕ cont n ⟧ ≡ n + o
-toℕ-fromℕ cont zero = refl
-toℕ-fromℕ {b} {d} {o} cont (suc n) =
-    begin
-        ⟦ 1+ cont (fromℕ cont n) ⟧
-    ≡⟨ 1+-toℕ (fromℕ cont n) cont ⟩
-        suc ⟦ fromℕ cont n ⟧
-    ≡⟨ cong suc (toℕ-fromℕ cont n) ⟩
-        suc (n + o)
-    ∎
-
-
 
 -- -- a partial function that only maps ℕ to Continuous Nums
 -- fromℕ : ∀ {b d o}
