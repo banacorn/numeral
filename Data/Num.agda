@@ -51,6 +51,107 @@ sum : ∀ {d}
     → ℕ
 sum o n x = Digit-toℕ n o + Digit-toℕ x o
 
+sum-upper-bound : ∀ {d} o
+    → (n x : Digit (suc d))
+    → sum o n x ≤ (d + o) + (d + o)
+sum-upper-bound {d} o n x =
+    start
+        Digit-toℕ n o + Digit-toℕ x o
+    ≤⟨ ≤-pred (Digit<d+o n o) +-mono ≤-pred (Digit<d+o x o) ⟩
+        d + o + (d + o)
+    □
+
+sum-lemma : ∀ {d} o
+    → (n x : Digit (suc d))
+    → sum (suc o) n x ≡ 2 + sum o n x
+sum-lemma o n x =
+    begin
+        Fin.toℕ n + suc o + (Fin.toℕ x + suc o)
+    ≡⟨ cong₂ _+_ (+-suc (Fin.toℕ n) o) (+-suc (Fin.toℕ x) o) ⟩
+        suc (Fin.toℕ n + o + suc (Fin.toℕ x + o))
+    ≡⟨ cong suc (+-suc (Fin.toℕ n + o) (Fin.toℕ x + o)) ⟩
+        suc (suc (Fin.toℕ n + o + (Fin.toℕ x + o)))
+    ∎
+
+
+sum-lower-bound' : ∀ {d} o
+    → (n x : Digit (suc d))
+    → sum o n x > d + o
+    → (1 ⊔ o) * 1 ≤ suc d
+    → sum o n x ∸ (d + o) ≥ o
+sum-lower-bound' {d} zero n x p ¬gapped =
+    +n-mono-inverse (d + zero)
+    $ start
+        d + zero
+    ≤⟨ <⇒≤ p ⟩
+        Fin.toℕ n + zero + (Fin.toℕ x + zero)
+    ≈⟨ sym (m∸n+n≡m (<⇒≤ p)) ⟩
+        Fin.toℕ n + zero + (Fin.toℕ x + zero) ∸ (d + zero) + (d + zero)
+    □
+sum-lower-bound' {d} (suc o) n x p ¬gapped =
+    start
+        suc o
+    ≤⟨ s≤s (sum-lower-bound' o n x {! p'  !} {! ¬gapped  !}) ⟩
+        suc (sum o n x ∸ (d + o))
+    ≤⟨ {!   !} ⟩
+        {!   !}
+    ≤⟨ {!   !} ⟩
+        {!   !}
+    ≤⟨ {!   !} ⟩
+        Fin.toℕ n + suc o + (Fin.toℕ x + suc o) ∸ (d + suc o)
+    □
+    where
+        p' : sum o n x ≥ d + o
+        p' = n+-mono-inverse 2 $
+            start
+                2 + (d + o)
+            ≈⟨ cong suc (sym (+-suc d o)) ⟩
+                suc (d + suc o)
+            ≤⟨ p ⟩
+                sum (suc o) n x
+            ≈⟨ sum-lemma o n x ⟩
+                2 + sum o n x
+            □
+        ¬gapped' : (1 ⊔ o) * 1 ≤ suc d
+        ¬gapped' =
+            start
+                (suc zero ⊔ o) * suc zero
+            ≤⟨ {!   !} ⟩
+                {!   !}
+            ≤⟨ {!   !} ⟩
+                {!   !}
+            ≤⟨ {!   !} ⟩
+                suc (o * suc zero)
+            ≤⟨ ¬gapped ⟩
+                suc d
+            □
+--         lemma : ∀ o n x → sum (suc o) n x ≡
+    -- start
+    --     suc o
+    -- ≤⟨ s≤s (sum-lower-bound' o n x $
+    --     start
+    --         d + o
+    --     ≈⟨ {!   !} ⟩
+    --         {!   !}
+    --     ≈⟨ {!   !} ⟩
+    --         {!   !}
+    --     ≈⟨ {!   !} ⟩
+    --         {!   !}
+    --     ≈⟨ {! p  !} ⟩
+    --         Fin.toℕ n + o + (Fin.toℕ x + o)
+    --     □
+    -- ) ⟩
+    --     {!   !}
+    -- ≤⟨ {!   !} ⟩
+    --     {!   !}
+    -- ≤⟨ {!   !} ⟩
+    --     {!   !}
+    -- ≤⟨ {!   !} ⟩
+    --     Fin.toℕ n + suc o + (Fin.toℕ x + suc o) ∸ (d + suc o)
+    -- □
+
+
+
 n+-Proper : ∀ {b d o}
     → (cont : True (Continuous? (suc b) (suc d) o))
     → (n : Digit (suc d))
@@ -69,7 +170,7 @@ n+-Proper {zero}  {d} {o} cont n (x ∙)    proper | no ¬p
                 sum o n x ∸ (d + o) + (d + o)
             ≈⟨ m∸n+n≡m (<⇒≤ (≰⇒> ¬p)) ⟩
                 sum o n x
-            ≤⟨ ≤-pred (Digit<d+o n o) +-mono ≤-pred (Digit<d+o x o) ⟩
+            ≤⟨ sum-upper-bound o n x ⟩
                 d + o + (d + o)
             □
         carry : Digit (suc d)
@@ -83,7 +184,7 @@ n+-Proper {zero}  {d} {o} cont n (x ∷ xs) proper | no ¬p
                 sum o n x ∸ (d + o) + (d + o)
             ≈⟨ m∸n+n≡m (<⇒≤ (≰⇒> ¬p)) ⟩
                 sum o n x
-            ≤⟨ ≤-pred (Digit<d+o n o) +-mono ≤-pred (Digit<d+o x o) ⟩
+            ≤⟨ sum-upper-bound o n x ⟩
                 d + o + (d + o)
             □
         carry : Digit (suc d)
@@ -110,7 +211,7 @@ n+-Proper {suc b} {d} {o} cont n (x ∙)    proper | no ¬p | result quotient re
                         Fin.toℕ remainder + quotient * suc (suc b)
                     ≈⟨ sym property ⟩
                         sum o n x
-                    ≤⟨ ≤-pred (Digit<d+o n o) +-mono ≤-pred (Digit<d+o x o) ⟩
+                    ≤⟨ sum-upper-bound o n x ⟩
                         (d + o) + (d + o)
                     ≈⟨ double (d + o) ⟩
                         (d + o) * suc (suc zero)
@@ -140,7 +241,7 @@ n+-Proper {suc b} {d} {o} cont n (x ∷ xs) proper | no ¬p | result quotient re
                         Fin.toℕ remainder + quotient * suc (suc b)
                     ≈⟨ sym property ⟩
                         sum o n x
-                    ≤⟨ ≤-pred (Digit<d+o n o) +-mono ≤-pred (Digit<d+o x o) ⟩
+                    ≤⟨ sum-upper-bound o n x ⟩
                         (d + o) + (d + o)
                     ≈⟨ double (d + o) ⟩
                         (d + o) * suc (suc zero)
@@ -155,10 +256,99 @@ n+-Proper-toℕ : ∀ {b d o}
     → (n : Digit (suc d))
     → (xs : Num (suc b) (suc d) o)
     → (proper : suc d + o ≥ 2)
-    → ⟦ n+-Proper cont n xs proper ⟧ ≡ Fin.toℕ n + ⟦ xs ⟧
-n+-Proper-toℕ {b}     {d} {o} cont n xs proper with sum o n (lsd xs) ≤? d + o
-n+-Proper-toℕ {b}     {d} {o} cont n xs proper | yes p = {!   !}
-n+-Proper-toℕ {b}     {d} {o} cont n xs proper | no ¬p = {!   !}
+    → ⟦ n+-Proper cont n xs proper ⟧ ≡ Digit-toℕ n o + ⟦ xs ⟧
+n+-Proper-toℕ {b}     {d} {o} cont n xs       proper with sum o n (lsd xs) ≤? d + o
+n+-Proper-toℕ {b}     {d} {o} cont n (x ∙)    proper | yes p =
+    begin
+        Digit-toℕ (Digit-fromℕ (sum o n x) o p) o
+    ≡⟨ Digit-toℕ-fromℕ {d} {o} (sum o n x) upper-bound lower-bound ⟩
+        Digit-toℕ n o + Digit-toℕ x o
+    ∎
+    where
+        upper-bound : sum o n x ≤ d + o
+        upper-bound = p
+        lower-bound : sum o n x ≥ o
+        lower-bound =
+            start
+                o
+            ≤⟨ m≤n+m o (Fin.toℕ n) ⟩
+                Digit-toℕ n o
+            ≤⟨ m≤m+n (Digit-toℕ n o) (Digit-toℕ x o) ⟩
+                sum o n x
+            □
+n+-Proper-toℕ {b}     {d} {o} cont n (x ∷ xs) proper | yes p =
+    begin
+        Digit-toℕ (Digit-fromℕ (sum o n x) o p) o + ⟦ xs ⟧ * suc b
+    ≡⟨ cong (λ w → w + ⟦ xs ⟧ * suc b) (Digit-toℕ-fromℕ {d} {o} (sum o n x) upper-bound lower-bound) ⟩
+        Digit-toℕ n o + (Fin.toℕ x + o) + ⟦ xs ⟧ * suc b
+    ≡⟨ +-assoc (Digit-toℕ n o) (Fin.toℕ x + o) (⟦ xs ⟧ * suc b) ⟩
+        Digit-toℕ n o + (Digit-toℕ x o + ⟦ xs ⟧ * suc b)
+    ∎
+    where
+        upper-bound : sum o n x ≤ d + o
+        upper-bound = p
+        lower-bound : sum o n x ≥ o
+        lower-bound =
+            start
+                o
+            ≤⟨ m≤n+m o (Fin.toℕ n) ⟩
+                Digit-toℕ n o
+            ≤⟨ m≤m+n (Digit-toℕ n o) (Digit-toℕ x o) ⟩
+                sum o n x
+            □
+-- n+-Proper {zero}  {d} {o} cont n (x ∷ xs) proper | no ¬p
+--     = Digit-fromℕ (d + o) o ≤-refl ∷ n+-Proper cont carry xs proper
+--     where
+--         upper-bound : sum o n x ∸ (d + o) ≤ d + o
+--         upper-bound = +n-mono-inverse (d + o) $
+--             start
+--                 sum o n x ∸ (d + o) + (d + o)
+--             ≈⟨ m∸n+n≡m (<⇒≤ (≰⇒> ¬p)) ⟩
+--                 sum o n x
+--             ≤⟨ sum-upper-bound o n x ⟩
+--                 d + o + (d + o)
+--             □
+--         carry : Digit (suc d)
+--         carry = Digit-fromℕ (sum o n x ∸ (d + o)) o upper-bound
+
+
+n+-Proper-toℕ {zero}  {d} {o} cont n (x ∙) proper | no ¬p =
+    begin
+        Digit-toℕ (Digit-fromℕ (d + o) o ≤-refl) o + Digit-toℕ carry o * 1
+    ≡⟨ cong (λ w → w + Digit-toℕ carry o * 1) (Digit-toℕ-fromℕ {d} {o} (d + o) ≤-refl (m≤n+m o d))  ⟩
+        d + o + Digit-toℕ carry o * 1
+    ≡⟨ cong (λ w → d + o + w) $
+        begin
+            Digit-toℕ carry o * 1
+        ≡⟨ *-right-identity (Digit-toℕ carry o) ⟩
+            Digit-toℕ carry o
+        ≡⟨ Digit-toℕ-fromℕ {d} {o} (sum o n x ∸ (d + o)) upper-bound lower-bound ⟩
+            sum o n x ∸ (d + o)
+        ∎
+    ⟩
+        d + o + (sum o n x ∸ (d + o))
+    ≡⟨ +-comm (d + o) (sum o n x ∸ (d + o)) ⟩
+        sum o n x ∸ (d + o) + (d + o)
+    ≡⟨ m∸n+n≡m (<⇒≤ (≰⇒> ¬p)) ⟩
+        sum o n x
+    ∎
+    where
+        upper-bound : sum o n x ∸ (d + o) ≤ d + o
+        upper-bound = +n-mono-inverse (d + o) $
+            start
+                sum o n x ∸ (d + o) + (d + o)
+            ≈⟨ m∸n+n≡m (<⇒≤ (≰⇒> ¬p)) ⟩
+                sum o n x
+            ≤⟨ sum-upper-bound o n x ⟩
+                d + o + (d + o)
+            □
+        lower-bound : sum o n x ∸ (d + o) ≥ o
+        lower-bound = sum-lower-bound' o n x (≰⇒> ¬p) (≤-pred (≰⇒> (Continuous⇒¬Gapped#0 cont proper)))
+
+        carry : Digit (suc d)
+        carry = Digit-fromℕ (sum o n x ∸ (d + o)) o upper-bound
+n+-Proper-toℕ {zero}  {d} {o} cont n (x ∷ xs) proper | no ¬p = {!   !}
+n+-Proper-toℕ {suc b} {d} {o} cont n xs proper | no ¬p = {!   !}
 
 -- n+ : ∀ {b d o}
 --     → {cont : True (Continuous? b d o)}
