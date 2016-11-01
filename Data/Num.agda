@@ -45,8 +45,11 @@ open DecTotalOrder decTotalOrder using (reflexive) renaming (refl to ≤-refl)
     → ⟦ 1+ {cont = cont} xs ⟧ ≡ suc ⟦ xs ⟧
 1+-toℕ {cont = cont} xs = proj₂ (toWitness cont xs)
 
-
-
+sum : ∀ {d}
+    → (o : ℕ)
+    → (n x : Digit (suc d))
+    → ℕ
+sum o n x = Digit-toℕ n o + Digit-toℕ x o
 
 n+-Proper : ∀ {b d o}
     → (cont : True (Continuous? (suc b) (suc d) o))
@@ -54,77 +57,40 @@ n+-Proper : ∀ {b d o}
     → (xs : Num (suc b) (suc d) o)
     → (proper : suc d + o ≥ 2)
     → Num (suc b) (suc d) o
-n+-Proper {b} {d} {o} cont n (x ∙) proper with (Digit-toℕ n o + Digit-toℕ x o) ≤? d + o
-n+-Proper {b} {d} {o} cont n (x ∙) proper | yes p = Digit-fromℕ (Digit-toℕ n o + Digit-toℕ x o) o p ∙
-n+-Proper {b} {d} {o} cont n (x ∙) proper | no ¬p with _divMod_ (Digit-toℕ n o + Digit-toℕ x o) (suc b)
-n+-Proper {0} {d} {o} cont n (x ∙) proper | no ¬p | result quotient remainder property div-eq mod-eq
-    = Digit-fromℕ (d + o) o ≤-refl ∷ Digit-fromℕ (Digit-toℕ n o + Digit-toℕ x o ∸ (d + o)) o upper-bound ∙
+n+-Proper {b}     {d} {o} cont n xs proper with sum o n (lsd xs) ≤? d + o
+n+-Proper {b}     {d} {o} cont n (x ∙)    proper | yes p = Digit-fromℕ (sum o n x) o p ∙
+n+-Proper {b}     {d} {o} cont n (x ∷ xs) proper | yes p = Digit-fromℕ (sum o n x) o p ∷ xs
+n+-Proper {zero}  {d} {o} cont n (x ∙)    proper | no ¬p
+    = Digit-fromℕ (d + o) o ≤-refl ∷ carry ∙
     where
-        upper-bound : Digit-toℕ n o + Digit-toℕ x o ∸ (d + o) ≤ d + o
+        upper-bound : sum o n x ∸ (d + o) ≤ d + o
         upper-bound = +n-mono-inverse (d + o) $
             start
-                Fin.toℕ n + o + (Fin.toℕ x + o) ∸ (d + o) + (d + o)
+                sum o n x ∸ (d + o) + (d + o)
             ≈⟨ m∸n+n≡m (<⇒≤ (≰⇒> ¬p)) ⟩
-                Fin.toℕ n + o + (Fin.toℕ x + o)
-            ≤⟨ ≤-pred (Digit<d+o n o) +-mono ≤-pred (Digit<d+o x o) ⟩
-                d + o + (d + o)
-            □
-n+-Proper {suc b} {d} {o} cont n (x ∙) proper | no ¬p | result quotient remainder property div-eq mod-eq
-    = inject≤ remainder b≤d ∷ Digit-fromℕ quotient o quotient≤d+o ∙
-    where
-        b≤d : suc (suc b) ≤ suc d
-        b≤d =
-            start
-                suc (suc b)
-            ≈⟨ sym (+-right-identity (suc (suc b))) ⟩
-                1 * suc (suc b)
-            ≤⟨ *n-mono (suc (suc b)) (m≤m⊔n 1 o) ⟩
-                (1 ⊔ o) * suc (suc b)
-            ≤⟨ ≤-pred (≰⇒> (Continuous⇒¬Gapped#0 cont proper)) ⟩
-                suc d
-            □
-
-        temp1 : Fin.toℕ remainder + quotient * suc (suc b) ≤ Fin.toℕ remainder + (d + o) * suc (suc b)
-        temp1 =
-            start
-                Fin.toℕ remainder + quotient * suc (suc b)
-            ≈⟨ sym property ⟩
-                (Fin.toℕ n + o) + (Fin.toℕ x + o)
-            ≤⟨ ≤-pred (Digit<d+o n o) +-mono ≤-pred (Digit<d+o x o) ⟩
-                (d + o) + (d + o)
-            ≈⟨ double (d + o) ⟩
-                (d + o) * suc (suc zero)
-            ≤⟨ n*-mono (d + o) (s≤s (s≤s z≤n)) ⟩
-                (d + o) * suc (suc b)
-            ≤⟨ m≤n+m ((d + o) * suc (suc b)) (Fin.toℕ remainder) ⟩
-                Fin.toℕ remainder + (d + o) * suc (suc b)
-            □
-
-        temp : quotient * suc (suc b) ≤ (d + o) * suc (suc b)
-        temp = n+-mono-inverse (Fin.toℕ remainder) temp1
-
-        quotient≤d+o : quotient ≤ d + o
-        quotient≤d+o = *n-mono-inverse (suc b) temp
-n+-Proper {b} {d} {o} cont n (x ∷ xs) proper with (Digit-toℕ n o + Digit-toℕ x o) ≤? d + o
-n+-Proper {b} {d} {o} cont n (x ∷ xs) proper | yes p = Digit-fromℕ (Digit-toℕ n o + Digit-toℕ x o) o p ∷ xs
-n+-Proper {zero} {d} {o} cont n (x ∷ xs) proper | no ¬p
-    = Digit-fromℕ (d + o) o ≤-refl ∷ n+-Proper cont carry xs proper
-    where
-        upper-bound : Digit-toℕ n o + Digit-toℕ x o ∸ (d + o) ≤ d + o
-        upper-bound = +n-mono-inverse (d + o) $
-            start
-                Fin.toℕ n + o + (Fin.toℕ x + o) ∸ (d + o) + (d + o)
-            ≈⟨ m∸n+n≡m (<⇒≤ (≰⇒> ¬p)) ⟩
-                Fin.toℕ n + o + (Fin.toℕ x + o)
+                sum o n x
             ≤⟨ ≤-pred (Digit<d+o n o) +-mono ≤-pred (Digit<d+o x o) ⟩
                 d + o + (d + o)
             □
         carry : Digit (suc d)
-        carry = Digit-fromℕ (Digit-toℕ n o + Digit-toℕ x o ∸ (d + o)) o upper-bound
-
-n+-Proper {suc b} {d} {o} cont n (x ∷ xs) proper | no ¬p with _divMod_ (Digit-toℕ n o + Digit-toℕ x o) (suc (suc b))
-n+-Proper {suc b} {d} {o} cont n (x ∷ xs) proper | no ¬p | result quotient remainder property div-eq mod-eq
-    = inject≤ remainder b≤d ∷ n+-Proper cont (Digit-fromℕ quotient o quotient≤d+o) xs proper
+        carry = Digit-fromℕ (sum o n x ∸ (d + o)) o upper-bound
+n+-Proper {zero}  {d} {o} cont n (x ∷ xs) proper | no ¬p
+    = Digit-fromℕ (d + o) o ≤-refl ∷ n+-Proper cont carry xs proper
+    where
+        upper-bound : sum o n x ∸ (d + o) ≤ d + o
+        upper-bound = +n-mono-inverse (d + o) $
+            start
+                sum o n x ∸ (d + o) + (d + o)
+            ≈⟨ m∸n+n≡m (<⇒≤ (≰⇒> ¬p)) ⟩
+                sum o n x
+            ≤⟨ ≤-pred (Digit<d+o n o) +-mono ≤-pred (Digit<d+o x o) ⟩
+                d + o + (d + o)
+            □
+        carry : Digit (suc d)
+        carry = Digit-fromℕ (sum o n x ∸ (d + o)) o upper-bound
+n+-Proper {suc b} {d} {o} cont n xs       proper | no ¬p with _divMod_ (sum o n (lsd xs)) (suc (suc b))
+n+-Proper {suc b} {d} {o} cont n (x ∙)    proper | no ¬p | result quotient remainder property _ _
+    = inject≤ remainder b≤d ∷ Digit-fromℕ quotient o upper-bound ∙
     where
         b≤d : suc (suc b) ≤ suc d
         b≤d =
@@ -137,105 +103,62 @@ n+-Proper {suc b} {d} {o} cont n (x ∷ xs) proper | no ¬p | result quotient re
             ≤⟨ ≤-pred (≰⇒> (Continuous⇒¬Gapped#0 cont proper)) ⟩
                 suc d
             □
-        temp1 : Fin.toℕ remainder + quotient * suc (suc b) ≤ Fin.toℕ remainder + (d + o) * suc (suc b)
-        temp1 =
+        upper-bound : quotient ≤ d + o
+        upper-bound = *n-mono-inverse (suc b)
+                     $ n+-mono-inverse (Fin.toℕ remainder)
+                     $ start
+                        Fin.toℕ remainder + quotient * suc (suc b)
+                    ≈⟨ sym property ⟩
+                        sum o n x
+                    ≤⟨ ≤-pred (Digit<d+o n o) +-mono ≤-pred (Digit<d+o x o) ⟩
+                        (d + o) + (d + o)
+                    ≈⟨ double (d + o) ⟩
+                        (d + o) * suc (suc zero)
+                    ≤⟨ n*-mono (d + o) (s≤s (s≤s z≤n)) ⟩
+                        (d + o) * suc (suc b)
+                    ≤⟨ m≤n+m ((d + o) * suc (suc b)) (Fin.toℕ remainder) ⟩
+                        Fin.toℕ remainder + (d + o) * suc (suc b)
+                    □
+n+-Proper {suc b} {d} {o} cont n (x ∷ xs) proper | no ¬p | result quotient remainder property _ _
+    = inject≤ remainder b≤d ∷ n+-Proper cont (Digit-fromℕ quotient o upper-bound) xs proper
+    where
+        b≤d : suc (suc b) ≤ suc d
+        b≤d =
             start
-                Fin.toℕ remainder + quotient * suc (suc b)
-            ≈⟨ sym property ⟩
-                (Fin.toℕ n + o) + (Fin.toℕ x + o)
-            ≤⟨ ≤-pred (Digit<d+o n o) +-mono ≤-pred (Digit<d+o x o) ⟩
-                (d + o) + (d + o)
-            ≈⟨ double (d + o) ⟩
-                (d + o) * suc (suc zero)
-            ≤⟨ n*-mono (d + o) (s≤s (s≤s z≤n)) ⟩
-                (d + o) * suc (suc b)
-            ≤⟨ m≤n+m ((d + o) * suc (suc b)) (Fin.toℕ remainder) ⟩
-                Fin.toℕ remainder + (d + o) * suc (suc b)
+                suc (suc b)
+            ≈⟨ sym (+-right-identity (suc (suc b))) ⟩
+                1 * suc (suc b)
+            ≤⟨ *n-mono (suc (suc b)) (m≤m⊔n 1 o) ⟩
+                (1 ⊔ o) * suc (suc b)
+            ≤⟨ ≤-pred (≰⇒> (Continuous⇒¬Gapped#0 cont proper)) ⟩
+                suc d
             □
+        upper-bound : quotient ≤ d + o
+        upper-bound = *n-mono-inverse (suc b)
+                     $ n+-mono-inverse (Fin.toℕ remainder)
+                     $ start
+                        Fin.toℕ remainder + quotient * suc (suc b)
+                    ≈⟨ sym property ⟩
+                        sum o n x
+                    ≤⟨ ≤-pred (Digit<d+o n o) +-mono ≤-pred (Digit<d+o x o) ⟩
+                        (d + o) + (d + o)
+                    ≈⟨ double (d + o) ⟩
+                        (d + o) * suc (suc zero)
+                    ≤⟨ n*-mono (d + o) (s≤s (s≤s z≤n)) ⟩
+                        (d + o) * suc (suc b)
+                    ≤⟨ m≤n+m ((d + o) * suc (suc b)) (Fin.toℕ remainder) ⟩
+                        Fin.toℕ remainder + (d + o) * suc (suc b)
+                    □
 
-        temp : quotient * suc (suc b) ≤ (d + o) * suc (suc b)
-        temp = n+-mono-inverse (Fin.toℕ remainder) temp1
-
-        quotient≤d+o : quotient ≤ d + o
-        quotient≤d+o = *n-mono-inverse (suc b) temp
--- n+-Proper : ∀ {b d o}
---     → (cont : True (Continuous? (suc b) (suc d) o))
---     → (n : Digit (suc d))
---     → (xs : Num (suc b) (suc d) o)
---     → (proper : suc d + o ≥ 2)
---     → Num (suc b) (suc d) o
--- n+-Proper {b} {d} {o} cont n (x ∙) proper with _divMod_ (Fin.toℕ n + Fin.toℕ x + o) (suc b)
--- n+-Proper {b} {d} {o} cont n (x ∙) proper | result zero remainder property div-eq mod-eq
---     = inject≤ remainder b≤d ∙
---     where
---         b≤d : suc b ≤ suc d
---         b≤d =
---             start
---                 suc b
---             ≈⟨ sym (+-right-identity (suc b)) ⟩
---                 1 * suc b
---             ≤⟨ *n-mono (suc b) (m≤m⊔n 1 o) ⟩
---                 (1 ⊔ o) * suc b
---             ≤⟨ ≤-pred (≰⇒> (Continuous⇒¬Gapped#0 cont proper)) ⟩
---                 suc d
---             □
--- n+-Proper {b} {d} {o} cont n (x ∙) proper | result (suc zero) remainder property div-eq mod-eq
---     = inject≤ remainder b≤d ∷ (Digit-fromℕ (suc zero) o (≤-pred proper) ∙)
---     where
---         b≤d : suc b ≤ suc d
---         b≤d =
---             start
---                 suc b
---             ≈⟨ sym (+-right-identity (suc b)) ⟩
---                 1 * suc b
---             ≤⟨ *n-mono (suc b) (m≤m⊔n 1 o) ⟩
---                 (1 ⊔ o) * suc b
---             ≤⟨ ≤-pred (≰⇒> (Continuous⇒¬Gapped#0 cont proper)) ⟩
---                 suc d
---             □
--- n+-Proper {b} {d} {o} cont n (x ∙) proper | result (suc (suc quotient)) remainder property div-eq mod-eq
---     = {!   !}
---     where
---         b≤d : suc b ≤ suc d
---         b≤d =
---             start
---                 suc b
---             ≈⟨ sym (+-right-identity (suc b)) ⟩
---                 1 * suc b
---             ≤⟨ *n-mono (suc b) (m≤m⊔n 1 o) ⟩
---                 (1 ⊔ o) * suc b
---             ≤⟨ ≤-pred (≰⇒> (Continuous⇒¬Gapped#0 cont proper)) ⟩
---                 suc d
---             □
---         ¬property : Fin.toℕ n + Fin.toℕ x + o ≢ Fin.toℕ remainder + suc (suc quotient) * suc b
---         ¬property = <⇒≢ $
---             start
---                 suc (Fin.toℕ n + Fin.toℕ x + o)
---             ≤⟨ {! d + d + o  !} ⟩
---                 {!   !}
---             ≤⟨ {!   !} ⟩
---                 {!   !}
---             ≤⟨ {!   !} ⟩
---                 {!   !}
---             ≤⟨ {!   !} ⟩
---                 Fin.toℕ remainder + suc (suc quotient) * suc b
---             □
--- n+-Proper {b} {d} {o} cont n (x ∷ xs) proper with _divMod_ (Fin.toℕ n + Fin.toℕ x + o) (suc b)
--- n+-Proper {b} {d} {o} cont n (x ∷ xs) proper | result quotient remainder property div-eq mod-eq
---     = inject≤ remainder b≤d ∷ n+-Proper cont {!   !} xs proper
---     where
---         b≤d : suc b ≤ suc d
---         b≤d =
---             start
---                 suc b
---             ≈⟨ sym (+-right-identity (suc b)) ⟩
---                 1 * suc b
---             ≤⟨ *n-mono (suc b) (m≤m⊔n 1 o) ⟩
---                 (1 ⊔ o) * suc b
---             ≤⟨ ≤-pred (≰⇒> (Continuous⇒¬Gapped#0 cont proper)) ⟩
---                 suc d
---             □
-
+n+-Proper-toℕ : ∀ {b d o}
+    → (cont : True (Continuous? (suc b) (suc d) o))
+    → (n : Digit (suc d))
+    → (xs : Num (suc b) (suc d) o)
+    → (proper : suc d + o ≥ 2)
+    → ⟦ n+-Proper cont n xs proper ⟧ ≡ Fin.toℕ n + ⟦ xs ⟧
+n+-Proper-toℕ {b}     {d} {o} cont n xs proper with sum o n (lsd xs) ≤? d + o
+n+-Proper-toℕ {b}     {d} {o} cont n xs proper | yes p = {!   !}
+n+-Proper-toℕ {b}     {d} {o} cont n xs proper | no ¬p = {!   !}
 
 -- n+ : ∀ {b d o}
 --     → {cont : True (Continuous? b d o)}
