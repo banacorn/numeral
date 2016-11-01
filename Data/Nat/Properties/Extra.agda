@@ -383,6 +383,20 @@ double m =
         m * suc (suc zero)
     ∎
 
+m⊔n≤m+n : ∀ m n → m ⊔ n ≤ m + n
+m⊔n≤m+n zero n = ≤-refl
+m⊔n≤m+n (suc m) zero = s≤s (m≤m+n m zero)
+m⊔n≤m+n (suc m) (suc n) = s≤s $
+    start
+        m ⊔ n
+    ≤⟨ m⊔n≤m+n m n ⟩
+        m + n
+    ≤⟨ n+-mono m (m≤n+m n (suc zero)) ⟩
+        m + suc n
+    □
+
+
+
 -- m≡1+n⇒m∸n≡1 : ∀ m n → m ≡ 1 + n → m ∸ n ≡ 1
 -- m≡1+n⇒m∸n≡1 m n p =
 --     begin
