@@ -60,7 +60,6 @@ Digit = Fin
 Digit-toℕ : ∀ {d} → Digit d → ℕ → ℕ
 Digit-toℕ x o = Fin.toℕ x + o
 
-
 Digit-fromℕ : ∀ {d} → (n o : ℕ) → d + o ≥ n → Digit (suc d)
 Digit-fromℕ {d} n o upper-bound with n ∸ o ≤? d
 Digit-fromℕ {d} n o upper-bound | yes p = fromℕ≤ (s≤s p)
@@ -287,10 +286,10 @@ lsd-toℕ {b} {d} {o} (x ∷ xs) = m≤m+n (Digit-toℕ x o) (⟦ xs ⟧ * b)
 ------------------------------------------------------------------------
 
 data NumView : ℕ → ℕ → ℕ → Set where
-    NullBase    : ∀   d o                           → NumView 0       (suc d) o
-    NoDigits    : ∀ b o                             → NumView b       0       o
-    AllZeros    : ∀ b                               → NumView (suc b) 1       0
-    Proper      : ∀ b d o → (d+o≥2 : suc d + o ≥ 2) → NumView (suc b) (suc d) o
+    NullBase    : ∀   d o                            → NumView 0       (suc d) o
+    NoDigits    : ∀ b o                              → NumView b       0       o
+    AllZeros    : ∀ b                                → NumView (suc b) 1       0
+    Proper      : ∀ b d o → (proper : suc d + o ≥ 2) → NumView (suc b) (suc d) o
 
 numView : ∀ b d o → NumView b d o
 numView b       zero          o       = NoDigits b o

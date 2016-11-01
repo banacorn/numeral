@@ -45,6 +45,288 @@ open DecTotalOrder decTotalOrder using (reflexive) renaming (refl to ≤-refl)
     → ⟦ 1+ {cont = cont} xs ⟧ ≡ suc ⟦ xs ⟧
 1+-toℕ {cont = cont} xs = proj₂ (toWitness cont xs)
 
+
+
+
+n+-Proper : ∀ {b d o}
+    → (cont : True (Continuous? (suc b) (suc d) o))
+    → (n : Digit (suc d))
+    → (xs : Num (suc b) (suc d) o)
+    → (proper : suc d + o ≥ 2)
+    → Num (suc b) (suc d) o
+n+-Proper {b} {d} {o} cont n (x ∙) proper with (Digit-toℕ n o + Digit-toℕ x o) ≤? d + o
+n+-Proper {b} {d} {o} cont n (x ∙) proper | yes p = Digit-fromℕ (Digit-toℕ n o + Digit-toℕ x o) o p ∙
+n+-Proper {b} {d} {o} cont n (x ∙) proper | no ¬p with _divMod_ (Digit-toℕ n o + Digit-toℕ x o) (suc b)
+n+-Proper {0} {d} {o} cont n (x ∙) proper | no ¬p | result quotient remainder property div-eq mod-eq
+    = Digit-fromℕ (d + o) o ≤-refl ∷ Digit-fromℕ (Digit-toℕ n o + Digit-toℕ x o ∸ (d + o)) o upper-bound ∙
+    where
+        upper-bound : Digit-toℕ n o + Digit-toℕ x o ∸ (d + o) ≤ d + o
+        upper-bound = +n-mono-inverse (d + o) $
+            start
+                Fin.toℕ n + o + (Fin.toℕ x + o) ∸ (d + o) + (d + o)
+            ≈⟨ m∸n+n≡m (<⇒≤ (≰⇒> ¬p)) ⟩
+                Fin.toℕ n + o + (Fin.toℕ x + o)
+            ≤⟨ ≤-pred (Digit<d+o n o) +-mono ≤-pred (Digit<d+o x o) ⟩
+                d + o + (d + o)
+            □
+n+-Proper {suc b} {d} {o} cont n (x ∙) proper | no ¬p | result quotient remainder property div-eq mod-eq
+    = inject≤ remainder b≤d ∷ Digit-fromℕ quotient o quotient≤d+o ∙
+    where
+        b≤d : suc (suc b) ≤ suc d
+        b≤d =
+            start
+                suc (suc b)
+            ≈⟨ sym (+-right-identity (suc (suc b))) ⟩
+                1 * suc (suc b)
+            ≤⟨ *n-mono (suc (suc b)) (m≤m⊔n 1 o) ⟩
+                (1 ⊔ o) * suc (suc b)
+            ≤⟨ ≤-pred (≰⇒> (Continuous⇒¬Gapped#0 cont proper)) ⟩
+                suc d
+            □
+
+        temp1 : Fin.toℕ remainder + quotient * suc (suc b) ≤ Fin.toℕ remainder + (d + o) * suc (suc b)
+        temp1 =
+            start
+                Fin.toℕ remainder + quotient * suc (suc b)
+            ≈⟨ sym property ⟩
+                (Fin.toℕ n + o) + (Fin.toℕ x + o)
+            ≤⟨ ≤-pred (Digit<d+o n o) +-mono ≤-pred (Digit<d+o x o) ⟩
+                (d + o) + (d + o)
+            ≈⟨ double (d + o) ⟩
+                (d + o) * suc (suc zero)
+            ≤⟨ n*-mono (d + o) (s≤s (s≤s z≤n)) ⟩
+                (d + o) * suc (suc b)
+            ≤⟨ m≤n+m ((d + o) * suc (suc b)) (Fin.toℕ remainder) ⟩
+                Fin.toℕ remainder + (d + o) * suc (suc b)
+            □
+
+        temp : quotient * suc (suc b) ≤ (d + o) * suc (suc b)
+        temp = n+-mono-inverse (Fin.toℕ remainder) temp1
+
+        quotient≤d+o : quotient ≤ d + o
+        quotient≤d+o = *n-mono-inverse (suc b) temp
+n+-Proper {b} {d} {o} cont n (x ∷ xs) proper with (Digit-toℕ n o + Digit-toℕ x o) ≤? d + o
+n+-Proper {b} {d} {o} cont n (x ∷ xs) proper | yes p = Digit-fromℕ (Digit-toℕ n o + Digit-toℕ x o) o p ∷ xs
+n+-Proper {zero} {d} {o} cont n (x ∷ xs) proper | no ¬p
+    = Digit-fromℕ (d + o) o ≤-refl ∷ n+-Proper cont carry xs proper
+    where
+        upper-bound : Digit-toℕ n o + Digit-toℕ x o ∸ (d + o) ≤ d + o
+        upper-bound = +n-mono-inverse (d + o) $
+            start
+                Fin.toℕ n + o + (Fin.toℕ x + o) ∸ (d + o) + (d + o)
+            ≈⟨ m∸n+n≡m (<⇒≤ (≰⇒> ¬p)) ⟩
+                Fin.toℕ n + o + (Fin.toℕ x + o)
+            ≤⟨ ≤-pred (Digit<d+o n o) +-mono ≤-pred (Digit<d+o x o) ⟩
+                d + o + (d + o)
+            □
+        carry : Digit (suc d)
+        carry = Digit-fromℕ (Digit-toℕ n o + Digit-toℕ x o ∸ (d + o)) o upper-bound
+
+n+-Proper {suc b} {d} {o} cont n (x ∷ xs) proper | no ¬p with _divMod_ (Digit-toℕ n o + Digit-toℕ x o) (suc (suc b))
+n+-Proper {suc b} {d} {o} cont n (x ∷ xs) proper | no ¬p | result quotient remainder property div-eq mod-eq
+    = inject≤ remainder b≤d ∷ n+-Proper cont (Digit-fromℕ quotient o quotient≤d+o) xs proper
+    where
+        b≤d : suc (suc b) ≤ suc d
+        b≤d =
+            start
+                suc (suc b)
+            ≈⟨ sym (+-right-identity (suc (suc b))) ⟩
+                1 * suc (suc b)
+            ≤⟨ *n-mono (suc (suc b)) (m≤m⊔n 1 o) ⟩
+                (1 ⊔ o) * suc (suc b)
+            ≤⟨ ≤-pred (≰⇒> (Continuous⇒¬Gapped#0 cont proper)) ⟩
+                suc d
+            □
+        temp1 : Fin.toℕ remainder + quotient * suc (suc b) ≤ Fin.toℕ remainder + (d + o) * suc (suc b)
+        temp1 =
+            start
+                Fin.toℕ remainder + quotient * suc (suc b)
+            ≈⟨ sym property ⟩
+                (Fin.toℕ n + o) + (Fin.toℕ x + o)
+            ≤⟨ ≤-pred (Digit<d+o n o) +-mono ≤-pred (Digit<d+o x o) ⟩
+                (d + o) + (d + o)
+            ≈⟨ double (d + o) ⟩
+                (d + o) * suc (suc zero)
+            ≤⟨ n*-mono (d + o) (s≤s (s≤s z≤n)) ⟩
+                (d + o) * suc (suc b)
+            ≤⟨ m≤n+m ((d + o) * suc (suc b)) (Fin.toℕ remainder) ⟩
+                Fin.toℕ remainder + (d + o) * suc (suc b)
+            □
+
+        temp : quotient * suc (suc b) ≤ (d + o) * suc (suc b)
+        temp = n+-mono-inverse (Fin.toℕ remainder) temp1
+
+        quotient≤d+o : quotient ≤ d + o
+        quotient≤d+o = *n-mono-inverse (suc b) temp
+-- n+-Proper : ∀ {b d o}
+--     → (cont : True (Continuous? (suc b) (suc d) o))
+--     → (n : Digit (suc d))
+--     → (xs : Num (suc b) (suc d) o)
+--     → (proper : suc d + o ≥ 2)
+--     → Num (suc b) (suc d) o
+-- n+-Proper {b} {d} {o} cont n (x ∙) proper with _divMod_ (Fin.toℕ n + Fin.toℕ x + o) (suc b)
+-- n+-Proper {b} {d} {o} cont n (x ∙) proper | result zero remainder property div-eq mod-eq
+--     = inject≤ remainder b≤d ∙
+--     where
+--         b≤d : suc b ≤ suc d
+--         b≤d =
+--             start
+--                 suc b
+--             ≈⟨ sym (+-right-identity (suc b)) ⟩
+--                 1 * suc b
+--             ≤⟨ *n-mono (suc b) (m≤m⊔n 1 o) ⟩
+--                 (1 ⊔ o) * suc b
+--             ≤⟨ ≤-pred (≰⇒> (Continuous⇒¬Gapped#0 cont proper)) ⟩
+--                 suc d
+--             □
+-- n+-Proper {b} {d} {o} cont n (x ∙) proper | result (suc zero) remainder property div-eq mod-eq
+--     = inject≤ remainder b≤d ∷ (Digit-fromℕ (suc zero) o (≤-pred proper) ∙)
+--     where
+--         b≤d : suc b ≤ suc d
+--         b≤d =
+--             start
+--                 suc b
+--             ≈⟨ sym (+-right-identity (suc b)) ⟩
+--                 1 * suc b
+--             ≤⟨ *n-mono (suc b) (m≤m⊔n 1 o) ⟩
+--                 (1 ⊔ o) * suc b
+--             ≤⟨ ≤-pred (≰⇒> (Continuous⇒¬Gapped#0 cont proper)) ⟩
+--                 suc d
+--             □
+-- n+-Proper {b} {d} {o} cont n (x ∙) proper | result (suc (suc quotient)) remainder property div-eq mod-eq
+--     = {!   !}
+--     where
+--         b≤d : suc b ≤ suc d
+--         b≤d =
+--             start
+--                 suc b
+--             ≈⟨ sym (+-right-identity (suc b)) ⟩
+--                 1 * suc b
+--             ≤⟨ *n-mono (suc b) (m≤m⊔n 1 o) ⟩
+--                 (1 ⊔ o) * suc b
+--             ≤⟨ ≤-pred (≰⇒> (Continuous⇒¬Gapped#0 cont proper)) ⟩
+--                 suc d
+--             □
+--         ¬property : Fin.toℕ n + Fin.toℕ x + o ≢ Fin.toℕ remainder + suc (suc quotient) * suc b
+--         ¬property = <⇒≢ $
+--             start
+--                 suc (Fin.toℕ n + Fin.toℕ x + o)
+--             ≤⟨ {! d + d + o  !} ⟩
+--                 {!   !}
+--             ≤⟨ {!   !} ⟩
+--                 {!   !}
+--             ≤⟨ {!   !} ⟩
+--                 {!   !}
+--             ≤⟨ {!   !} ⟩
+--                 Fin.toℕ remainder + suc (suc quotient) * suc b
+--             □
+-- n+-Proper {b} {d} {o} cont n (x ∷ xs) proper with _divMod_ (Fin.toℕ n + Fin.toℕ x + o) (suc b)
+-- n+-Proper {b} {d} {o} cont n (x ∷ xs) proper | result quotient remainder property div-eq mod-eq
+--     = inject≤ remainder b≤d ∷ n+-Proper cont {!   !} xs proper
+--     where
+--         b≤d : suc b ≤ suc d
+--         b≤d =
+--             start
+--                 suc b
+--             ≈⟨ sym (+-right-identity (suc b)) ⟩
+--                 1 * suc b
+--             ≤⟨ *n-mono (suc b) (m≤m⊔n 1 o) ⟩
+--                 (1 ⊔ o) * suc b
+--             ≤⟨ ≤-pred (≰⇒> (Continuous⇒¬Gapped#0 cont proper)) ⟩
+--                 suc d
+--             □
+
+
+-- n+ : ∀ {b d o}
+--     → {cont : True (Continuous? b d o)}
+--     → ℕ
+--     → (xs : Num b d o)
+--     → Num b d o
+-- n+ {b} {d} {o} {cont} n xs with numView b d o
+-- n+ {_} {_} {_} {()}   n xs | NullBase d o
+-- n+ {_} {_} {_} {cont} n xs | NoDigits b o = NoDigits-explode xs
+-- n+ {_} {_} {_} {()}   n xs | AllZeros b
+-- n+ n (x ∙) | Proper b d o proper with _divMod_ (n + Fin.toℕ x + o) (suc b)
+-- n+ n (x ∙) | Proper b d o proper | result zero remainder property div-eq mod-eq
+--     = inject≤ remainder b≤d ∙
+--     where
+--         b≤d : suc b ≤ suc d
+--         b≤d =
+--             start
+--                 suc b
+--             ≈⟨ sym (+-right-identity (suc b)) ⟩
+--                 1 * suc b
+--             ≤⟨ *n-mono (suc b) (m≤m⊔n 1 o) ⟩
+--                 (1 ⊔ o) * suc b
+--             ≤⟨ {!   !} ⟩
+--                 {!   !}
+--             ≤⟨ {!   !} ⟩
+--                 {!   !}
+--             ≤⟨ {!   !} ⟩
+--                 suc d
+--             □
+-- n+ n (x ∙) | Proper b d o proper | result (suc quotient) remainder property div-eq mod-eq
+--     = inject≤ remainder b≤d ∷ {!   !}
+--     where
+--         b≤d : suc b ≤ suc d
+--         b≤d = {!   !}
+-- n+ n (x ∷ xs) | Proper b d o proper with _divMod_ (n + Fin.toℕ x + o) (suc b)
+-- n+ {cont = cont} n (x ∷ xs) | Proper b d o proper | result quotient remainder property div-eq mod-eq
+--     = inject≤ remainder b≤d ∷ n+ {cont = {! cont  !}} quotient xs
+--     where
+--         b≤d : suc b ≤ suc d
+--         b≤d = {!   !}
+
+-- n+ : ∀ {b d o}
+--     → {cont : True (Continuous? b d o)}
+--     → (x : Digit d)
+--     → (ys : Num b d o)
+--     → Num b d o
+-- n+ {b} {d} {o} {cont} x ys with numView b d o
+-- n+ {_} {_} {_} {()}   x ys | NullBase d o
+-- n+ {_} {_} {_} {cont} x ys | NoDigits b o = NoDigits-explode ys
+-- n+ {_} {_} {_} {()}   x ys | AllZeros b
+-- n+ x (y ∙) | Proper b d o proper with _divMod_ (Fin.toℕ x + Fin.toℕ y + o) (suc b)
+-- n+ x (y ∙) | Proper b d o proper | result zero remainder property div-eq mod-eq
+--     = inject≤ remainder b≤d ∙
+--     where
+--         b≤d : suc b ≤ suc d
+--         b≤d =
+--             start
+--                 suc b
+--             ≈⟨ sym (+-right-identity (suc b)) ⟩
+--                 1 * suc b
+--             ≤⟨ *n-mono (suc b) (m≤m⊔n 1 o) ⟩
+--                 (1 ⊔ o) * suc b
+--             ≤⟨ {!   !} ⟩
+--                 {!   !}
+--             ≤⟨ {!   !} ⟩
+--                 {!   !}
+--             ≤⟨ {!   !} ⟩
+--                 suc d
+--             □
+-- n+ x (y ∙) | Proper b d o proper | result (suc quotient) remainder property div-eq mod-eq
+--     = inject≤ remainder b≤d ∷ n+ {! quotient  !} {!   !}
+--     where
+--         b≤d : suc b ≤ suc d
+--         b≤d = {!   !}
+-- n+ x (y ∷ ys) | Proper b d o proper = {!   !}
+-- n+ x ys | Proper b d o proper with nextView ys proper
+-- n+ x ys | Proper b d o proper | NeedNoCarry _ _ _ ¬greatest = {!   !}
+-- n+ x (ys ∙) | Proper b d o proper | IsGapped _ _ _ greatest gapped = {!   !}
+-- n+ x (y ∷ ys) | Proper b d o proper | IsGapped _ _ _ greatest gapped = {! ys  !}
+-- n+ x ys | Proper b d o proper | NotGapped _ _ _ greatest ¬gapped = {!   !}
+
+-- n+ x (y ∙) | Proper b d o proper with Digit-toℕ x o + Digit-toℕ y o ≤? suc d + o
+-- n+ x (y ∙) | Proper b d o proper | yes carry = {!   !}
+-- n+ x (y ∙) | Proper b d o proper | no ¬carry = {!   !}
+-- n+ x (y ∷ ys) | Proper b d o proper = {!   !}
+
+
+-- n+ {b} {d} {o}
+-- n+ x (x' ∙) = {!   !}
+-- n+ x (x' ∷ xs) = {!   !}
+
 -- -- a partial function that only maps ℕ to Continuous Nums
 fromℕ : ∀ {b d o}
     → {cont : True (Continuous? b (suc d) o)}
@@ -68,7 +350,7 @@ toℕ-fromℕ {b} {d} {o} {cont} (suc n) =
     ∎
 
 -- Num 10 1000 100
--- 
+--
 -- Digits : { 100 ~ 1099 }
 
 -- 1099 + 1099 ≡  + 1098 . 110
@@ -82,20 +364,33 @@ toℕ-fromℕ {b} {d} {o} {cont} (suc n) =
 --
 -- 108 + 2090 =
 
-_⊹_ : ∀ {b d o}
-    → {cont : True (Continuous? b d o)}
-    → (xs ys : Num b d o)
-    → Num b d o
--- _⊹_ {b} {d} {o} {cont} (x ∙)    (y ∙)    = {!   !}
-_⊹_ {b} {d} {o} {cont} (x ∙)    (y ∙)    with _divMod_ (Fin.toℕ x + Fin.toℕ y + o) b {{!   !}}
-_⊹_ {b} {d} {o} {cont} (x ∙)    (y ∙)    | result quotient remainder property div-eq mod-eq
-    = inject≤ remainder d≥b ∷ {!   !}
-    where   d≥b : d ≥ b
-            d≥b = {!   !}
-    -- = {!   !}
-_⊹_ {b} {d} {o} {cont} (x ∙)    (y ∷ ys) = {!   !}
-_⊹_ {b} {d} {o} {cont} (x ∷ xs) (y ∙)    = {!   !}
-_⊹_ {b} {d} {o} {cont} (x ∷ xs) (y ∷ ys) = {!   !}
+-- _⊹_ : ∀ {b d o}
+--     → {cont : True (Continuous? b d o)}
+--     → (xs ys : Num b d o)
+--     → Num b d o
+-- -- _⊹_ {b} {d} {o} {cont} (x ∙)    (y ∙)    = {!   !}
+-- _⊹_ {b} {d} {o} {cont} (x ∙)    (y ∙)    with _divMod_ (Fin.toℕ x + Fin.toℕ y + o) b {{!   !}}
+-- _⊹_ {b} {d} {o} {cont} (x ∙)    (y ∙)    | result quotient remainder property div-eq mod-eq
+--     = inject≤ remainder d≥b ∷ {!   !}
+--     where   d≥b : d ≥ b
+--             d≥b = ≤-pred $
+--                 start
+--                     suc b
+--                 ≈⟨ sym (+-right-identity (suc b)) ⟩
+--                     1 * suc b
+--                 ≤⟨ *n-mono (suc b) (m≤m⊔n 1 o) ⟩
+--                     (1 ⊔ o) * suc b
+--                 ≤⟨ {!   !} ⟩
+--                     {!   !}
+--                 ≤⟨ {!   !} ⟩
+--                     {!   !}
+--                 ≤⟨ {!   !} ⟩
+--                     suc d
+--                 □
+--     -- = {!   !}
+-- _⊹_ {b} {d} {o} {cont} (x ∙)    (y ∷ ys) = {!   !}
+-- _⊹_ {b} {d} {o} {cont} (x ∷ xs) (y ∙)    = {!   !}
+-- _⊹_ {b} {d} {o} {cont} (x ∷ xs) (y ∷ ys) = {!   !}
 -- (x ∙)    ⊹ (y ∙) = {!   !}
 -- (x ∙)    ⊹ (y ∷ ys) = {!   !}
 -- (x ∷ xs) ⊹ (y ∙) = {!   !}

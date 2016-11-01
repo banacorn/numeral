@@ -373,6 +373,16 @@ m≥n+o⇒m∸o≥n m n o p =
         m ∸ o
     □
 
+double : ∀ m → m + m ≡ m * 2
+double m =
+    begin
+        m + m
+    ≡⟨ cong (λ w → m + w) (sym (+-right-identity m)) ⟩
+        m + (m + zero)
+    ≡⟨ *-comm (suc (suc zero)) m ⟩
+        m * suc (suc zero)
+    ∎
+
 -- m≡1+n⇒m∸n≡1 : ∀ m n → m ≡ 1 + n → m ∸ n ≡ 1
 -- m≡1+n⇒m∸n≡1 m n p =
 --     begin
