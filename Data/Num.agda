@@ -443,6 +443,239 @@ n+-Proper-Unary-toℕ n (x ∷ xs) | After d o lower-bound upper-bound =
                 sum o n x ∸ (d + o) + (d + o)
             □
 
+⊔-upper-bound : ∀ m n o → m + n ≥ o → o ⊔ n ≤ m + n
+⊔-upper-bound zero zero zero p = p
+⊔-upper-bound zero zero (suc o) ()
+⊔-upper-bound zero (suc n) zero p = s≤s (⊔-upper-bound zero n zero z≤n)
+⊔-upper-bound zero (suc n) (suc o) p = s≤s (⊔-upper-bound zero n o (≤-pred p))
+⊔-upper-bound (suc m) zero zero p = p
+⊔-upper-bound (suc m) zero (suc o) p = p
+⊔-upper-bound (suc m) (suc n) zero p =
+    start
+        suc n
+    ≤⟨ s≤s (≤-step ≤-refl) ⟩
+        suc (suc n)
+    ≤⟨ s≤s (m≤n+m (suc n) m) ⟩
+        suc (m + suc n)
+    □
+⊔-upper-bound (suc m) (suc n) (suc o) p =
+    start
+        suc (o ⊔ n)
+    ≤⟨ s≤s (⊔-upper-bound (suc m) n o $
+        start
+            o
+        ≤⟨ ≤-pred p ⟩
+            m + suc n
+        ≈⟨ +-suc m n ⟩
+            suc (m + n)
+        □
+    ) ⟩
+        suc (suc (m + n))
+    ≈⟨ cong suc (sym (+-suc m n)) ⟩
+        suc (m + suc n)
+    □
+
+data Stage : (b d o : ℕ) (n x : Digit (suc d)) → Set where
+    Before : ∀ b d o {n} {x}
+        → (upper-bound : sum o n x ≤ d + o)
+        → Stage b d o n x
+
+
+    Between : ∀ b d o {n} {x}
+        → (lower-bound : sum o n x > d + o)
+        → (remainder-lower-bound : sum o n x ∸ (1 ⊔ o) * suc (suc b) ≥     o)
+        → (remainder-upper-bound : sum o n x ∸ (1 ⊔ o) * suc (suc b) ≤ d + o)
+        → (carry-upper-bound : 1 ⊔ o ≤ d + o)
+        → Stage b d o n x
+
+
+
+    After  : ∀ b d o {n} {x}
+        → (lower-bound : sum o n x > (1 ⊔ o) * suc (suc b))
+        -- → (upper-bound : sum o n x ∸ (d + o) ≤ d + o)
+        → Stage b d o n x
+
+stage : ∀ b d o
+        → (¬gapped : ¬ (Gapped#0 (suc b) d o))
+        → (proper : suc d + o ≥ 2)
+        → ∀ n x
+        → Stage b d o n x
+stage b d o ¬gapped proper n x with sum o n x ≤? d + o
+stage b d o ¬gapped proper n x | yes p = Before b d o p
+stage b d o ¬gapped proper n x | no ¬p with sum o n x ≤? o + (1 ⊔ o) * suc (suc b)
+stage b d o ¬gapped proper n x | no ¬p | yes q = Between b d o (≰⇒> ¬p) remainder-lower-bound remainder-upper-bound carry-upper-bound
+    where
+        sum>d : sum o n x ≥ suc d
+        sum>d =
+            start
+                suc d
+            ≤⟨ s≤s (m≤m+n d o) ⟩
+                suc (d + o)
+            ≤⟨ ≰⇒> ¬p ⟩
+                sum o n x
+            □
+        sum≥carried : sum o n x ≥ (1 ⊔ o) * suc (suc b)
+        sum≥carried = ≤-pred $
+            start
+                suc ((1 ⊔ o) * suc (suc b))
+            ≤⟨ ≰⇒> ¬gapped ⟩
+                suc (suc d)
+            ≤⟨ s≤s sum>d ⟩
+                suc (sum o n x)
+            □
+        remainder-lower-bound : sum o n x ∸ (1 ⊔ o) * suc (suc b) ≥     o
+        remainder-lower-bound = +n-mono-inverse ((1 ⊔ o) * suc (suc b)) $
+            start
+                o + (1 ⊔ o) * suc (suc b)
+            ≤⟨ n+-mono o (≤-pred $ ≰⇒> ¬gapped) ⟩
+                o + suc d
+            ≈⟨ +-comm o (suc d) ⟩
+                suc (d + o)
+            ≤⟨ ≰⇒> ¬p ⟩
+                sum o n x
+            ≈⟨ sym (m∸n+n≡m sum≥carried) ⟩
+                sum o n x ∸ (1 ⊔ o) * suc (suc b) + (1 ⊔ o) * suc (suc b)
+            □
+        remainder-upper-bound : sum o n x ∸ (1 ⊔ o) * suc (suc b) ≤ d + o
+        remainder-upper-bound = +n-mono-inverse ((1 ⊔ o) * suc (suc b)) $
+            start
+                sum o n x ∸ (1 ⊔ o) * suc (suc b) + (1 ⊔ o) * suc (suc b)
+            ≈⟨ m∸n+n≡m sum≥carried ⟩
+                sum o n x
+            ≤⟨ q ⟩
+                o + (1 ⊔ o) * suc (suc b)
+            ≤⟨ m≤n+m (o + (suc zero ⊔ o) * suc (suc b)) d ⟩
+                d + (o + (suc zero ⊔ o) * suc (suc b))
+            ≈⟨ sym (+-assoc d o ((suc zero ⊔ o) * suc (suc b))) ⟩
+                d + o + (1 ⊔ o) * suc (suc b)
+            □
+        carry-upper-bound : suc zero ⊔ o ≤ d + o
+        carry-upper-bound = ⊔-upper-bound d o (suc zero) (≤-pred proper)
+
+stage b d o ¬gapped proper n x | no ¬p | no ¬q = After b d o {!   !}
+
+n+-Proper : ∀ {b d o}
+    → (cont : True (Continuous? (suc (suc b)) (suc d) o))
+    → (proper : suc d + o ≥ 2)
+    → (n : Digit (suc d))
+    → (xs : Num (suc (suc b)) (suc d) o)
+    → Num (suc (suc b)) (suc d) o
+n+-Proper {b} {d} {o} cont proper n xs with stage b d o (Continuous⇒¬Gapped#0 cont proper) proper n (lsd xs)
+n+-Proper cont proper n (x ∙) | Before b d o upper-bound
+    = Digit-fromℕ (sum o n x) o upper-bound ∙
+n+-Proper cont proper n (x ∷ xs) | Before b d o upper-bound
+    = Digit-fromℕ (sum o n x) o upper-bound ∷ xs
+n+-Proper cont proper n (x ∙) | Between b d o lower-bound remainder-lower-bound upper-bound carry-upper-bound
+    = Digit-fromℕ (sum o n x ∸ (1 ⊔ o) * suc (suc b)) o upper-bound ∷ Digit-fromℕ (1 ⊔ o) o {!   !} ∙
+    where
+        -- upper-bound' : d + o ≥ 1 ⊔ o
+        -- upper-bound' =
+        --     start
+        --         suc zero ⊔ o
+        --     ≤⟨ m⊔n≤m+n (suc zero) o ⟩
+        --         suc o
+        --     ≤⟨ {!   !} ⟩
+        --         {!   !}
+        --     ≤⟨ {!   !} ⟩
+        --         {!   !}
+        --     ≤⟨ {!   !} ⟩
+        --         d + o
+        --     □
+n+-Proper cont proper n (x ∷ xs) | Between b d o lower-bound remainder-lower-bound upper-bound carry-upper-bound
+    = Digit-fromℕ (sum o n x ∸ (1 ⊔ o) * suc (suc b)) o upper-bound ∷ Digit-fromℕ (1 ⊔ o) o {!   !} ∷ xs
+    -- = {!   !} ∷ Digit-fromℕ (1 ⊔ o) o {!   !} ∙
+    -- where
+    --     upper-bound' : d + o ≥ 1 ⊔ o
+    --     upper-bound' =
+    --         start
+    --             suc zero ⊔ o
+    --         ≤⟨ m⊔n≤m+n (suc zero) o ⟩
+    --             suc o
+    --         ≤⟨ {!   !} ⟩
+    --             {!   !}
+    --         ≤⟨ {!   !} ⟩
+    --             {!   !}
+    --         ≤⟨ {!   !} ⟩
+    --             d + o
+    --         □
+n+-Proper cont proper n xs | After b d o lower-bound = {!   !}
+
+
+
+
+n+-Proper-toℕ : ∀ {b d o}
+    → (cont : True (Continuous? (suc (suc b)) (suc d) o))
+    → (proper : suc d + o ≥ 2)
+    → (n : Digit (suc d))
+    → (xs : Num (suc (suc b)) (suc d) o)
+    → ⟦ n+-Proper cont proper n xs ⟧ ≡ Digit-toℕ n o + ⟦ xs ⟧
+n+-Proper-toℕ {b} {d} {o} cont proper n xs with stage b d o (Continuous⇒¬Gapped#0 cont proper) proper n (lsd xs)
+n+-Proper-toℕ cont proper n (x ∙) | Before b d o upper-bound =
+    -- Digit-fromℕ (sum o n x) o upper-bound ∙
+    begin
+        Digit-toℕ (Digit-fromℕ (sum o n x) o upper-bound) o
+    ≡⟨ Digit-toℕ-fromℕ (sum o n x) upper-bound (sum≥o o n x) ⟩
+        sum o n x
+    ∎
+n+-Proper-toℕ cont proper n (x ∷ xs) | Before b d o upper-bound =
+    -- Digit-fromℕ (sum o n x) o upper-bound ∷ xs
+    begin
+        Digit-toℕ (Digit-fromℕ (sum o n x) o upper-bound) o + ⟦ xs ⟧ * suc (suc b)
+    ≡⟨ cong (λ w → w + ⟦ xs ⟧ * suc (suc b)) (Digit-toℕ-fromℕ (sum o n x) upper-bound (sum≥o o n x)) ⟩
+        sum o n x + ⟦ xs ⟧ * suc (suc b)
+    ≡⟨ +-assoc (Digit-toℕ n o) (Digit-toℕ x o) (⟦ xs ⟧ * suc (suc b)) ⟩
+        Digit-toℕ n o + ⟦ x ∷ xs ⟧
+    ∎
+n+-Proper-toℕ cont proper n (x ∙) | Between b d o lower-bound remainder-lower-bound upper-bound carry-upper-bound =
+    -- Digit-fromℕ (sum o n x ∸ (1 ⊔ o) * suc (suc b)) o upper-bound ∷ Digit-fromℕ (1 ⊔ o) o {!   !} ∙
+    begin
+        Digit-toℕ (Digit-fromℕ (sum o n x ∸ (1 ⊔ o) * suc (suc b)) o upper-bound) o + Digit-toℕ (Digit-fromℕ (1 ⊔ o) o carry-upper-bound) o * suc (suc b)
+    ≡⟨ cong₂
+        (λ w v → w + v * suc (suc b))
+        (Digit-toℕ-fromℕ {d} {o} (sum o n x ∸ (1 ⊔ o) * suc (suc b)) upper-bound {!   !})
+        (Digit-toℕ-fromℕ {d} {o} (1 ⊔ o) carry-upper-bound {!   !})
+    ⟩
+        sum o n x ∸ (1 ⊔ o) * suc (suc b) + (1 ⊔ o) * suc (suc b)
+    ≡⟨ m∸n+n≡m {!   !} ⟩
+        sum o n x
+    ∎
+n+-Proper-toℕ cont proper n (x ∷ xs) | Between b d o lower-bound remainder-lower-bound upper-bound carry-upper-bound = {!   !}
+n+-Proper-toℕ cont proper n xs | After b d o lower-bound = {!   !}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 -- n+-Proper : ∀ {b d o}
 --     → (cont : True (Continuous? (suc b) (suc d) o))
 --     → (n : Digit (suc d))
