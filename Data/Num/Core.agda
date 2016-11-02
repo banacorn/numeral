@@ -75,11 +75,11 @@ Digit-fromℕ {d} n o upper-bound | no ¬p = contradiction p ¬p
 
 Digit-toℕ-fromℕ : ∀ {d o}
     → (n : ℕ)
-    → (upper-bound : d + o ≥ n)
     → (lower-bound :     o ≤ n)
+    → (upper-bound : d + o ≥ n)
     → Digit-toℕ (Digit-fromℕ {d} n o upper-bound) o ≡ n
-Digit-toℕ-fromℕ {d} {o} n ub lb with n ∸ o ≤? d
-Digit-toℕ-fromℕ {d} {o} n ub lb | yes q =
+Digit-toℕ-fromℕ {d} {o} n lb ub with n ∸ o ≤? d
+Digit-toℕ-fromℕ {d} {o} n lb ub | yes q =
     begin
         Fin.toℕ (fromℕ≤ (s≤s q)) + o
     ≡⟨ cong (λ x → x + o) (toℕ-fromℕ≤ (s≤s q)) ⟩
@@ -87,7 +87,7 @@ Digit-toℕ-fromℕ {d} {o} n ub lb | yes q =
     ≡⟨ m∸n+n≡m lb ⟩
         n
     ∎
-Digit-toℕ-fromℕ {d} {o} n ub lb | no ¬q = contradiction q ¬q
+Digit-toℕ-fromℕ {d} {o} n lb ub | no ¬q = contradiction q ¬q
     where   q : n ∸ o ≤ d
             q = +n-mono-inverse o $
                 start
@@ -97,14 +97,6 @@ Digit-toℕ-fromℕ {d} {o} n ub lb | no ¬q = contradiction q ¬q
                 ≤⟨ ub ⟩
                     d + o
                 □
--- Digit-toℕ-fromℕ≤ : ∀ {d o n} → (p : n < d) → Digit-toℕ (fromℕ≤ p) o ≡ n + o
--- Digit-toℕ-fromℕ≤ {d} {o} {n} p =
---     begin
---         Fin.toℕ (fromℕ≤ p) + o
---     ≡⟨ cong (λ w → w + o) (toℕ-fromℕ≤ p) ⟩
---         n + o
---     ∎
-
 
 --------------------------------------------------------------------------------
 -- Properties of Digits
@@ -175,7 +167,7 @@ LCD d o d+o≥2 = Digit-fromℕ (1 ⊔ o) o (LCD-upper-bound d o d+o≥2)
 LCD-toℕ : ∀ d o
     → (d+o≥2 : 2 ≤ suc (d + o))
     → Digit-toℕ (LCD d o d+o≥2) o ≡ 1 ⊔ o
-LCD-toℕ d o d+o≥2 = Digit-toℕ-fromℕ {d} {o} (1 ⊔ o) upper-bound lower-bound
+LCD-toℕ d o d+o≥2 = Digit-toℕ-fromℕ {d} {o} (1 ⊔ o) lower-bound upper-bound 
     where
         lower-bound : o ≤ 1 ⊔ o
         lower-bound = LCD-lower-bound o

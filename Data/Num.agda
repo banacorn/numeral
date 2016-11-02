@@ -443,37 +443,6 @@ n+-Proper-Unary-toℕ n (x ∷ xs) | After d o lower-bound upper-bound =
                 sum o n x ∸ (d + o) + (d + o)
             □
 
-⊔-upper-bound : ∀ m n o → m + n ≥ o → o ⊔ n ≤ m + n
-⊔-upper-bound zero zero zero p = p
-⊔-upper-bound zero zero (suc o) ()
-⊔-upper-bound zero (suc n) zero p = s≤s (⊔-upper-bound zero n zero z≤n)
-⊔-upper-bound zero (suc n) (suc o) p = s≤s (⊔-upper-bound zero n o (≤-pred p))
-⊔-upper-bound (suc m) zero zero p = p
-⊔-upper-bound (suc m) zero (suc o) p = p
-⊔-upper-bound (suc m) (suc n) zero p =
-    start
-        suc n
-    ≤⟨ s≤s (≤-step ≤-refl) ⟩
-        suc (suc n)
-    ≤⟨ s≤s (m≤n+m (suc n) m) ⟩
-        suc (m + suc n)
-    □
-⊔-upper-bound (suc m) (suc n) (suc o) p =
-    start
-        suc (o ⊔ n)
-    ≤⟨ s≤s (⊔-upper-bound (suc m) n o $
-        start
-            o
-        ≤⟨ ≤-pred p ⟩
-            m + suc n
-        ≈⟨ +-suc m n ⟩
-            suc (m + n)
-        □
-    ) ⟩
-        suc (suc (m + n))
-    ≈⟨ cong suc (sym (+-suc m n)) ⟩
-        suc (m + suc n)
-    □
 
 data Stage : (b d o : ℕ) (n x : Digit (suc d)) → Set where
     Before : ∀ b d o {n} {x}
