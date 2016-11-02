@@ -395,21 +395,49 @@ m⊔n≤m+n (suc m) (suc n) = s≤s $
         m + suc n
     □
 
+cancel-∸-right : ∀ {m n o} → n ≥ o → m ≡ n ∸ o → m + o ≡ n
+cancel-∸-right {m} {n} {zero} p eq =
+    begin
+        m + zero
+    ≡⟨ +-right-identity m ⟩
+        m
+    ≡⟨ eq ⟩
+        n
+    ∎
+cancel-∸-right {m} {zero} {suc o} () eq
+cancel-∸-right {m} {suc n} {suc o} p eq =
+    begin
+        m + suc o
+    ≡⟨ +-suc m o ⟩
+        suc (m + o)
+    ≡⟨ cong suc (cancel-∸-right {m} {n} {o} (≤-pred p) eq) ⟩
+        suc n
+    ∎
 
-
--- m≡1+n⇒m∸n≡1 : ∀ m n → m ≡ 1 + n → m ∸ n ≡ 1
--- m≡1+n⇒m∸n≡1 m n p =
---     begin
---         {!   !}
---     ≡⟨ {!   !} ⟩
---         {!   !}
---     ≡⟨ {!   !} ⟩
---         {!   !}
---     ≡⟨ {!   !} ⟩
---         {!   !}
---     ≡⟨ {!   !} ⟩
---         {!   !}
---     ∎
+cancel-∸-right-inverse : ∀ m n o → n ≥ o → m + o ≡ n → m ≡ n ∸ o
+cancel-∸-right-inverse m n zero p eq =
+    begin
+        m
+    ≡⟨ sym (+-right-identity m) ⟩
+        m + 0
+    ≡⟨ eq ⟩
+        n
+    ∎
+cancel-∸-right-inverse m zero (suc o) () eq
+cancel-∸-right-inverse m (suc n) (suc o) p eq =
+    begin
+        m
+    ≡⟨ cancel-∸-right-inverse m n o (≤-pred p) $ cancel-+-left 1 $
+        begin
+            suc m + o
+        ≡⟨ sym (+-suc m o) ⟩
+            m + suc o
+        ≡⟨ eq ⟩
+            suc n
+        ∎
+     ⟩
+        n ∸ o
+    ∎
 
 
 -- start

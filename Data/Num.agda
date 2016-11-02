@@ -62,6 +62,18 @@ sum≥o o n x = start
         sum o n x
     □
 
+sum≥o+o : ∀ {d} o
+    → (n x : Digit (suc d))
+    → sum o n x ≥ o + o
+sum≥o+o o n x =
+    start
+        o + o
+    ≤⟨ n+-mono o (m≤n+m o (Fin.toℕ x)) ⟩
+        o + (Digit-toℕ x o)
+    ≤⟨ +n-mono (Digit-toℕ x o) (m≤n+m o (Fin.toℕ n)) ⟩
+        sum o n x
+    □
+
 sum-upper-bound : ∀ {d} o
     → (n x : Digit (suc d))
     → sum o n x ≤ (d + o) + (d + o)
@@ -205,7 +217,7 @@ data Range : (d o : ℕ) (n x : Digit (suc d)) → Set where
         → (upper-bound : sum o n x ∸ o ≤ d + o)
         → Range d o n x
     After  : ∀ d o {n} {x}
-        → (lower-bound : sum o n x ∸ o       ≥ d + o)
+        → (lower-bound : sum o n x ∸      o  ≥ d + o)
         → (upper-bound : sum o n x ∸ (d + o) ≤ d + o)
         → Range d o n x
 
@@ -228,7 +240,7 @@ range d o n x | no ¬p | yes q = Between d o lower-bound upper-bound
             □
 range d o n x | no ¬p | no ¬q = After d o lower-bound upper-bound
     where
-        lower-bound : sum o n x ∸ o       ≥ d + o
+        lower-bound : sum o n x ∸ o ≥ d + o
         lower-bound = +n-mono-inverse o $
             start
                 d + o + o
@@ -290,17 +302,146 @@ n+-Proper-Unary-toℕ n (x ∙) | Between d o lower-bound upper-bound =
     -- = Digit-fromℕ (sum o n x ∸ o) o upper-bound ∷ Digit-fromℕ o o (m≤n+m o d) ∙
     begin
         Digit-toℕ (Digit-fromℕ (sum o n x ∸ o) o upper-bound) o + Digit-toℕ (Digit-fromℕ o o (m≤n+m o d)) o * 1
-    ≡⟨ cong₂ (λ w v → w + v * 1) (Digit-toℕ-fromℕ {d} {o} (sum o n x ∸ o) upper-bound {!   !}) (Digit-toℕ-fromℕ {d} {o} o (m≤n+m o d) ≤-refl) ⟩
-        {!   !}
-    ≡⟨ {!   !} ⟩
-        {!   !}
-    ≡⟨ {!   !} ⟩
-        {!   !}
-    ≡⟨ {!   !} ⟩
-        {!   !}
+    ≡⟨ cong₂
+        (λ w v → w + v * 1)
+        (Digit-toℕ-fromℕ {d} {o} (sum o n x ∸ o) upper-bound lower-bound')
+        (Digit-toℕ-fromℕ {d} {o} o (m≤n+m o d) ≤-refl)
+    ⟩
+        sum o n x ∸ o + o * 1
+    ≡⟨ cong (λ w → sum o n x ∸ o + w) (*-right-identity o) ⟩
+        sum o n x ∸ o + o
+    ≡⟨ m∸n+n≡m (sum≥o o n x) ⟩
+        sum o n x
     ∎
-n+-Proper-Unary-toℕ n (x ∷ xs) | Between d o lower-bound upper-bound = {!   !}
-n+-Proper-Unary-toℕ n xs | After d o lower-bound upper-bound = {!   !}
+    where
+        lower-bound' : o ≤ sum o n x ∸ o
+        lower-bound' = +n-mono-inverse o $
+            start
+                o + o
+            ≤⟨ sum≥o+o o n x ⟩
+                sum o n x
+            ≈⟨ sym (m∸n+n≡m (sum≥o o n x)) ⟩
+                sum o n x ∸ o + o
+            □
+n+-Proper-Unary-toℕ n (x ∷ xs) | Between d o lower-bound upper-bound =
+    -- = Digit-fromℕ (sum o n x ∸ o) o upper-bound ∷ Digit-fromℕ o o (m≤n+m o d) ∷ xs
+    begin
+        Digit-toℕ (Digit-fromℕ (sum o n x ∸ o) o upper-bound) o + (Digit-toℕ (Digit-fromℕ o o (m≤n+m o d)) o + ⟦ xs ⟧ * 1) * 1
+    ≡⟨ cong₂
+        (λ w v → w + (v + ⟦ xs ⟧ * 1) * 1)
+        (Digit-toℕ-fromℕ {d} {o} (sum o n x ∸ o) upper-bound lower-bound')
+        (Digit-toℕ-fromℕ {d} {o} o (m≤n+m o d) ≤-refl)
+    ⟩
+        sum o n x ∸ o + (o + ⟦ xs ⟧ * 1) * 1
+    ≡⟨ cong (λ w → sum o n x ∸ o + w) (*-right-identity (o + ⟦ xs ⟧ * 1)) ⟩
+        sum o n x ∸ o + (o + ⟦ xs ⟧ * 1)
+    ≡⟨ sym (+-assoc (sum o n x ∸ o) o (⟦ xs ⟧ * 1)) ⟩
+        sum o n x ∸ o + o + ⟦ xs ⟧ * 1
+    ≡⟨ cong (λ w → w + ⟦ xs ⟧ * 1) (m∸n+n≡m (sum≥o o n x)) ⟩
+        Digit-toℕ n o + Digit-toℕ x o + ⟦ xs ⟧ * 1
+    ≡⟨ +-assoc (Digit-toℕ n o) (Digit-toℕ x o) (⟦ xs ⟧ * 1) ⟩
+        Digit-toℕ n o + (Digit-toℕ x o + ⟦ xs ⟧ * 1)
+    ∎
+    where
+        lower-bound' : o ≤ sum o n x ∸ o
+        lower-bound' = +n-mono-inverse o $
+            start
+                o + o
+            ≤⟨ sum≥o+o o n x ⟩
+                sum o n x
+            ≈⟨ sym (m∸n+n≡m (sum≥o o n x)) ⟩
+                sum o n x ∸ o + o
+            □
+n+-Proper-Unary-toℕ n (x ∙) | After d o lower-bound upper-bound =
+    -- Digit-fromℕ (d + o) o ≤-refl ∷ Digit-fromℕ (sum o n x ∸ (d + o)) o upper-bound ∙
+    begin
+        Digit-toℕ (Digit-fromℕ (d + o) o ≤-refl) o + Digit-toℕ (Digit-fromℕ (sum o n x ∸ (d + o)) o upper-bound) o * 1
+    ≡⟨ cong₂
+        (λ w v → w + v * 1)
+        (Digit-toℕ-fromℕ {d} {o} (d + o) ≤-refl (m≤n+m o d))
+        (Digit-toℕ-fromℕ {d} {o} (sum o n x ∸ (d + o)) upper-bound lower-bound')
+    ⟩
+        d + o + (sum o n x ∸ (d + o)) * 1
+    ≡⟨ cong (λ w → d + o + w) (*-right-identity (sum o n x ∸ (d + o))) ⟩
+        d + o + (sum o n x ∸ (d + o))
+    ≡⟨ +-comm (d + o) (sum o n x ∸ (d + o)) ⟩
+        sum o n x ∸ (d + o) + (d + o)
+    ≡⟨ m∸n+n≡m sum≥d+o ⟩
+        sum o n x
+    ∎
+    where
+        sum≥d+o : sum o n x ≥ (d + o)
+        sum≥d+o =
+            start
+                d + o
+            ≤⟨ m≤m+n (d + o) o ⟩
+                d + o + o
+            ≤⟨ +n-mono o lower-bound ⟩
+                sum o n x ∸ o + o
+            ≈⟨ m∸n+n≡m (sum≥o o n x) ⟩
+                sum o n x
+            □
+
+        lower-bound' : o ≤ sum o n x ∸ (d + o)
+        lower-bound' = +n-mono-inverse (d + o) $
+            start
+                o + (d + o)
+            ≈⟨ +-comm o (d + o) ⟩
+                d + o + o
+            ≤⟨ +n-mono o lower-bound ⟩
+                sum o n x ∸ o + o
+            ≈⟨ m∸n+n≡m (sum≥o o n x) ⟩
+                sum o n x
+            ≈⟨ sym (m∸n+n≡m sum≥d+o) ⟩
+                sum o n x ∸ (d + o) + (d + o)
+            □
+n+-Proper-Unary-toℕ n (x ∷ xs) | After d o lower-bound upper-bound =
+    -- Digit-fromℕ (d + o) o ≤-refl ∷ Digit-fromℕ (sum o n x ∸ (d + o)) o upper-bound ∷ xs
+    begin
+        Digit-toℕ (Digit-fromℕ (d + o) o ≤-refl) o + (Digit-toℕ (Digit-fromℕ (sum o n x ∸ (d + o)) o upper-bound) o + ⟦ xs ⟧ * 1) * 1
+    ≡⟨ cong₂
+        (λ w v → w + (v + ⟦ xs ⟧ * 1) * 1)
+        (Digit-toℕ-fromℕ {d} {o} (d + o) ≤-refl (m≤n+m o d))
+        (Digit-toℕ-fromℕ {d} {o} (sum o n x ∸ (d + o)) upper-bound lower-bound')
+    ⟩
+        d + o + (sum o n x ∸ (d + o) + ⟦ xs ⟧ * 1) * 1
+    ≡⟨ cong (λ w → d + o + w) (*-right-identity (sum o n x ∸ (d + o) + ⟦ xs ⟧ * 1)) ⟩
+        d + o + (sum o n x ∸ (d + o) + ⟦ xs ⟧ * 1)
+    ≡⟨ sym (+-assoc (d + o) (sum o n x ∸ (d + o)) (⟦ xs ⟧ * 1)) ⟩
+        d + o + (sum o n x ∸ (d + o)) + ⟦ xs ⟧ * 1
+    ≡⟨ cong (λ w → w + ⟦ xs ⟧ * 1) (+-comm (d + o) (sum o n x ∸ (d + o))) ⟩
+        sum o n x ∸ (d + o) + (d + o) + ⟦ xs ⟧ * suc zero
+    ≡⟨ cong (λ w → w + ⟦ xs ⟧ * 1) (m∸n+n≡m sum≥d+o) ⟩
+        Digit-toℕ n o + (Digit-toℕ x o) + ⟦ xs ⟧ * 1
+    ≡⟨ +-assoc (Digit-toℕ n o) (Digit-toℕ x o) (⟦ xs ⟧ * 1) ⟩
+        Digit-toℕ n o + (Digit-toℕ x o + ⟦ xs ⟧ * 1)
+    ∎
+    where
+        sum≥d+o : sum o n x ≥ (d + o)
+        sum≥d+o =
+            start
+                d + o
+            ≤⟨ m≤m+n (d + o) o ⟩
+                d + o + o
+            ≤⟨ +n-mono o lower-bound ⟩
+                sum o n x ∸ o + o
+            ≈⟨ m∸n+n≡m (sum≥o o n x) ⟩
+                sum o n x
+            □
+
+        lower-bound' : o ≤ sum o n x ∸ (d + o)
+        lower-bound' = +n-mono-inverse (d + o) $
+            start
+                o + (d + o)
+            ≈⟨ +-comm o (d + o) ⟩
+                d + o + o
+            ≤⟨ +n-mono o lower-bound ⟩
+                sum o n x ∸ o + o
+            ≈⟨ m∸n+n≡m (sum≥o o n x) ⟩
+                sum o n x
+            ≈⟨ sym (m∸n+n≡m sum≥d+o) ⟩
+                sum o n x ∸ (d + o) + (d + o)
+            □
 
 -- n+-Proper : ∀ {b d o}
 --     → (cont : True (Continuous? (suc b) (suc d) o))
