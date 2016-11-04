@@ -167,6 +167,29 @@ n+-mono n = _+-mono_ {n} {n} ≤-refl
 -- induction
 +-mono-contra {suc a} {suc b} (s≤s p) (s≤s q) = +-mono-contra p q
 
+∸n-mono : ∀ n → (λ x → x ∸ n) Preserves _≤_ ⟶ _≤_
+∸n-mono n {a} {b} a≤b = ∸-mono {a} {b} {n} {n} a≤b ≤-refl
+
+∸n-mono-inverse :  ∀ n → ∀ {a b} → a > n → a ∸ n ≤ b ∸ n → a ≤ b
+∸n-mono-inverse zero                    p q = q
+∸n-mono-inverse (suc n) {zero}  {zero}  p q = q
+∸n-mono-inverse (suc n) {zero}  {suc b} p q = z≤n
+∸n-mono-inverse (suc n) {suc a} {zero}  p q = contradiction (≤-pred p) (≤⇒≯ q')
+    where
+        q' : a ≤ n
+        q' = ∸n-mono-inverse n (≤-pred p) $
+            start
+                a ∸ n
+            ≤⟨ q ⟩
+                zero
+            ≈⟨ sym (n∸n≡0 n) ⟩
+                n ∸ n
+            □
+∸n-mono-inverse (suc n) {suc a} {suc b} p q = s≤s (∸n-mono-inverse n (≤-pred p) q)
+
+n∸-mono : ∀ n → (λ x → n ∸ x) Preserves _≥_ ⟶ _≤_
+n∸-mono n {a} {b} a≥b = ∸-mono {n} {n} {a} {b} ≤-refl a≥b
+
 n*-mono : ∀ n → (λ x → n * x) Preserves _≤_ ⟶ _≤_
 n*-mono n = _*-mono_ {n} {n} ≤-refl
 
@@ -395,49 +418,56 @@ m⊔n≤m+n (suc m) (suc n) = s≤s $
         m + suc n
     □
 
-cancel-∸-right : ∀ {m n o} → n ≥ o → m ≡ n ∸ o → m + o ≡ n
-cancel-∸-right {m} {n} {zero} p eq =
-    begin
-        m + zero
-    ≡⟨ +-right-identity m ⟩
-        m
-    ≡⟨ eq ⟩
-        n
-    ∎
-cancel-∸-right {m} {zero} {suc o} () eq
-cancel-∸-right {m} {suc n} {suc o} p eq =
-    begin
-        m + suc o
-    ≡⟨ +-suc m o ⟩
-        suc (m + o)
-    ≡⟨ cong suc (cancel-∸-right {m} {n} {o} (≤-pred p) eq) ⟩
-        suc n
-    ∎
+cancel-∸-right : ∀ {m n} o → m ≥ o → n ≥ o → m ∸ o ≡ n ∸ o → m ≡ n
+cancel-∸-right                 zero    p  q  eq = eq
+cancel-∸-right {zero}          (suc o) () q  eq
+cancel-∸-right {suc m} {zero}  (suc o) p  () eq
+cancel-∸-right {suc m} {suc n} (suc o) p  q  eq = cong suc (cancel-∸-right o (≤-pred p) (≤-pred q) eq)
 
-cancel-∸-right-inverse : ∀ m n o → n ≥ o → m + o ≡ n → m ≡ n ∸ o
-cancel-∸-right-inverse m n zero p eq =
-    begin
-        m
-    ≡⟨ sym (+-right-identity m) ⟩
-        m + 0
-    ≡⟨ eq ⟩
-        n
-    ∎
-cancel-∸-right-inverse m zero (suc o) () eq
-cancel-∸-right-inverse m (suc n) (suc o) p eq =
-    begin
-        m
-    ≡⟨ cancel-∸-right-inverse m n o (≤-pred p) $ cancel-+-left 1 $
-        begin
-            suc m + o
-        ≡⟨ sym (+-suc m o) ⟩
-            m + suc o
-        ≡⟨ eq ⟩
-            suc n
-        ∎
-     ⟩
-        n ∸ o
-    ∎
+
+-- cancel-∸-right : ∀ {m n o} → n ≥ o → m ≡ n ∸ o → m + o ≡ n
+-- cancel-∸-right {m} {n} {zero} p eq =
+--     begin
+--         m + zero
+--     ≡⟨ +-right-identity m ⟩
+--         m
+--     ≡⟨ eq ⟩
+--         n
+--     ∎
+-- cancel-∸-right {m} {zero} {suc o} () eq
+-- cancel-∸-right {m} {suc n} {suc o} p eq =
+--     begin
+--         m + suc o
+--     ≡⟨ +-suc m o ⟩
+--         suc (m + o)
+--     ≡⟨ cong suc (cancel-∸-right {m} {n} {o} (≤-pred p) eq) ⟩
+--         suc n
+--     ∎
+--
+-- cancel-∸-right-inverse : ∀ m n o → n ≥ o → m + o ≡ n → m ≡ n ∸ o
+-- cancel-∸-right-inverse m n zero p eq =
+--     begin
+--         m
+--     ≡⟨ sym (+-right-identity m) ⟩
+--         m + 0
+--     ≡⟨ eq ⟩
+--         n
+--     ∎
+-- cancel-∸-right-inverse m zero (suc o) () eq
+-- cancel-∸-right-inverse m (suc n) (suc o) p eq =
+--     begin
+--         m
+--     ≡⟨ cancel-∸-right-inverse m n o (≤-pred p) $ cancel-+-left 1 $
+--         begin
+--             suc m + o
+--         ≡⟨ sym (+-suc m o) ⟩
+--             m + suc o
+--         ≡⟨ eq ⟩
+--             suc n
+--         ∎
+--      ⟩
+--         n ∸ o
+--     ∎
 
 
 ⊔-upper-bound : ∀ m n o → m + n ≥ o → o ⊔ n ≤ m + n
