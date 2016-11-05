@@ -167,7 +167,7 @@ LCD d o d+o≥2 = Digit-fromℕ (1 ⊔ o) o (LCD-upper-bound d o d+o≥2)
 LCD-toℕ : ∀ d o
     → (d+o≥2 : 2 ≤ suc (d + o))
     → Digit-toℕ (LCD d o d+o≥2) o ≡ 1 ⊔ o
-LCD-toℕ d o d+o≥2 = Digit-toℕ-fromℕ {d} {o} (1 ⊔ o) lower-bound upper-bound 
+LCD-toℕ d o d+o≥2 = Digit-toℕ-fromℕ {d} {o} (1 ⊔ o) lower-bound upper-bound
     where
         lower-bound : o ≤ 1 ⊔ o
         lower-bound = LCD-lower-bound o
