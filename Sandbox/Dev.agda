@@ -137,59 +137,6 @@ sumView b d o ¬gapped proper y xs | no ¬p | result quotient remainder divModPr
         base : ℕ
         base = suc (suc b)
 
-        -- leftover + carry * suc (suc b) ≡ sum
-
-
-
-
-        -- lemma : ∀ {o}
-        --     → (1 ⊔ o) * base ≤ suc d
-        --     → d + o ≥ base
-        -- lemma {zero} ¬gapped = ≤-pred $
-        --     start
-        --         {!suc base  !}
-        --     ≤⟨ {!   !} ⟩
-        --         {!   !}
-        --     ≤⟨ {!   !} ⟩
-        --         {!   !}
-        --     ≤⟨ {!   !} ⟩
-        --         base + 0
-        --     ≤⟨ ¬gapped ⟩
-        --         suc d
-        --     ≈⟨ sym (+-right-identity (suc d))⟩
-        --         suc d + zero
-        --     □
-        -- lemma {suc o} ¬gapped = {!   !}
-            -- start
-            --     suc base
-            -- ≤⟨ {!   !} ⟩
-            --     {!   !}
-            -- ≤⟨ {!   !} ⟩
-            --     (1 ⊔ o) * base
-            -- ≤⟨ m≤m+n ((1 ⊔ o) * base) o ⟩
-            --     (1 ⊔ o) * base + o
-            -- ≤⟨ +n-mono o ¬gapped ⟩
-            --     suc (d + o)
-            -- □
-        -- lemma {zero} ¬gapped =
-        --     -- start
-        --     --     zero
-        --     -- ≤⟨ z≤n ⟩
-        --     --     d
-        --     -- ≈⟨ sym (+-right-identity d)⟩
-        --     --     d + zero
-        --     -- □
-        -- lemma {suc o} ¬gapped =
-        --     start
-        --         suc o * base
-        --     ≤⟨ m≤m+n (suc o * base) o ⟩
-        --         suc o * base + o
-        --     ≈⟨ sym (+-suc (suc (b + o * base)) o) ⟩
-        --         suc (b + o * base + suc o)
-        --     ≤⟨ +n-mono (suc o) (≤-pred ¬gapped) ⟩
-        --         d + suc o
-        --     □
-
         -- dividend
         dividend : ℕ
         dividend = sum o y (lsd xs) ∸ (d + o)
@@ -203,7 +150,6 @@ sumView b d o ¬gapped proper y xs | no ¬p | result quotient remainder divModPr
             ≤⟨ sum-upper-bound o y (lsd xs) ⟩
                 d + o + (d + o)
             □
-
 
         divModProp' : sum o y (lsd xs) ≡ Fin.toℕ remainder + quotient * base + (d + o)
         divModProp' = cancel-∸-right (d + o) (<⇒≤ (≰⇒> ¬p)) (m≤n+m (d + o) (Fin.toℕ remainder + quotient * base)) $
@@ -222,26 +168,43 @@ sumView b d o ¬gapped proper y xs | no ¬p | result quotient remainder divModPr
         carry : ℕ
         carry = (Fin.toℕ remainder ⊓ 1) + quotient
 
-        -- carry-upper-bound-prim : ∀ q
-        --     → dividend ≡ Fin.toℕ remainder + q * base
-        --     → suc q ≤ d + o
-        -- carry-upper-bound-prim zero prop = ≤-pred proper
-        -- carry-upper-bound-prim (suc q) prop =
-        --     start
-        --         suc (suc q)
-        --     ≤⟨ s≤s (m≤n+m (suc q) (q * suc zero)) ⟩
-        --         suc (q * suc zero + suc q)
-        --     ≤⟨ n+-mono (suc q * 1) (m≤m*1+n (suc q) b) ⟩
-        --         suc q * 1 + suc q * suc b
-        --     ≈⟨ sym (distrib-left-*-+ (suc q) 1 (suc b)) ⟩
-        --         suc q * base
-        --     ≤⟨ m≤n+m (suc q * base) (Fin.toℕ remainder) ⟩
-        --         Fin.toℕ remainder + suc q * base
-        --     ≈⟨ sym prop ⟩
-        --         dividend
-        --     ≤⟨ dividend-upper-bound ⟩
-        --         d + o
-        --     □
+
+        dividend≤carry*base-prim : {remainder : Fin base}
+            → dividend ≡ Fin.toℕ remainder + quotient * base
+            → dividend ≤ (Fin.toℕ remainder ⊓ 1 + quotient) * base
+        dividend≤carry*base-prim {z} prop = reflexive prop
+        dividend≤carry*base-prim {s r} prop =
+            start
+                dividend
+            ≈⟨ prop ⟩
+                Fin.toℕ (s r) + quotient * base
+            ≤⟨ +n-mono (quotient * base) (bounded r) ⟩
+                suc b + quotient * base
+            ≤⟨ +n-mono (quotient * base) (s≤s (m≤n+m b (suc zero))) ⟩
+                base + quotient * base
+            ≤⟨ *n-mono base (s≤s (m≤n+m quotient (Fin.toℕ r ⊓ 0))) ⟩
+                suc (Fin.toℕ r ⊓ 0 + quotient) * base
+            ≈⟨ refl ⟩
+                (Fin.toℕ (s r) ⊓ 1 + quotient) * base
+            □
+        dividend≤carry*base : dividend ≤ carry * base
+        dividend≤carry*base = dividend≤carry*base-prim {remainder} divModProp
+
+
+        carry-lower-bound : carry ≥ o
+        carry-lower-bound = *n-mono-inverse (suc b) $
+            start
+                o * base
+            ≤⟨ {!   !} ⟩
+                {!   !}
+            ≤⟨ {!   !} ⟩
+                {!   !}
+            ≤⟨ {!   !} ⟩
+                dividend
+            ≤⟨ dividend≤carry*base ⟩
+                ((Fin.toℕ remainder ⊓ 1) + quotient) * base
+            □
+
 
         carry-upper-bound-prim : {remainder : Fin base}
             → dividend ≡ Fin.toℕ remainder + quotient * base
@@ -298,8 +261,8 @@ sumView b d o ¬gapped proper y xs | no ¬p | result quotient remainder divModPr
 
         -- leftover
         leftover : ℕ
-        leftover = sum o y (lsd xs) ∸ carry * base
 
+        leftover = sum o y (lsd xs) ∸ carry * base
         leftover-lower-bound-prim : {remainder : Fin base}
             → (prop : sum o y (lsd xs) ≡ Fin.toℕ remainder + quotient * base + (d + o))
             → sum o y (lsd xs) ∸ ((Fin.toℕ remainder ⊓ 1) + quotient) * base ≥ o
@@ -321,26 +284,45 @@ sumView b d o ¬gapped proper y xs | no ¬p | result quotient remainder divModPr
             in
             start
                 o
-            ≤⟨ {!   !} ⟩
-                {!   !}
-            ≤⟨ {!   !} ⟩
-                {!   !}
-            ≤⟨ {!   !} ⟩
-                {!   !}
-            ≤⟨ {!   !} ⟩
-                {!  !}
-            ≈⟨ {!   !} ⟩
-                {!   !}
+            ≤⟨ m≤n+m o (Fin.toℕ r) ⟩
+                Fin.toℕ r + o
+            ≤⟨ m≤m+n (Fin.toℕ r + o) (0 * base) ⟩
+                Fin.toℕ r + o + 0 * base
+            ≈⟨ cong (λ w → Fin.toℕ r + o + w * base) (sym (n∸n≡0 (suc quotient))) ⟩
+                Fin.toℕ r + o + (suc quotient ∸ suc quotient) * base
+            ≤⟨ n+-mono (Fin.toℕ r + o)
+                (*n-mono base
+                    (∸-mono
+                        {1 + quotient}
+                        {quotient + (1 ⊔ o)}
+                        {1 + quotient}
+                        {Fin.toℕ (s r) ⊓ 1 + quotient}
+                        (start
+                            suc quotient
+                        ≈⟨ +-comm 1 quotient ⟩
+                            quotient + 1
+                        ≤⟨ n+-mono quotient (m≤m⊔n 1 o) ⟩
+                            quotient + (1 ⊔ o)
+                        □)
+                        (start
+                            Fin.toℕ (s r) ⊓ 1 + quotient
+                        ≤⟨ +n-mono quotient (m⊓n≤n (Fin.toℕ (s r)) 1) ⟩
+                            suc quotient
+                        □)))
+            ⟩
+                Fin.toℕ r + o + (quotient + (1 ⊔ o) ∸ (Fin.toℕ (s r) ⊓ 1 + quotient)) * base
+            ≈⟨ cong (λ w → Fin.toℕ r + o + w) (*-distrib-∸ʳ base (quotient + (1 ⊔ o)) carry) ⟩
+                Fin.toℕ r + o + ((quotient + (1 ⊔ o)) * base ∸ carry * base)
             ≈⟨ sym (+-∸-assoc (Fin.toℕ r + o) $ *n-mono base $
                 start
                     carry
                 ≈⟨ refl ⟩
                     Fin.toℕ (s r) ⊓ 1 + quotient
-                ≤⟨ +n-mono quotient {!  !} ⟩
-                    {!   !}
-                ≤⟨ {!   !} ⟩
-                    {!   !}
-                ≤⟨ {!   !} ⟩
+                ≤⟨ +n-mono quotient (m⊓n≤n (Fin.toℕ (s r)) 1) ⟩
+                    1 + quotient
+                ≈⟨ +-comm 1 quotient ⟩
+                    quotient + 1
+                ≤⟨ n+-mono quotient (m≤m⊔n 1 o) ⟩
                     quotient + (1 ⊔ o)
                 □
             ) ⟩
@@ -358,12 +340,6 @@ sumView b d o ¬gapped proper y xs | no ¬p | result quotient remainder divModPr
             ≈⟨ cong (λ w → w ∸ carry * base) (+-suc (Fin.toℕ r + quotient * base) (d + o)) ⟩
                 (suc (Fin.toℕ r + quotient * base) + (d + o)) ∸ carry * base
             ≈⟨ refl ⟩
-            --     -- {!   !}
-            -- -- ≈⟨ sym (m+n∸n≡m {!   !} {!   !}) ⟩
-            --     (Fin.toℕ (s r) ⊓ 1 + quotient * base + (d + o)) ∸ (Fin.toℕ (s r) ⊓ 1 + quotient) * base
-            -- ≤⟨ ∸n-mono (carry * base)
-            --     (+n-mono (d + o)
-            --         (+n-mono (quotient * base) (m⊓n≤m (Fin.toℕ (s r)) 1))) ⟩
                 (Fin.toℕ (s r) + quotient * base + (d + o)) ∸ carry * base
             ≈⟨ cong (λ w → w ∸ carry * base) (sym prop) ⟩
                 sum o y (lsd xs) ∸ carry * base
@@ -372,127 +348,21 @@ sumView b d o ¬gapped proper y xs | no ¬p | result quotient remainder divModPr
         leftover-lower-bound : leftover ≥ o
         leftover-lower-bound = leftover-lower-bound-prim {remainder} divModProp'
 
-            -- start
-            --     o
-            -- ≤⟨ {!   !} ⟩
-            --     {!   !}
-            -- ≤⟨ {!   !} ⟩
-            --     {!   !}
-            -- ≤⟨ {!   !} ⟩
-            --     {!   !}
-            -- ≤⟨ {!   !} ⟩
-            --     {!  !}
-            -- ≈⟨ {!   !} ⟩
-            --     {!   !}
-            -- ≈⟨ {!   !} ⟩
-            --     Fin.toℕ remainder + quotient * base + (d + o) ∸ carry * base
-            -- ≈⟨ cong (λ w → w ∸ carry * base) (sym divModProp') ⟩
-            --     leftover
-            -- □
-        -- leftover-lower-bound = +n-mono-inverse (suc quotient * base) $ ≤-pred $
-        --     start
-        --         suc o + suc quotient * base
-        --     -- ≤⟨ n+-mono (suc o) (*n-mono (base) carry-upper-bound) ⟩
-        --     --     suc o + (d + o) * base
-        --     ≤⟨ {!   !} ⟩
-        --         {!   !}
-        --     ≤⟨ {!   !} ⟩
-        --         {!   !}
-        --     ≈⟨ {!   !} ⟩
-        --         {!   !}
-        --     ≈⟨ {!   !} ⟩
-        --         {!   !}
-        --     ≈⟨ {!   !} ⟩
-        --         Fin.toℕ remainder + ((quotient + 1) * base + o)
-        --     ≈⟨ cong (λ w → Fin.toℕ remainder + (w + o)) (distribʳ-*-+ (base) quotient 1) ⟩
-        --         Fin.toℕ remainder + (quotient * base + 1 * base + o)
-        --     ≈⟨ cong (λ w → Fin.toℕ remainder + w) (+-assoc (quotient * base) (1 * base) o) ⟩
-        --         Fin.toℕ remainder + (quotient * base + (1 * base + o))
-        --     ≈⟨ sym (+-assoc (Fin.toℕ remainder) (quotient * base) (1 * base + o)) ⟩
-        --         Fin.toℕ remainder + quotient * base + (1 * base + o)
-        --     ≤⟨ n+-mono (Fin.toℕ remainder + quotient * base) (+n-mono o $
-        --         start
-        --             1 * (base)
-        --         ≤⟨ *n-mono (base) (m≤m⊔n 1 o) ⟩
-        --             (suc zero ⊔ o) * base
-        --         ≤⟨ ¬gapped ⟩
-        --             suc d
-        --         □
-        --     ) ⟩
-        --         Fin.toℕ remainder + quotient * base + suc (d + o)
-        --     ≈⟨ +-suc (Fin.toℕ remainder + quotient * base) (d + o) ⟩
-        --         suc (Fin.toℕ remainder + quotient * base + (d + o))
-        --     ≈⟨ cong suc (sym divModProp') ⟩
-        --         suc (sum o y (lsd xs))
-        --     ≈⟨ cong suc (sym (m∸n+n≡m $
-        --         start
-        --             suc quotient * base
-        --         ≤⟨ *n-mono (base) carry-upper-bound ⟩
-        --             (d + o) * base
-        --         ≤⟨ *n-mono (base) {!   !} ⟩
-        --             _ * base
-        --         ≤⟨ {!   !} ⟩
-        --             {!   !}
-        --         ≤⟨ {!   !} ⟩
-        --             sum o y (lsd xs)
-        --         □
-        --     )) ⟩
-        --         suc (leftover + suc quotient * base)
-        --     □
-            -- start
-            --     {!  !}
-            -- ≤⟨ {!   !} ⟩
-            --     {!   !}
-            -- ≤⟨ {!   !} ⟩
-            --     {!   !}
-            -- ≤⟨ {!   !} ⟩
-            --     {!   !}
-            -- ≤⟨ {!   !} ⟩
-            --     {!   !}
-            -- ≈⟨ {!   !} ⟩
-            --     {!   !}
-            -- ≈⟨ {!   !} ⟩
-            --     {!   !}
-            -- ≈⟨ cong (λ w → Fin.toℕ remainder + quotient * base + (w + o) ∸ suc quotient * base) (sym {! lemma  !}) ⟩
-            --     Fin.toℕ remainder + quotient * base + (d + o) ∸ suc quotient * base
-            -- ≈⟨ cong (λ w → w ∸ carry * base) (sym divModProp') ⟩
-            --     leftover
-            -- □
-            -- +n-mono-inverse (carry * base) $ ≤-pred $
-            -- start
-            --     suc (o + suc quotient * base)
-            -- ≤⟨ {!   !} ⟩
-            --     {!   !}
-            -- ≤⟨ {!   !} ⟩
-            --     {!   !}
-            -- ≤⟨ m≤n+m {!  Fin.toℕ remainder !} {!   !} ⟩
-            --     {!   !}
-            -- ≈⟨ sym (+-assoc (Fin.toℕ remainder) {!   !} {!   !}) ⟩
-            --     suc (Fin.toℕ remainder + quotient * base + (d + o))
-            -- ≈⟨ cong suc (sym divModProp') ⟩
-            --     suc (sum o y (lsd xs))
-            -- ≈⟨ sym (m∸n+n≡m {!   !}) ⟩
-            --     suc leftover + carry * base
-            -- □
-
-
         leftover-upper-bound : leftover ≤ d + o
-        leftover-upper-bound = {!   !}
-            -- start
-            --     sum o y (lsd xs) ∸ suc quotient * base
-            -- ≈⟨ cong (λ w → w ∸ suc quotient * base) divModProp' ⟩
-            --     Fin.toℕ remainder + quotient * base + (d + o) ∸ suc quotient * base
-            -- ≤⟨ ∸n-mono (suc quotient * base)
-            --     (+n-mono (d + o)
-            --         (+n-mono (quotient * base)
-            --             (<⇒≤ (bounded remainder))))
-            -- ⟩
-            --     ((b + quotient * base) + (d + o)) ∸ (b + quotient * base)
-            -- ≈⟨ cong (λ w → w ∸ (b + quotient * base)) (+-comm (b + quotient * base) (d + o)) ⟩
-            --     d + o + (b + quotient * base) ∸ (b + quotient * base)
-            -- ≈⟨ m+n∸n≡m (d + o) (b + quotient * base) ⟩
-            --     d + o
-            -- □
+        leftover-upper-bound =
+            start
+                sum o y (lsd xs) ∸ (Fin.toℕ remainder ⊓ 1 + quotient) * base
+            ≤⟨ n∸-mono (sum o y (lsd xs)) dividend≤carry*base ⟩
+                sum o y (lsd xs) ∸ dividend
+            ≈⟨ cong (λ w → sum o y (lsd xs) ∸ w) divModProp ⟩
+                sum o y (lsd xs) ∸ (Fin.toℕ remainder + quotient * base)
+            ≈⟨ cong (λ w → w ∸ (Fin.toℕ remainder + quotient * base)) divModProp' ⟩
+                Fin.toℕ remainder + quotient * base + (d + o) ∸ (Fin.toℕ remainder + quotient * base)
+            ≈⟨ cong (λ w → w ∸ (Fin.toℕ remainder + quotient * base)) (+-comm (Fin.toℕ remainder + quotient * base) (d + o)) ⟩
+                d + o + (Fin.toℕ remainder + quotient * base) ∸ (Fin.toℕ remainder + quotient * base)
+            ≈⟨ m+n∸n≡m (d + o) (Fin.toℕ remainder + quotient * base) ⟩
+                d + o
+            □
 
         property :
                  Digit-toℕ (Digit-fromℕ leftover o leftover-upper-bound) o
@@ -504,8 +374,8 @@ sumView b d o ¬gapped proper y xs | no ¬p | result quotient remainder divModPr
                 Digit-toℕ (Digit-fromℕ carry    o carry-upper-bound) o * base
             ≡⟨ cong₂
                 (λ r c → r + c * base)
-                (Digit-toℕ-fromℕ leftover {!   !} leftover-upper-bound)
-                (Digit-toℕ-fromℕ carry {!   !} carry-upper-bound)
+                (Digit-toℕ-fromℕ leftover leftover-lower-bound leftover-upper-bound)
+                (Digit-toℕ-fromℕ carry carry-lower-bound carry-upper-bound)
             ⟩
                 leftover + carry * base
             ≡⟨ {!   !} ⟩

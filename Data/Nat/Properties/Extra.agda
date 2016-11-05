@@ -52,8 +52,15 @@ isSemiringWithoutOne = IsCommutativeSemiringWithoutOne.isSemiringWithoutOne ⊔-
 ⊔-comm : Commutative _⊔_
 ⊔-comm = IsCommutativeMonoid.comm +-isCommutativeMonoid
 
-⊓-comm : Commutative _⊓_
-⊓-comm = {!   !}
+m≤n⊔m : ∀ m n → m ≤ n ⊔ m
+m≤n⊔m zero    n       = z≤n
+m≤n⊔m (suc m) zero    = s≤s (m≤n⊔m m zero)
+m≤n⊔m (suc m) (suc n) = s≤s (m≤n⊔m m n)
+
+m⊓n≤n : ∀ m n → m ⊓ n ≤ n
+m⊓n≤n zero n          = z≤n
+m⊓n≤n (suc m) zero    = z≤n
+m⊓n≤n (suc m) (suc n) = s≤s (m⊓n≤n m n)
 
 cmp : Trichotomous _≡_ _<_
 cmp = StrictTotalOrder.compare strictTotalOrder
