@@ -52,6 +52,9 @@ isSemiringWithoutOne = IsCommutativeSemiringWithoutOne.isSemiringWithoutOne ⊔-
 ⊔-comm : Commutative _⊔_
 ⊔-comm = IsCommutativeMonoid.comm +-isCommutativeMonoid
 
+⊓-comm : Commutative _⊓_
+⊓-comm = {!   !}
+
 cmp : Trichotomous _≡_ _<_
 cmp = StrictTotalOrder.compare strictTotalOrder
 
