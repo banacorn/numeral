@@ -102,7 +102,10 @@ Continuous? _ _ _ | NoDigits b o = yes (λ xs → NoDigits-explode xs)
 Continuous? _ _ _ | AllZeros b = no (Bounded⇒¬Continuous (Bounded-AllZeros b))
 Continuous? _ _ _ | Proper b d o proper = Continuous-Proper b d o proper
 
--- Continuous-refine
+-- Continuous-Proper-refine : ∀ {b d o}
+--     → (cont : True (Continuous? b d o))
+--     → (proper : suc d + o ≥ 2)
+--     → (cont : True (Continuous? b d o))
 
 -- Continuous⇒Proper : ∀ {b d o}
 --     → True (Continuous? b d o)
@@ -114,11 +117,19 @@ Continuous? _ _ _ | Proper b d o proper = Continuous-Proper b d o proper
 -- Continuous⇒Proper ()   xs | AllZeros b
 -- Continuous⇒Proper cont xs | Proper b d o proper = proper
 
+
+
 Continuous⇒¬Gapped#0 : ∀ {b d o}
     → (cont : True (Continuous? (suc b) (suc d) o))
     → (proper : suc d + o ≥ 2)
     → ¬ (Gapped#0 b d o)
 Continuous⇒¬Gapped#0 cont proper gapped#0 = contradiction (toWitness cont) (Continuous-Proper-Gapped#0 proper gapped#0)
+
+-- Continuous-Proper⇒¬Gapped#0 : ∀ {b d o}
+--     → (proper : suc d + o ≥ 2)
+--     → (cont : True (Continuous-Proper b d o proper))
+--     → ¬ (Gapped#0 b d o)
+-- Continuous-Proper⇒¬Gapped#0 proper cont gapped#0 = contradiction (toWitness cont) (Continuous-Proper-Gapped#0 proper gapped#0)
 
 -- Continuous⇒¬Gapped : ∀ b d o
 --     → Continuous (suc )
