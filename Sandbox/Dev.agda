@@ -85,10 +85,11 @@ data Sum : (b d o : ℕ) (x y : Digit (suc d)) → Set where
 
 sumView : ∀ b d o
     → (¬gapped : (1 ⊔ o) * suc (suc b) ≤ suc d)
+    → (proper : 2 ≤ suc d + o)
     → (x y : Digit (suc d))
     → Sum b d o x y
-sumView b d o ¬gapped x y with (sum o x y) ≤? d + o
-sumView b d o ¬gapped x y | yes below
+sumView b d o ¬gapped proper x y with (sum o x y) ≤? d + o
+sumView b d o ¬gapped proper x y | yes below
     = Below
         (Digit-fromℕ leftover o leftover-upper-bound)
         property
@@ -108,8 +109,8 @@ sumView b d o ¬gapped x y | yes below
             ≡⟨ Digit-toℕ-fromℕ (sum o x y) (sum≥o o x y) below ⟩
                 sum o x y
             ∎
-sumView b d o ¬gapped x y | no ¬below with (sum o x y) ≤? d + o + (1 ⊔ o) * (suc (suc b))
-sumView b d o ¬gapped x y | no ¬below | yes within
+sumView b d o ¬gapped proper x y | no ¬below with (sum o x y) ≤? d + o + (1 ⊔ o) * (suc (suc b))
+sumView b d o ¬gapped proper x y | no ¬below | yes within
     = Within
         (Digit-fromℕ leftover o leftover-upper-bound)
         (Digit-fromℕ carry    o carry-upper-bound)
@@ -166,32 +167,45 @@ sumView b d o ¬gapped x y | no ¬below | yes within
             □
 
         carry-lower-bound : carry ≥ o
-        carry-lower-bound =
+        carry-lower-bound = m≤n⊔m o 1
+
+        carry-upper-bound-prim : ∀ d o → 1 ≤ d + o → 1 ⊔ o ≤ d + o
+        carry-upper-bound-prim zero zero ()
+        carry-upper-bound-prim zero (suc o) p = ≤-refl
+        carry-upper-bound-prim (suc d) zero p = s≤s z≤n
+        carry-upper-bound-prim (suc d) (suc o) p =
             start
-                o
-            ≤⟨ m≤n⊔m o 1 ⟩
-                1 ⊔ o
-            ≤⟨ m≤n+m (1 ⊔ o) (1 ⊓ Fin.toℕ remainder + quotient) ⟩
-                1 ⊓ Fin.toℕ remainder + quotient + (1 ⊔ o)
+                suc o
+            ≤⟨ s≤s (m≤n+m o (suc d)) ⟩
+                suc (suc (d + o))
+            ≈⟨ sym (+-suc (suc d) o) ⟩
+                suc (d + suc o)
             □
+        carry-upper-bound : carry ≤ d + o
+        carry-upper-bound = carry-upper-bound-prim d o (≤-pred proper)
 
         property :
               Digit-toℕ (Digit-fromℕ leftover o leftover-upper-bound) o
-            + carry * base
+            + Digit-toℕ (Digit-fromℕ    carry o    carry-upper-bound) o * base
             ≡ sum o x y
         property =
             begin
-                Digit-toℕ (Digit-fromℕ leftover o leftover-upper-bound) o + carry * base
-            ≡⟨ cong
-                (λ w → w + carry * base)
+                Digit-toℕ (Digit-fromℕ leftover o leftover-upper-bound) o
+              + Digit-toℕ (Digit-fromℕ    carry o    carry-upper-bound) o * base
+            ≡⟨ cong₂
+                (λ l c → l + c * base)
                 (Digit-toℕ-fromℕ leftover leftover-lower-bound leftover-upper-bound)
+                (Digit-toℕ-fromℕ    carry    carry-lower-bound    carry-upper-bound)
             ⟩
-                (sum o x y ∸ carry * base) + carry * base
+                leftover + carry * base
+            ≡⟨ refl ⟩
+                sum o x y ∸ carry * base + carry * base
             ≡⟨ m∸n+n≡m sum≥carry*base ⟩
                 sum o x y
             ∎
-sumView b d o ¬gapped x y | no ¬below | no ¬within with (sum o x y ∸ ((d + o) + (1 ⊔ o) * (suc (suc b)))) divMod (suc (suc b))
-sumView b d o ¬gapped x y | no ¬below | no ¬within | result quotient remainder divModProp _ _
+
+sumView b d o ¬gapped proper x y | no ¬below | no ¬within with (sum o x y ∸ ((d + o) + (1 ⊔ o) * (suc (suc b)))) divMod (suc (suc b))
+sumView b d o ¬gapped proper x y | no ¬below | no ¬within | result quotient remainder divModProp _ _
     = Above
         (Digit-fromℕ leftover o leftover-upper-bound)
         (Digit-fromℕ carry    o carry-upper-bound)
@@ -396,64 +410,69 @@ sumView b d o ¬gapped x y | no ¬below | no ¬within | result quotient remainde
                 sum o x y
             ∎
 
--- n+-Proper : ∀ {b d o}
---     → (cont : True (Continuous? (suc (suc b)) (suc d) o))
---     → (proper : suc d + o ≥ 2)
---     → (x : Digit (suc d))
---     → (xs : Num (suc (suc b)) (suc d) o)
---     → Num (suc (suc b)) (suc d) o
--- n+-Proper {b} {d} {o} cont proper x xs with sumView b d o (≤-pred (≰⇒> (Continuous⇒¬Gapped#0 cont proper))) x (lsd xs)
--- n+-Proper cont proper x (_ ∙) | Below leftover property = leftover ∙
--- n+-Proper cont proper x (_ ∷ xs) | Below leftover property = leftover ∷ xs
--- n+-Proper cont proper x (_ ∙) | Within leftover property = leftover ∷ LCD .d .o proper ∙
--- n+-Proper cont proper x (_ ∷ xs) | Within leftover property = leftover ∷ {!   !} ∷ xs
--- n+-Proper cont proper x (_ ∙) | Above leftover carry property = {!   !}
--- n+-Proper cont proper x (_ ∷ xs) | Above leftover carry property = {!   !}
+n+-Proper : ∀ {b d o}
+    → (cont : True (Continuous? (suc (suc b)) (suc d) o))
+    → (proper : suc d + o ≥ 2)
+    → (x : Digit (suc d))
+    → (xs : Num (suc (suc b)) (suc d) o)
+    → Num (suc (suc b)) (suc d) o
+n+-Proper {b} {d} {o} cont proper x xs with sumView b d o (≤-pred (≰⇒> (Continuous⇒¬Gapped#0 cont proper))) proper x (lsd xs)
+n+-Proper cont proper x (_ ∙)    | Below leftover property = leftover ∙
+n+-Proper cont proper x (_ ∷ xs) | Below leftover property = leftover ∷ xs
+n+-Proper cont proper x (_ ∙)    | Within leftover carry property = leftover ∷ carry ∙
+n+-Proper cont proper x (_ ∷ xs) | Within leftover carry property = leftover ∷ n+-Proper cont proper carry xs
+n+-Proper cont proper x (_ ∙)    | Above leftover carry property = leftover ∷ carry ∙
+n+-Proper cont proper x (_ ∷ xs) | Above leftover carry property = leftover ∷ n+-Proper cont proper carry xs
 
-
--- n+-Proper : ∀ {b d o}
---     → (cont : True (Continuous? (suc b) (suc d) o))
---     → (proper : suc d + o ≥ 2)
---     → (y : Digit (suc d))
---     → (xs : Num (suc b) (suc d) o)
---     → Num (suc b) (suc d) o
--- n+-Proper {b} {d} {o} cont proper y xs with sumView b d o cont proper y xs
--- n+-Proper cont proper y (x ∙)    | Before leftover property = leftover ∙
--- n+-Proper cont proper y (x ∷ xs) | Before leftover property = leftover ∷ xs
--- n+-Proper cont proper y (x ∙)    | Between leftover carry property = leftover ∷ carry ∙
--- n+-Proper cont proper y (x ∷ xs) | Between leftover carry property = leftover ∷ n+-Proper cont proper carry xs
--- n+-Proper cont proper y xs | After leftover carry property = {!   !}
---
---
--- n+-Proper-toℕ : ∀ {b d o}
---     → (cont : True (Continuous? (suc b) (suc d) o))
---     → (proper : suc d + o ≥ 2)
---     → (y : Digit (suc d))
---     → (xs : Num (suc b) (suc d) o)
---     → ⟦ n+-Proper cont proper y xs ⟧ ≡ Digit-toℕ y o + ⟦ xs ⟧
--- n+-Proper-toℕ {b} {d} {o} cont proper y xs with sumView b d o cont proper y xs
--- n+-Proper-toℕ {b} {d} {o} cont proper y (x ∙) | Before leftover property = property
--- n+-Proper-toℕ {b} {d} {o} cont proper y (x ∷ xs) | Before leftover property =
---     begin
---         Digit-toℕ leftover o + ⟦ xs ⟧ * suc b
---     ≡⟨ cong (λ w → w + ⟦ xs ⟧ * suc b) property ⟩
---         sum o y x + ⟦ xs ⟧ * suc b
---     ≡⟨ +-assoc (Digit-toℕ y o) (Digit-toℕ x o) (⟦ xs ⟧ * suc b) ⟩
---         Digit-toℕ y o + (Digit-toℕ x o + ⟦ xs ⟧ * suc b)
---     ∎
--- n+-Proper-toℕ {b} {d} {o} cont proper y (x ∙) | Between leftover carry property = property
--- n+-Proper-toℕ {b} {d} {o} cont proper y (x ∷ xs) | Between leftover carry property =
---     begin
---         Digit-toℕ leftover o + ⟦ n+-Proper cont proper carry xs ⟧ * suc b
---     ≡⟨ cong (λ w → Digit-toℕ leftover o + w * suc b) (n+-Proper-toℕ cont proper carry xs) ⟩
---         Digit-toℕ leftover o + (Digit-toℕ carry o + ⟦ xs ⟧) * suc b
---     ≡⟨ cong (λ w → Digit-toℕ leftover o + w) (distribʳ-*-+ (suc b) (Digit-toℕ carry o) ⟦ xs ⟧) ⟩
---         Digit-toℕ leftover o + (Digit-toℕ carry o * suc b + ⟦ xs ⟧ * suc b)
---     ≡⟨ sym (+-assoc (Digit-toℕ leftover o) (Digit-toℕ carry o * suc b) (⟦ xs ⟧ * suc b)) ⟩
---         Digit-toℕ leftover o + Digit-toℕ carry o * suc b + ⟦ xs ⟧ * suc b
---     ≡⟨ cong (λ w → w + ⟦ xs ⟧ * suc b) property ⟩
---         sum o y x + ⟦ xs ⟧ * suc b
---     ≡⟨ +-assoc (Digit-toℕ y o) (Digit-toℕ x o) (⟦ xs ⟧ * suc b) ⟩
---         Digit-toℕ y o + ⟦ x ∷ xs ⟧
---     ∎
--- n+-Proper-toℕ {b} {d} {o} cont proper y xs | After leftover carry property = {!   !}
+n+-Proper-toℕ : ∀ {b d o}
+    → (cont : True (Continuous? (suc (suc b)) (suc d) o))
+    → (proper : suc d + o ≥ 2)
+    → (x : Digit (suc d))
+    → (xs : Num (suc (suc b)) (suc d) o)
+    → ⟦ n+-Proper cont proper x xs ⟧ ≡ Digit-toℕ x o + ⟦ xs ⟧
+n+-Proper-toℕ {b} {d} {o} cont proper x xs with sumView b d o (≤-pred (≰⇒> (Continuous⇒¬Gapped#0 cont proper))) proper x (lsd xs)
+n+-Proper-toℕ {b} {d} {o} cont proper x (_ ∙)    | Below leftover property = property
+n+-Proper-toℕ {b} {d} {o} cont proper x (x' ∷ xs) | Below leftover property =
+    begin
+        ⟦ leftover ∷ xs ⟧
+    ≡⟨ refl ⟩
+        Digit-toℕ leftover o + ⟦ xs ⟧ * suc (suc b)
+    ≡⟨ cong (λ w → w + ⟦ xs ⟧ * suc (suc b)) property ⟩
+        Digit-toℕ x o + Digit-toℕ x' o + ⟦ xs ⟧ * suc (suc b)
+    ≡⟨ +-assoc (Digit-toℕ x o) (Digit-toℕ x' o) (⟦ xs ⟧ * suc (suc b)) ⟩
+        Digit-toℕ x o + ⟦ x' ∷ xs ⟧
+    ∎
+n+-Proper-toℕ {b} {d} {o} cont proper x (_ ∙)    | Within leftover carry property = property
+n+-Proper-toℕ {b} {d} {o} cont proper x (x' ∷ xs) | Within leftover carry property =
+    begin
+        ⟦ leftover ∷ n+-Proper cont proper carry xs ⟧
+    ≡⟨ refl ⟩
+        Digit-toℕ leftover o + ⟦ n+-Proper cont proper carry xs ⟧ * suc (suc b)
+    ≡⟨ cong (λ w → Digit-toℕ leftover o + w * suc (suc b)) (n+-Proper-toℕ cont proper carry xs) ⟩
+        Digit-toℕ leftover o + (Digit-toℕ carry o + ⟦ xs ⟧) * suc (suc b)
+    ≡⟨ cong (λ w → Digit-toℕ leftover o + w) (distribʳ-*-+ (suc (suc b)) (Digit-toℕ carry o) ⟦ xs ⟧) ⟩
+        Digit-toℕ leftover o + ((Digit-toℕ carry o) * suc (suc b) + ⟦ xs ⟧ * suc (suc b))
+    ≡⟨ sym (+-assoc (Digit-toℕ leftover o) ((Digit-toℕ carry o) * suc (suc b)) (⟦ xs ⟧ * suc (suc b))) ⟩
+        Digit-toℕ leftover o + (Digit-toℕ carry o) * suc (suc b) + ⟦ xs ⟧ * suc (suc b)
+    ≡⟨ cong (λ w → w + ⟦ xs ⟧ * suc (suc b)) property ⟩
+        Digit-toℕ x o + Digit-toℕ x' o + ⟦ xs ⟧ * suc (suc b)
+    ≡⟨ +-assoc (Digit-toℕ x o) (Digit-toℕ x' o) (⟦ xs ⟧ * suc (suc b)) ⟩
+        Digit-toℕ x o + (Digit-toℕ x' o + ⟦ xs ⟧ * suc (suc b))
+    ∎
+n+-Proper-toℕ {b} {d} {o} cont proper x (_ ∙)    | Above leftover carry property = property
+n+-Proper-toℕ {b} {d} {o} cont proper x (x' ∷ xs) | Above leftover carry property =
+    begin
+        ⟦ leftover ∷ n+-Proper cont proper carry xs ⟧
+    ≡⟨ refl ⟩
+        Digit-toℕ leftover o + ⟦ n+-Proper cont proper carry xs ⟧ * suc (suc b)
+    ≡⟨ cong (λ w → Digit-toℕ leftover o + w * suc (suc b)) (n+-Proper-toℕ cont proper carry xs) ⟩
+        Digit-toℕ leftover o + (Digit-toℕ carry o + ⟦ xs ⟧) * suc (suc b)
+    ≡⟨ cong (λ w → Digit-toℕ leftover o + w) (distribʳ-*-+ (suc (suc b)) (Digit-toℕ carry o) ⟦ xs ⟧) ⟩
+        Digit-toℕ leftover o + ((Digit-toℕ carry o) * suc (suc b) + ⟦ xs ⟧ * suc (suc b))
+    ≡⟨ sym (+-assoc (Digit-toℕ leftover o) ((Digit-toℕ carry o) * suc (suc b)) (⟦ xs ⟧ * suc (suc b))) ⟩
+        Digit-toℕ leftover o + (Digit-toℕ carry o) * suc (suc b) + ⟦ xs ⟧ * suc (suc b)
+    ≡⟨ cong (λ w → w + ⟦ xs ⟧ * suc (suc b)) property ⟩
+        Digit-toℕ x o + Digit-toℕ x' o + ⟦ xs ⟧ * suc (suc b)
+    ≡⟨ +-assoc (Digit-toℕ x o) (Digit-toℕ x' o) (⟦ xs ⟧ * suc (suc b)) ⟩
+        Digit-toℕ x o + (Digit-toℕ x' o + ⟦ xs ⟧ * suc (suc b))
+    ∎
