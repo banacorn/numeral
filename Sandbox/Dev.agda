@@ -73,8 +73,8 @@ data Sum : (b d o : ℕ) (x y : Digit (suc d)) → Set where
         → (property : Digit-toℕ leftover o ≡ sum o x y)
         → Sum b d o x y
     Within : ∀ {b d o x y}
-        → (leftover : Digit (suc d))
-        → (property : Digit-toℕ leftover o + (1 ⊔ o) * suc (suc b) ≡ sum o x y)
+        → (leftover carry : Digit (suc d))
+        → (property : Digit-toℕ leftover o + (Digit-toℕ carry o) * suc (suc b) ≡ sum o x y)
         → Sum b d o x y
     Above : ∀ {b d o x y}
         → (leftover carry : Digit (suc d))
@@ -85,11 +85,10 @@ data Sum : (b d o : ℕ) (x y : Digit (suc d)) → Set where
 
 sumView : ∀ b d o
     → (¬gapped : (1 ⊔ o) * suc (suc b) ≤ suc d)
-    → (proper : suc d + o ≥ 2)
     → (x y : Digit (suc d))
     → Sum b d o x y
-sumView b d o ¬gapped proper x y with (sum o x y) ≤? d + o
-sumView b d o ¬gapped proper x y | yes below
+sumView b d o ¬gapped x y with (sum o x y) ≤? d + o
+sumView b d o ¬gapped x y | yes below
     = Below
         (Digit-fromℕ leftover o leftover-upper-bound)
         property
@@ -109,10 +108,11 @@ sumView b d o ¬gapped proper x y | yes below
             ≡⟨ Digit-toℕ-fromℕ (sum o x y) (sum≥o o x y) below ⟩
                 sum o x y
             ∎
-sumView b d o ¬gapped proper x y | no ¬below with (sum o x y) ≤? d + o + (1 ⊔ o) * (suc (suc b))
-sumView b d o ¬gapped proper x y | no ¬below | yes within
+sumView b d o ¬gapped x y | no ¬below with (sum o x y) ≤? d + o + (1 ⊔ o) * (suc (suc b))
+sumView b d o ¬gapped x y | no ¬below | yes within
     = Within
         (Digit-fromℕ leftover o leftover-upper-bound)
+        (Digit-fromℕ carry    o carry-upper-bound)
         property
 
     where
@@ -165,6 +165,16 @@ sumView b d o ¬gapped proper x y | no ¬below | yes within
                 d + o + carry * base
             □
 
+        carry-lower-bound : carry ≥ o
+        carry-lower-bound =
+            start
+                o
+            ≤⟨ m≤n⊔m o 1 ⟩
+                1 ⊔ o
+            ≤⟨ m≤n+m (1 ⊔ o) (1 ⊓ Fin.toℕ remainder + quotient) ⟩
+                1 ⊓ Fin.toℕ remainder + quotient + (1 ⊔ o)
+            □
+
         property :
               Digit-toℕ (Digit-fromℕ leftover o leftover-upper-bound) o
             + carry * base
@@ -180,8 +190,8 @@ sumView b d o ¬gapped proper x y | no ¬below | yes within
             ≡⟨ m∸n+n≡m sum≥carry*base ⟩
                 sum o x y
             ∎
-sumView b d o ¬gapped proper x y | no ¬below | no ¬within with (sum o x y ∸ ((d + o) + (1 ⊔ o) * (suc (suc b)))) divMod (suc (suc b))
-sumView b d o ¬gapped proper x y | no ¬below | no ¬within | result quotient remainder divModProp _ _
+sumView b d o ¬gapped x y | no ¬below | no ¬within with (sum o x y ∸ ((d + o) + (1 ⊔ o) * (suc (suc b)))) divMod (suc (suc b))
+sumView b d o ¬gapped x y | no ¬below | no ¬within | result quotient remainder divModProp _ _
     = Above
         (Digit-fromℕ leftover o leftover-upper-bound)
         (Digit-fromℕ carry    o carry-upper-bound)
@@ -386,14 +396,21 @@ sumView b d o ¬gapped proper x y | no ¬below | no ¬within | result quotient r
                 sum o x y
             ∎
 
-n+-Proper : ∀ {b d o}
-    → (cont : True (Continuous? (suc b) (suc d) o))
-    → (proper : suc d + o ≥ 2)
-    → (x : Digit (suc d))
-    → (xs : Num (suc b) (suc d) o)
-    → Num (suc b) (suc d) o
-n+-Proper {b} {d} {o} cont proper x xs with sumView b d o ? proper x (lsd xs)
-... | p = ?
+-- n+-Proper : ∀ {b d o}
+--     → (cont : True (Continuous? (suc (suc b)) (suc d) o))
+--     → (proper : suc d + o ≥ 2)
+--     → (x : Digit (suc d))
+--     → (xs : Num (suc (suc b)) (suc d) o)
+--     → Num (suc (suc b)) (suc d) o
+-- n+-Proper {b} {d} {o} cont proper x xs with sumView b d o (≤-pred (≰⇒> (Continuous⇒¬Gapped#0 cont proper))) x (lsd xs)
+-- n+-Proper cont proper x (_ ∙) | Below leftover property = leftover ∙
+-- n+-Proper cont proper x (_ ∷ xs) | Below leftover property = leftover ∷ xs
+-- n+-Proper cont proper x (_ ∙) | Within leftover property = leftover ∷ LCD .d .o proper ∙
+-- n+-Proper cont proper x (_ ∷ xs) | Within leftover property = leftover ∷ {!   !} ∷ xs
+-- n+-Proper cont proper x (_ ∙) | Above leftover carry property = {!   !}
+-- n+-Proper cont proper x (_ ∷ xs) | Above leftover carry property = {!   !}
+
+
 -- n+-Proper : ∀ {b d o}
 --     → (cont : True (Continuous? (suc b) (suc d) o))
 --     → (proper : suc d + o ≥ 2)
