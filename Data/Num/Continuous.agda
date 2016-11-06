@@ -4,7 +4,7 @@ open import Data.Num.Core
 open import Data.Num.Maximum
 open import Data.Num.Bounded
 open import Data.Num.Next
-open import Data.Num.Incrementable
+open import Data.Num.Increment
 
 open import Data.Nat
 open import Data.Nat.Properties
@@ -102,39 +102,11 @@ Continuous? _ _ _ | NoDigits b o = yes (λ xs → NoDigits-explode xs)
 Continuous? _ _ _ | AllZeros b = no (Bounded⇒¬Continuous (Bounded-AllZeros b))
 Continuous? _ _ _ | Proper b d o proper = Continuous-Proper b d o proper
 
--- Continuous-Proper-refine : ∀ {b d o}
---     → (cont : True (Continuous? b d o))
---     → (proper : suc d + o ≥ 2)
---     → (cont : True (Continuous? b d o))
-
--- Continuous⇒Proper : ∀ {b d o}
---     → True (Continuous? b d o)
---     → Num b d o
---     → d + o ≥ 2
--- Continuous⇒Proper {b} {d} {o} cont xs with numView b d o
--- Continuous⇒Proper ()   xs | NullBase d o
--- Continuous⇒Proper cont xs | NoDigits b o = NoDigits-explode xs
--- Continuous⇒Proper ()   xs | AllZeros b
--- Continuous⇒Proper cont xs | Proper b d o proper = proper
-
-
-
 Continuous⇒¬Gapped#0 : ∀ {b d o}
     → (cont : True (Continuous? (suc b) (suc d) o))
     → (proper : suc d + o ≥ 2)
     → ¬ (Gapped#0 b d o)
 Continuous⇒¬Gapped#0 cont proper gapped#0 = contradiction (toWitness cont) (Continuous-Proper-Gapped#0 proper gapped#0)
-
--- Continuous-Proper⇒¬Gapped#0 : ∀ {b d o}
---     → (proper : suc d + o ≥ 2)
---     → (cont : True (Continuous-Proper b d o proper))
---     → ¬ (Gapped#0 b d o)
--- Continuous-Proper⇒¬Gapped#0 proper cont gapped#0 = contradiction (toWitness cont) (Continuous-Proper-Gapped#0 proper gapped#0)
-
--- Continuous⇒¬Gapped : ∀ b d o
---     → Continuous (suc )
---     → ¬ (Gapped#0 b d o)
--- Continuous⇒¬Gapped#0 b d o cont claim = {!   !}
 
 -- -- a partial function that only maps ℕ to Continuous Nums
 -- fromℕ : ∀ {b d o}

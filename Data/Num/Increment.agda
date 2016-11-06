@@ -1,4 +1,4 @@
-module Data.Num.Incrementable where
+module Data.Num.Increment where
 
 open import Data.Num.Core
 open import Data.Num.Bounded

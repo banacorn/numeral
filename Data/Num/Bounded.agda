@@ -43,7 +43,7 @@ Bounded-AllZeros : ∀ b → Bounded (suc b) 1 0
 Bounded-AllZeros b = (z ∙) , Maximum-AllZeros (z ∙)
 
 Bounded-Proper : ∀ b d o → 2 ≤ suc (d + o) → ¬ (Bounded (suc b) (suc d) o)
-Bounded-Proper b d o d+o≥2 (xs , claim) = contradiction p ¬p
+Bounded-Proper b d o proper (xs , claim) = contradiction p ¬p
     where
         p : ⟦ xs ⟧ ≥ ⟦ greatest-digit d ∷ xs ⟧
         p = claim (greatest-digit d ∷ xs)
@@ -55,7 +55,7 @@ Bounded-Proper b d o d+o≥2 (xs , claim) = contradiction p ¬p
                 suc (⟦ xs ⟧ * 1)
             ≤⟨ s≤s (n*-mono ⟦ xs ⟧ (s≤s z≤n)) ⟩
                 suc (⟦ xs ⟧ * suc b)
-            ≤⟨ +n-mono (⟦ xs ⟧ * suc b) (≤-pred d+o≥2) ⟩
+            ≤⟨ +n-mono (⟦ xs ⟧ * suc b) (≤-pred proper) ⟩
                 d + o + ⟦ xs ⟧ * suc b
             ≈⟨ cong
                 (λ w → w + ⟦ xs ⟧ * suc b)
@@ -72,8 +72,8 @@ Bounded? _ _ _ | NoDigits b o
     = no (Bounded-NoDigits b o)
 Bounded? _ _ _ | AllZeros b
     = yes (Bounded-AllZeros b)
-Bounded? _ _ _ | Proper b d o d+o≥2
-    = no (Bounded-Proper b d o d+o≥2)
+Bounded? _ _ _ | Proper b d o proper
+    = no (Bounded-Proper b d o proper)
 
 
 --------------------------------------------------------------------------------

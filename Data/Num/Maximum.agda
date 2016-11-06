@@ -161,9 +161,9 @@ Maximum-AllZeros xs ys = reflexive $
 
 Maximum-Proper : ∀ {b d o}
     → (xs : Num (suc b) (suc d) o)
-    → (d+o≥2 : 2 ≤ suc (d + o))
+    → (proper : 2 ≤ suc (d + o))
     → ¬ (Maximum xs)
-Maximum-Proper {b} {d} {o} xs d+o≥2 claim = contradiction p ¬p
+Maximum-Proper {b} {d} {o} xs proper claim = contradiction p ¬p
     where
         p : ⟦ xs ⟧ ≥ ⟦ greatest-digit d ∷ xs ⟧
         p = claim (greatest-digit d ∷ xs)
@@ -175,7 +175,7 @@ Maximum-Proper {b} {d} {o} xs d+o≥2 claim = contradiction p ¬p
                 suc (⟦ xs ⟧ * 1)
             ≤⟨ s≤s (n*-mono ⟦ xs ⟧ (s≤s z≤n)) ⟩
                 suc (⟦ xs ⟧ * suc b)
-            ≤⟨ +n-mono (⟦ xs ⟧ * suc b) (≤-pred d+o≥2) ⟩
+            ≤⟨ +n-mono (⟦ xs ⟧ * suc b) (≤-pred proper) ⟩
                 d + o + ⟦ xs ⟧ * suc b
             ≈⟨ cong
                 (λ w → w + ⟦ xs ⟧ * suc b)
@@ -201,5 +201,5 @@ Maximum? xs | NullBase d o | no ¬p = no (contraposition (Maximum-unique ys xs m
         max-ys = Maximum-NullBase-Greatest ys (greatest-digit-is-the-Greatest d)
 
 Maximum? xs | NoDigits b o = no (NoDigits-explode xs)
-Maximum? xs | AllZeros b = yes (Maximum-AllZeros xs)
-Maximum? xs | Proper b d o d+o≥2 = no (Maximum-Proper xs d+o≥2)
+Maximum? xs | AllZeros b   = yes (Maximum-AllZeros xs)
+Maximum? xs | Proper b d o proper = no (Maximum-Proper xs proper)

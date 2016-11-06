@@ -114,31 +114,48 @@ greatest-of-all o (s x) (s y)  greatest = s≤s (greatest-of-all o x y (suc-inje
 greatest-digit-is-the-Greatest : ∀ d → Greatest (greatest-digit d)
 greatest-digit-is-the-Greatest d = cong suc (FinProps.to-from d)
 
--- the least carried digit, 1 `max` o, in case that the least digit "o" is 0
+-- carry, 1 `max` o, in case that the least digit "o" is 0
+carry : ℕ → ℕ
+carry o = 1 ⊔ o
 
-LCD-upper-bound-prim : ∀ d o → 2 ≤ suc d + o → 1 ⊔ o ≤ d + o
-LCD-upper-bound-prim d zero    proper = ≤-pred proper
-LCD-upper-bound-prim d (suc o) proper = m≤n+m (suc o) d
+carry-lower-bound : ∀ {o} → carry o ≥ o
+carry-lower-bound {o} = m≤n⊔m o 1
 
-LCD : ∀ d o → 2 ≤ suc d + o → Digit (suc d)
-LCD d o proper = Digit-fromℕ (1 ⊔ o) o (LCD-upper-bound-prim d o proper)
+carry-upper-bound : ∀ {d o} → 2 ≤ suc d + o → carry o ≤ d + o
+carry-upper-bound {d} {zero}  proper = ≤-pred proper
+carry-upper-bound {d} {suc o} proper = m≤n+m (suc o) d
 
-LCD-toℕ : ∀ d o
+carry-digit : ∀ d o → 2 ≤ suc d + o → Digit (suc d)
+carry-digit d o proper = Digit-fromℕ (carry o) o (carry-upper-bound {d} proper)
+
+carry-digit-toℕ : ∀ d o
     → (proper : 2 ≤ suc (d + o))
-    → Digit-toℕ (LCD d o proper) o ≡ 1 ⊔ o
-LCD-toℕ d o proper = Digit-fromℕ-toℕ (1 ⊔ o) (m≤n⊔m o 1) (LCD-upper-bound-prim d o proper)
+    → Digit-toℕ (carry-digit d o proper) o ≡ carry o
+carry-digit-toℕ d o proper = Digit-fromℕ-toℕ (carry o) (m≤n⊔m o 1) (carry-upper-bound {d} proper)
 
-LCD-upper-bound : ∀ {d o}
-    → (proper : 2 ≤ suc (d + o))
-    → Digit-toℕ (LCD d o proper) o ≤ d + o
-LCD-upper-bound {d} {o} proper =
-    start
-        Digit-toℕ (LCD d o proper) o
-    ≈⟨ LCD-toℕ d o proper ⟩
-        1 ⊔ o
-    ≤⟨ LCD-upper-bound-prim d o proper ⟩
-        d + o
-    □
+
+-- LCD-upper-bound-prim d zero    proper = ≤-pred proper
+-- LCD-upper-bound-prim d (suc o) proper = m≤n+m (suc o) d
+--
+-- LCD : ∀ d o → 2 ≤ suc d + o → Digit (suc d)
+-- LCD d o proper = Digit-fromℕ (1 ⊔ o) o (LCD-upper-bound-prim d o proper)
+--
+-- LCD-toℕ : ∀ d o
+--     → (proper : 2 ≤ suc (d + o))
+--     → Digit-toℕ (LCD d o proper) o ≡ 1 ⊔ o
+-- LCD-toℕ d o proper = Digit-fromℕ-toℕ (1 ⊔ o) (m≤n⊔m o 1) (LCD-upper-bound-prim d o proper)
+--
+-- LCD-upper-bound : ∀ {d o}
+--     → (proper : 2 ≤ suc (d + o))
+--     → Digit-toℕ (LCD d o proper) o ≤ d + o
+-- LCD-upper-bound {d} {o} proper =
+--     start
+--         Digit-toℕ (LCD d o proper) o
+--     ≈⟨ LCD-toℕ d o proper ⟩
+--         1 ⊔ o
+--     ≤⟨ LCD-upper-bound-prim d o proper ⟩
+--         d + o
+--     □
 
 --------------------------------------------------------------------------------
 -- Functions on Digits
