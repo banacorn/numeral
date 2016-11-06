@@ -57,7 +57,7 @@ sum-upper-bound : ∀ {d} o
 sum-upper-bound {d} o x y =
     start
         Digit-toℕ x o + Digit-toℕ y o
-    ≤⟨ ≤-pred (Digit<d+o x o) +-mono ≤-pred (Digit<d+o y o) ⟩
+    ≤⟨ ≤-pred (Digit-upper-bound x o) +-mono ≤-pred (Digit-upper-bound y o) ⟩
         d + o + (d + o)
     □
 
@@ -106,7 +106,7 @@ sumView b d o ¬gapped proper x y | yes below
         property =
             begin
                 Digit-toℕ (Digit-fromℕ (sum o x y) o below) o
-            ≡⟨ Digit-toℕ-fromℕ (sum o x y) (sum≥o o x y) below ⟩
+            ≡⟨ Digit-fromℕ-toℕ (sum o x y) (sum≥o o x y) below ⟩
                 sum o x y
             ∎
 sumView b d o ¬gapped proper x y | no ¬below with (sum o x y) ≤? d + o + (1 ⊔ o) * (suc b)
@@ -194,8 +194,8 @@ sumView b d o ¬gapped proper x y | no ¬below | yes within
               + Digit-toℕ (Digit-fromℕ    carry o    carry-upper-bound) o * base
             ≡⟨ cong₂
                 (λ l c → l + c * base)
-                (Digit-toℕ-fromℕ leftover leftover-lower-bound leftover-upper-bound)
-                (Digit-toℕ-fromℕ    carry    carry-lower-bound    carry-upper-bound)
+                (Digit-fromℕ-toℕ leftover leftover-lower-bound leftover-upper-bound)
+                (Digit-fromℕ-toℕ    carry    carry-lower-bound    carry-upper-bound)
             ⟩
                 leftover + carry * base
             ≡⟨ refl ⟩
@@ -392,8 +392,8 @@ sumView b d o ¬gapped proper x y | no ¬below | no ¬within | result quotient r
               + Digit-toℕ (Digit-fromℕ    carry o    carry-upper-bound) o * base
             ≡⟨ cong₂
                 (λ l c → l + c * base)
-                (Digit-toℕ-fromℕ leftover leftover-lower-bound leftover-upper-bound)
-                (Digit-toℕ-fromℕ    carry    carry-lower-bound    carry-upper-bound)
+                (Digit-fromℕ-toℕ leftover leftover-lower-bound leftover-upper-bound)
+                (Digit-fromℕ-toℕ    carry    carry-lower-bound    carry-upper-bound)
             ⟩
                 leftover + carry * base
             ≡⟨ refl ⟩

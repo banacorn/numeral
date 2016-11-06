@@ -59,7 +59,7 @@ Bounded-Proper b d o d+o≥2 (xs , claim) = contradiction p ¬p
                 d + o + ⟦ xs ⟧ * suc b
             ≈⟨ cong
                 (λ w → w + ⟦ xs ⟧ * suc b)
-                (sym (toℕ-greatest (Fin.fromℕ d) (greatest-digit-is-the-Greatest d)))
+                (sym (greatest-digit-toℕ (Fin.fromℕ d) (greatest-digit-is-the-Greatest d)))
             ⟩
                 ⟦ greatest-digit d ∷ xs ⟧
             □

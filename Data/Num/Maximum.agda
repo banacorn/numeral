@@ -110,7 +110,7 @@ Maximum⇒Greatest {b} {suc d} {o} (x ∙) max | no ¬greatest
                 suc (Digit-toℕ x o)
             ≤⟨ +n-mono o (≤-pred (≤∧≢⇒< (bounded x) ¬greatest)) ⟩
                 d + o
-            ≈⟨ sym (toℕ-greatest (Fin.fromℕ d) (greatest-digit-is-the-Greatest d)) ⟩
+            ≈⟨ sym (greatest-digit-toℕ (Fin.fromℕ d) (greatest-digit-is-the-Greatest d)) ⟩
                 ⟦ ys ⟧
             □
 Maximum⇒Greatest                 (x ∷ xs) max with Greatest? x
@@ -131,7 +131,7 @@ Maximum⇒Greatest {b} {suc d} {o} (x ∷ xs) max | no ¬greatest
                 suc (Digit-toℕ x o)
             ≤⟨ +n-mono o (≤-pred (≤∧≢⇒< (bounded x) ¬greatest)) ⟩
                 d + o
-            ≈⟨ sym (toℕ-greatest (Fin.fromℕ d) (greatest-digit-is-the-Greatest d)) ⟩
+            ≈⟨ sym (greatest-digit-toℕ (Fin.fromℕ d) (greatest-digit-is-the-Greatest d)) ⟩
                 (Digit-toℕ (greatest-digit d) o)
             □
 
@@ -179,7 +179,7 @@ Maximum-Proper {b} {d} {o} xs d+o≥2 claim = contradiction p ¬p
                 d + o + ⟦ xs ⟧ * suc b
             ≈⟨ cong
                 (λ w → w + ⟦ xs ⟧ * suc b)
-                (sym (toℕ-greatest (Fin.fromℕ d) (greatest-digit-is-the-Greatest d)))
+                (sym (greatest-digit-toℕ (Fin.fromℕ d) (greatest-digit-is-the-Greatest d)))
             ⟩
                 ⟦ greatest-digit d ∷ xs ⟧
             □

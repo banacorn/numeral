@@ -51,20 +51,20 @@ next-number-NullBase-lemma : ∀ {d o}
     → (xs : Num 0 (suc d) o)
     → (¬max : ¬ (Maximum xs))
     → ⟦ next-number-NullBase xs ¬max ⟧ ≡ suc ⟦ xs ⟧
-next-number-NullBase-lemma {d} {o} xs ¬max with NullBase-view d o
+next-number-NullBase-lemma {d} {o} xs ¬max with nullBaseView d o
 next-number-NullBase-lemma {_} {_} xs       ¬max | AllZeros = contradiction (Maximum-AllZeros xs) ¬max
 next-number-NullBase-lemma {d} {o} xs       ¬max | Others bound with Greatest? (lsd xs)
 next-number-NullBase-lemma {d} {o} xs       ¬max | Others bound | yes greatest = contradiction (Maximum-NullBase-Greatest xs greatest) ¬max
 next-number-NullBase-lemma {d} {o} (x ∙)    ¬max | Others bound | no ¬greatest =
     begin
         Digit-toℕ (digit+1 x ¬greatest) o
-    ≡⟨ Digit-toℕ-digit+1 x ¬greatest ⟩
+    ≡⟨ digit+1-toℕ x ¬greatest ⟩
         suc (Fin.toℕ x + o)
     ∎
 next-number-NullBase-lemma {d} {o} (x ∷ xs) ¬max | Others bound | no ¬greatest =
     begin
         Digit-toℕ (digit+1 x ¬greatest) o + ⟦ xs ⟧ * zero
-    ≡⟨ cong (λ w → w + ⟦ xs ⟧ * zero) (Digit-toℕ-digit+1 x ¬greatest) ⟩
+    ≡⟨ cong (λ w → w + ⟦ xs ⟧ * zero) (digit+1-toℕ x ¬greatest) ⟩
         suc (Fin.toℕ x + o + ⟦ xs ⟧ * zero)
     ∎
 

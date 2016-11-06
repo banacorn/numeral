@@ -255,7 +255,7 @@ module Example where
 --             Digit-toℕ x o
 --     ∎ ⟩
 --         Digit-toℕ x o
---     ≤⟨ ≤-pred (Digit<d+o x o) ⟩
+--     ≤⟨ ≤-pred (Digit-upper-bound x o) ⟩
 --         d + o
 --     □
 --

@@ -26,29 +26,6 @@ open ≤-Reasoning renaming (begin_ to start_; _∎ to _□; _≡⟨_⟩_ to _�
 open DecTotalOrder decTotalOrder using (reflexive) renaming (refl to ≤-refl)
 
 
-------------------------------------------------------------------------
--- Predicates on the Indices
-------------------------------------------------------------------------
-
--- Redundant : ∀ b d o → Set
--- Redundant b d = d ≤? (1 ⊔ o) * b
---
--- Redundant? : ∀ b d → Dec (Redundant b d)
--- Redundant? b d = suc b ≤? d
---
--- Sparse : ∀ b d → Set
--- Sparse b d = d ≤? (1 ⊔ o) * b
---
--- Sparse? : ∀ b d → Dec (Sparse b d)
--- Sparse? b d = suc d ≤? b
---
--- Redundant⇒¬Sparse : ∀ {b d} → Redundant b d → ¬ (Sparse b d)
--- Redundant⇒¬Sparse {b} {d} redundant claim = contradiction claim (>⇒≰ (≤-step redundant))
---
--- Sparse⇒¬Redundant : ∀ {b d } → Sparse b d → ¬ (Redundant b d)
--- Sparse⇒¬Redundant {b} {d} sparse claim = contradiction claim (>⇒≰ (≤-step sparse))
-
-
 --------------------------------------------------------------------------------
 -- Digits
 --------------------------------------------------------------------------------
@@ -73,13 +50,13 @@ Digit-fromℕ {d} n o upper-bound | no ¬p = contradiction p ¬p
                     d
                 □
 
-Digit-toℕ-fromℕ : ∀ {d o}
+Digit-fromℕ-toℕ : ∀ {d o}
     → (n : ℕ)
     → (lower-bound :     o ≤ n)
     → (upper-bound : d + o ≥ n)
     → Digit-toℕ (Digit-fromℕ {d} n o upper-bound) o ≡ n
-Digit-toℕ-fromℕ {d} {o} n lb ub with n ∸ o ≤? d
-Digit-toℕ-fromℕ {d} {o} n lb ub | yes q =
+Digit-fromℕ-toℕ {d} {o} n lb ub with n ∸ o ≤? d
+Digit-fromℕ-toℕ {d} {o} n lb ub | yes q =
     begin
         Fin.toℕ (fromℕ≤ (s≤s q)) + o
     ≡⟨ cong (λ x → x + o) (toℕ-fromℕ≤ (s≤s q)) ⟩
@@ -87,7 +64,7 @@ Digit-toℕ-fromℕ {d} {o} n lb ub | yes q =
     ≡⟨ m∸n+n≡m lb ⟩
         n
     ∎
-Digit-toℕ-fromℕ {d} {o} n lb ub | no ¬q = contradiction q ¬q
+Digit-fromℕ-toℕ {d} {o} n lb ub | no ¬q = contradiction q ¬q
     where   q : n ∸ o ≤ d
             q = +n-mono-inverse o $
                 start
@@ -99,14 +76,17 @@ Digit-toℕ-fromℕ {d} {o} n lb ub | no ¬q = contradiction q ¬q
                 □
 
 --------------------------------------------------------------------------------
--- Properties of Digits
+-- Properties of all Digits
 --------------------------------------------------------------------------------
 
-Digit<d+o : ∀ {d} → (x : Digit d) → (o : ℕ) → Digit-toℕ x o < d + o
-Digit<d+o {d} x o = +n-mono o (bounded x)
+Digit-upper-bound : ∀ {d} → (o : ℕ) → (x : Digit d) → Digit-toℕ x o < d + o
+Digit-upper-bound {d} o x = +n-mono o (bounded x)
+
+Digit-lower-bound : ∀ {d} → (o : ℕ) → (x : Digit d) → Digit-toℕ x o ≥ o
+Digit-lower-bound {d} o x = m≤n+m o (Fin.toℕ x)
 
 --------------------------------------------------------------------------------
--- Predicates on Digits
+-- Special Digits
 --------------------------------------------------------------------------------
 
 -- A digit at its greatest
@@ -119,11 +99,11 @@ Greatest? {d} x = suc (Fin.toℕ x) ≟ d
 greatest-digit : ∀ d → Digit (suc d)
 greatest-digit d = Fin.fromℕ d
 
-toℕ-greatest : ∀ {d o}
+greatest-digit-toℕ : ∀ {d o}
     → (x : Digit (suc d))
     → Greatest x
     → Digit-toℕ x o ≡ d + o
-toℕ-greatest {d} {o} x greatest = suc-injective $ cong (λ w → w + o) greatest
+greatest-digit-toℕ {d} {o} x greatest = suc-injective $ cong (λ w → w + o) greatest
 
 greatest-of-all : ∀ {d} (o : ℕ) → (x y : Digit d) → Greatest x → Digit-toℕ x o ≥ Digit-toℕ y o
 greatest-of-all o z     z      refl = ≤-refl
@@ -134,46 +114,31 @@ greatest-of-all o (s x) (s y)  greatest = s≤s (greatest-of-all o x y (suc-inje
 greatest-digit-is-the-Greatest : ∀ d → Greatest (greatest-digit d)
 greatest-digit-is-the-Greatest d = cong suc (FinProps.to-from d)
 
--- A digit at its least
-Least : ∀ {d} (x : Digit d) → Set
-Least z     = ⊤
-Least (s x) = ⊥
-
-Least? : ∀ {d} (x : Digit d) → Dec (Least x)
-Least? z     = yes tt
-Least? (s x) = no (λ z₁ → z₁)
-
-least-digit : ∀ {d} → Digit (suc d)
-least-digit = z
-
-LCD-upper-bound : ∀ m n → 2 ≤ suc m + n → m + n ≥ 1 ⊔ n
-LCD-upper-bound m zero    q = ≤-pred q
-LCD-upper-bound m (suc n) q = m≤n+m (suc n) m
-
-LCD-lower-bound : ∀ o → o ≤ 1 ⊔ o
-LCD-lower-bound o =
-    start
-        o
-    ≤⟨ m≤m⊔n o (suc zero) ⟩
-        o ⊔ suc zero
-    ≈⟨ ⊔-comm o (suc zero) ⟩
-        suc zero ⊔ o
-    □
-
 -- the least carried digit, 1 `max` o, in case that the least digit "o" is 0
+
+LCD-upper-bound-prim : ∀ d o → 2 ≤ suc d + o → 1 ⊔ o ≤ d + o
+LCD-upper-bound-prim d zero    proper = ≤-pred proper
+LCD-upper-bound-prim d (suc o) proper = m≤n+m (suc o) d
+
 LCD : ∀ d o → 2 ≤ suc d + o → Digit (suc d)
-LCD d o d+o≥2 = Digit-fromℕ (1 ⊔ o) o (LCD-upper-bound d o d+o≥2)
+LCD d o proper = Digit-fromℕ (1 ⊔ o) o (LCD-upper-bound-prim d o proper)
 
 LCD-toℕ : ∀ d o
-    → (d+o≥2 : 2 ≤ suc (d + o))
-    → Digit-toℕ (LCD d o d+o≥2) o ≡ 1 ⊔ o
-LCD-toℕ d o d+o≥2 = Digit-toℕ-fromℕ {d} {o} (1 ⊔ o) lower-bound upper-bound
-    where
-        lower-bound : o ≤ 1 ⊔ o
-        lower-bound = LCD-lower-bound o
+    → (proper : 2 ≤ suc (d + o))
+    → Digit-toℕ (LCD d o proper) o ≡ 1 ⊔ o
+LCD-toℕ d o proper = Digit-fromℕ-toℕ (1 ⊔ o) (m≤n⊔m o 1) (LCD-upper-bound-prim d o proper)
 
-        upper-bound : d + o ≥ 1 ⊔ o
-        upper-bound = LCD-upper-bound d o d+o≥2
+LCD-upper-bound : ∀ {d o}
+    → (proper : 2 ≤ suc (d + o))
+    → Digit-toℕ (LCD d o proper) o ≤ d + o
+LCD-upper-bound {d} {o} proper =
+    start
+        Digit-toℕ (LCD d o proper) o
+    ≈⟨ LCD-toℕ d o proper ⟩
+        1 ⊔ o
+    ≤⟨ LCD-upper-bound-prim d o proper ⟩
+        d + o
+    □
 
 --------------------------------------------------------------------------------
 -- Functions on Digits
@@ -183,11 +148,11 @@ LCD-toℕ d o d+o≥2 = Digit-toℕ-fromℕ {d} {o} (1 ⊔ o) lower-bound upper-
 digit+1 : ∀ {d} → (x : Digit d) → (¬greatest : ¬ (Greatest x)) → Fin d
 digit+1 x ¬greatest = fromℕ≤ {suc (Fin.toℕ x)} (≤∧≢⇒< (bounded x) ¬greatest)
 
-Digit-toℕ-digit+1 : ∀ {d o}
+digit+1-toℕ : ∀ {d o}
     → (x : Digit d)
     → (¬greatest : ¬ (Greatest x))
     → Digit-toℕ (digit+1 x ¬greatest) o ≡ suc (Digit-toℕ x o)
-Digit-toℕ-digit+1 {d} {o} x ¬greatest = cong (λ w → w + o) (toℕ-fromℕ≤ (≤∧≢⇒< (bounded x) ¬greatest))
+digit+1-toℕ {d} {o} x ¬greatest = cong (λ w → w + o) (toℕ-fromℕ≤ (≤∧≢⇒< (bounded x) ¬greatest))
 
 digit+1-n-lemma : ∀ {d}
     → (x : Digit d)
@@ -216,15 +181,15 @@ digit+1-n : ∀ {d}
     → Digit d
 digit+1-n x greatest n n>0 = fromℕ≤ (digit+1-n-lemma x greatest n n>0)
 
-Digit-toℕ-digit+1-n : ∀ {d o}
+digit+1-n-toℕ : ∀ {d o}
     → (x : Digit d)
     → (greatest : Greatest x)
     → (n : ℕ)
     → (n>0 : n > 0)
     → n ≤ d
     → Digit-toℕ (digit+1-n x greatest n n>0) o ≡ suc (Digit-toℕ x o) ∸ n
-Digit-toℕ-digit+1-n {zero}  {o} () greatest n n>0 n≤d
-Digit-toℕ-digit+1-n {suc d} {o} x greatest n n>0  n≤d =
+digit+1-n-toℕ {zero}  {o} () greatest n n>0 n≤d
+digit+1-n-toℕ {suc d} {o} x greatest n n>0  n≤d =
     begin
         Fin.toℕ (digit+1-n x greatest n n>0) + o
     ≡⟨ cong (λ w → w + o) (toℕ-fromℕ≤ (digit+1-n-lemma x greatest n n>0)) ⟩
@@ -365,58 +330,3 @@ tail-mono-strict-Null {b} {_} {o} x y ys greatest p
             ≤⟨ p ⟩
                 ⟦ y ∷ ys ⟧
             □
-
-------------------------------------------------------------------------
--- Relations
-------------------------------------------------------------------------
-
-_≋_ : ∀ {b d o} → Num b d o → Num b d o → Set
-xs ≋ ys = ⟦ xs ⟧ ≡ ⟦ ys ⟧
-
--- toℕ that preserves equality
-Num⟶ℕ : ∀ b d o → setoid (Num b d o) ⟶ setoid ℕ
-Num⟶ℕ b d o = record { _⟨$⟩_ = ⟦_⟧ ; cong = cong ⟦_⟧ }
-
--- begin
---     {!   !}
--- ≡⟨ {!   !} ⟩
---     {!   !}
--- ≡⟨ {!   !} ⟩
---     {!   !}
--- ≡⟨ {!   !} ⟩
---     {!   !}
--- ≡⟨ {!   !} ⟩
---     {!   !}
--- ∎
-
--- _≋_ : ∀ {b d o}
---     → (xs ys : Num b d o)
---     → Dec ?
--- _≋_ {b}     {d}     {o} ∙        ∙        = yes = ?
---
--- _≋_ {b}     {d}     {o} ∙        (y ∷ ys) with Digit-toℕ y o ≟ 0
--- _≋_ {zero}  {d}     {o} ∙        (y ∷ ys) | yes p = ?
--- _≋_ {suc b} {d}         ∙        (y ∷ ys) | yes p = ?
--- _≋_ {b}     {d}         ∙        (y ∷ ys) | no ¬p = ?
---
--- _≋_ {b}     {d}     {o} (x ∷ xs) ∙        with Digit-toℕ x o ≟ 0
--- _≋_ {zero}              (x ∷ xs) ∙        | yes p = ?
--- _≋_ {suc b}             (x ∷ xs) ∙        | yes p = ?
--- _≋_ {b}     {d}     {o} (x ∷ xs) ∙        | no ¬p = ?
--- -- things get trickier here, we cannot say two numbers are equal or not base on
--- -- their LSD, since the system may be redundant.
--- _≋_ {b}     {d}     {o} (x ∷ xs) (y ∷ ys) with Digit-toℕ x o ≟ Digit-toℕ y o
--- _≋_ {b}     {d}     {o} (x ∷ xs) (y ∷ ys) | yes p = xs ≋ ys
--- _≋_ {b}     {d}     {o} (x ∷ xs) (y ∷ ys) | no ¬p = ⊥
-
-
-------------------------------------------------------------------------
--- Predicates on Num
-------------------------------------------------------------------------
-
-
--- Abundant : ∀ b d o → Set
--- Abundant b d o = d ≥ (1 ⊔ o) * b
---
--- Abundant? : ∀ b d o → Dec (Abundant b d o)
--- Abundant? b d o = (1 ⊔ o) * b ≤? d
