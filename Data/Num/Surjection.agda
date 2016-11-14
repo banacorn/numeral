@@ -1,6 +1,7 @@
 module Data.Num.Surjection where
 
 open import Data.Num.Core
+open import Data.Num.Continuous
 
 open import Data.Nat
 open import Data.Nat.Properties
@@ -29,76 +30,112 @@ open ≡-Reasoning
 open ≤-Reasoning renaming (begin_ to start_; _∎ to _□; _≡⟨_⟩_ to _≈⟨_⟩_)
 open DecTotalOrder decTotalOrder using (reflexive) renaming (refl to ≤-refl)
 
+-- fromℕ that preserves equality
+
+-- ℕ⟶Num : ∀ {b d o}
+--     → (True (Continuous? b (suc d) o))
+--     → (val : ℕ)
+--     → (True (o ≤? val))
+--     → Num b (suc d) o
+
+-- ℕ⟶Num : ∀ b d o → True (Continuous? b (suc d) o) → setoid ℕ ⟶ setoid (Num b (suc d) o)
+-- ℕ⟶Num b d o cont = record
+--     { _⟨$⟩_ = fromℕ cont
+--     ; cong = cong (fromℕ cont)
+--     }
+--
+-- -- Surjective? : ∀ b d o → (True (Continuous? b (suc d) o)) → Dec (Surjective (ℕ⟶Num b d o))
+-- -- Surjective? b d o with Continuous? b (suc d) o
+-- -- Surjective? b d o | yes cont = {!   !}
+-- -- Surjective? b d o | no ¬cont = {!   !}
+--
+-- Num⟶ℕ-Surjective : ∀ b d o → (cont : True (Continuous? b (suc d) o)) → Surjective (Num⟶ℕ b (suc d) o)
+-- Num⟶ℕ-Surjective b d o cont = record
+--     { from = ℕ⟶Num b d o cont
+--     ; right-inverse-of = {! toℕ-fromℕ cont  !}
+--     }
+
+-- Surjective? : ∀ b d o → Dec (Surjective (Num⟶ℕ b d o))
+-- Surjective? b d o with surjectionView b d o
+-- Surjective? b d o | Surj cond = yes (record
+--     { from = ℕ⟶Num b d o
+--     ; right-inverse-of = toℕ-fromℕ {b} {d} {o} {SurjCond⇒IsSurj cond}
+--     })
+-- Surjective? b d o | NonSurj reason = no (NonSurjCond⇏Surjective reason)
+--
+
+
+
 -- Conditions of surjectiveness
-data SurjCond : ℕ → ℕ → ℕ → Set where
-    WithZerosUnary : ∀ {  d}               → (d≥2 : d ≥ 2) → SurjCond 1 d 0
-    WithZeros      : ∀ {b d} (b≥2 : b ≥ 2) → (d≥b : d ≥ b) → SurjCond b d 0
-    Zeroless       : ∀ {b d} (b≥1 : b ≥ 1) → (d≥b : d ≥ b) → SurjCond b d 1
-
--- Conditions of non-surjectiveness
-data NonSurjCond : ℕ → ℕ → ℕ → Set where
-    Base≡0             : ∀ {  d o}                 → NonSurjCond 0 d o
-    NoDigits           : ∀ {b   o}                 → NonSurjCond b 0 o
-    Offset≥2           : ∀ {b d o} → o ≥ 2         → NonSurjCond b d o
-    UnaryWithOnlyZeros :                              NonSurjCond 1 1 0
-    NotEnoughDigits    : ∀ {b d o} → d ≥ 1 → d ≱ b → NonSurjCond b d o
-
-data SurjectionView : ℕ → ℕ → ℕ → Set where
-    Surj    : ∀ {b d o} →    SurjCond b d o → SurjectionView b d o
-    NonSurj : ∀ {b d o} → NonSurjCond b d o → SurjectionView b d o
-
-
-surjectionView : (b d o : ℕ) → SurjectionView b d o
-surjectionView 0             d             o             = NonSurj Base≡0
-surjectionView (suc b)       0             o             = NonSurj NoDigits
-surjectionView (suc b)       (suc d)       o             with suc b ≤? suc d
-surjectionView 1             1             0             | yes p = NonSurj UnaryWithOnlyZeros
-surjectionView 1             (suc (suc d)) 0             | yes p = Surj    (WithZerosUnary (s≤s (s≤s z≤n)))
-surjectionView (suc (suc b)) (suc d)       0             | yes p = Surj    (WithZeros (s≤s (s≤s z≤n)) p)
-surjectionView (suc b)       (suc d)       1             | yes p = Surj    (Zeroless (s≤s z≤n) p)
-surjectionView (suc b)       (suc d)       (suc (suc o)) | yes p = NonSurj (Offset≥2 (s≤s (s≤s z≤n)))
-surjectionView (suc b)       (suc d)       o             | no ¬p = NonSurj (NotEnoughDigits (s≤s z≤n) ¬p)
-
-IsSurjective : ℕ → ℕ → ℕ → Set
-IsSurjective b d o with surjectionView b d o
-IsSurjective b d o | Surj    _ = ⊤
-IsSurjective b d o | NonSurj _ = ⊥
-
-SurjCond⇒b≥1 : ∀ {b d o} → SurjCond b d o → b ≥ 1
-SurjCond⇒b≥1 (WithZerosUnary d≥2)      = s≤s z≤n
-SurjCond⇒b≥1 (WithZeros (s≤s b≥1) d≥b) = s≤s z≤n
-SurjCond⇒b≥1 (Zeroless b≥1 d≥b)        = b≥1
-
-SurjCond⇒d≥b : ∀ {b d o} → SurjCond b d o → d ≥ b
-SurjCond⇒d≥b (WithZerosUnary (s≤s d≥1)) = s≤s z≤n
-SurjCond⇒d≥b (WithZeros b≥2 d≥b)        = d≥b
-SurjCond⇒d≥b (Zeroless b≥1 d≥b)         = d≥b
-
-SurjCond⇒IsSurj : ∀ {b d o} → SurjCond b d o → IsSurjective b d o
-SurjCond⇒IsSurj {b} {d} {o} cond with surjectionView b d o
-SurjCond⇒IsSurj cond | Surj x = tt
-SurjCond⇒IsSurj (WithZeros () d≥b)        | NonSurj Base≡0
-SurjCond⇒IsSurj (Zeroless () d≥b)         | NonSurj Base≡0
-SurjCond⇒IsSurj (WithZerosUnary ())       | NonSurj NoDigits
-SurjCond⇒IsSurj (WithZeros () z≤n)        | NonSurj NoDigits
-SurjCond⇒IsSurj (Zeroless () z≤n)         | NonSurj NoDigits
-SurjCond⇒IsSurj (WithZerosUnary _)        | NonSurj (Offset≥2 ())
-SurjCond⇒IsSurj (WithZeros _ _)           | NonSurj (Offset≥2 ())
-SurjCond⇒IsSurj (Zeroless _ _)            | NonSurj (Offset≥2 (s≤s ()))
-SurjCond⇒IsSurj (WithZerosUnary (s≤s ())) | NonSurj UnaryWithOnlyZeros
-SurjCond⇒IsSurj (WithZeros (s≤s ()) _)    | NonSurj UnaryWithOnlyZeros
-SurjCond⇒IsSurj (WithZerosUnary _)        | NonSurj (NotEnoughDigits d≥1 d≱1) = contradiction d≥1 d≱1
-SurjCond⇒IsSurj (WithZeros _ d≥b)         | NonSurj (NotEnoughDigits _ d≱b) = contradiction d≥b d≱b
-SurjCond⇒IsSurj (Zeroless _ d≥b)          | NonSurj (NotEnoughDigits _ d≱b) = contradiction d≥b d≱b
-
-------------------------------------------------------------------------
--- Operations on Num (which does not necessary needs to be Surj)
-------------------------------------------------------------------------
-
-starting-digit : ∀ {b d o} → SurjCond b d o → Digit d
-starting-digit (WithZerosUnary d≥2) = fromℕ≤ {1} d≥2
-starting-digit (WithZeros b≥2 d≥b) = fromℕ≤ {1} (≤-trans b≥2 d≥b)
-starting-digit (Zeroless b≥1 d≥b) = fromℕ≤ {0} (≤-trans b≥1 d≥b)
+-- data SurjCond : ℕ → ℕ → ℕ → Set where
+--     WithZerosUnary : ∀ {  d}               → (d≥2 : d ≥ 2) → SurjCond 1 d 0
+--     WithZeros      : ∀ {b d} (b≥2 : b ≥ 2) → (d≥b : d ≥ b) → SurjCond b d 0
+--     Zeroless       : ∀ {b d} (b≥1 : b ≥ 1) → (d≥b : d ≥ b) → SurjCond b d 1
+--
+-- -- Conditions of non-surjectiveness
+-- data NonSurjCond : ℕ → ℕ → ℕ → Set where
+--     Base≡0             : ∀ {  d o}                 → NonSurjCond 0 d o
+--     NoDigits           : ∀ {b   o}                 → NonSurjCond b 0 o
+--     Offset≥2           : ∀ {b d o} → o ≥ 2         → NonSurjCond b d o
+--     UnaryWithOnlyZeros :                              NonSurjCond 1 1 0
+--     NotEnoughDigits    : ∀ {b d o} → d ≥ 1 → d ≱ b → NonSurjCond b d o
+--
+-- data SurjectionView : ℕ → ℕ → ℕ → Set where
+--     Surj    : ∀ {b d o} →    SurjCond b d o → SurjectionView b d o
+--     NonSurj : ∀ {b d o} → NonSurjCond b d o → SurjectionView b d o
+--
+--
+-- surjectionView : (b d o : ℕ) → SurjectionView b d o
+-- surjectionView 0             d             o             = NonSurj Base≡0
+-- surjectionView (suc b)       0             o             = NonSurj NoDigits
+-- surjectionView (suc b)       (suc d)       o             with suc b ≤? suc d
+-- surjectionView 1             1             0             | yes p = NonSurj UnaryWithOnlyZeros
+-- surjectionView 1             (suc (suc d)) 0             | yes p = Surj    (WithZerosUnary (s≤s (s≤s z≤n)))
+-- surjectionView (suc (suc b)) (suc d)       0             | yes p = Surj    (WithZeros (s≤s (s≤s z≤n)) p)
+-- surjectionView (suc b)       (suc d)       1             | yes p = Surj    (Zeroless (s≤s z≤n) p)
+-- surjectionView (suc b)       (suc d)       (suc (suc o)) | yes p = NonSurj (Offset≥2 (s≤s (s≤s z≤n)))
+-- surjectionView (suc b)       (suc d)       o             | no ¬p = NonSurj (NotEnoughDigits (s≤s z≤n) ¬p)
+--
+-- IsSurjective : ℕ → ℕ → ℕ → Set
+-- IsSurjective b d o with surjectionView b d o
+-- IsSurjective b d o | Surj    _ = ⊤
+-- IsSurjective b d o | NonSurj _ = ⊥
+--
+-- SurjCond⇒b≥1 : ∀ {b d o} → SurjCond b d o → b ≥ 1
+-- SurjCond⇒b≥1 (WithZerosUnary d≥2)      = s≤s z≤n
+-- SurjCond⇒b≥1 (WithZeros (s≤s b≥1) d≥b) = s≤s z≤n
+-- SurjCond⇒b≥1 (Zeroless b≥1 d≥b)        = b≥1
+--
+-- SurjCond⇒d≥b : ∀ {b d o} → SurjCond b d o → d ≥ b
+-- SurjCond⇒d≥b (WithZerosUnary (s≤s d≥1)) = s≤s z≤n
+-- SurjCond⇒d≥b (WithZeros b≥2 d≥b)        = d≥b
+-- SurjCond⇒d≥b (Zeroless b≥1 d≥b)         = d≥b
+--
+-- SurjCond⇒IsSurj : ∀ {b d o} → SurjCond b d o → IsSurjective b d o
+-- SurjCond⇒IsSurj {b} {d} {o} cond with surjectionView b d o
+-- SurjCond⇒IsSurj cond | Surj x = tt
+-- SurjCond⇒IsSurj (WithZeros () d≥b)        | NonSurj Base≡0
+-- SurjCond⇒IsSurj (Zeroless () d≥b)         | NonSurj Base≡0
+-- SurjCond⇒IsSurj (WithZerosUnary ())       | NonSurj NoDigits
+-- SurjCond⇒IsSurj (WithZeros () z≤n)        | NonSurj NoDigits
+-- SurjCond⇒IsSurj (Zeroless () z≤n)         | NonSurj NoDigits
+-- SurjCond⇒IsSurj (WithZerosUnary _)        | NonSurj (Offset≥2 ())
+-- SurjCond⇒IsSurj (WithZeros _ _)           | NonSurj (Offset≥2 ())
+-- SurjCond⇒IsSurj (Zeroless _ _)            | NonSurj (Offset≥2 (s≤s ()))
+-- SurjCond⇒IsSurj (WithZerosUnary (s≤s ())) | NonSurj UnaryWithOnlyZeros
+-- SurjCond⇒IsSurj (WithZeros (s≤s ()) _)    | NonSurj UnaryWithOnlyZeros
+-- SurjCond⇒IsSurj (WithZerosUnary _)        | NonSurj (NotEnoughDigits d≥1 d≱1) = contradiction d≥1 d≱1
+-- SurjCond⇒IsSurj (WithZeros _ d≥b)         | NonSurj (NotEnoughDigits _ d≱b) = contradiction d≥b d≱b
+-- SurjCond⇒IsSurj (Zeroless _ d≥b)          | NonSurj (NotEnoughDigits _ d≱b) = contradiction d≥b d≱b
+--
+-- ------------------------------------------------------------------------
+-- -- Operations on Num (which does not necessary needs to be Surj)
+-- ------------------------------------------------------------------------
+--
+-- starting-digit : ∀ {b d o} → SurjCond b d o → Digit d
+-- starting-digit (WithZerosUnary d≥2) = fromℕ≤ {1} d≥2
+-- starting-digit (WithZeros b≥2 d≥b) = fromℕ≤ {1} (≤-trans b≥2 d≥b)
+-- starting-digit (Zeroless b≥1 d≥b) = fromℕ≤ {0} (≤-trans b≥1 d≥b)
 
 -- 1+ : ∀ {b d o} → Num b d o → Num b d o
 -- 1+ {b} {d} {o} xs with surjectionView b d o

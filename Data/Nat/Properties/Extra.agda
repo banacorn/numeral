@@ -5,6 +5,7 @@ open import Data.Product
 open import Data.Nat.Properties
 open import Data.Nat.Properties.Simple
 open import Function
+open import Level using ()
 open import Relation.Binary
 open import Relation.Binary.Core
 open import Relation.Nullary.Negation
@@ -51,13 +52,33 @@ isSemiringWithoutOne = IsCommutativeSemiringWithoutOne.isSemiringWithoutOne ⊔-
 ⊔-comm : Commutative _⊔_
 ⊔-comm = IsCommutativeMonoid.comm +-isCommutativeMonoid
 
-≤-trans :  Transitive _≤_
+m≤n⊔m : ∀ m n → m ≤ n ⊔ m
+m≤n⊔m zero    n       = z≤n
+m≤n⊔m (suc m) zero    = s≤s (m≤n⊔m m zero)
+m≤n⊔m (suc m) (suc n) = s≤s (m≤n⊔m m n)
+
+m⊓n≤n : ∀ m n → m ⊓ n ≤ n
+m⊓n≤n zero n          = z≤n
+m⊓n≤n (suc m) zero    = z≤n
+m⊓n≤n (suc m) (suc n) = s≤s (m⊓n≤n m n)
+
+cmp : Trichotomous _≡_ _<_
+cmp = StrictTotalOrder.compare strictTotalOrder
+
+≤-trans : Transitive _≤_
 ≤-trans = IsPreorder.trans isPreorder
+
+<⇒≤ : _<_ ⇒ _≤_
+<⇒≤ {zero} p = z≤n
+<⇒≤ {suc i} (s≤s p) = s≤s (<⇒≤ p)
 
 >⇒≰ : _>_ ⇒ _≰_
 >⇒≰ {zero}  ()      q
 >⇒≰ {suc m} (s≤s p) (s≤s q) = >⇒≰ p q
 
+≤⇒≯ : _≤_ ⇒ _≯_
+≤⇒≯ {zero} p ()
+≤⇒≯ {suc m} (s≤s p) (s≤s q) = ≤⇒≯ p q
 
 <⇒≱ : _<_ ⇒ _≱_
 <⇒≱ {zero} () z≤n
@@ -81,6 +102,11 @@ isSemiringWithoutOne = IsCommutativeSemiringWithoutOne.isSemiringWithoutOne ⊔-
 ≤∧≢⇒< {suc m} {zero}  ()      q
 ≤∧≢⇒< {suc m} {suc n} (s≤s p) q = s≤s (≤∧≢⇒< p (q ∘ cong suc))
 
+≥∧≢⇒> : ∀ {m n} → m ≥ n → m ≢ n → m > n
+≥∧≢⇒> {zero}  {zero}  p       q = contradiction refl q
+≥∧≢⇒> {zero}  {suc n} ()      q
+≥∧≢⇒> {suc m} {zero}  p       q = s≤s z≤n
+≥∧≢⇒> {suc m} {suc n} (s≤s p) q = s≤s (≥∧≢⇒> p (q ∘ cong suc))
 
 m≤n+m : ∀ m n → m ≤ n + m
 m≤n+m m n =
@@ -151,6 +177,29 @@ n+-mono n = _+-mono_ {n} {n} ≤-refl
 -- induction
 +-mono-contra {suc a} {suc b} (s≤s p) (s≤s q) = +-mono-contra p q
 
+∸n-mono : ∀ n → (λ x → x ∸ n) Preserves _≤_ ⟶ _≤_
+∸n-mono n {a} {b} a≤b = ∸-mono {a} {b} {n} {n} a≤b ≤-refl
+
+∸n-mono-inverse :  ∀ n → ∀ {a b} → a > n → a ∸ n ≤ b ∸ n → a ≤ b
+∸n-mono-inverse zero                    p q = q
+∸n-mono-inverse (suc n) {zero}  {zero}  p q = q
+∸n-mono-inverse (suc n) {zero}  {suc b} p q = z≤n
+∸n-mono-inverse (suc n) {suc a} {zero}  p q = contradiction (≤-pred p) (≤⇒≯ q')
+    where
+        q' : a ≤ n
+        q' = ∸n-mono-inverse n (≤-pred p) $
+            start
+                a ∸ n
+            ≤⟨ q ⟩
+                zero
+            ≈⟨ sym (n∸n≡0 n) ⟩
+                n ∸ n
+            □
+∸n-mono-inverse (suc n) {suc a} {suc b} p q = s≤s (∸n-mono-inverse n (≤-pred p) q)
+
+n∸-mono : ∀ n → (λ x → n ∸ x) Preserves _≥_ ⟶ _≤_
+n∸-mono n {a} {b} a≥b = ∸-mono {n} {n} {a} {b} ≤-refl a≥b
+
 n*-mono : ∀ n → (λ x → n * x) Preserves _≤_ ⟶ _≤_
 n*-mono n = _*-mono_ {n} {n} ≤-refl
 
@@ -210,7 +259,6 @@ n*-mono-strict-inverse (suc n) {a} {b} p | no ¬q = contradiction p ¬p
 
 *n-mono-strict-inverse : ∀ n {a} {b} → a * n < b * n → a < b
 *n-mono-strict-inverse n {a} {b} p = n*-mono-strict-inverse n (*-comm-mono-strict {a} {n} {b} {n} p)
-
 
 ≤-suc : ∀ {m n} → m ≤ n → suc m ≤ suc n
 ≤-suc z≤n = s≤s z≤n
@@ -318,8 +366,8 @@ distrib-left-*-+ m n o =
         m * n + m * o
     ∎
 
-m∸n+n : ∀ {m n} → n ≤ m → m ∸ n + n ≡ m
-m∸n+n {m} {n} n≤m =
+m∸n+n≡m : ∀ {m n} → n ≤ m → m ∸ n + n ≡ m
+m∸n+n≡m {m} {n} n≤m =
     begin
         m ∸ n + n
     ≡⟨ +-comm (m ∸ n) n ⟩
@@ -328,9 +376,141 @@ m∸n+n {m} {n} n≤m =
         m
     ∎
 
--- open ⊔-⊓-0-commutativeSemiringWithoutOne
--- ⊔-comm : Commutative _⊔_
--- ⊔-comm = {!IsCommutativeSemiringWithoutOne.isSemiringWithoutOne ⊔-⊓-0-isCommutativeSemiringWithoutOne  !}
+
+m∸[o∸n]+o≡m+n : ∀ m n o
+    → n ≤ o
+    → o ∸ n ≤ m
+    → m ∸ ( o ∸ n ) + o ≡ m + n
+m∸[o∸n]+o≡m+n m n o n≤o o∸n≤m =
+    begin
+        m ∸ (o ∸ n) + o
+    ≡⟨ +-comm (m ∸ (o ∸ n)) o ⟩
+        o + (m ∸ (o ∸ n))
+    ≡⟨ cong (λ x → x + (m ∸ (o ∸ n))) (sym (m+n∸m≡n {n} {o} n≤o)) ⟩
+        (n + (o ∸ n)) + (m ∸ (o ∸ n))
+    ≡⟨ +-assoc n (o ∸ n) (m ∸ (o ∸ n)) ⟩
+        n + ((o ∸ n) + (m ∸ (o ∸ n)))
+    ≡⟨ cong (λ w → n + w) (m+n∸m≡n {o ∸ n} o∸n≤m) ⟩
+        n + m
+    ≡⟨ +-comm n m ⟩
+        m + n
+    ∎
+
+m≥n+o⇒m∸o≥n : ∀ m n o → m ≥ n + o → m ∸ o ≥ n
+m≥n+o⇒m∸o≥n m n o p =
+    start
+        n
+    ≈⟨ sym (m+n∸n≡m n o) ⟩
+        n + o ∸ o
+    ≤⟨ ∸-mono {n + o} {m} {o} p ≤-refl ⟩
+        m ∸ o
+    □
+
+double : ∀ m → m + m ≡ m * 2
+double m =
+    begin
+        m + m
+    ≡⟨ cong (λ w → m + w) (sym (+-right-identity m)) ⟩
+        m + (m + zero)
+    ≡⟨ *-comm (suc (suc zero)) m ⟩
+        m * suc (suc zero)
+    ∎
+
+m⊔n≤m+n : ∀ m n → m ⊔ n ≤ m + n
+m⊔n≤m+n zero n = ≤-refl
+m⊔n≤m+n (suc m) zero = s≤s (m≤m+n m zero)
+m⊔n≤m+n (suc m) (suc n) = s≤s $
+    start
+        m ⊔ n
+    ≤⟨ m⊔n≤m+n m n ⟩
+        m + n
+    ≤⟨ n+-mono m (m≤n+m n (suc zero)) ⟩
+        m + suc n
+    □
+
+cancel-∸-right : ∀ {m n} o → m ≥ o → n ≥ o → m ∸ o ≡ n ∸ o → m ≡ n
+cancel-∸-right                 zero    p  q  eq = eq
+cancel-∸-right {zero}          (suc o) () q  eq
+cancel-∸-right {suc m} {zero}  (suc o) p  () eq
+cancel-∸-right {suc m} {suc n} (suc o) p  q  eq = cong suc (cancel-∸-right o (≤-pred p) (≤-pred q) eq)
+
+
+-- cancel-∸-right : ∀ {m n o} → n ≥ o → m ≡ n ∸ o → m + o ≡ n
+-- cancel-∸-right {m} {n} {zero} p eq =
+--     begin
+--         m + zero
+--     ≡⟨ +-right-identity m ⟩
+--         m
+--     ≡⟨ eq ⟩
+--         n
+--     ∎
+-- cancel-∸-right {m} {zero} {suc o} () eq
+-- cancel-∸-right {m} {suc n} {suc o} p eq =
+--     begin
+--         m + suc o
+--     ≡⟨ +-suc m o ⟩
+--         suc (m + o)
+--     ≡⟨ cong suc (cancel-∸-right {m} {n} {o} (≤-pred p) eq) ⟩
+--         suc n
+--     ∎
+--
+-- cancel-∸-right-inverse : ∀ m n o → n ≥ o → m + o ≡ n → m ≡ n ∸ o
+-- cancel-∸-right-inverse m n zero p eq =
+--     begin
+--         m
+--     ≡⟨ sym (+-right-identity m) ⟩
+--         m + 0
+--     ≡⟨ eq ⟩
+--         n
+--     ∎
+-- cancel-∸-right-inverse m zero (suc o) () eq
+-- cancel-∸-right-inverse m (suc n) (suc o) p eq =
+--     begin
+--         m
+--     ≡⟨ cancel-∸-right-inverse m n o (≤-pred p) $ cancel-+-left 1 $
+--         begin
+--             suc m + o
+--         ≡⟨ sym (+-suc m o) ⟩
+--             m + suc o
+--         ≡⟨ eq ⟩
+--             suc n
+--         ∎
+--      ⟩
+--         n ∸ o
+--     ∎
+
+
+⊔-upper-bound : ∀ m n o → m + n ≥ o → o ⊔ n ≤ m + n
+⊔-upper-bound zero zero zero p = p
+⊔-upper-bound zero zero (suc o) ()
+⊔-upper-bound zero (suc n) zero p = s≤s (⊔-upper-bound zero n zero z≤n)
+⊔-upper-bound zero (suc n) (suc o) p = s≤s (⊔-upper-bound zero n o (≤-pred p))
+⊔-upper-bound (suc m) zero zero p = p
+⊔-upper-bound (suc m) zero (suc o) p = p
+⊔-upper-bound (suc m) (suc n) zero p =
+    start
+        suc n
+    ≤⟨ s≤s (≤-step ≤-refl) ⟩
+        suc (suc n)
+    ≤⟨ s≤s (m≤n+m (suc n) m) ⟩
+        suc (m + suc n)
+    □
+⊔-upper-bound (suc m) (suc n) (suc o) p =
+    start
+        suc (o ⊔ n)
+    ≤⟨ s≤s (⊔-upper-bound (suc m) n o $
+        start
+            o
+        ≤⟨ ≤-pred p ⟩
+            m + suc n
+        ≈⟨ +-suc m n ⟩
+            suc (m + n)
+        □
+    ) ⟩
+        suc (suc (m + n))
+    ≈⟨ cong suc (sym (+-suc m n)) ⟩
+        suc (m + suc n)
+    □
 -- start
 --     {!   !}
 -- ≤⟨ {!   !} ⟩
