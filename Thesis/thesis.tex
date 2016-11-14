@@ -6,7 +6,16 @@
 \date{\today}
 
 \documentclass[12pt, a4paper]{article}
+
+% for unicode symbols
+\usepackage{fontspec}
+
+% for CJK
+\usepackage{xeCJK}
+
 \usepackage{listings}
+
+\lstset{basicstyle=\ttfamily}
 
 \begin{document}
 \maketitle
@@ -44,25 +53,67 @@ who are familiar with Agda and dependently typed programming may skip this chapt
 
 \subsection{Some basics}
 
-[introduce some backgrounds of Agda]
+Agda is a dependently typed functional programming language based on 
+
+
+, and also a interactive
+theorem prover.
+
+
 
 \subsection{Dependent types}
 
 \subsection{Simply typed programming in Agda}
 
+% Since Agda's syntax is heavily influenced by Haskell, simply typed programming
+% in Agda is almost the same as in Haskell.
 
-Since Agda's syntax is heavily influenced by Haskell, simply typed programming
-in Agda is almost the same as in Haskell.
+\paragraph{In the beginning there was nothing}
+
+Unlike in other programming languages, there are no "built-in"
+datatypes\footnote{Small types, to be precise} such as \textit{Int}, \textit{String}, or \textit{Bool}.
+The reason is that they can all be created out of thin air, so why bother?
+
+\paragraph{Let there be datatype}
+
+Datatypes are introduced with {\lstinline|data|} declarations. Here is a classical example, the type of booleans.
 
 \begin{lstlisting}
+data Bool : Set where
+    true  : Bool
+    false : Bool
+\end{lstlisting}
+
+Three names are brought into scope:
+
+\begin{enumerate}
+    \item {\lstinline|Bool|}: the name of the datatype
+    \item {\lstinline|true|}: a constructor of the datatype
+    \item {\lstinline|false|}: another constructor of the datatype
+\end{enumerate}
+
+The declaration also explicitly spicifies the types of these newly introduced entities.
+
+\begin{enumerate}
+    \item {\lstinline|Bool|} has the type of {\lstinline|Set|}\footnote{{\lstinline|Set|} is the type of small types, and {\lstinline|Set₁|} is the type
+of {\lstinline|Set|}, and so on. They form a hierarchy of types.}
+    \item {\lstinline|true|} has the type of {\lstinline|Bool|}
+    \item {\lstinline|false|} has the type of {\lstinline|Bool|}
+\end{enumerate}
+
+\paragraph{Pattern matching}
+
+Similar to Haskell, datatypes are eliminated with pattern matching.
+
+Here's a function that pattern matches on {\lstinline|Bool|}.
+
+\begin{lstlisting}
+not : Bool → Bool
+not true  = false
+not false = true
 \end{lstlisting}
 
 
-
-
-In the beginning there was nothing.
-
-"Let there be data types"
 
 
 
