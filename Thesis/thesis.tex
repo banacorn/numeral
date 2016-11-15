@@ -41,9 +41,8 @@ The remainder of the thesis is organized as follows.
 
 \section{A gental introduction to dependently typed programming in Agda}\label{agda}
 
-There are already plenty of tutorials and introductions of Agda\cite{norell2009dependently}.
-Nonetheless, we will provide a simple and self-contained tutorial in this section,
-covering the part (and only the part) we need in this work.
+There are already plenty of tutorials and introductions of Agda\cite{norell2009dependently}\cite{FLOLAC16DTP}\cite{brutal}.
+We will nonetheless compile a simple and self-contained tutorial from the materials cited above, covering the part (and only the part) we need in this work.
 
 Some of the more advenced constructions (such as views and universes) used in
 the following sections will be introduced along the way.
@@ -53,15 +52,8 @@ who are familiar with Agda and dependently typed programming may skip this chapt
 
 \subsection{Some basics}
 
-Agda is a dependently typed functional programming language based on 
-
-
-, and also a interactive
-theorem prover.
-
-
-
-\subsection{Dependent types}
+Agda is a dependently typed functional programming language based on \textbf{Martin-Löf type theory} \cite{martin1984intuitionistic}.
+The first version of Agda was originally developed by Catarina Coquand at Chalmers University of Technology, the current version (Agda2) is a completely rewrite by Ulf Norell during his PhD at Chalmers.
 
 \subsection{Simply typed programming in Agda}
 
@@ -71,7 +63,7 @@ theorem prover.
 \paragraph{In the beginning there was nothing}
 
 Unlike in other programming languages, there are no "built-in"
-datatypes\footnote{Small types, to be precise} such as \textit{Int}, \textit{String}, or \textit{Bool}.
+datatypes such as \textit{Int}, \textit{String}, or \textit{Bool}.
 The reason is that they can all be created out of thin air, so why bother?
 
 \paragraph{Let there be datatype}
@@ -84,15 +76,8 @@ data Bool : Set where
     false : Bool
 \end{lstlisting}
 
-Three names are brought into scope:
-
-\begin{enumerate}
-    \item {\lstinline|Bool|}: the name of the datatype
-    \item {\lstinline|true|}: a constructor of the datatype
-    \item {\lstinline|false|}: another constructor of the datatype
-\end{enumerate}
-
-The declaration also explicitly spicifies the types of these newly introduced entities.
+The name of the datatype ({\lstinline|Bool|}) and its constructors ({\lstinline|true|} and {\lstinline|false|}) are brought into scope.
+This notation also allow us to spicify the types of these newly introduced entities explicitly.
 
 \begin{enumerate}
     \item {\lstinline|Bool|} has the type of {\lstinline|Set|}\footnote{{\lstinline|Set|} is the type of small types, and {\lstinline|Set₁|} is the type
@@ -113,21 +98,42 @@ not true  = false
 not false = true
 \end{lstlisting}
 
+Agda is a \textit{total} language, so partial functions are not allowed. Functions
+are guarantee to terminate and will not crash on all possible inputs. The following
+example won't be accecpted by the type checker, because the case {\lstinline|false|} is missing.
+
+\begin{lstlisting}
+not : Bool → Bool
+not true  = false
+\end{lstlisting}
+
+\paragraph{Inductive datatype} Let's move on to a more interesting datatype with inductive definition. Here's the type of natural numbers.
+
+\begin{lstlisting}
+data ℕ : Set where
+    zero : ℕ
+    suc : ℕ → ℕ
+\end{lstlisting}
 
 
 
+
+Note that the symbol ℕ is not some typographic ligature used to make this thesis
+look prettier. Unicode symbols are used extensively in Agda
 
 \subsection{Dependently typed programming in Agda}
 
 
-\section{Representing positional numeral systems}\label{representation}
+\section{Num : a representation for positional numeral systems}\label{representation}
 
 \subsection{Bases}
 \subsection{Offsets}
 \subsection{Number of digits}
 
 \section{Properties of Num}
-\subsection{Categorizing Num}
+\subsection{Maximum}
+\subsection{Bounded}
+\subsection{Bounded}
 \subsection{Views}
 
 \section{Conclusions}\label{conclusions}
