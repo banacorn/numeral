@@ -115,11 +115,26 @@ data ℕ : Set where
     suc : ℕ → ℕ
 \end{lstlisting}
 
+Addition on {\lstinline|ℕ|} can be defined as a recursive function.
 
+\begin{lstlisting}
+_+_ : ℕ → ℕ → ℕ
+zero  + y = y
+suc x + y = suc (x + y)
+\end{lstlisting}
 
+% {\lstinline|suc zero|} serves as the number "1", {\lstinline|suc (suc zero)|} as "2", and so forth.
 
-Note that the symbol ℕ is not some typographic ligature used to make this thesis
-look prettier. Unicode symbols are used extensively in Agda
+We define \begin{_+_} by pattern matching on the first argument, which results
+in two cases: the base case, and the inductive step. We are allowed to make
+recursive calls, as long as the type checker is convinced that the function
+would terminate.
+
+The underlines surrounding \begin{+} act as placeholders for arguments, making
+it an infix function in this instance.
+
+% Note that the symbol ℕ is not some typographic ligature used to make this thesis
+% look prettier. Unicode symbols are used extensively in Agda
 
 \subsection{Dependently typed programming in Agda}
 
