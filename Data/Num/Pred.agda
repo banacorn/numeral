@@ -2,15 +2,20 @@ module Data.Num.Pred where
 
 open import Data.Num.Core
 open import Data.Num
--- open import Data.Num.Properties
+open import Data.Num.Properties
 -- open import Data.Num.Bijection
 
 open import Data.Nat
 open import Data.Fin using (Fin; suc; zero; #_)
 open import Data.Vec
 open import Data.Product hiding (map)
+open import Relation.Binary
 open import Relation.Binary.PropositionalEquality
 open import Relation.Nullary.Decidable using (True; fromWitness)
+
+open ≡-Reasoning
+open ≤-Reasoning renaming (begin_ to start_; _∎ to _□; _≡⟨_⟩_ to _≈⟨_⟩_)
+open DecTotalOrder decTotalOrder using (reflexive) renaming (refl to ≤-refl)
 
 infixl 6 _∔_
 
@@ -18,15 +23,14 @@ data Term : ℕ → Set where
     var : ∀ {n} → Fin n → Term n
     _∔_ : ∀ {n} → Term n → Term n → Term n
 
-infix 4 _≋_
 
 data Predicate : ℕ → Set where
     -- equality
-    _≋_ : ∀ {n} → (t₁ : Term n) → (t₂ : Term n) → Predicate n
+    _≋P_ : ∀ {n} → (t₁ : Term n) → (t₂ : Term n) → Predicate n
     -- implication
-    _⇒_ : ∀ {n} → (p₁ : Predicate n) → (p₂ : Predicate n) → Predicate n
+    _→P_ : ∀ {n} → (p₁ : Predicate n) → (p₂ : Predicate n) → Predicate n
     -- ∀, introduces new variable
-    All : ∀ {n} → (p : Predicate (suc n)) → Predicate n
+    ∀P : ∀ {n} → (p : Predicate (suc n)) → Predicate n
 
 
 record Signature : Set₁ where
@@ -35,13 +39,14 @@ record Signature : Set₁ where
         carrier : Set
         _⊕_ : carrier → carrier → carrier
         _≈_ : carrier → carrier → Set
+
 open Signature
 
 ℕ-sig : Signature
 ℕ-sig = sig ℕ _+_ _≡_
 
 Num-sig : (b d o : ℕ) → N+Closed b d o → Signature
-Num-sig b d o prop = sig (Num b d o) (_⊹_ {cond = prop}) _≡_
+Num-sig b d o prop = sig (Num b d o) (_⊹_ {cond = prop}) _≋_
 
 -- BijN-sig : ℕ → Signature
 -- BijN-sig b = sig (BijN b) (_⊹_ {surj = fromWitness (BijN⇒Surjective b)}) _≡_
@@ -64,17 +69,17 @@ Env = Vec
     → (sig : Signature)
     → Env (carrier sig) n
     → Set
-⟦_⟧P (term₁ ≋ term₂) (sig A _⊕_ _≈_) env = ⟦ term₁ ⟧T (sig A _⊕_ _≈_) env ≈ ⟦ term₂ ⟧T (sig A _⊕_ _≈_) env
-⟦_⟧P (p ⇒ q)         signature       env = ⟦ p ⟧P signature env → ⟦ q ⟧P signature env
-⟦_⟧P (All p)          signature       env = (x : carrier signature) → ⟦ p ⟧P signature (x ∷ env)
-
+⟦ t₁ ≋P t₂ ⟧P (sig carrier _⊕_ _≈_) env
+    = ⟦ t₁ ⟧T (sig carrier _⊕_ _≈_) env ≈ ⟦ t₂ ⟧T (sig carrier _⊕_ _≈_) env
+⟦ p →P q   ⟧P signature env = ⟦ p ⟧P signature env → ⟦ q ⟧P signature env
+⟦ ∀P pred  ⟧P signature env = ∀ x → ⟦ pred ⟧P signature (x ∷ env)
 
 module Example-1 where
     ≋-trans : Predicate zero
     ≋-trans = let   x = var zero
                     y = var (suc zero)
                     z = var (suc (suc zero))
-        in All (All (All (((x ≋ y) ⇒ (y ≋ z)) ⇒ (x ≋ z))))
+        in ∀P (∀P (∀P (((x ≋P y) →P (y ≋P z)) →P (x ≋P z))))
 
     ≋-trans-ℕ : Set
     ≋-trans-ℕ = ⟦ ≋-trans ⟧P ℕ-sig []
@@ -105,22 +110,44 @@ toℕ-term-homo : ∀ {b d o n}
     → (env : Vec (Num b d o) n)
     → ⟦ t ⟧T ℕ-sig (map ⟦_⟧ env) ≡ ⟦ ⟦ t ⟧T (Num-sig b d o closed) env ⟧
 toℕ-term-homo     closed (var i)   env = lookup-map ⟦_⟧ env i
-toℕ-term-homo {b} closed (t₁ ∔ t₂) env
+toℕ-term-homo {b} {d} {o} closed (t₁ ∔ t₂) env
     rewrite toℕ-term-homo closed t₁ env | toℕ-term-homo closed t₂ env
-    = {!   !}
+    = sym (toℕ-⊹-homo closed (⟦ t₁ ⟧T (Num-sig b d o closed) env) (⟦ t₂ ⟧T (Num-sig b d o closed) env))
 
---
--- toℕ-term-homo : ∀ {b n}
---     → (t : Term n)
---     → (env : Vec (BijN b) n)
---     → ⟦ t ⟧T ℕ-sig (map toℕ env) ≡ toℕ (⟦ t ⟧T (BijN-sig b) env)
--- toℕ-term-homo     (var i)   env = lookup-map toℕ env i
--- toℕ-term-homo {b} (t₁ ∔ t₂) env
---     rewrite toℕ-term-homo t₁ env | toℕ-term-homo t₂ env
---     = sym (toℕ-⊹-homo
---             (⟦ t₁ ⟧T (BijN-sig b) env)
---             (⟦ t₂ ⟧T (BijN-sig b) env))
---
+mutual
+    toℕ-pred-ℕ⇒Num : ∀ {b d o n}
+        → (closed : N+Closed b d o)
+        → (pred : Predicate n)
+        → (env : Vec (Num b d o) n)
+        → ⟦ pred ⟧P ℕ-sig (map ⟦_⟧ env)
+        → ⟦ pred ⟧P (Num-sig b d o closed) env
+    toℕ-pred-ℕ⇒Num closed (t₁ ≋P t₂) env v
+        rewrite toℕ-term-homo closed t₁ env | toℕ-term-homo closed t₂ env
+        = v
+    toℕ-pred-ℕ⇒Num closed (p →P q) env v w = toℕ-pred-ℕ⇒Num closed q env (v {!    !})
+    toℕ-pred-ℕ⇒Num closed (∀P pred) env v x = toℕ-pred-ℕ⇒Num closed pred (x ∷ env) {!   !}
+
+    toℕ-pred-Num⇒ℕ : ∀ {b d o n}
+        → (closed : N+Closed b d o)
+        → (pred : Predicate n)
+        → (env : Vec (Num b d o) n)
+        → ⟦ pred ⟧P (Num-sig b d o closed) env
+        → ⟦ pred ⟧P ℕ-sig (map ⟦_⟧ env)
+    toℕ-pred-Num⇒ℕ {b} {d} {o} closed (t₁ ≋P t₂) env v =
+        begin
+            ⟦ t₁ ⟧T (sig ℕ _+_ _≡_) (map ⟦_⟧ env)
+        ≡⟨ toℕ-term-homo closed t₁ env ⟩
+            ⟦ ⟦ t₁ ⟧T (Num-sig b d o closed) env ⟧
+        ≡⟨ v ⟩
+            ⟦ ⟦ t₂ ⟧T (Num-sig b d o closed) env ⟧
+        ≡⟨ sym (toℕ-term-homo closed t₂ env) ⟩
+            ⟦ t₂ ⟧T (sig ℕ _+_ _≡_) (map ⟦_⟧ env)
+        ∎
+    toℕ-pred-Num⇒ℕ closed (p →P q) env v w = toℕ-pred-Num⇒ℕ closed q env (v (toℕ-pred-ℕ⇒Num closed p env w))
+    -- toℕ-pred-Num⇒ℕ closed (∀P pred) env v x = toℕ-pred-Num⇒ℕ closed pred {!    !} {!   !}
+    toℕ-pred-Num⇒ℕ closed (∀P pred) env v x = {!   !}
+
+
 --
 -- mutual
 --     toℕ-pred-ℕ⇒Bij : ∀ {b n}

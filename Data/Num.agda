@@ -584,3 +584,10 @@ _⊹_ {cond = IsContinuous cont} xs ys | Proper b d o proper with Gapped#0? b d 
 _⊹_ {cond = IsContinuous ()} xs ys | Proper b d o proper | yes ¬gapped#0
 _⊹_ {cond = IsContinuous cont} xs ys | Proper b d o proper | no ¬gapped#0 = ⊹-Proper (≤-pred (≰⇒> ¬gapped#0)) proper xs ys
 _⊹_ {cond = ℤₙ} xs ys = ⊹-ℤₙ xs ys
+
+infix 4 _≋_
+
+_≋_ : ∀ {b d o}
+    → (xs ys : Num b d o)
+    → Set
+xs ≋ ys = ⟦ xs ⟧ ≡ ⟦ ys ⟧
