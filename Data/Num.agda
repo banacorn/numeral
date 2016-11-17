@@ -529,6 +529,92 @@ n+-toℕ {_} {_} {_} {IsContinuous ()}   n xs | Proper b d o proper | yes gapped
 n+-toℕ {_} {_} {_} {IsContinuous cont} n xs | Proper b d o proper | no ¬gapped#0 = n+-Proper-toℕ (≤-pred (≰⇒> ¬gapped#0)) proper n xs
 n+-toℕ {_} {_} {_} {ℤₙ}                n xs = n+-ℤₙ-toℕ n xs
 
+-- left-bounded infinite interval of natural number
+data Nat : ℕ → Set where
+    from : ∀ offset   → Nat offset
+    suc  : ∀ {offset} → Nat offset → Nat offset
+
+Nat-toℕ : ∀ {offset} → Nat offset → ℕ
+Nat-toℕ (from offset) = offset
+Nat-toℕ (suc n)       = suc (Nat-toℕ n)
+
+nat-step : ∀ offset
+    → Nat offset
+    → Nat (suc offset)
+nat-step offset (from .offset) = from (suc offset)
+nat-step offset (suc nat)      = suc (nat-step offset nat)
+
+nat-step-toℕ : ∀ offset
+    → (nat : Nat offset)
+    → Nat-toℕ (nat-step offset nat) ≡ suc (Nat-toℕ nat)
+nat-step-toℕ offset (from .offset) = {!   !}
+nat-step-toℕ offset (suc nat) = cong suc (nat-step-toℕ offset nat)
+
+Nat-fromℕ : ∀ offset
+    → (n : ℕ)
+    → offset ≤ n
+    → Nat offset
+Nat-fromℕ offset       n       p with cmp offset n
+Nat-fromℕ offset       zero    p | tri< a ¬b ¬c = from offset
+Nat-fromℕ offset       (suc n) p | tri< a ¬b ¬c = suc (Nat-fromℕ offset n (≤-pred a))
+Nat-fromℕ offset       zero    p | tri≈ ¬a b ¬c = from offset
+Nat-fromℕ zero         (suc n) p | tri≈ ¬a () ¬c
+Nat-fromℕ (suc offset) (suc n) p | tri≈ ¬a b ¬c = nat-step offset (Nat-fromℕ offset n (≤-pred p))
+Nat-fromℕ offset       n       p | tri> ¬a ¬b c = contradiction p (<⇒≱ c)
+
+Nat-fromℕ-toℕ : ∀ offset
+    → (n : ℕ)
+    → (p : offset ≤ n)
+    → Nat-toℕ (Nat-fromℕ offset n p) ≡ n
+Nat-fromℕ-toℕ offset       n       p with cmp offset n
+Nat-fromℕ-toℕ .0           zero  z≤n | tri< a ¬b ¬c = refl
+Nat-fromℕ-toℕ offset       (suc n) p | tri< a ¬b ¬c = cong suc (Nat-fromℕ-toℕ offset n (≤-pred a))
+Nat-fromℕ-toℕ offset       zero    p | tri≈ ¬a b ¬c = b
+Nat-fromℕ-toℕ zero         (suc n) p | tri≈ ¬a () ¬c
+Nat-fromℕ-toℕ (suc offset) (suc n) p | tri≈ ¬a b ¬c =
+    begin
+        Nat-toℕ (nat-step offset (Nat-fromℕ offset n (≤-pred p)))
+    ≡⟨ nat-step-toℕ offset (Nat-fromℕ offset n (≤-pred p)) ⟩
+        suc (Nat-toℕ (Nat-fromℕ offset n (≤-pred p)))
+    ≡⟨ cong suc (Nat-fromℕ-toℕ offset n (≤-pred p)) ⟩
+        suc n
+    ∎
+Nat-fromℕ-toℕ offset       n       p | tri> ¬a ¬b c = contradiction p (<⇒≱ c)
+-- data ℕ≥ : ℕ → Set where
+--     zero = :
+
+-- Nat-toℕ-fromℕ offset       n       p with cmp offset (Nat-toℕ n)
+-- Nat-toℕ-fromℕ offset n p | tri< a ¬b ¬c = {!   !}
+-- Nat-toℕ-fromℕ offset n p | tri≈ ¬a b ¬c = {!   !}
+-- Nat-toℕ-fromℕ offset n p | tri> ¬a ¬b c = {!   !}
+
+
+-- fromNat : ∀ {b d o}
+--     → {cont : True (Continuous? b (suc d) o)}
+--     → Nat o
+--     → Num b (suc d) o
+-- fromNat               (from offset) = z ∙
+-- fromNat {cont = cont} (suc nat)     = 1+ {cont = cont} (fromNat {cont = cont} nat)
+--
+-- toℕ-fromNat : ∀ b d o
+--     → (cont : True (Continuous? b (suc d) o))
+--     → (n : ℕ)
+--     → (p : o ≤ n)
+--     → ⟦ fromNat {cont = cont} (Nat-fromℕ o n p) ⟧ ≡ n + o
+-- toℕ-fromNat b d o cont n p with cmp o n
+-- toℕ-fromNat b d o cont zero    p | tri< a ¬b ¬c = refl
+-- toℕ-fromNat b d o cont (suc n) p | tri< a ¬b ¬c =
+--     begin
+--         ⟦ 1+ {cont = cont} (fromNat {cont = cont} (Nat-fromℕ o n (≤-pred a))) ⟧
+--     ≡⟨ 1+-toℕ (fromNat {cont = cont} (Nat-fromℕ o n (≤-pred a))) ⟩
+--         suc ⟦ fromNat {cont = cont} (Nat-fromℕ o n (≤-pred a)) ⟧
+--     ≡⟨ cong suc (toℕ-fromNat b d o cont n (≤-pred a)) ⟩
+--         suc n + o
+--     ∎
+-- toℕ-fromNat b d o cont zero    p | tri≈ ¬a b' ¬c = refl
+-- toℕ-fromNat b d o cont (suc n) p | tri≈ ¬a b' ¬c = {!   !}
+-- toℕ-fromNat b d o cont n       p | tri> ¬a ¬b  c = contradiction p (<⇒≱ c)
+
 -- -- a partial function that only maps ℕ to Continuous Nums
 -- fromℕ : ∀ {b d o}
 --     → {cond : N+Closed b d o}

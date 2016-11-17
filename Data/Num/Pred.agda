@@ -124,8 +124,8 @@ mutual
     toℕ-pred-ℕ⇒Num closed (t₁ ≋P t₂) env v
         rewrite toℕ-term-homo closed t₁ env | toℕ-term-homo closed t₂ env
         = v
-    toℕ-pred-ℕ⇒Num closed (p →P q) env v w = toℕ-pred-ℕ⇒Num closed q env (v {!    !})
-    toℕ-pred-ℕ⇒Num closed (∀P pred) env v x = toℕ-pred-ℕ⇒Num closed pred (x ∷ env) {!   !}
+    toℕ-pred-ℕ⇒Num closed (p →P q) env v w = toℕ-pred-ℕ⇒Num closed q env (v (toℕ-pred-Num⇒ℕ closed p env w))
+    toℕ-pred-ℕ⇒Num closed (∀P pred) env v x = toℕ-pred-ℕ⇒Num closed pred (x ∷ env) (v {!   !})
 
     toℕ-pred-Num⇒ℕ : ∀ {b d o n}
         → (closed : N+Closed b d o)

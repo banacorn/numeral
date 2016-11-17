@@ -33,3 +33,36 @@ open import Relation.Binary.PropositionalEquality
 open ≡-Reasoning
 open ≤-Reasoning renaming (begin_ to start_; _∎ to _□; _≡⟨_⟩_ to _≈⟨_⟩_)
 open DecTotalOrder decTotalOrder using (reflexive) renaming (refl to ≤-refl)
+
+
+-- Nat-toℕ-fromℕ : ∀ offset
+--     → (nat : Nat offset)
+--     → (p : offset ≤ (Nat-toℕ nat))
+--     → Nat-fromℕ offset (Nat-toℕ nat) p ≡ nat
+-- Nat-toℕ-fromℕ offset (from .offset) p with cmp offset (Nat-toℕ (from offset))
+-- Nat-toℕ-fromℕ offset (from .offset) p | tri< a ¬b ¬c = contradiction refl ¬b
+-- Nat-toℕ-fromℕ zero (from .zero) p | tri≈ ¬a b ¬c = refl
+-- Nat-toℕ-fromℕ (suc offset) (from .(suc offset)) p | tri≈ ¬a b ¬c =
+--     begin
+--         nat-step offset (Nat-fromℕ offset offset (≤-pred p))
+--     ≡⟨ cong (nat-step offset) (Nat-toℕ-fromℕ offset (from offset) (≤-pred p)) ⟩
+--         from (suc offset)
+--     ∎
+-- Nat-toℕ-fromℕ offset (from .offset) p | tri> ¬a ¬b c = contradiction refl ¬b
+-- Nat-toℕ-fromℕ offset (suc nat) p with cmp offset (Nat-toℕ (suc nat))
+-- Nat-toℕ-fromℕ offset (suc nat) p | tri< a ¬b ¬c = cong suc (Nat-toℕ-fromℕ offset nat (≤-pred a))
+-- Nat-toℕ-fromℕ zero (suc nat) p | tri≈ ¬a () ¬c
+-- Nat-toℕ-fromℕ (suc offset) (suc nat) p | tri≈ ¬a b ¬c with (Nat-fromℕ offset (Nat-toℕ nat) (≤-pred p))
+-- Nat-toℕ-fromℕ (suc offset) (suc nat) p | tri≈ ¬a b ¬c | from .offset =
+--     begin
+--         from (suc offset)
+--     ≡⟨ {!   !} ⟩
+--         {!   !}
+--     ≡⟨ {!   !} ⟩
+--         {!   !}
+--     ≡⟨ {!   !} ⟩
+--         {!   !}
+--     ≡⟨ {!   !} ⟩
+--         suc nat
+--     ∎
+-- Nat-toℕ-fromℕ (suc offset) (suc nat) p | tri≈ ¬a b ¬c | suc q = {!   !}
