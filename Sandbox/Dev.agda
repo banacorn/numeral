@@ -34,10 +34,10 @@ open ≤-Reasoning renaming (begin_ to start_; _∎ to _□; _≡⟨_⟩_ to _�
 open DecTotalOrder decTotalOrder using (reflexive) renaming (refl to ≤-refl)
 
 
+-- left-bounded infinite interval of natural number
 data Nat : ℕ → Set where
-    from : ∀  offset  → Nat offset
+    from : ∀ offset   → Nat offset
     suc  : ∀ {offset} → Nat offset → Nat offset
-
 
 Nat-toℕ : ∀ {offset} → Nat offset → ℕ
 Nat-toℕ (from offset) = offset
@@ -52,24 +52,22 @@ Nat-fromℕ offset n       p | yes eq = from offset
 Nat-fromℕ offset zero    p | no ¬eq = from offset
 Nat-fromℕ offset (suc n) p | no ¬eq = suc (Nat-fromℕ offset n (≤-pred (≤∧≢⇒< p ¬eq)))
 
--- lemma : ∀ offset
---     → (nat : Nat offset)
---     → from (suc (Nat-toℕ nat)) ≡ {!   !}
--- lemma offset nat = {!   !}
 
-Nat-toℕ-fromℕ : ∀ offset
-    → (nat : Nat offset)
-    → (p : offset ≤ (Nat-toℕ nat))
-    → Nat-fromℕ offset (Nat-toℕ nat) p ≡ nat
-Nat-toℕ-fromℕ offset nat p with offset ≟ (Nat-toℕ nat)
-Nat-toℕ-fromℕ offset nat p | yes eq = {!   !}
-Nat-toℕ-fromℕ offset (from .offset) p | no ¬eq = contradiction refl ¬eq
-Nat-toℕ-fromℕ offset (suc nat) p | no ¬eq =
+Nat-fromℕ-toℕ : ∀ offset
+    → (n : ℕ)
+    → (p : offset ≤ n)
+    → Nat-toℕ (Nat-fromℕ offset n p) ≡ n
+Nat-fromℕ-toℕ offset n       p with offset ≟ n
+Nat-fromℕ-toℕ offset n       p | yes eq = eq
+Nat-fromℕ-toℕ .0      zero z≤n | no ¬eq = refl
+Nat-fromℕ-toℕ offset (suc n) p | no ¬eq =
     begin
-        suc (Nat-fromℕ offset (Nat-toℕ nat) (≤-pred (≤∧≢⇒< p ¬eq)))
-    ≡⟨ cong suc (Nat-toℕ-fromℕ offset nat (≤-pred (≤∧≢⇒< p ¬eq))) ⟩
-        suc nat
+        suc (Nat-toℕ (Nat-fromℕ offset n (≤-pred (≤∧≢⇒< p ¬eq))))
+    ≡⟨ cong suc (Nat-fromℕ-toℕ offset n (≤-pred (≤∧≢⇒< p ¬eq))) ⟩
+        suc n
     ∎
+
+
 -- cong suc (Nat-toℕ-fromℕ offset nat (≤-pred (≤∧≢⇒< p ¬eq)))
 -- Nat-toℕ-fromℕ : ∀ offset
 --     → (nat : Nat offset)
