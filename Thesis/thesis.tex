@@ -1,7 +1,7 @@
 
-\title{Some title}
+\title{Generalizing Positional Numeral Systems}
 \author{
-    Someone
+    Tîng-Giān Luā
 }
 \date{\today}
 
@@ -21,12 +21,17 @@
 \maketitle
 
 \begin{abstract}
-This is the paper's abstract \ldots
+% Abstact [draft]
+Numbers are everywhere in our daily lives, and positional numeral systems are
+arguably the most important and common representation of numbers. In this work
+we have constructed a generalized positional numeral system to model many of
+these representations, and investigate some of their properties and relationship
+with the classical unary representation of natural number.
+
+% TODO: say more about that predicate universe stuff
 \end{abstract}
 
 \section{Introduction}
-
-% Numbers are everywhere in our daily lives.
 
 \subsection{What are numbers?}\label{num}
 
@@ -34,6 +39,7 @@ This is the paper's abstract \ldots
 
 \subsection{Positional numeral systems}\label{pos}
 
+% Different bases, different offset, different number of digits
 
 \paragraph{Outline}
 The remainder of the thesis is organized as follows.
@@ -124,17 +130,40 @@ suc x + y = suc (x + y)
 \end{lstlisting}
 
 % {\lstinline|suc zero|} serves as the number "1", {\lstinline|suc (suc zero)|} as "2", and so forth.
-
-We define \begin{_+_} by pattern matching on the first argument, which results
+We define {\lstinline|_+_|} by pattern matching on the first argument, which results
 in two cases: the base case, and the inductive step. We are allowed to make
 recursive calls, as long as the type checker is convinced that the function
 would terminate.
 
-The underlines surrounding \begin{+} act as placeholders for arguments, making
+The underlines surrounding {\lstinline|_+_|} act as placeholders for arguments, making
 it an infix function in this instance.
 
-% Note that the symbol ℕ is not some typographic ligature used to make this thesis
-% look prettier. Unicode symbols are used extensively in Agda
+\paragraph{Dependent functions}
+Up till now everything looks much the same as in Haskell, but as we move on to
+defining something that needs more power of abstraction, dependent types
+come into play.
+
+Take identity functions for example:
+
+\begin{lstlisting}
+identity-Bool : Bool → Bool
+identity-Bool x = x
+
+identity-ℕ : ℕ → ℕ
+identity-ℕ x = x
+\end{lstlisting}
+
+If we want to generalize these two identity functions of different types, those
+types have to be abstracted away.
+
+
+
+\paragraph{With abstraction}
+% views, decidabal predicates
+
+\paragraph{Absurd pattern}
+% Bottom type, contradiction
+
 
 \subsection{Dependently typed programming in Agda}
 
