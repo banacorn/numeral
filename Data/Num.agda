@@ -538,69 +538,73 @@ Nat-toℕ : ∀ {offset} → Nat offset → ℕ
 Nat-toℕ (from offset) = offset
 Nat-toℕ (suc n)       = suc (Nat-toℕ n)
 
-nat-step : ∀ offset
-    → Nat offset
-    → Nat (suc offset)
-nat-step offset (from .offset) = from (suc offset)
-nat-step offset (suc nat)      = suc (nat-step offset nat)
-
-nat-step-toℕ : ∀ offset
-    → (nat : Nat offset)
-    → Nat-toℕ (nat-step offset nat) ≡ suc (Nat-toℕ nat)
-nat-step-toℕ offset (from .offset) = {!   !}
-nat-step-toℕ offset (suc nat) = cong suc (nat-step-toℕ offset nat)
-
 Nat-fromℕ : ∀ offset
     → (n : ℕ)
-    → offset ≤ n
+    → (offset ≤ n)
     → Nat offset
-Nat-fromℕ offset       n       p with cmp offset n
-Nat-fromℕ offset       zero    p | tri< a ¬b ¬c = from offset
-Nat-fromℕ offset       (suc n) p | tri< a ¬b ¬c = suc (Nat-fromℕ offset n (≤-pred a))
-Nat-fromℕ offset       zero    p | tri≈ ¬a b ¬c = from offset
-Nat-fromℕ zero         (suc n) p | tri≈ ¬a () ¬c
-Nat-fromℕ (suc offset) (suc n) p | tri≈ ¬a b ¬c = nat-step offset (Nat-fromℕ offset n (≤-pred p))
-Nat-fromℕ offset       n       p | tri> ¬a ¬b c = contradiction p (<⇒≱ c)
+Nat-fromℕ offset n       p with offset ≟ n
+Nat-fromℕ offset n       p | yes eq = from offset
+Nat-fromℕ offset zero    p | no ¬eq = from offset
+Nat-fromℕ offset (suc n) p | no ¬eq = suc (Nat-fromℕ offset n (≤-pred (≤∧≢⇒< p ¬eq)))
+--
+-- Nat-fromℕ-toℕ : ∀ offset
+--     → (n : ℕ)
+--     → (p : offset ≤ n)
+--     → Nat-toℕ (Nat-fromℕ offset n p) ≡ n
+-- Nat-fromℕ-toℕ offset       n       p with cmp offset n
+-- Nat-fromℕ-toℕ .0           zero  z≤n | tri< a ¬b ¬c = refl
+-- Nat-fromℕ-toℕ offset       (suc n) p | tri< a ¬b ¬c = cong suc (Nat-fromℕ-toℕ offset n (≤-pred a))
+-- Nat-fromℕ-toℕ offset       zero    p | tri≈ ¬a b ¬c = b
+-- Nat-fromℕ-toℕ zero         (suc n) p | tri≈ ¬a () ¬c
+-- Nat-fromℕ-toℕ (suc offset) (suc n) p | tri≈ ¬a b ¬c =
+--     begin
+--         Nat-toℕ (nat-step offset (Nat-fromℕ offset n (≤-pred p)))
+--     ≡⟨ nat-step-toℕ offset (Nat-fromℕ offset n (≤-pred p)) ⟩
+--         suc (Nat-toℕ (Nat-fromℕ offset n (≤-pred p)))
+--     ≡⟨ cong suc (Nat-fromℕ-toℕ offset n (≤-pred p)) ⟩
+--         suc n
+--     ∎
+-- Nat-fromℕ-toℕ offset       n       p | tri> ¬a ¬b c = contradiction p (<⇒≱ c)
 
-Nat-fromℕ-toℕ : ∀ offset
+fromNat : ∀ {b d o}
+    → {cont : True (Continuous? b (suc d) o)}
+    → Nat o
+    → Num b (suc d) o
+fromNat               (from offset) = z ∙
+fromNat {cont = cont} (suc nat)     = 1+ {cont = cont} (fromNat {cont = cont} nat)
+
+
+-- fromNat-nat-step-fromℕ : ∀ offset
+--     → (n : ℕ)
+--     → (p : offset ≤ n)
+--     → fromNat (nat-step offset (Nat-fromℕ offset n p)) ≡ fromNat (suc {!   !})
+-- fromNat-nat-step-fromℕ offset n p = {!   !}
+
+
+toℕ-fromNat : ∀ b d o
+    → (cont : Continuous b (suc d) o)
     → (n : ℕ)
-    → (p : offset ≤ n)
-    → Nat-toℕ (Nat-fromℕ offset n p) ≡ n
-Nat-fromℕ-toℕ offset       n       p with cmp offset n
-Nat-fromℕ-toℕ .0           zero  z≤n | tri< a ¬b ¬c = refl
-Nat-fromℕ-toℕ offset       (suc n) p | tri< a ¬b ¬c = cong suc (Nat-fromℕ-toℕ offset n (≤-pred a))
-Nat-fromℕ-toℕ offset       zero    p | tri≈ ¬a b ¬c = b
-Nat-fromℕ-toℕ zero         (suc n) p | tri≈ ¬a () ¬c
-Nat-fromℕ-toℕ (suc offset) (suc n) p | tri≈ ¬a b ¬c =
+    → (p : o ≤ n)
+    → ⟦ fromNat {b} {d} {o} {cont = fromWitness cont} (Nat-fromℕ o n p) ⟧ ≡ n
+toℕ-fromNat b d o cont n       p with o ≟ n
+toℕ-fromNat b d o cont n       p | yes eq = cong (_+_ zero) eq
+toℕ-fromNat b d .0 cont zero z≤n | no ¬eq = refl
+toℕ-fromNat b d o cont (suc n) p | no ¬eq =
     begin
-        Nat-toℕ (nat-step offset (Nat-fromℕ offset n (≤-pred p)))
-    ≡⟨ nat-step-toℕ offset (Nat-fromℕ offset n (≤-pred p)) ⟩
-        suc (Nat-toℕ (Nat-fromℕ offset n (≤-pred p)))
-    ≡⟨ cong suc (Nat-fromℕ-toℕ offset n (≤-pred p)) ⟩
+        ⟦ 1+ {b} {cont = fromWitness cont} (fromNat (Nat-fromℕ o n (≤-pred (≤∧≢⇒< p ¬eq)))) ⟧
+    ≡⟨ 1+-toℕ {b} (fromNat {cont = fromWitness cont} (Nat-fromℕ o n (≤-pred (≤∧≢⇒< p ¬eq)))) ⟩
+        suc ⟦ fromNat {cont = fromWitness cont} (Nat-fromℕ o n (≤-pred (≤∧≢⇒< p ¬eq))) ⟧
+    ≡⟨ cong suc (toℕ-fromNat b d o cont n (≤-pred (≤∧≢⇒< p ¬eq))) ⟩
         suc n
     ∎
-Nat-fromℕ-toℕ offset       n       p | tri> ¬a ¬b c = contradiction p (<⇒≱ c)
--- data ℕ≥ : ℕ → Set where
---     zero = :
+    -- begin
+    --     ⟦ 1+ {cont = cont} (fromNat (Nat-fromℕ o n (≤-pred (≤∧≢⇒< p ¬eq)))) ⟧
+    -- ≡⟨ 1+-toℕ (fromNat {cont = cont} (Nat-fromℕ o n (≤-pred (≤∧≢⇒< p ¬eq)))) ⟩
+    --     suc ⟦ fromNat {cont = cont} (Nat-fromℕ o n (≤-pred (≤∧≢⇒< p ¬eq))) ⟧
+    -- ≡⟨ cong suc (toℕ-fromNat b d o cont n (≤-pred (≤∧≢⇒< p ¬eq))) ⟩
+    --     suc n
+    -- ∎
 
--- Nat-toℕ-fromℕ offset       n       p with cmp offset (Nat-toℕ n)
--- Nat-toℕ-fromℕ offset n p | tri< a ¬b ¬c = {!   !}
--- Nat-toℕ-fromℕ offset n p | tri≈ ¬a b ¬c = {!   !}
--- Nat-toℕ-fromℕ offset n p | tri> ¬a ¬b c = {!   !}
-
-
--- fromNat : ∀ {b d o}
---     → {cont : True (Continuous? b (suc d) o)}
---     → Nat o
---     → Num b (suc d) o
--- fromNat               (from offset) = z ∙
--- fromNat {cont = cont} (suc nat)     = 1+ {cont = cont} (fromNat {cont = cont} nat)
---
--- toℕ-fromNat : ∀ b d o
---     → (cont : True (Continuous? b (suc d) o))
---     → (n : ℕ)
---     → (p : o ≤ n)
---     → ⟦ fromNat {cont = cont} (Nat-fromℕ o n p) ⟧ ≡ n + o
 -- toℕ-fromNat b d o cont n p with cmp o n
 -- toℕ-fromNat b d o cont zero    p | tri< a ¬b ¬c = refl
 -- toℕ-fromNat b d o cont (suc n) p | tri< a ¬b ¬c =
@@ -612,7 +616,19 @@ Nat-fromℕ-toℕ offset       n       p | tri> ¬a ¬b c = contradiction p (<�
 --         suc n + o
 --     ∎
 -- toℕ-fromNat b d o cont zero    p | tri≈ ¬a b' ¬c = refl
--- toℕ-fromNat b d o cont (suc n) p | tri≈ ¬a b' ¬c = {!   !}
+-- toℕ-fromNat b d zero cont (suc n) p | tri≈ ¬a () ¬c
+-- toℕ-fromNat b d (suc o) cont (suc n) p | tri≈ ¬a b' ¬c =
+--     begin
+--         ⟦ fromNat ? ⟧
+--     ≡⟨ {!   !} ⟩
+--         {!   !}
+--     ≡⟨ {!   !} ⟩
+--         {!   !}
+--     ≡⟨ {!   !} ⟩
+--         {!   !}
+--     ≡⟨ {!   !} ⟩
+--         suc n + suc o
+--     ∎
 -- toℕ-fromNat b d o cont n       p | tri> ¬a ¬b  c = contradiction p (<⇒≱ c)
 
 -- -- a partial function that only maps ℕ to Continuous Nums
