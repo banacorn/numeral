@@ -9,6 +9,7 @@
 
 % for unicode symbols
 \usepackage{fontspec}
+\setmonofont{DejaVu Sans Mono}
 
 % for CJK
 \usepackage{xeCJK}
@@ -46,6 +47,7 @@ The remainder of the thesis is organized as follows.
 % Section~\ref{agda} gives account of previous work.
 
 \section{A gental introduction to dependently typed programming in Agda}\label{agda}
+% [draft]
 
 There are already plenty of tutorials and introductions of Agda\cite{norell2009dependently}\cite{FLOLAC16DTP}\cite{brutal}.
 We will nonetheless compile a simple and self-contained tutorial from the materials cited above, covering the part (and only the part) we need in this work.
@@ -57,7 +59,7 @@ We assume that all readers have some basic understanding of Haskell, and those
 who are familiar with Agda and dependently typed programming may skip this chapter.
 
 \subsection{Some basics}
-
+% [draft]
 Agda is a dependently typed functional programming language based on \textbf{Martin-Löf type theory} \cite{martin1984intuitionistic}.
 The first version of Agda was originally developed by Catarina Coquand at Chalmers University of Technology, the current version (Agda2) is a completely rewrite by Ulf Norell during his PhD at Chalmers.
 
@@ -67,13 +69,13 @@ The first version of Agda was originally developed by Catarina Coquand at Chalme
 % in Agda is almost the same as in Haskell.
 
 \paragraph{In the beginning there was nothing}
-
+% [draft]
 Unlike in other programming languages, there are no "built-in"
 datatypes such as \textit{Int}, \textit{String}, or \textit{Bool}.
 The reason is that they can all be created out of thin air, so why bother?
 
 \paragraph{Let there be datatype}
-
+% [draft]
 Datatypes are introduced with {\lstinline|data|} declarations. Here is a classical example, the type of booleans.
 
 \begin{lstlisting}
@@ -93,7 +95,7 @@ of {\lstinline|Set|}, and so on. They form a hierarchy of types.}
 \end{enumerate}
 
 \paragraph{Pattern matching}
-
+% [draft]
 Similar to Haskell, datatypes are eliminated with pattern matching.
 
 Here's a function that pattern matches on {\lstinline|Bool|}.
@@ -114,7 +116,7 @@ not true  = false
 \end{lstlisting}
 
 \paragraph{Inductive datatype} Let's move on to a more interesting datatype with inductive definition. Here's the type of natural numbers.
-
+% [draft]
 \begin{lstlisting}
 data ℕ : Set where
     zero : ℕ
@@ -138,28 +140,112 @@ would terminate.
 The underlines surrounding {\lstinline|_+_|} act as placeholders for arguments, making
 it an infix function in this instance.
 
-\paragraph{Dependent functions}
-Up till now everything looks much the same as in Haskell, but as we move on to
-defining something that needs more power of abstraction, dependent types
-come into play.
-
-Take identity functions for example:
+\paragraph{Dependent functions and type arguments}
+% [draft]
+Up till now everything looks much the same as in Haskell, but problem arises as
+we move on to defining something such as identity functions.
 
 \begin{lstlisting}
-identity-Bool : Bool → Bool
-identity-Bool x = x
+id-Bool : Bool → Bool
+id-Bool x = x
 
-identity-ℕ : ℕ → ℕ
-identity-ℕ x = x
+id-ℕ : ℕ → ℕ
+id-ℕ x = x
 \end{lstlisting}
 
-If we want to generalize these two identity functions of different types, those
-types have to be abstracted away.
+To generalize identity functions, those concrete types have to be abstracted
+away. That is, we need polymorphism, and this is where dependent types come into
+play.
+
+A dependent type is a type whose definition may depend on a value. A dependent
+function is a function whose result type may depend on the value of an argument.
+
+In Agda, function types are denoted as:
+\begin{lstlisting}
+A → B
+\end{lstlisting}
+where {\lstinline|A|} is the type of domain and {\lstinline|B|} is the type of
+codomain. To make {\lstinline|B|} dependent on the value of {\lstinline|A|}, the
+value has to \textit{named} as such:
+
+\begin{lstlisting}
+(x : A) → B x
+\end{lstlisting}
+
+In fact, {\lstinline|A → B|} is just a syntax sugar for {\lstinline|(_ : A) → B|}
+with the names being irrelevant, the underline {\lstinline|_|} here means "don't care"
+
+In this instance, if {\lstinline|A|} happens to be {\lstinline|Set|}, the type
+of all small types, and the result type happens to be solely {\lstinline|x|}:
+
+\begin{lstlisting}
+(x : Set) → x
+\end{lstlisting}
+
+Voila, we have polymorphism. The identity function can now be defined as
+
+\begin{lstlisting}
+id : (A : Set) → A → A
+id A x = x
+\end{lstlisting}
+
+{\lstinline|id|} now takes an extra argument, the type of the second arguement.
+{\lstinline|id Bool true|} evaluates to {\lstinline|true|}
+
+\paragraph{Implicit arguments}
+
+We have implemented an identity function and saw how polymorphism can be modeled
+with dependent types. However, the extra argument that the identity function
+takes is actually unnecessary, since it can always be inferred by the type
+checker by looking at the type of the second arguement.
+
+Fortunately, Agda supports \textit{implicit arguments}, an syntax sugar which
+allows us to hide some of the arguments, both when the function is defined and
+when it is applied.
+
+\begin{lstlisting}
+id : {A : Set} → A → A
+id x = x
+\end{lstlisting}
+
+Any arguments can be made implicit, but it doesn't imply that values of
+implicit arguments can always be derived and recovered from other informations.
+But they can be referenced or applied explicitly when neccesarily.
+
+\begin{lstlisting}
+id : {A : Set} → A → A
+id {A} x = x
+\end{lstlisting}
+
+\begin{lstlisting}
+id-Bool = id {Bool}
+\end{lstlisting}
+
+We could skip arrows between arguments in parentheses or braces:
+
+\begin{lstlisting}
+id : {A : Set} (a : A) → A
+id {A} x = x
+\end{lstlisting}
+
+And there is a shorthand for merging names of arguments of the same type:
+
+\begin{lstlisting}
+const : {A B : Set} → A → B → A
+const a _ = a
+\end{lstlisting}
+
+\paragraph{\texttt{∀}-Quantification}
+
+There's another syntax sugar for type expressions. When the type of some value
+can be inferred, we could replace {\lstinline|(A : _)|} with {\lstinline|∀ A|} and
+ {\lstinline|{A : _}|} with {\lstinline|∀ {A}|}.
 
 
 
 \paragraph{With abstraction}
 % views, decidabal predicates
+% list
 
 \paragraph{Absurd pattern}
 % Bottom type, contradiction
