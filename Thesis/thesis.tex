@@ -141,9 +141,10 @@ The underlines surrounding {\lstinline|_+_|} act as placeholders for arguments, 
 it an infix function in this instance.
 
 \paragraph{Dependent functions and type arguments}
-% [draft]
+% [reviewed: 1]
 Up till now everything looks much the same as in Haskell, but problem arises as
-we move on to defining something such as identity functions.
+we move on to defining something that needs more power of abstract. Take identity
+functions for example:
 
 \begin{lstlisting}
 id-Bool : Bool → Bool
@@ -153,27 +154,30 @@ id-ℕ : ℕ → ℕ
 id-ℕ x = x
 \end{lstlisting}
 
-To generalize identity functions, those concrete types have to be abstracted
-away. That is, we need polymorphism, and this is where dependent types come into
-play.
+In order to define a more general identity function, those concrete types have
+to be abstracted away. That is, we need parametric polymorphism, and this is
+where dependent types come into play.
 
 A dependent type is a type whose definition may depend on a value. A dependent
 function is a function whose result type may depend on the value of an argument.
 
 In Agda, function types are denoted as:
+
 \begin{lstlisting}
 A → B
 \end{lstlisting}
-where {\lstinline|A|} is the type of domain and {\lstinline|B|} is the type of
+
+Where {\lstinline|A|} is the type of domain and {\lstinline|B|} is the type of
 codomain. To make {\lstinline|B|} dependent on the value of {\lstinline|A|}, the
-value has to \textit{named} as such:
+value has to \textit{named}, in Agda we write:
 
 \begin{lstlisting}
 (x : A) → B x
 \end{lstlisting}
 
-In fact, {\lstinline|A → B|} is just a syntax sugar for {\lstinline|(_ : A) → B|}
-with the names being irrelevant, the underline {\lstinline|_|} here means "don't care"
+As a matter of fact, {\lstinline|A → B|} is just a syntax sugar for {\lstinline|(_ : A) → B|}
+with the name of the value being irrelevant. The underline {\lstinline|_|} here
+means "I don't bother naming it".
 
 In this instance, if {\lstinline|A|} happens to be {\lstinline|Set|}, the type
 of all small types, and the result type happens to be solely {\lstinline|x|}:
@@ -182,7 +186,7 @@ of all small types, and the result type happens to be solely {\lstinline|x|}:
 (x : Set) → x
 \end{lstlisting}
 
-Voila, we have polymorphism. The identity function can now be defined as
+Voila, we have polymorphism. And thus the identity function can now be defined as:
 
 \begin{lstlisting}
 id : (A : Set) → A → A
@@ -193,34 +197,49 @@ id A x = x
 {\lstinline|id Bool true|} evaluates to {\lstinline|true|}
 
 \paragraph{Implicit arguments}
+% [reviewed: 1]
 
 We have implemented an identity function and saw how polymorphism can be modeled
 with dependent types. However, the extra argument that the identity function
-takes is actually unnecessary, since it can always be inferred by the type
-checker by looking at the type of the second arguement.
+takes is rather unnecessary, since its value can always be determined by looking
+at the type of the second arguement.
 
-Fortunately, Agda supports \textit{implicit arguments}, an syntax sugar which
-allows us to hide some of the arguments, both when the function is defined and
-when it is applied.
+Fortunately, Agda supports \textit{implicit arguments}, a syntax sugar that could
+save us the trouble of having to spell them out. Implicit arguments are enclosed
+in curly brackets in the type expression. We can dispense with these arguments
+when their values are irrelevant to the definition.
 
 \begin{lstlisting}
 id : {A : Set} → A → A
 id x = x
 \end{lstlisting}
 
+Or when the type checker can figure them out when being applied.
+
+\begin{lstlisting}
+val : Bool
+val = id true
+\end{lstlisting}
+
 Any arguments can be made implicit, but it doesn't imply that values of
-implicit arguments can always be derived and recovered from other informations.
-But they can be referenced or applied explicitly when neccesarily.
+implicit arguments can always be inferred or derived from context. We can always
+make them implicit arguments explicit when being applying:
 
 \begin{lstlisting}
-id : {A : Set} → A → A
-id {A} x = x
+val : Bool
+val = id {Bool} true
 \end{lstlisting}
+
+Or when they are relevant to the definition:
 
 \begin{lstlisting}
-id-Bool = id {Bool}
+silly-not : {_ : Bool} → Bool
+silly-not {true}  = false
+silly-not {false} = true
 \end{lstlisting}
 
+\paragraph{More syntax sugars}
+% [draft]
 We could skip arrows between arguments in parentheses or braces:
 
 \begin{lstlisting}
@@ -228,19 +247,19 @@ id : {A : Set} (a : A) → A
 id {A} x = x
 \end{lstlisting}
 
-And there is a shorthand for merging names of arguments of the same type:
+And there is a shorthand for merging names of arguments of the same type, implicit or not:
 
 \begin{lstlisting}
 const : {A B : Set} → A → B → A
 const a _ = a
 \end{lstlisting}
 
-\paragraph{\texttt{∀}-Quantification}
+Sometimes when the type of some value can be inferred, we could either replace
+the type with an underscore, say {\lstinline|(A : _)|}, or we could write it as
+{\lstinline|∀ A|}. For the implicit counterpart, {\lstinline|{A : _}|} can be
+written as {\lstinline|∀ {A}|}.
 
-There's another syntax sugar for type expressions. When the type of some value
-can be inferred, we could replace {\lstinline|(A : _)|} with {\lstinline|∀ A|} and
- {\lstinline|{A : _}|} with {\lstinline|∀ {A}|}.
-
+\paragraph{Datatype families}
 
 
 \paragraph{With abstraction}
