@@ -309,7 +309,7 @@ data Vec (A : Set) : ℕ → Set where
 \end{lstlisting}
 
 {\lstinline|Vec A n|} is a vector of values of type {\lstinline|A|} and
-has the length of n. Some of the inhabitants:
+has the length of n. Here are some of the inhabitants:
 
 \begin{lstlisting}
 nil : Vec Bool zero
@@ -319,10 +319,35 @@ v : Vec Bool (suc (suc zero))
 v = true ∷ false ∷ []
 \end{lstlisting}
 
+We say that {\lstinline|Vec|} is \textit{parameterized} by a type of {\lstinline|Set|}
+and is \textit{indexed} by values of {\lstinline|ℕ|}. But it's not obvious how indices are
+different from parameters.
 
+Parameters are \textit{parametric} (no pun intended), in the sense that, they
+have no effect on the "shape" of a datatype. The choice of parameters only effects
+which kind of values are placed there. Pattern matching on parameters won't reveal
+anything useful about their whereabouts. Because they are \textit{uniform} across
+all constructors, you can always replace the value of an parameter with another one
+of the same type.
 
- {\lstinline|Vec|} is parameterized by a type of {\lstinline|Set|}
-and is indexed by values of {\lstinline|ℕ|}.
+On the other hand, indices may affect which inhabitants are allowed in the
+datatype. Different constructors may have different index. In that case, pattern
+matching on indices may yield important information about their constructors.
+
+For example, if there's term whose type is {\lstinline|Vec Bool zero|}, then
+we certainly know that the constructor must be {\lstinline|[]|}, and if it's
+{\lstinline|Vec Bool (suc n)|} for some {\lstinline|n|}, then the constructor
+must be {\lstinline|_∷_|}.
+
+Then we could for instance define a {\lstinline|head|} function that cannot crash.
+
+\begin{lstlisting}
+head : ∀ {A n} → Vec A (suc n) → A
+head (x ∷ xs) = x
+\end{lstlisting}
+
+Note that parameters could be thought as a degenerate case of indices whose distribution
+of values are uniform across all constructors.
 
 \paragraph{With abstraction}
 % views, decidabal predicates
