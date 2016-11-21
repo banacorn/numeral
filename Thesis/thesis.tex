@@ -296,7 +296,6 @@ as long as it is of type {\lstinline|Set|}.
 \paragraph{Indexed Datatypes}
 % [draft]
 
-
 % Indexed datatypes, or inductive families, allow us to not only
 Let's look at something more interesting, a datatype that is similar to
 {\lstinline|List|}, but more powerful, in that it can tell you not only the type
@@ -350,10 +349,56 @@ Note that parameters could be thought as a degenerate case of indices whose dist
 of values are uniform across all constructors.
 
 \paragraph{With abstraction}
-% views, decidabal predicates
-% list
+% [draft]
 
-\paragraph{Absurd pattern}
+Say, we want to define {\lstinline|filter|} on {\lstinline|List|}:
+
+\begin{lstlisting}
+filter : ∀ {A} → (A → Bool) → List A → List A
+filter p [] = []
+filter p (x ∷ xs) = ?
+\end{lstlisting}
+
+We are stuck here, because the result of {\lstinline|p x|} is only available in
+runtime. Fortunately, with abstraction allows us to pattern match on on the result
+of an intermediate computation by adding the result as an extra argument on the
+left-hand side:
+
+\begin{lstlisting}
+filter : ∀ {A} → (A → Bool) → List A → List A
+filter p [] = []
+filter p (x ∷ xs) with f x
+filter p (x ∷ xs) | true  = x ∷ filter p xs
+filter p (x ∷ xs) | false = filter p xs
+\end{lstlisting}
+
+\paragraph{Absurd patterns}
+% [draft]
+
+There are two special types, the \textit{unit type} and the \textit{bottom type},
+denoted as {\lstinline|⊤|} and {\lstinline|⊥|}, which as 1 and 0 values respectively.
+
+\begin{lstlisting}
+data ⊤ : Set where
+    tt : ⊤
+
+data ⊥ : Set where
+\end{lstlisting}
+
+Where {\lstinline|⊤|} has only a value, {\lstinline|tt|}, and {\lstinline|⊥|} has none.
+
+These types may seem useless, and without constructors, it is impossible to
+construct an element of {\lstinline|⊥|}. What is an type that can not be
+constructed good for?
+
+Say, we want to define a {\lstinline|head|} that won't crash on {\lstinline|List|}.
+But unlike on {\lstinline|Vec|}, without indices, we need other means of guaranteeing
+that the list is not empty. Functions 
+
+\begin{lstlisting}
+null : ∀ {A} → List A → Bool
+null
+\end{lstlisting}
 % Bottom type, contradiction
 
 

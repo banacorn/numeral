@@ -1,47 +1,60 @@
 module Sandbox.Dev where
 
-open import Data.Num.Core
-open import Data.Num.Bounded
-open import Data.Num.Maximum
-open import Data.Num.Next
-open import Data.Num.Increment
-open import Data.Num.Continuous
+-- open import Data.Num.Core
+-- open import Data.Num.Bounded
+-- open import Data.Num.Maximum
+-- open import Data.Num.Next
+-- open import Data.Num.Increment
+-- open import Data.Num.Continuous
+--
+-- open import Data.Nat
+-- open import Data.Nat.Properties
+-- open import Data.Nat.Properties.Simple
+-- open import Data.Nat.Properties.Extra
+-- open import Data.Nat.DM
+--
+-- open import Data.Fin as Fin
+--     using (Fin; fromℕ≤; inject≤)
+--     renaming (zero to z; suc to s)
+--
+-- open import Data.Fin.Properties using (toℕ-fromℕ≤; bounded)
+-- open import Data.Product
+-- open import Data.Empty using (⊥)
+-- open import Data.Unit using (⊤; tt)
+--
+-- open import Function
+-- open import Relation.Nullary.Decidable
+-- open import Relation.Nullary
+-- open import Relation.Nullary.Negation
+-- open import Relation.Binary
+-- open import Relation.Binary.PropositionalEquality
+--
+-- open ≡-Reasoning
+-- open ≤-Reasoning renaming (begin_ to start_; _∎ to _□; _≡⟨_⟩_ to _≈⟨_⟩_)
+-- open DecTotalOrder decTotalOrder using (reflexive) renaming (refl to ≤-refl)
 
-open import Data.Nat
-open import Data.Nat.Properties
-open import Data.Nat.Properties.Simple
-open import Data.Nat.Properties.Extra
-open import Data.Nat.DM
+-- data List (A : Set) : Set where
+--     [] : List A
+--     _∷_ : ∀ {n} → A → List A → List A
+--
+-- data Vec (A : Set) : ℕ → Set where
+--     [] : Vec A 0
+--     _∷_ : ∀ {n} → A → Vec A n → Vec A (suc n)
+--
+-- open import Data.Bool
+--
+-- null : ∀ {A n} → Vec A n → Bool
+-- null [] = true
+-- null (x ∷ xs) = false
+--
+-- head : ∀ {A n} → Vec A (suc n) → A
+-- head (x ∷ xs) = x
+--
+-- filter : ∀ {A} → (A → Bool) → List A → List A
+-- filter f [] = []
+-- filter f (x ∷ xs) = {!   !}
 
-open import Data.Fin as Fin
-    using (Fin; fromℕ≤; inject≤)
-    renaming (zero to z; suc to s)
+data ⊤ : Set where
+    tt : ⊤
 
-open import Data.Fin.Properties using (toℕ-fromℕ≤; bounded)
-open import Data.Product
-open import Data.Empty using (⊥)
-open import Data.Unit using (⊤; tt)
-
-open import Function
-open import Relation.Nullary.Decidable
-open import Relation.Nullary
-open import Relation.Nullary.Negation
-open import Relation.Binary
-open import Relation.Binary.PropositionalEquality
-
-open ≡-Reasoning
-open ≤-Reasoning renaming (begin_ to start_; _∎ to _□; _≡⟨_⟩_ to _≈⟨_⟩_)
-open DecTotalOrder decTotalOrder using (reflexive) renaming (refl to ≤-refl)
-
-data Vec (A : Set) : ℕ → Set where
-    [] : Vec A 0
-    _∷_ : ∀ {n} → A → Vec A n → Vec A (suc n)
-
-open import Data.Bool
-
-null : ∀ {A n} → Vec A n → Bool
-null [] = true
-null (x ∷ xs) = false
-
-head : ∀ {A n} → Vec A (suc n) → A
-head (x ∷ xs) = x
+data ⊥ : Set where
