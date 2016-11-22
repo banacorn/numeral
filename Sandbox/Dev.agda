@@ -35,8 +35,8 @@ module Sandbox.Dev where
 
 -- data List (A : Set) : Set where
 --     [] : List A
---     _∷_ : ∀ {n} → A → List A → List A
---
+--     _∷_ : A → List A → List A
+
 -- data Vec (A : Set) : ℕ → Set where
 --     [] : Vec A 0
 --     _∷_ : ∀ {n} → A → Vec A n → Vec A (suc n)
@@ -53,8 +53,24 @@ module Sandbox.Dev where
 -- filter : ∀ {A} → (A → Bool) → List A → List A
 -- filter f [] = []
 -- filter f (x ∷ xs) = {!   !}
+--
+-- data ⊤ : Set where
+--     tt : ⊤
+--
+-- data ⊥ : Set where
+--
+-- non-empty : ∀ {A} → List A → Set
+-- non-empty []       = ⊥
+-- non-empty (x ∷ xs) = ⊤
+--
+-- head : ∀ {A} → (xs : List A) → non-empty xs → A
+-- head []       proof = {!   !}
+-- head (x ∷ xs) proof = {!   !}
 
-data ⊤ : Set where
-    tt : ⊤
+data Bool : Set where
+    False   : Bool
+    True    : Bool
 
-data ⊥ : Set where
+¬_ : Bool → Bool
+¬ True  = {!   !}
+¬ False = {!   !}

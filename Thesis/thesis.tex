@@ -59,7 +59,8 @@ The remainder of the thesis is organized as follows.
 % [draft]
 
 There are already plenty of tutorials and introductions of Agda\cite{norell2009dependently}\cite{FLOLAC16DTP}\cite{brutal}.
-We will nonetheless compile a simple and self-contained tutorial from the materials cited above, covering the part (and only the part) we need in this work.
+We will nonetheless compile a simple and self-contained tutorial from the
+materials cited above, covering the part (and only the part) we need in this work.
 
 Some of the more advenced constructions (such as views and universes) used in
 the following sections will be introduced along the way.
@@ -69,13 +70,45 @@ who are familiar with Agda and dependently typed programming may skip this chapt
 
 \subsection{Some basics}
 % [draft]
-Agda is a dependently typed functional programming language based on \textbf{Martin-Löf type theory} \cite{martin1984intuitionistic}.
-The first version of Agda was originally developed by Catarina Coquand at Chalmers University of Technology, the current version (Agda2) is a completely rewrite by Ulf Norell during his PhD at Chalmers.
+Agda is a dependently typed functional programming language based on
+\textbf{Martin-Löf type theory} \cite{martin1984intuitionistic}.
+The first version of Agda was originally developed by Catarina Coquand at Chalmers
+University of Technology, the current version (Agda2) is a completely rewrite by
+Ulf Norell during his PhD at Chalmers.
+
+Agda is also an interactive theorem prover. Because proving theorems involves a
+lot of conversations between the programmer and the type checker. Just like programming,
+the process is incremental. It is difficult, if not impossible, to develop and
+prove a theorom at one stroke. Agda allows us to leave some "holes" in a
+program, refine them gradually, and complete your proofs "hole by hole".
+
+Take this unfininshed function definition for instance, we could leave out the
+right-hand side.
+
+\begin{lstlisting}
+is-zero : Int → Bool
+is-zero x = ?
+\end{lstlisting}
+
+In practice, we may ask, for example, "what's the type of the goal?",
+ "what's the context of this case?", etc. And Agda would reply us with:
+
+\begin{lstlisting}
+GOAL : Bool
+x : Int
+\end{lstlisting}
+
+Then we might ask Agda to pattern match on {\lstinline|x|} and rewrite the program for us:
+
+\begin{lstlisting}
+is-zero : Int → Bool
+is-zero zero    = ?
+is-zero (suc x) = ?
+\end{lstlisting}
+
+This is basically what pragramming and proving things looks like in Agda.
 
 \subsection{Simply typed programming in Agda}
-
-% Since Agda's syntax is heavily influenced by Haskell, simply typed programming
-% in Agda is almost the same as in Haskell.
 
 \paragraph{In the beginning there was nothing}
 % [draft]
@@ -391,14 +424,38 @@ These types may seem useless, and without constructors, it is impossible to
 construct an element of {\lstinline|⊥|}. What is an type that can not be
 constructed good for?
 
-Say, we want to define a {\lstinline|head|} that won't crash on {\lstinline|List|}.
-But unlike on {\lstinline|Vec|}, without indices, we need other means of guaranteeing
-that the list is not empty. Functions 
+Say, we want to define a {\lstinline|head|} on {\lstinline|List|} that is
+statically checked and won't crash on any inputs. So we need to make sure that
+all inputs are not empty. But unlike on {\lstinline|Vec|}, without indices, we
+need other means of guaranteeing that the list is not empty. Naturally we would
+come up with a predicate like this:
 
 \begin{lstlisting}
-null : ∀ {A} → List A → Bool
-null
+non-empty : ∀ {A} → List A → Bool
+non-empty []       = false
+non-empty (x ∷ xs) = true
 \end{lstlisting}
+
+The problem is that we can only know if a list is null in runtime. However, with
+ {\lstinline|⊤|} and {\lstinline|⊥|}, we could instead define a predicate like this:
+
+\begin{lstlisting}
+non-empty : ∀ {A} → List A → Set
+non-empty []       = ⊥
+non-empty (x ∷ xs) = ⊤
+\end{lstlisting}
+
+Notice that now this function is returning a type. Now {\lstinline|head|} can be
+defined as:
+
+\begin{lstlisting}
+head : ∀ {A} → (xs : List A) → non-empty xs → A
+head []       proof = ?0
+head (x ∷ xs) proof = ?1
+\end{lstlisting}
+
+
+
 % Bottom type, contradiction
 
 
