@@ -38,18 +38,62 @@ we have constructed a generalized positional numeral system to model many of
 these representations, and investigate some of their properties and relationship
 with the classical unary representation of natural number.
 
-% TODO: say more about that predicate universe stuff
+% TODO: maybe say more about that predicate universe stuff
 \end{abstract}
 
 \section{Introduction}
 
-\subsection{What are numbers?}\label{num}
+\subsection{Numbers}\label{num}
+% [draft]
 
-% Argue that what makes certain entity numbers from a structuralist perspective.
+% The \textit{numbers} we will be constructing in this work are the \textit{natural numbers}.
+% And before
 
-\subsection{Positional numeral systems}\label{pos}
 
-% Different bases, different offset, different number of digits
+% The \textit{numbers} we are constructing in this work are the \textit{natural numbers}.
+% We learned how to count with these numbers when we are little. But what are numbers, really?
+
+% \paragraph{Recursive}
+
+% Paul Benacerraf once argued\cite{benacerraf1965numbers} that, there are two kinds
+% of \textit{counting} which corresponds to \textbf{transitive} and \textbf{intransitive}
+% uses of the verb "to count". Transitive counting, in his sense, is to assign one
+% of the numbers to the cardinality of a set, by establish a one-to-one correspondence
+% between the numbers and the objects one is counting, all the way from none to
+% all. Intransitive counting on the other hands, is to generate a sequence of
+% notation, that could go as far as we need. And it seems that one can only learn
+% how to count intransitively first, before knowning how to count transitively,
+% but not vice versa.
+%
+% He further discussed that the numbers must be at least recursive
+
+% \paragraph{Numbers are recursive}
+%
+% \paragraph{Internal definition is immaterial}
+
+% \subsection{Positional numeral systems}\label{pos}
+%
+% A numeral system is a writing system for expressing numbers, and humans have
+% invented various kinds of numeral systems throughout history. Most of the
+% systems we are using today are positional notations because they can express
+% \textbf{infinite} numbers with just a \textbf{finite} set of symbols.
+%
+% While the most ubiquitous positional notation used in our daily lives is the
+% base-10 (decimal) system, and binary (base-2) numbers can be found in almost all
+% digital circuits. Some computer scientists and mathematicians seem to be more
+% comfortable with unary (base-1) numbers, which is no harder than counting pebbles.
+%
+% Natural numbers (à la Peano) are defined in a way that is isomorphic to unary
+% numbers. Statements established on such numbers can be proven using mathematical
+% induction, an essential proving technique.
+% %  which can then be generalized to all
+% % kinds of well-founded structures, known as structural induction.
+%
+% People have implemented and proven a great deal of functions and properties on
+% these unary numbers because they are easy to work with. But the simplicity comes
+% at a cost, the time complexity of functions defined on unary numbers is significantly
+% higher than those defined on systems of other bases, say, binary numbers. Hence,
+% it's not practical in doing heavy calculations.
 
 \paragraph{Outline}
 The remainder of the thesis is organized as follows.
@@ -454,15 +498,22 @@ head []       proof = ?0
 head (x ∷ xs) proof = ?1
 \end{lstlisting}
 
-
-
-% Bottom type, contradiction
-
-
-\subsection{Dependently typed programming in Agda}
-
-
 \section{Num : a representation for positional numeral systems}\label{representation}
+% [draft]
+
+% \subsection{Time complexity}
+
+\subsection{Digits}
+
+Numbers in positional numeral systems are composed of a series of symbols
+so-called \textbf{digits}. A system can only have \textbf{finitely many} digits.
+Operations on these digits, such as addition, must be \textbf{constant time}.
+Notice that the problem size of time complexity we are discussing here refers
+only to the value of a number. And since the number of digits is independent of
+the value of a number, time complexity of functions on digits should be trivially
+constant.
+% In fact, since there are only a finite number of digits,
+
 
 \subsection{Bases}
 \subsection{Offsets}
