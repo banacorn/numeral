@@ -7,13 +7,13 @@ module Sandbox.Dev where
 -- open import Data.Num.Increment
 -- open import Data.Num.Continuous
 --
--- open import Data.Nat
+open import Data.Nat
 -- open import Data.Nat.Properties
 -- open import Data.Nat.Properties.Simple
 -- open import Data.Nat.Properties.Extra
 -- open import Data.Nat.DM
 --
--- open import Data.Fin as Fin
+open import Data.Fin
 --     using (Fin; fromℕ≤; inject≤)
 --     renaming (zero to z; suc to s)
 --
@@ -74,3 +74,11 @@ data Bool : Set where
 ¬_ : Bool → Bool
 ¬ True  = {!   !}
 ¬ False = {!   !}
+
+two : Fin 3
+two = suc zero₂
+    where   zero₂ : Fin 2
+            zero₂ = zero
+
+z : Fin 3
+z = zero

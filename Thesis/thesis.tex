@@ -5,7 +5,7 @@
 }
 \date{\today}
 
-\documentclass[12pt, a4paper]{article}
+\documentclass[14pt, a4paper]{article}
 
 % for unicode symbols
 \usepackage{fontspec}
@@ -60,7 +60,7 @@ with the classical unary representation of natural number.
 % uses of the verb "to count". Transitive counting, in his sense, is to assign one
 % of the numbers to the cardinality of a set, by establish a one-to-one correspondence
 % between the numbers and the objects one is counting, all the way from none to
-% all. Intransitive counting on the other hands, is to generate a sequence of
+% all. Intransitive counting, on the other hand, is to generate a sequence of
 % notation, that could go as far as we need. And it seems that one can only learn
 % how to count intransitively first, before knowning how to count transitively,
 % but not vice versa.
@@ -504,6 +504,7 @@ head (x ∷ xs) proof = ?1
 % \subsection{Time complexity}
 
 \subsection{Digits}
+% [draft]
 
 Numbers in positional numeral systems are composed of a series of symbols
 so-called \textbf{digits}. A system can only have \textbf{finitely many} digits.
@@ -512,6 +513,60 @@ Notice that the problem size of time complexity we are discussing here refers
 only to the value of a number. And since the number of digits is independent of
 the value of a number, time complexity of functions on digits should be trivially
 constant.
+
+\paragraph{Fin}
+To represent a digit, we use a datatype that is conventionally called \textit{Fin}
+which can be indexed to have some exact number of inhabitants.
+
+\begin{lstlisting}
+data Fin : ℕ → Set where
+    zero : {n : ℕ} → Fin (suc n)
+    suc  : {n : ℕ} (i : Fin n) → Fin (suc n)
+\end{lstlisting}
+
+The definition of {\lstinline|Fin|} looks the same as {\lstinline|ℕ|} on the term
+level, but different on the type level. The index of a {\lstinline|Fin|} increases
+with every {\lstinline|suc|}, and there can only be at most {\lstinline|n|} of
+them before reaching {\lstinline|Fin (suc n)|}. In other words, {\lstinline|Fin n|}
+has exactly \textit{n} inhabitants.
+
+Our digits are simply {\lstinline|Fin|}.
+
+\begin{lstlisting}
+Digit : ℕ → Set
+Digit = Fin
+\end{lstlisting}
+
+Binary digits for example can be defined as:
+
+\begin{lstlisting}
+Binary : Set
+Binary = Digit 2
+
+零 : Binary
+零 = zero
+
+一 : Binary
+一 = suc zero
+\end{lstlisting}
+
+But these digits bears no meaning without converting to {\lstinline|ℕ|}.
+Here {\lstinline|d|}
+
+\begin{lstlisting}
+Digit-toℕ : ∀ {d} → Digit d → ℕ → ℕ
+Digit-toℕ x o = toℕ x + o
+\end{lstlisting}
+
+% number of inhabitants. \textit{Fin} would do that just fine.
+
+% Because we would like to index the number of symbols
+%
+% To represent a digit, we need a datatype that can be indexed to have an exact
+% number of inhabitants. \textit{Fin} would do that just fine.
+
+
+
 % In fact, since there are only a finite number of digits,
 
 
