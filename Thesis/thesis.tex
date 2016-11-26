@@ -1,15 +1,21 @@
 
 \title{Generalizing Positional Numeral Systems}
 \author{
-    Tîng-Giān Luā
+    Luā Tîng-Giān
 }
 \date{\today}
 
-\documentclass[14pt, a4paper]{article}
+\documentclass[12pt, a4paper]{article}
+% \linespread{1.5}
 
 % for unicode symbols
 \usepackage{fontspec}
 \setmonofont{DejaVu Sans Mono}
+
+% for maths symbols
+\usepackage{mathtools}
+\usepackage{bm}
+
 
 % for CJK
 \usepackage{xeCJK}
@@ -34,17 +40,122 @@
 % Abstact [draft]
 Numbers are everywhere in our daily lives, and positional numeral systems are
 arguably the most important and common representation of numbers. In this work
-we have constructed a generalized positional numeral system to model many of
-these representations, and investigate some of their properties and relationship
-with the classical unary representation of natural number.
+we have constructed a generalized positional numeral system in Agda to model many
+of these representations, and investigate some of their properties and relationship
+with the classical unary representation of the natural numbers.
 
 % TODO: maybe say more about that predicate universe stuff
 \end{abstract}
 
 \section{Introduction}
 
-\subsection{Numbers}\label{num}
+\subsection{Positional numeral systems}\label{num}
 % [draft]
+
+A numeral system is a writing system for expressing numbers, and humans have
+invented various kinds of numeral systems throughout history. Most of the
+systems we are using today are positional notations because they can express
+\textbf{infinite} numbers with just a \textbf{finite} set of symbols so-called
+\textit{digits}.
+
+A positional numeral systems represents a number by adding up a series of digits
+of different orders of magnitude. Take a common decimal number for example:
+
+$$ 2016_{10} = 2\times10^3 + 0\times10^2 + 1\times10^1 + 6\times10^0 $$
+
+\subsubsection{Symtems of different bases}
+
+These numeral systems can take on different \textit{bases}. The ubiquitous decimal
+numeral system as we know, has the base of 10. While the binaries that can be found
+in our machines has the base of 2. That already trivial formula can be generalized
+a bit to represent numbers of different bases.
+
+$$
+    {d_3d_2d_1d_0}_{base}
+    =
+    d_3\times base^3 + d_2\times base^2 + d_1\times base^1 + d_0\times base^0
+$$
+
+Where $ d_{n} $ ranges from $ 0 $ to $ base - 1 $ for all $ n $.
+
+\subsubsection{Digits of different ranges}
+
+Some computer scientists and mathematicians seem to be more comfortable with
+unary (base-1) numbers because they are isomorphic to the natural numbers à la Peano.
+
+
+$$
+    1111_{1} \cong
+        \overbrace{\text{suc (suc (suc (suc}}^4 + \text{ zero)))}
+$$
+
+Statements established on such numbers can be proven using mathematical
+induction. And people have implemented and proven a great deal of functions and
+properties on these unary numbers because they are easy to work with.
+
+But the formula we've just put down for evaluating positional numeral systems
+doesn't work for unary numbers, as it requires the digits to range from $ 0 $ to
+$ base - 1 $. That is, the only digit has to be $ 0 $, yet the only digit unary
+numbers have is $ 1 $.
+
+To evaluate unary numbers, we need to relax the constraint on the range of digits
+by introducing a new variable, \textit{offset}:
+
+$$
+    {d_3d_2d_1d_0}_{base}
+    =
+    d_3\times base^3 + d_2\times base^2 + d_1\times base^1 + d_0\times base^0
+$$
+
+Where $ d_{n} $ ranges from \textit{offset} to \textit{offset + base - 1} for
+all $ n $. Now that in our model, unary numbers would have an offset of $ 1 $,
+and systems of other bases would have offsets of $ 0 $.
+
+\subsubsection{Numerical representation and redundancy}
+
+
+
+
+
+%
+% $$ 1111_{1} = 1\times 1^3 + 1\times 1^2 + 1\times 1^1 + 1\times 1^0 = 4_{10} $$
+
+
+
+% --, which is no harder than counting pebbles.
+
+
+
+% system used in our daily lives is the
+% base-10 (decimal) system,
+
+
+% While the most ubiquitous positional notation used in our daily lives is the
+% base-10 (decimal) system, and binary (base-2) numbers can be found in almost all
+% digital circuits. Some computer scientists and mathematicians seem to be more
+% comfortable with unary (base-1) numbers, which is no harder than counting pebbles.
+%
+% Natural numbers (à la Peano) are defined in a way that is isomorphic to unary
+% numbers. Statements established on such numbers can be proven using mathematical
+% induction. And people have implemented and proven a great deal of functions and
+% properties on these unary numbers because they are easy to work with.
+%
+% But that simplicity comes at a cost, the time complexity of functions defined on
+% unary numbers is significantly
+
+%
+% Natural numbers (à la Peano) are defined in a way that is isomorphic to unary
+% numbers. Statements established on such numbers can be proven using mathematical
+% induction, an essential proving technique.
+% %  which can then be generalized to all
+% % kinds of well-founded structures, known as structural induction.
+%
+% People have implemented and proven a great deal of functions and properties on
+% these unary numbers because they are easy to work with. But the simplicity comes
+% at a cost, the time complexity of functions defined on unary numbers is significantly
+% higher than those defined on systems of other bases, say, binary numbers. Hence,
+% it's not practical in doing heavy calculations.
+
 
 % The \textit{numbers} we will be constructing in this work are the \textit{natural numbers}.
 % And before
