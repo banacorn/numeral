@@ -54,29 +54,30 @@ with the classical unary representation of the natural numbers.
 
 A numeral system is a writing system for expressing numbers, and humans have
 invented various kinds of numeral systems throughout history. Most of the
-systems we are using today are positional notations because they can express
-\textbf{infinite} numbers with just a \textbf{finite} set of symbols so-called
-\textit{digits}.
+systems we are using today are positional notations\cite{knuth1998art} because
+they can express \textbf{infinite} numbers with just a \textbf{finite} set of
+symbols so-called \textit{digits}.
 
 A positional numeral systems represents a number by adding up a series of digits
 of different orders of magnitude. Take a common decimal number for example:
 
-$$ 2016_{10} = 2\times10^3 + 0\times10^2 + 1\times10^1 + 6\times10^0 $$
+$$ (2016)_{10} = 2\times10^3 + 0\times10^2 + 1\times10^1 + 6\times10^0 $$
 
 \subsubsection{Symtems of different bases}
 
 These numeral systems can take on different \textit{bases}. The ubiquitous decimal
 numeral system as we know, has the base of 10. While the binaries that can be found
-in our machines has the base of 2. That already trivial formula can be generalized
-a bit to represent numbers of different bases.
+in our machines nowadays has the base of 2. That already trivial formula can
+be generalized a bit to represent numbers of different bases.
 
 $$
-    {d_3d_2d_1d_0}_{base}
+    ({...d_3d_2d_1d_0})_{base}
     =
-    d_3\times base^3 + d_2\times base^2 + d_1\times base^1 + d_0\times base^0
+    ... + d_3\times base^3 + d_2\times base^2 + d_1\times base^1 + d_0\times base^0
 $$
 
-Where $ d_{n} $ ranges from $ 0 $ to $ base - 1 $ for all $ n $.
+Where $ d_{n} $ is a digit that ranges from $ 0 $ to $ base - 1 $ for all $ n $.
+
 
 \subsubsection{Digits of different ranges}
 
@@ -85,7 +86,7 @@ unary (base-1) numbers because they are isomorphic to the natural numbers à la 
 
 
 $$
-    1111_{1} \cong
+    (1111)_{1} \cong
         \overbrace{\text{suc (suc (suc (suc}}^4 + \text{ zero)))}
 $$
 
@@ -102,16 +103,16 @@ To evaluate unary numbers, we need to relax the constraint on the range of digit
 by introducing a new variable, \textit{offset}:
 
 $$
-    {d_3d_2d_1d_0}_{base}
+    ({...d_3d_2d_1d_0})_{base}
     =
-    d_3\times base^3 + d_2\times base^2 + d_1\times base^1 + d_0\times base^0
+    ... + d_3\times base^3 + d_2\times base^2 + d_1\times base^1 + d_0\times base^0
 $$
 
 Where $ d_{n} $ ranges from \textit{offset} to \textit{offset + base - 1} for
 all $ n $. Now that in our model, unary numbers would have an offset of $ 1 $,
 and systems of other bases would have offsets of $ 0 $.
 
-\subsubsection{Numerical representation and redundancy}
+\subsubsection{Numerical representation}
 
 % Besides from isomorphic to natural numbers
 
@@ -170,6 +171,24 @@ The strong anology between positional numeral systems and certain data structure
 suggests that, numeral systems can used as templates for designing containers.
 Such data structures are called \textbf{Numerical Representations}\cite{okasaki1996purely}
 \cite{hinze1998numerical}.
+
+\subsubsection{Redundancy}
+
+There are actually more than one way to represent the number $ 2016 $ in decimal.
+This can be achieved simply by adding leading zeros.
+
+$$
+    02016, 002016, 0002016, 0002016, ...
+$$
+
+
+Such a numeral system is said to be \textit{redundant}.
+
+So far the numeral systems we are concerning all have exactly \textit{base} digits,
+ranging from \textit{offset} to \textit{offset + base - 1}.
+
+
+% But there are numerical representations out there that still doesn't
 
 % There's a strong anology between positional numeral systems and certain containers
 % , such data structures are called \textbf{Numerical Representation}.
