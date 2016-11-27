@@ -113,9 +113,66 @@ and systems of other bases would have offsets of $ 0 $.
 
 \subsubsection{Numerical representation and redundancy}
 
+% Besides from isomorphic to natural numbers
 
+One may notice that the structure of unary numbers also looks suspiciously similar
+to that of lists'. Let's compare their definition in Haskell.
 
+% use minipage for juxtaposing two blocks of codes
+\noindent\begin{minipage}{.45\textwidth}
+\begin{lstlisting}
+data Nat = Zero
+         | Suc Nat
+\end{lstlisting}
+\end{minipage}\hfill
+\begin{minipage}{.48\textwidth}
+\begin{lstlisting}
+data List a = Nil
+            | Cons a (List a)
+\end{lstlisting}
+\end{minipage}
 
+If we replace every {\lstinline|Cons _|} with {\lstinline|Suc|} and {\lstinline|Nil|}
+with {\lstinline|Zero|}, then a list becomes an unary number.
+And that's exactly what the {\lstinline|length|} function,
+a homomorphism from lists to unary numbers, does.
+
+Now let's compare addition on unary number and merge (append) on lists:
+
+\noindent\begin{minipage}{.48\textwidth}
+\begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
+add : Nat → Nat → Nat
+add Zero    y = y
+add (Suc x) y =
+    Suc (add x y)
+\end{lstlisting}
+\end{minipage}\hfill
+\begin{minipage}{.45\textwidth}
+\begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
+append : List a → List a → List a
+append Nil         ys = ys
+append (Cons x xs) ys =
+    Cons x (append xs ys)
+\end{lstlisting}
+\end{minipage}
+
+Aside from having virtually identical implementations, operations on unary numbers
+and lists both have the same time complexity. Incrementing a unary number takes
+$ O(1) $, inserting an element into a list also takes $ O(1) $; adding two unary
+numbers takes $ O(n) $, appending a list to another also takes $ O(n) $.
+
+And if we look at implementations and operations of binary numbers and binomial
+heaps, the resemblances are also uncanny.
+
+[insert some images here]
+
+The strong anology between positional numeral systems and certain data structures
+suggests that, numeral systems can used as templates for designing containers.
+Such data structures are called \textbf{Numerical Representations}\cite{okasaki1996purely}
+\cite{hinze1998numerical}.
+
+% There's a strong anology between positional numeral systems and certain containers
+% , such data structures are called \textbf{Numerical Representation}.
 
 %
 % $$ 1111_{1} = 1\times 1^3 + 1\times 1^2 + 1\times 1^1 + 1\times 1^0 = 4_{10} $$
