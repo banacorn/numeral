@@ -174,15 +174,22 @@ Such data structures are called \textbf{Numerical Representations}\cite{okasaki1
 
 \subsubsection{Redundancy}
 
-There are actually more than one way to represent the number $ 2016 $ in decimal.
-This can be achieved simply by adding leading zeros.
+A numeral system is said to be \textit{redundant} when there is more than one way
+to represent a number. The decimal numeral system is one such instance, we can
+find another notation of the same number just by adding leading zeros.
 
 $$
-    02016, 002016, 0002016, 0002016, ...
+    2016, 02016, 002016, ...
 $$
 
 
-Such a numeral system is said to be \textit{redundant}.
+
+\subsubsection{From numeral systems to numbers}
+% To make things clear, now we distinct \textit{notations} from \textit{numbers}.
+% The former is syntactic, which refers to a series of digits, they bear no meanings.
+
+
+% and we the function that converts notations to numbers an \textit{evaluation}.
 
 % So far the numeral systems we are concerning all have exactly \textit{base} digits,
 % ranging from \textit{offset} to \textit{offset + base - 1}.
@@ -257,30 +264,6 @@ Such a numeral system is said to be \textit{redundant}.
 % \paragraph{Numbers are recursive}
 %
 % \paragraph{Internal definition is immaterial}
-
-% \subsection{Positional numeral systems}\label{pos}
-%
-% A numeral system is a writing system for expressing numbers, and humans have
-% invented various kinds of numeral systems throughout history. Most of the
-% systems we are using today are positional notations because they can express
-% \textbf{infinite} numbers with just a \textbf{finite} set of symbols.
-%
-% While the most ubiquitous positional notation used in our daily lives is the
-% base-10 (decimal) system, and binary (base-2) numbers can be found in almost all
-% digital circuits. Some computer scientists and mathematicians seem to be more
-% comfortable with unary (base-1) numbers, which is no harder than counting pebbles.
-%
-% Natural numbers (à la Peano) are defined in a way that is isomorphic to unary
-% numbers. Statements established on such numbers can be proven using mathematical
-% induction, an essential proving technique.
-% %  which can then be generalized to all
-% % kinds of well-founded structures, known as structural induction.
-%
-% People have implemented and proven a great deal of functions and properties on
-% these unary numbers because they are easy to work with. But the simplicity comes
-% at a cost, the time complexity of functions defined on unary numbers is significantly
-% higher than those defined on systems of other bases, say, binary numbers. Hence,
-% it's not practical in doing heavy calculations.
 
 \paragraph{Outline}
 The remainder of the thesis is organized as follows.
