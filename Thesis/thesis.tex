@@ -109,7 +109,7 @@ $$
 $$
 
 Where $ d_{n} $ ranges from \textit{offset} to \textit{offset + base - 1} for
-all $ n $. Now that in our model, unary numbers would have an offset of $ 1 $,
+all $ n $. Now that in our representation, unary numbers would have an offset of $ 1 $,
 and systems of other bases would have offsets of $ 0 $.
 
 \subsubsection{Numerical representation}
@@ -172,15 +172,108 @@ suggests that, numeral systems can used as templates for designing containers.
 Such data structures are called \textbf{Numerical Representations}\cite{okasaki1996purely}
 \cite{hinze1998numerical}.
 
+
+% \subsubsection{Zeroless representation and bijective numeration}
+
 \subsubsection{Redundancy}
 
-A numeral system is said to be \textit{redundant} when there is more than one way
-to represent a number. The decimal numeral system is one such instance, we can
-find another notation of the same number just by adding leading zeros.
+With the generalization of \textit{base} and \textit{offset}, so far we've been
+able to cover some different kinds of numeral systems, but the binary numeral
+system that is implemented in virtually all arithmetic logic unit (ALU) hardware
+isn't among them.
+
+In our representation, operations such as addition would take $ O(log{}n)$ for some
+number $ n $ in a system where $ base \textgreater 1 $. Since the number $ n $
+would have length $ log_{base} n $ and operations on each digits should be constant.
+But in machines, it only takes constant time!
+
+That seems to be a big performance issue, but there's a catch! Because our
+representation is capable of what is called \textit{arbitrary-precision arithmetic},
+i.e, it could perform calculations on numbers of arbitrary size while the binary
+numbers that reside in machines are bounded by the hardware, which could only
+perform \textit{fixed-precision arithmetic}.
+
+But surprisingly, we could fit these binary numbers into our representation with
+just a tweak. If we allow a system to have more digits, then a fixed-precision
+binary number can be regarded as a single digit! To illustrate this, a 32-bit
+binary number would become a single digit that ranges from $ 0 $ to $ 2^{32} $,
+while everything else including the base remain the same.
+
+Formerly in our representation, there are exactly \textit{base} number of digits
+that range from:
 
 $$
-    2016, 02016, 002016, ...
+    \text{offset}  ...  \text{offset} + \text{base} - 1
 $$
+
+We introduce a new index \textit{\#digit} to generalize the number of digits.
+Now they range from:
+
+$$
+    \text{offset}  ...  \text{offset} + \text{\#digit} - 1
+$$
+
+Here's a table of the configurations about the systems that we've addressed:
+
+\begin{center}
+    \begin{tabular}{l*{3}{r}}
+    Numeral system      & base  & \#digit    & offset    \\
+    \hline
+    Decimal             & 10    & 10        & 0         \\
+    Binary              & 2     & 2         & 0         \\
+    Unary               & 1     & 1         & 1         \\
+    Int32               & 2     & $ 2^{32} $ & 0        \\
+    \end{tabular}
+\end{center}
+% To model this, we introduce another generalization on the number of digits that
+% would be denoted as $ \#digit $. Digits now range from \textit{offset} to
+% \textit{offset + \#digit - 1}
+% Formerly a system would have exactly \textit{base} number of digits
+% that ranges from \textit{offset} to \textit{offset + base - 1}, but if we allow
+% a system to have more digits,
+
+% Now that there are more than one way of representing a number
+
+% Such representations are known as redundant numeral systems.
+
+% We will explain why it makes perfect sense to include these systems into our
+% representation.
+
+% In a numeral system where $ base \textgreater 1 $, operations such as addition
+% would take $ O(log{}n)$ for some number $ n $. But in
+
+
+% A number $ n $ of some numeral system with a $ base >= 2 $ would have length
+
+% A numeral system is said to be \textit{redundant} when there is more than one way
+% to represent a number. We could make a numeral system redundant by adding more
+% digits. Take binary numbers for instance, if we allow $ 2 $ to be one of the digits,
+% then the decimal number $ 5 $ can now be represented as $ 101 $ or $ 21 $.
+%
+% But what is redundancy good for? It turns out that some data structures can actually
+% be modeled with redundant numeral systems. 2-3 tree is one such example.
+
+%  It turns out that, some data structures, such as
+% the 2-3 tree, can be modeled with a numeral system.
+
+ % there are two ways to represent the number $ 5 $
+
+% The decimal numeral system is one such instance, we can
+% find another notation of the same number just by adding leading zeros.
+%
+% $$
+%     2016, 02016, 002016, ...
+% $$
+
+% There's another way of making a numeral system redundant. If we take the binary
+% numeral system and tweak it a bit, adding another digit {2}.
+
+
+% If we extend the set of digits of binary numeral system
+
+% We can make the binary numeral system redundant by adding one more digit.
+% Making D = {0, 1, 2}. Then the number (5)10 can be represented as (101)2 or (21)2 .
+
 
 
 
@@ -659,7 +752,7 @@ non-empty []       = ⊥
 non-empty (x ∷ xs) = ⊤
 \end{lstlisting}
 
-Notice that now this function is returning a type. Now {\lstinline|head|} can be
+Notice that now this function is returning a type, and thus {\lstinline|head|} can be
 defined as:
 
 \begin{lstlisting}
