@@ -447,7 +447,6 @@ zero  + y = y
 suc x + y = suc (x + y)
 \end{lstlisting}
 
-% {\lstinline|suc zero|} serves as the number "1", {\lstinline|suc (suc zero)|} as "2", and so forth.
 We define {\lstinline|_+_|} by pattern matching on the first argument, which results
 in two cases: the base case, and the inductive step. We are allowed to make
 recursive calls, as long as the type checker is convinced that the function
@@ -687,27 +686,29 @@ filter p (x ∷ xs) | false = filter p xs
 \paragraph{Absurd patterns}
 % [draft]
 
-There are two special types, the \textit{unit type} and the \textit{bottom type},
-denoted as {\lstinline|⊤|} and {\lstinline|⊥|}, which as 1 and 0 values respectively.
+The \textit{unit type}, or \textit{top}, is a datatype inhabited by
+exactly one value, denoted {\lstinline|tt|}.
 
 \begin{lstlisting}
 data ⊤ : Set where
     tt : ⊤
+\end{lstlisting}
 
+The \textit{empty type}, or \textit{bottom}, on the other hand, is a datatype
+that is inhabited by nothing at all.
+
+\begin{lstlisting}
 data ⊥ : Set where
 \end{lstlisting}
 
-Where {\lstinline|⊤|} has only a value, {\lstinline|tt|}, and {\lstinline|⊥|} has none.
-
-These types may seem useless, and without constructors, it is impossible to
-construct an element of {\lstinline|⊥|}. What is an type that can not be
+These types seem useless, and without constructors, it is impossible to
+construct an instance of {\lstinline|⊥|}. What is an type that cannot be
 constructed good for?
 
-Say, we want to define a {\lstinline|head|} on {\lstinline|List|} that is
-statically checked and won't crash on any inputs. So we need to make sure that
-all inputs are not empty. But unlike on {\lstinline|Vec|}, without indices, we
-need other means of guaranteeing that the list is not empty. Naturally we would
-come up with a predicate like this:
+Say, we want to define a safe {\lstinline|head|} on {\lstinline|List|} that
+does not crash on any inputs. Naturally, in a language like Haskell,
+we would come up with a predicate like this to filter out empty lists
+{\lstinline|[]|} before passing them to {\lstinline|head|}.
 
 \begin{lstlisting}
 non-empty : ∀ {A} → List A → Bool
@@ -715,8 +716,12 @@ non-empty []       = false
 non-empty (x ∷ xs) = true
 \end{lstlisting}
 
-The problem is that we can only know if a list is null in runtime. However, with
- {\lstinline|⊤|} and {\lstinline|⊥|}, we could instead define a predicate like this:
+The predicate only works at runtime. It is impossible for the type
+checker to determine whether the input is empty or not at compile time.
+
+However, things are quite different quite in Agda. With \textit{top} and \textit{bottom},
+we could do some tricks on the predicate, making it returns a \textit{Set}, rather
+than a \textit{Bool}!
 
 \begin{lstlisting}
 non-empty : ∀ {A} → List A → Set
@@ -724,16 +729,42 @@ non-empty []       = ⊥
 non-empty (x ∷ xs) = ⊤
 \end{lstlisting}
 
-Notice that now this function is returning a type, and thus {\lstinline|head|} can be
-defined as:
+Notice that now this predicate is returning a type. So we can use it in the type
+expression. {\lstinline|head|} can thus be defined as:
 
 \begin{lstlisting}
 head : ∀ {A} → (xs : List A) → non-empty xs → A
-head []       proof = ?0
-head (x ∷ xs) proof = ?1
+head []       proof = ?
+head (x ∷ xs) proof = x
 \end{lstlisting}
 
-\paragraph{Propositions as types, proofs as programms}
+In the {\lstinline|(x ∷ xs)|} case, the arguement {\lstinline|proof|} would
+have type {\lstinline|⊤|}, and the right-hand side is simply {\lstinline|x|};
+in the {\lstinline|[]|} case, the arguement {\lstinline|proof|} would
+have type {\lstinline|⊥|}, but what should be returned at the right-hand side?
+
+It turns out that, the right-hand side of the {\lstinline|[]|} case would be the
+least thing to worry about, because it is completely impossible to have such a case.
+Recall that {\lstinline|⊥|} has no inhabitants, so if a case has an argument of
+that type, it is too good to be true.
+
+Type inhabitance is in general an undecidable problem.
+However, when pattern matching on a type that is obviously empty (such as {\lstinline|⊥|}),
+Agda allows us to drop the right-hand side and eliminate the arguement with {\lstinline|()|}.
+
+\begin{lstlisting}
+head : ∀ {A} → (xs : List A) → non-empty xs → A
+head []       ()
+head (x ∷ xs) proof = x
+\end{lstlisting}
+
+\paragraph{Propositions as types, proofs as programs}
+
+The previous paragraphs are mostly addressing the \textit{programming}
+aspect of this language. But Agda is more than that! Recall the Curry–Howard
+correspondence, writing
+
+% So far we are mostly the programming aspect of this langauge.
 
 \paragraph{Standard library}
 
