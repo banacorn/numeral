@@ -1,84 +1,74 @@
 module Sandbox.Dev where
 
--- open import Data.Num.Core
--- open import Data.Num.Bounded
--- open import Data.Num.Maximum
--- open import Data.Num.Next
--- open import Data.Num.Increment
--- open import Data.Num.Continuous
+open import Data.Num.Core
+open import Data.Num.Bounded
+open import Data.Num.Maximum
+open import Data.Num.Next
+open import Data.Num.Increment
+open import Data.Num.Continuous
 --
 open import Data.Nat
--- open import Data.Nat.Properties
--- open import Data.Nat.Properties.Simple
--- open import Data.Nat.Properties.Extra
--- open import Data.Nat.DM
---
+open import Data.Nat.Properties
+open import Data.Nat.Properties.Simple
+open import Data.Nat.Properties.Extra
+open import Data.Nat.DM
+
 open import Data.Fin
---     using (Fin; fromℕ≤; inject≤)
---     renaming (zero to z; suc to s)
---
--- open import Data.Fin.Properties using (toℕ-fromℕ≤; bounded)
--- open import Data.Product
--- open import Data.Empty using (⊥)
--- open import Data.Unit using (⊤; tt)
---
--- open import Function
--- open import Relation.Nullary.Decidable
--- open import Relation.Nullary
--- open import Relation.Nullary.Negation
--- open import Relation.Binary
--- open import Relation.Binary.PropositionalEquality
---
--- open ≡-Reasoning
--- open ≤-Reasoning renaming (begin_ to start_; _∎ to _□; _≡⟨_⟩_ to _≈⟨_⟩_)
--- open DecTotalOrder decTotalOrder using (reflexive) renaming (refl to ≤-refl)
+    using (Fin; fromℕ≤; inject≤)
+    renaming (zero to z; suc to s)
 
--- data List (A : Set) : Set where
---     [] : List A
---     _∷_ : A → List A → List A
+open import Data.Fin.Properties using (toℕ-fromℕ≤; bounded)
+open import Data.Product
+open import Data.Empty using (⊥)
+open import Data.Unit using (⊤; tt)
 
--- data Vec (A : Set) : ℕ → Set where
---     [] : Vec A 0
---     _∷_ : ∀ {n} → A → Vec A n → Vec A (suc n)
---
--- open import Data.Bool
---
--- null : ∀ {A n} → Vec A n → Bool
--- null [] = true
--- null (x ∷ xs) = false
---
--- head : ∀ {A n} → Vec A (suc n) → A
--- head (x ∷ xs) = x
---
--- filter : ∀ {A} → (A → Bool) → List A → List A
--- filter f [] = []
--- filter f (x ∷ xs) = {!   !}
---
--- data ⊤ : Set where
---     tt : ⊤
---
--- data ⊥ : Set where
---
--- non-empty : ∀ {A} → List A → Set
--- non-empty []       = ⊥
--- non-empty (x ∷ xs) = ⊤
---
--- head : ∀ {A} → (xs : List A) → non-empty xs → A
--- head []       proof = {!   !}
--- head (x ∷ xs) proof = {!   !}
+open import Function
+open import Relation.Nullary.Decidable
+open import Relation.Nullary
+open import Relation.Nullary.Negation
+open import Relation.Binary
+open import Relation.Binary.PropositionalEquality
 
-data Bool : Set where
-    False   : Bool
-    True    : Bool
+open ≡-Reasoning
+open ≤-Reasoning renaming (begin_ to start_; _∎ to _□; _≡⟨_⟩_ to _≈⟨_⟩_)
+open DecTotalOrder decTotalOrder using (reflexive) renaming (refl to ≤-refl)
 
-¬_ : Bool → Bool
-¬ True  = {!   !}
-¬ False = {!   !}
+open import Induction
+open import Induction.WellFounded as WF
+open import Level using (Lift)
 
-two : Fin 3
-two = suc zero₂
-    where   zero₂ : Fin 2
-            zero₂ = zero
+-- _<-Num_ : ∀ {b d o}
+--     → (xs ys : Num b d o)
+--     → Set
+-- xs <-Num ys = ⟦ xs ⟧ < ⟦ ys ⟧
 
-z : Fin 3
-z = zero
+-- Rec : ∀ ℓ b d o → RecStruct (Num b d o) ℓ ℓ
+-- Rec ℓ b d o P (x ∙) = Lift ⊤
+-- Rec ℓ b d o P (x ∷ xs) = P xs
+--
+-- rec-builder : ∀ {ℓ b d o} → RecursorBuilder (Rec ℓ b d o)
+-- rec-builder P f (x ∙)    = _
+-- rec-builder P f (x ∷ xs) = f xs (rec-builder P f xs)
+--
+-- rec : ∀ {ℓ b d o} → Recursor (Rec ℓ b d o)
+-- rec = build rec-builder
+
+-- <-Num-Rec : ∀ {ℓ} b d o → RecStruct (Num b d o) ℓ ℓ
+-- <-Num-Rec b d o = WfRec (_<-Num_ {b} {d} {o})
+--
+-- <-Num-well-founded′ : ∀ b d o xs → <-Num-Rec b d o (Acc _<-Num_) xs
+-- <-Num-well-founded′ b d o xs ys p = {!   !}
+
+-- <-well-founded′ : ∀ n → <-Rec (Acc _<′_) n
+-- <-well-founded′ zero     _ ()
+-- <-well-founded′ (suc n) .n ≤′-refl       = <-well-founded n
+-- <-well-founded′ (suc n)  m (≤′-step m<n) = <-well-founded′ n m m<n
+--
+-- well-founded : ∀ {b d o} → Well-founded (_<-Num_ {b} {d} {o})
+-- well-founded (x ∙)    = {!   !}
+-- well-founded (x ∷ xs) = {!   !}
+
+-- <-Num-Rec : ∀ {ℓ} → RecStruct
+
+-- <-Rec : ∀ {ℓ} → RecStruct ℕ ℓ ℓ
+-- <-Rec = WfRec _<′_

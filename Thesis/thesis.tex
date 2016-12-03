@@ -47,9 +47,9 @@ with the classical unary representation of the natural numbers.
 % TODO: maybe say more about that predicate universe stuff
 \end{abstract}
 
-\section{Introduction}
+\section{Introduction}\label{introduction}
 
-\subsection{Positional numeral systems}\label{num}
+\subsection{Positional numeral systems}
 % [reviewed: 1]
 
 A numeral system is a writing system for expressing numbers, and humans have
@@ -68,8 +68,8 @@ $ 6 $ is called \textit{least significant digit} and $ 2 $ is called the
 decimal numbers, we will write down numbers in reverse order, from the least
 significant digit to the most significant digit, like $ 6102 $.
 
-To make things clear, we call a sequence of digits a \textbf{notation}, and
-the number it expresses a \textbf{value}, or simply a \textbf{number}. That is,
+To make things clear, we call a sequence of digits a \textbf{numeral}, or a \textbf{notation};
+and the number it expresses a \textbf{value}, or simply a \textbf{number}. That is,
 we distinguish syntax from semantics. Syntax bears no meaning; its semantics can
 only be carried out by converting to some other syntax. We call a function that
 converts notations to values an \textbf{evaluator}, and the process an
@@ -122,67 +122,6 @@ $$
 Where $ d_{n} $ ranges from \textit{offset} to \textit{offset + base - 1} for
 all $ n $. Now that unary numbers would have an offset of $ 1 $,
 and systems of other bases would have offsets of $ 0 $.
-
-\subsubsection{Numerical representation}
-
-One may notice that the structure of unary numbers also looks suspiciously similar
-to that of lists'. Let's compare their definition in Haskell.
-
-% use minipage for juxtaposing two blocks of codes
-\noindent\begin{minipage}{.45\textwidth}
-\begin{lstlisting}
-data Nat = Zero
-         | Suc Nat
-\end{lstlisting}
-\end{minipage}\hfill
-\begin{minipage}{.48\textwidth}
-\begin{lstlisting}
-data List a = Nil
-            | Cons a (List a)
-\end{lstlisting}
-\end{minipage}
-
-If we replace every {\lstinline|Cons _|} with {\lstinline|Suc|} and {\lstinline|Nil|}
-with {\lstinline|Zero|}, then a list becomes an unary number.
-And that is exactly what the {\lstinline|length|} function,
-a homomorphism from lists to unary numbers, does.
-
-Now let's compare addition on unary number and merge (append) on lists:
-
-\noindent\begin{minipage}{.48\textwidth}
-\begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
-add : Nat → Nat → Nat
-add Zero    y = y
-add (Suc x) y =
-    Suc (add x y)
-\end{lstlisting}
-\end{minipage}\hfill
-\begin{minipage}{.45\textwidth}
-\begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
-append : List a → List a → List a
-append Nil         ys = ys
-append (Cons x xs) ys =
-    Cons x (append xs ys)
-\end{lstlisting}
-\end{minipage}
-
-Aside from having virtually identical implementations, operations on unary numbers
-and lists both have the same time complexity. Incrementing a unary number takes
-$ O(1) $, inserting an element into a list also takes $ O(1) $; adding two unary
-numbers takes $ O(n) $, appending a list to another also takes $ O(n) $.
-
-If we look at implementations and operations of binary numbers and binomial
-heaps, the resemblances are also uncanny.
-
-[insert some images here]
-
-The strong analogy between positional numeral systems and certain data structures
-suggests that, numeral systems can serve as templates for designing containers.
-Such data structures are called \textbf{Numerical Representations}\cite{okasaki1996purely}
-\cite{hinze1998numerical}.
-
-
-% \subsubsection{Zeroless representation and bijective numeration}
 
 \subsubsection{Redundancy}
 
@@ -246,119 +185,98 @@ $ 2 $.
     \end{tabular}
 \end{center}
 
-There are more than one way to represent a number in this system.
-
 \begin{center}
-    \begin{tabular}{l*{1}{r}}
-    Number  & Notation \\
+    \begin{tabular}{c*{1}{l}}
+    Number (in decimal)  & Notation \\
     \hline
-    2       & 0 \\
+    0       & 0 \\
+    1       & 1 \\
+    2       & 01, 2 \\
+    3       & 11 \\
+    4       & 001, 21 \\
+    5       & 101, 12 \\
     \end{tabular}
 \end{center}
 
-Such a numeral system is said to be redundant. In fact, systems that allow $ 0 $
-as one of the digits must be redundant, since we can always take a number and
-add leading zeros without changing it's value.
+Such a numeral system is said to be \textbf{redundant}, because there are more than one
+way to represent a number. In fact, systems that allow $ 0 $ as one of the digits
+must be redundant, since we can always take a number and add leading zeros without
+changing it's value. Systems that does not have zeros are said to be \textbf{zeroless}.
 
+We will see that there's a deep connection between data
+structures and  numeral systems. Data structures modeled after redundant numeral
+systems have some interesting properties.
 
-Data structures modeled after
-redundant numeral systems have some interesting properties. Self-balancing containers
+\subsubsection{Numerical representation}
 
+One may notice that the structure of unary numbers looks suspiciously similar
+to that of lists'. Let's compare their definition in Haskell.
 
-% They show interesting properties
+% use minipage for juxtaposing two blocks of codes
+\noindent\begin{minipage}{.45\textwidth}
+\begin{lstlisting}
+data Nat = Zero
+         | Suc Nat
+\end{lstlisting}
+\end{minipage}\hfill
+\begin{minipage}{.48\textwidth}
+\begin{lstlisting}
+data List a = Nil
+            | Cons a (List a)
+\end{lstlisting}
+\end{minipage}
 
+If we replace every {\lstinline|Cons _|} with {\lstinline|Suc|} and {\lstinline|Nil|}
+with {\lstinline|Zero|}, then a list becomes an unary number.
+And that is exactly what the {\lstinline|length|} function,
+a homomorphism from lists to unary numbers, does.
 
-% A numeral system is said to be \textit{redundant} when there is more than one way
-% to represent a number. We could make a numeral system redundant by adding more
-% digits. Take binary numbers for instance, if we allow $ 2 $ to be one of the digits,
-% then the decimal number $ 5 $ can now be represented as $ 101 $ or $ 21 $.
-%
-% But what is redundancy good for? It turns out that some data structures can actually
-% be modeled with redundant numeral systems. 2-3 tree is one such example.
+Now let's compare addition on unary number and merge (append) on lists:
 
-%  It turns out that, some data structures, such as
-% the 2-3 tree, can be modeled with a numeral system.
+\noindent\begin{minipage}{.48\textwidth}
+\begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
+add : Nat → Nat → Nat
+add Zero    y = y
+add (Suc x) y =
+    Suc (add x y)
+\end{lstlisting}
+\end{minipage}\hfill
+\begin{minipage}{.45\textwidth}
+\begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
+append : List a → List a → List a
+append Nil         ys = ys
+append (Cons x xs) ys =
+    Cons x (append xs ys)
+\end{lstlisting}
+\end{minipage}
 
- % there are two ways to represent the number $ 5 $
+Aside from having virtually identical implementations, operations on unary numbers
+and lists both have the same time complexity. Incrementing a unary number takes
+$ O(1) $, inserting an element into a list also takes $ O(1) $; adding two unary
+numbers takes $ O(n) $, appending a list to another also takes $ O(n) $.
 
-% The decimal numeral system is one such instance, we can
-% find another notation of the same number just by adding leading zeros.
-%
-% $$
-%     2016, 02016, 002016, ...
-% $$
+If we look at implementations and operations of binary numbers and binomial
+heaps, the resemblances are also uncanny.
 
-% There's another way of making a numeral system redundant. If we take the binary
-% numeral system and tweak it a bit, adding another digit {2}.
+[insert some images here]
 
+The strong analogy between positional numeral systems and certain data structures
+suggests that, numeral systems can serve as templates for designing containers.
+Such data structures are called \textbf{Numerical Representations}\cite{okasaki1996purely}
+\cite{hinze1998numerical}.
 
-% If we extend the set of digits of binary numeral system
+[say something about redundant data structures]
 
-% We can make the binary numeral system redundant by adding one more digit.
-% Making D = {0, 1, 2}. Then the number (5)10 can be represented as (101)2 or (21)2 .
+% \subsubsection{From numeral systems to numbers}
 
-
-
-
-\subsubsection{From numeral systems to numbers}
-% To make things clear, now we distinct \textit{notations} from \textit{numbers}.
-% The former is syntactic, which refers to a series of digits, they bear no meanings.
-
-
-% and we the function that converts notations to numbers an \textit{evaluation}.
-
-% So far the numeral systems we are concerning all have exactly \textit{base} digits,
-% ranging from \textit{offset} to \textit{offset + base - 1}.
-
-
-% But there are numerical representations out there that still doesn't
-
-% There's a strong anology between positional numeral systems and certain containers
-% , such data structures are called \textbf{Numerical Representation}.
-
-%
-% $$ 1111_{1} = 1\times 1^3 + 1\times 1^2 + 1\times 1^1 + 1\times 1^0 = 4_{10} $$
-
-
-
-% --, which is no harder than counting pebbles.
-
-
-
-% system used in our daily lives is the
-% base-10 (decimal) system,
-
-
-% While the most ubiquitous positional notation used in our daily lives is the
-% base-10 (decimal) system, and binary (base-2) numbers can be found in almost all
-% digital circuits. Some computer scientists and mathematicians seem to be more
-% comfortable with unary (base-1) numbers, which is no harder than counting pebbles.
-%
-% Natural numbers (à la Peano) are defined in a way that is isomorphic to unary
-% numbers. Statements established on such numbers can be proven using mathematical
-% induction. And people have implemented and proven a great deal of functions and
-% properties on these unary numbers because they are easy to work with.
-%
 % But that simplicity comes at a cost, the time complexity of functions defined on
 % unary numbers is significantly
 
-%
-% Natural numbers (à la Peano) are defined in a way that is isomorphic to unary
-% numbers. Statements established on such numbers can be proven using mathematical
-% induction, an essential proving technique.
-% %  which can then be generalized to all
-% % kinds of well-founded structures, known as structural induction.
-%
 % People have implemented and proven a great deal of functions and properties on
 % these unary numbers because they are easy to work with. But the simplicity comes
 % at a cost, the time complexity of functions defined on unary numbers is significantly
 % higher than those defined on systems of other bases, say, binary numbers. Hence,
 % it's not practical in doing heavy calculations.
-
-
-% The \textit{numbers} we will be constructing in this work are the \textit{natural numbers}.
-% And before
-
 
 % The \textit{numbers} we are constructing in this work are the \textit{natural numbers}.
 % We learned how to count with these numbers when we are little. But what are numbers, really?
@@ -383,7 +301,8 @@ redundant numeral systems have some interesting properties. Self-balancing conta
 
 \paragraph{Outline}
 The remainder of the thesis is organized as follows.
-% Section~\ref{agda} gives account of previous work.
+
+% Section~\ref{agda} .
 
 \section{A gental introduction to dependently typed programming in Agda}\label{agda}
 % [draft]
@@ -400,19 +319,24 @@ who are familiar with Agda and dependently typed programming may skip this chapt
 
 \subsection{Some basics}
 % [draft]
-Agda is a dependently typed functional programming language based on
-\textbf{Martin-Löf type theory} \cite{martin1984intuitionistic}.
-The first version of Agda was originally developed by Catarina Coquand at Chalmers
-University of Technology, the current version (Agda2) is a completely rewrite by
-Ulf Norell during his PhD at Chalmers.
 
-Agda is also an interactive theorem prover. Because proving theorems involves a
-lot of conversations between the programmer and the type checker. Just like programming,
-the process is incremental. It is difficult, if not impossible, to develop and
-prove a theorom at one stroke. Agda allows us to leave some "holes" in a
-program, refine them gradually, and complete your proofs "hole by hole".
+Agda is a \textit{dependently typed functional programming language} and also an
+\textit{interactive proof assistant}. It can be both because it's based on
+\textit{Martin-Löf type theory}\cite{martin1984intuitionistic}, hence the Curry-Howard
+correspondence\cite{sorensen2006lectures}, which states that: "propositions are types"
+and "proofs are programs". In other words, proving theorems and writing programs
+are essentially the same. In Agda we are free to interchange between these two
+interpretations. The current version (Agda2) is a completely rewrite by Ulf Norell
+during his PhD at Chalmers University of Technology.
 
-Take this unfininshed function definition for instance, we could leave out the
+We say that Agda is interactive because proving
+theorems involves a lot of conversations between the programmer and the type checker.
+And it is often difficult, if not impossible, to develop and prove a theorom at one stroke.
+Just like programming, the process is incremental.
+So Agda allows us to leave some "holes" in a program, refine them gradually, and
+complete the proofs "hole by hole".
+
+Take this half-finished function definition for instance, we could leave out the
 right-hand side.
 
 \begin{lstlisting}
@@ -420,7 +344,7 @@ is-zero : Int → Bool
 is-zero x = ?
 \end{lstlisting}
 
-In practice, we may ask, for example, "what's the type of the goal?",
+In practice, we would ask, for example, "what's the type of the goal?",
  "what's the context of this case?", etc. And Agda would reply us with:
 
 \begin{lstlisting}
@@ -428,7 +352,7 @@ GOAL : Bool
 x : Int
 \end{lstlisting}
 
-Then we might ask Agda to pattern match on {\lstinline|x|} and rewrite the program for us:
+Then we may ask Agda to pattern match on {\lstinline|x|} and rewrite the program for us:
 
 \begin{lstlisting}
 is-zero : Int → Bool
@@ -436,19 +360,34 @@ is-zero zero    = ?
 is-zero (suc x) = ?
 \end{lstlisting}
 
+We could fulfill these goals by giving an answer, we may even ask Agda to solve
+the problem for us, if it is not too difficult.
+
+\begin{lstlisting}
+is-zero : Int → Bool
+is-zero zero    = true
+is-zero (suc x) = false
+\end{lstlisting}
+
+After all of the goals have been accomplished and type-checked, we consider the
+program to be finished. Often, there's not much point in running a Agda program,
+because it's mostly about static constructions that is checked in compile-time.
 This is basically what pragramming and proving things looks like in Agda.
 
 \subsection{Simply typed programming in Agda}
 
-\paragraph{In the beginning there was nothing}
+Since Agda was heavily influenced by Haskell, simply typed programming in Agda
+is similar to that in Haskell.
+
+\paragraph{Datatypes}
 % [draft]
+
 Unlike in other programming languages, there are no "built-in"
 datatypes such as \textit{Int}, \textit{String}, or \textit{Bool}.
 The reason is that they can all be created out of thin air, so why bother?
 
-\paragraph{Let there be datatype}
-% [draft]
-Datatypes are introduced with {\lstinline|data|} declarations. Here is a classical example, the type of booleans.
+Datatypes are introduced with {\lstinline|data|} declarations.
+Here is a classical example, the type of booleans.
 
 \begin{lstlisting}
 data Bool : Set where
@@ -456,8 +395,9 @@ data Bool : Set where
     false : Bool
 \end{lstlisting}
 
-The name of the datatype ({\lstinline|Bool|}) and its constructors ({\lstinline|true|} and {\lstinline|false|}) are brought into scope.
-This notation also allow us to spicify the types of these newly introduced entities explicitly.
+The name of the datatype ({\lstinline|Bool|}) and its constructors
+({\lstinline|true|} and {\lstinline|false|}) are brought into scope in this declaration.
+This notation also allow us to explicitly specify the types of these newly introduced entities.
 
 \begin{enumerate}
     \item {\lstinline|Bool|} has the type of {\lstinline|Set|}\footnote{{\lstinline|Set|} is the type of small types, and {\lstinline|Set₁|} is the type
@@ -478,16 +418,20 @@ not true  = false
 not false = true
 \end{lstlisting}
 
-Agda is a \textit{total} language, so partial functions are not allowed. Functions
-are guarantee to terminate and will not crash on all possible inputs. The following
-example won't be accecpted by the type checker, because the case {\lstinline|false|} is missing.
+Agda is a \textit{total} language, that means partial functions are not valid constructions.
+Functions are guarantee to terminate and will not crash on all possible inputs.
+The following example won't be accecpted by the type checker, because the case
+{\lstinline|false|} is missing.
 
 \begin{lstlisting}
 not : Bool → Bool
 not true  = false
 \end{lstlisting}
 
-\paragraph{Inductive datatype} Let's move on to a more interesting datatype with inductive definition. Here's the type of natural numbers.
+In practice, Agda would automatically expand all of the cases for us on demand.
+
+\paragraph{Inductive datatype} Let's move on to a more interesting datatype with
+inductive definition. Here's the type of natural numbers.
 % [draft]
 \begin{lstlisting}
 data ℕ : Set where
@@ -514,8 +458,8 @@ it an infix function in this instance.
 
 \paragraph{Dependent functions and type arguments}
 % [reviewed: 1]
-Up till now everything looks much the same as in Haskell, but problem arises as
-we move on to defining something that needs more power of abstract. Take identity
+Up till now everything looks much the same as in Haskell, but a problem arises as
+we move on to defining something that needs more power of abstraction. Take identity
 functions for example:
 
 \begin{lstlisting}
@@ -540,25 +484,26 @@ A → B
 \end{lstlisting}
 
 Where {\lstinline|A|} is the type of domain and {\lstinline|B|} is the type of
-codomain. To make {\lstinline|B|} dependent on the value of {\lstinline|A|}, the
+codomain. To let {\lstinline|B|} depends on the value of {\lstinline|A|}, the
 value has to \textit{named}, in Agda we write:
 
 \begin{lstlisting}
 (x : A) → B x
 \end{lstlisting}
 
+The value of {\lstinline|A|} is named {\lstinline|x|} and then fed to {\lstinline|B|}.
 As a matter of fact, {\lstinline|A → B|} is just a syntax sugar for {\lstinline|(_ : A) → B|}
 with the name of the value being irrelevant. The underline {\lstinline|_|} here
 means "I don't bother naming it".
 
-In this instance, if {\lstinline|A|} happens to be {\lstinline|Set|}, the type
-of all small types, and the result type happens to be solely {\lstinline|x|}:
+Back to our identity function, if {\lstinline|A|} happens to be {\lstinline|Set|},
+the type of all small types, and the result type happens to be solely {\lstinline|x|}:
 
 \begin{lstlisting}
 (x : Set) → x
 \end{lstlisting}
 
-Voila, we have polymorphism. And thus the identity function can now be defined as:
+Voila, we have polymorphism, and thus the identity function can now be defined as:
 
 \begin{lstlisting}
 id : (A : Set) → A → A
@@ -572,13 +517,13 @@ id A x = x
 % [reviewed: 1]
 
 We have implemented an identity function and seen how polymorphism can be modeled
-with dependent types. However, the extra argument that the identity function
+with dependent types. However, the additional argument that the identity function
 takes is rather unnecessary, since its value can always be determined by looking
-at the type of the second arguement.
+at the type of the second argument.
 
 Fortunately, Agda supports \textit{implicit arguments}, a syntax sugar that could
 save us the trouble of having to spell them out. Implicit arguments are enclosed
-in curly brackets in the type expression. We can dispense with these arguments
+in curly brackets in the type expression. We are free to dispense with these arguments
 when their values are irrelevant to the definition.
 
 \begin{lstlisting}
@@ -586,16 +531,16 @@ id : {A : Set} → A → A
 id x = x
 \end{lstlisting}
 
-Or when the type checker can figure them out when being applied.
+Or when the type checker can figure them out on function application.
 
 \begin{lstlisting}
 val : Bool
 val = id true
 \end{lstlisting}
 
-Any arguments can be made implicit, but it doesn't imply that values of
+Any arguments can be made implicit, but it does not imply that values of
 implicit arguments can always be inferred or derived from context. We can always
-make them implicit arguments explicit when being applying:
+make them implicit arguments explicit on application:
 
 \begin{lstlisting}
 val : Bool
@@ -643,26 +588,30 @@ data List (A : Set) : Set where
     _∷_ : A → List A → List A
 \end{lstlisting}
 
-Note that the scope of the parameters extends over the entire declaration, so
-they can appear in the constructors.
+The scope of the parameters extends over the entire declaration, so they can
+appear in the constructors.
 Here are the types of the datatype and its constructors.
 
 \begin{lstlisting}
+infixr 5 _∷_
+
 [] : {A : Set} → List A
 _∷_ : {A : Set} → A → List A → List A
 List : Set → Set
 \end{lstlisting}
 
 Where {\lstinline|A|} can be anything, even {\lstinline|List (List (List Bool))|},
-as long as it is of type {\lstinline|Set|}.
+as long as it is of type {\lstinline|Set|}. {\lstinline|infixr|} specifies the
+precedence of the operator {\lstinline|_∷_|}.
 
 \paragraph{Indexed Datatypes}
 % [draft]
 
 % Indexed datatypes, or inductive families, allow us to not only
-Let's look at something more interesting, a datatype that is similar to
-{\lstinline|List|}, but more powerful, in that it can tell you not only the type
-of its element, but also its length.
+
+{\lstinline|Vec|} is a datatype that is similar to {\lstinline|List|}, but more
+powerful, in that it can tell you not only the type of its element, but also its
+length.
 
 \begin{lstlisting}
 data Vec (A : Set) : ℕ → Set where
@@ -671,45 +620,45 @@ data Vec (A : Set) : ℕ → Set where
 \end{lstlisting}
 
 {\lstinline|Vec A n|} is a vector of values of type {\lstinline|A|} and
-has the length of n. Here are some of the inhabitants:
+has the length of {\lstinline|n|}. Here are some of its inhabitants:
 
 \begin{lstlisting}
 nil : Vec Bool zero
 nil = []
 
-v : Vec Bool (suc (suc zero))
-v = true ∷ false ∷ []
+vec : Vec Bool (suc (suc zero))
+vec = true ∷ false ∷ []
 \end{lstlisting}
 
 We say that {\lstinline|Vec|} is \textit{parameterized} by a type of {\lstinline|Set|}
-and is \textit{indexed} by values of {\lstinline|ℕ|}. But it's not obvious how indices are
-different from parameters.
+and is \textit{indexed} by values of {\lstinline|ℕ|}.
+And we distinct indices from parameters. However, it is not obvious how they are
+different by looking at the declaration.
 
-Parameters are \textit{parametric} (no pun intended), in the sense that, they
-have no effect on the "shape" of a datatype. The choice of parameters only effects
-which kind of values are placed there. Pattern matching on parameters won't reveal
-anything useful about their whereabouts. Because they are \textit{uniform} across
-all constructors, you can always replace the value of an parameter with another one
-of the same type.
+Parameters are \textit{parametric}, in the sense that, they have no effect on the "shape" of a datatype.
+The choice of parameters only effects which kind of values are placed there.
+Pattern matching on parameters does not reveal any insights about their whereabouts.
+Because they are \textit{uniform} across all constructors, one can always replace
+the value of a parameter with another one of the same type.
 
 On the other hand, indices may affect which inhabitants are allowed in the
-datatype. Different constructors may have different index. In that case, pattern
-matching on indices may yield important information about their constructors.
+datatype. Different constructors may have different indices. In that case, pattern
+matching on indices may yield relevant information about their constructors.
 
 For example, if there's term whose type is {\lstinline|Vec Bool zero|}, then
-we certainly know that the constructor must be {\lstinline|[]|}, and if it's
-{\lstinline|Vec Bool (suc n)|} for some {\lstinline|n|}, then the constructor
+we are certain that the constructor must be {\lstinline|[]|}, and if the type
+ is {\lstinline|Vec Bool (suc n)|} for some {\lstinline|n|}, then the constructor
 must be {\lstinline|_∷_|}.
 
-Then we could for instance define a {\lstinline|head|} function that cannot crash.
+We could for instance define a {\lstinline|head|} function that cannot crash.
 
 \begin{lstlisting}
 head : ∀ {A n} → Vec A (suc n) → A
 head (x ∷ xs) = x
 \end{lstlisting}
 
-Note that parameters could be thought as a degenerate case of indices whose distribution
-of values are uniform across all constructors.
+As a side note, parameters can be thought as a degenerate case of indices whose
+distribution of values are uniform across all constructors.
 
 \paragraph{With abstraction}
 % [draft]
@@ -723,7 +672,7 @@ filter p (x ∷ xs) = ?
 \end{lstlisting}
 
 We are stuck here, because the result of {\lstinline|p x|} is only available in
-runtime. Fortunately, with abstraction allows us to pattern match on on the result
+runtime. Fortunately, with abstraction allows us to pattern match on the result
 of an intermediate computation by adding the result as an extra argument on the
 left-hand side:
 
@@ -784,25 +733,49 @@ head []       proof = ?0
 head (x ∷ xs) proof = ?1
 \end{lstlisting}
 
+\paragraph{Propositions as types, proofs as programms}
+
+\paragraph{Standard library}
+
+It would be inconvenient if we have to construct everything we need from scratch.
+Luckily, the community has maintained a standard library that comes with many useful
+and common constructions.
+
+The standard library is not "chartered" by the compiler or the type checker,
+there's simply nothing special about it. We may as well as roll our own library.
+\footnote{Some primitives that require special treatments, such as IO, are take cared with
+language pragmas exposed by Agda.}
+
+
+
 \section{Num : a representation for positional numeral systems}\label{representation}
 % [draft]
 
-% \subsection{Time complexity}
+In this section, we will demonstrate how to construct the representation for positional
+numeral systems in Agda. The representation is constructed as a datatype, indexed
+by the generalizations introduced in section~\ref{introduction}.
+
+\begin{itemize}
+    \item \textbf{base}: the base of a numeral system, denoted {\lstinline|b|}.
+    \item \textbf{\#digit}: the number of digits, denoted {\lstinline|d|}.
+    \item \textbf{offset}: the number where the digits starts from, denoted {\lstinline|o|}.
+\end{itemize}
 
 \subsection{Digits}
 % [draft]
 
-Numbers in positional numeral systems are composed of a series of symbols
-so-called \textbf{digits}. A system can only have \textbf{finitely many} digits.
+A system can only have \textbf{finitely many} digits.
 Operations on these digits, such as addition, must be \textbf{constant time}.
 Notice that the problem size of time complexity we are discussing here refers
-only to the value of a number. And since the number of digits is independent of
-the value of a number, time complexity of functions on digits should be trivially
+only to the value of a numeral. And since the value of digits is independent of
+the value of a numeral, time complexity of functions on digits should be trivially
 constant.
 
-\paragraph{Fin}
+\subsubsection{Fin}
+
 To represent a digit, we use a datatype that is conventionally called \textit{Fin}
 which can be indexed to have some exact number of inhabitants.
+
 
 \begin{lstlisting}
 data Fin : ℕ → Set where
@@ -816,14 +789,27 @@ with every {\lstinline|suc|}, and there can only be at most {\lstinline|n|} of
 them before reaching {\lstinline|Fin (suc n)|}. In other words, {\lstinline|Fin n|}
 has exactly \textit{n} inhabitants.
 
-Our digits are simply {\lstinline|Fin|}.
+\textit{Fin} is available in the stardard library, along with other auxiliary
+functions:
+
+\begin{itemize}
+    \item {\lstinline|toℕ : ∀ {n} → Fin n → ℕ|}: converts from {\lstinline|Fin n|} to {\lstinline|ℕ|}.
+    \item {\lstinline|fromℕ≤ : ∀ {m n} → m < n → Fin n|}: converts from {\lstinline|ℕ|} to {\lstinline|Fin n|} given the number is small enough.
+    \item {\lstinline|#_ : ∀ m {n} {m<n : True (suc m N≤? n)} → Fin n|}: similar to {\lstinline|fromℕ≤|}, but more convenient, since
+        the proof of {\lstinline|m<n|} is decidable thus can be inferred and made implicit.
+    \item {\lstinline|inject≤ : ∀ {m n} → Fin m → m ≤ n → Fin n|}: converts a smaller {\lstinline|Fin|} to a larger {\lstinline|Fin|}.
+\end{itemize}
+
+\subsubsection{Definition}
+
+{\lstinline|Digit|} is simply just a synonym for {\lstinline|Fin|}.
 
 \begin{lstlisting}
 Digit : ℕ → Set
 Digit = Fin
 \end{lstlisting}
 
-Binary digits for example can be defined as:
+Binary digits for example can be represented as:
 
 \begin{lstlisting}
 Binary : Set
@@ -836,35 +822,98 @@ Binary = Digit 2
 一 = suc zero
 \end{lstlisting}
 
-But these digits bears no meaning without converting to {\lstinline|ℕ|}.
-Here {\lstinline|d|}
+\subsubsection{Converting from and to natural numbers}
+
+Digit are evaluated together with the offset {\lstinline|o|} of a system.
 
 \begin{lstlisting}
 Digit-toℕ : ∀ {d} → Digit d → ℕ → ℕ
 Digit-toℕ x o = toℕ x + o
 \end{lstlisting}
 
-% number of inhabitants. \textit{Fin} would do that just fine.
+Not all natural numbers can be converted to digits. The value has to be in certain
+range, between $ o $ and $ d + o $.
 
-% Because we would like to index the number of symbols
+\begin{lstlisting}
+Digit-fromℕ : ∀ {d} → (n o : ℕ) → d + o ≥ n → Digit (suc d)
+Digit-fromℕ {d} n o upper-bound with n ∸ o ≤? d
+Digit-fromℕ {d} n o upper-bound | yes p = fromℕ≤ (s≤s p)
+Digit-fromℕ {d} n o upper-bound | no ¬p = contradiction p ¬p
+    where   p : n ∸ o ≤ d
+            p = start
+                    n ∸ o
+                ≤⟨ ∸n-mono o upper-bound ⟩
+                    (d + o) ∸ o
+                ≤⟨ reflexive (m+n∸n≡m d o) ⟩
+                    d
+                □
+\end{lstlisting}
+
+\subsubsection{Properties}
+
+% A digit is bounded to have
 %
-% To represent a digit, we need a datatype that can be indexed to have an exact
-% number of inhabitants. \textit{Fin} would do that just fine.
+% \begin{lstlisting}
+% Digit-upper-bound : ∀ {d} → (o : ℕ) → (x : Digit d) → Digit-toℕ x o < d + o
+% Digit-upper-bound {d} o x = +n-mono o (bounded x)
+%
+% Digit-lower-bound : ∀ {d} → (o : ℕ) → (x : Digit d) → Digit-toℕ x o ≥ o
+% Digit-lower-bound {d} o x = m≤n+m o (toℕ x)
+% \end{lstlisting}
+
+\subsection{Num}
+% [draft]
+
+Numerals in positional numeral systems are composed of sequences of \textbf{digits}.
+
+\subsubsection{Definition}
+The definition of {\lstinline|Numeral|} is similar to that of {\lstinline|List|},
+except that a {\lstinline|Numeral|} must contain at least one digit while a list
+may contain no elements at all. {\lstinline|Numeral|} is indexed by all three
+generalizations.
+
+\begin{lstlisting}
+infixr 5 _∷_
+
+data Numeral : ℕ → ℕ → ℕ → Set where
+    _∙  : ∀ {b d o} → Digit d → Numeral b d o
+    _∷_ : ∀ {b d o} → Digit d → Numeral b d o → Numeral b d o
+\end{lstlisting}
+
+The decimal number "2016" for example can be represented like this:
+
+\begin{lstlisting}
+MMXVI : Numeral 10 10 0
+MMXVI = # 6 ∷ # 1 ∷ # 0 ∷ (# 2) ∙
+\end{lstlisting}
 
 
 
-% In fact, since there are only a finite number of digits,
+\begin{lstlisting}
+infixr 5 _∷_
+
+data Numeral : ℕ → ℕ → ℕ → Set where
+    _∙  : ∀ {b d o} → Digit d → Numeral b d o
+    _∷_ : ∀ {b d o} → Digit d → Numeral b d o → Numeral b d o
+\end{lstlisting}
 
 
-\subsection{Bases}
-\subsection{Offsets}
-\subsection{Number of digits}
 
-\section{Properties of Num}
-\subsection{Maximum}
-\subsection{Bounded}
-\subsection{Bounded}
-\subsection{Views}
+\subsubsection{Converting to natural numbers}
+
+\begin{lstlisting}
+⟦_⟧ : ∀ {b d o} → (xs : Numeral b d o) → ℕ
+⟦_⟧ {_} {_} {o} (x ∙)    = Digit-toℕ x o
+⟦_⟧ {b} {_} {o} (x ∷ xs) = Digit-toℕ x o + ⟦ xs ⟧ * b
+\end{lstlisting}
+
+% Numerals in positional numeral systems are composed of sequences of symbols
+% so-called \textbf{digits}. A system can only have \textbf{finitely many} digits.
+% Operations on these digits, such as addition, must be \textbf{constant time}.
+% Notice that the problem size of time complexity we are discussing here refers
+% only to the value of a numeral. And since the value of digits is independent of
+% the value of a numeral, time complexity of functions on digits should be trivially
+% constant.
 
 \section{Conclusions}\label{conclusions}
 
