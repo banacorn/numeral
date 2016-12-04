@@ -758,13 +758,29 @@ head []       ()
 head (x ∷ xs) proof = x
 \end{lstlisting}
 
+Whenever an empty list is applied to {\lstinline|head|},
+the resulting function would have type {\lstinline|head [] : ⊥ → A|},
+which is impossible to fulfill unless one could find a value of type {\lstinline|⊥|}.
+
 \paragraph{Propositions as types, proofs as programs}
 
-The previous paragraphs are mostly addressing the \textit{programming}
-aspect of this language. But Agda is more than that! Recall the Curry–Howard
-correspondence, writing
+The previous paragraphs are mostly about the \textit{programming}
+aspect of the language, but there is another aspect to it.
+Recall the Curry–Howard correspondence, propositions are types and proofs are
+programs. A proof exists for a proposition the way that a value inhabits a type.
 
-% So far we are mostly the programming aspect of this langauge.
+So {\lstinline|non-empty xs|} is a type, but it can also be thought of as a
+proposition stating that {\lstinline|xs|} is not empty.
+When {\lstinline|non-empty xs|} evaluates to {\lstinline|⊥|}, no value inhabits
+{\lstinline|⊥|}, that means no proof exists for the proposition {\lstinline|⊥|};
+when {\lstinline|non-empty xs|} evaluates to {\lstinline|⊥|}, {\lstinline|tt|}
+inhabits {\lstinline|⊥|}, a trivial proof exists for the proposition {\lstinline|⊤|}.
+
+In intuitionistic logic, a proposition is considered to be "true" when it is
+inhabited by a proof, and considered to be "false" when there exists no proof.
+Contrary to classical logic, where propositions evaluates to truth values.
+We can see that {\lstinline|⊤|} and {\lstinline|⊥|} correspondes to \textit{true}
+and \textit{false} in this sense.
 
 \paragraph{Standard library}
 
