@@ -55,6 +55,9 @@ Even? (suc (suc n)) | no ¬p = no (step-back ¬p)
             step-back ¬p (step p) = contradiction p ¬p
 
 
+f : (a b : ℕ) → a ≡ b → b ≡ a
+f a .a refl = {!   !}
+
 
 -- _<-Num_ : ∀ {b d o}
 --     → (xs ys : Num b d o)

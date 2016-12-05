@@ -131,7 +131,7 @@ system that is implemented in virtually all arithmetic logic unit (ALU) hardware
 is not among them.
 
 In our representation, operations such as addition would take $ O(log{}n)$ for some
-number $ n $ in a system where $ base \textgreater 1 $. Since the number $ n $
+number $ n $ in a system where $ base \text{\textgreater} 1 $. Since the number $ n $
 would have length $ log_{base} n $ and operations on each digit should be constant.
 However, these operations only takes constant time in machines!
 
@@ -862,6 +862,77 @@ The syntax of {\lstinline|λ ()|} looks weird, as the result of contracting
 an argument of type {\lstinline|⊥|} of a lambda expression {\lstinline|λ x → ?|}.
 It is a convention to suffix a decidable function's name with {\lstinline|?|}.
 
+\paragraph{Propositional equality}
+
+Saying that two things are "equal" is a notoriously intricate topic in type theory.
+There are many different notions of equality
+\cite{equality}. We will not go
+into each kind of equalities in depth but only skim through those exist in Agda.
+
+\textit{Definitional equality}, or \textit{intensional equality} is simply a
+synonym, a relation between linguistic expressions. It is a primitive judgement
+of the system, stating that two things are the same to the type checker
+\textbf{by definition}.
+
+\textit{Computational equality} is a slightly more powerful notion.
+Two programs are consider equal if they compute (beta-reduce) to the same value.
+For example, {\lstinline|1 + 1|} and {\lstinline|2|} are equal in Agda in this notion.
+
+But we cannot say that {\lstinline|a + b|} and {\lstinline|b + a|}
+are equal with definitional or computational equality, because this kind of equality
+is \textit{extensional}. However, it could be expressed as a \textit{proposition}
+with \textit{identity types}.
+
+\begin{lstlisting}
+data _≡_ {A : Set} (x : A) : A → Set where
+    refl : x ≡ x
+\end{lstlisting}
+
+For all {\lstinline|a b : A|}, if {\lstinline|a|} and {\lstinline|b|} are
+\textit{computational equal}, that is, both computes to the same value,
+then {\lstinline|refl|} is a proof of {\lstinline|a ≡ b|},
+the \textit{propositional equality} of {\lstinline|a|} and {\lstinline|b|}.
+
+{\lstinline|_≡_|} is also an equivalence relation, meaning that these properties
+hold:
+
+\begin{lstlisting}
+sym : {A : Set} {a b : A} → a ≡ b → b ≡ a
+sym refl = refl
+
+trans : {A : Set} {a b c : A} → a ≡ b → b ≡ c → a ≡ c
+trans refl refl = refl
+
+cong : {A B : Set} {a b : A} → (f : A → B) → a ≡ b → f a ≡ f b
+cong f refl = refl
+\end{lstlisting}
+
+Although these {\lstinline|refl|}s look all the same at term level, they
+are proofs of different propositional equalities.
+
+\paragraph{Dotted patterns}
+
+Consider an alternative version of {\lstinline|sym|} on {\lstinline|ℕ|}.
+
+\begin{lstlisting}
+sym' : (a b : ℕ) → a ≡ b → b ≡ a
+sym' a b eq = ?
+\end{lstlisting}
+
+Where {\lstinline|eq|} has type {\lstinline|a ≡ b|}.
+If we pattern match on {\lstinline|eq|} then Agda would rewrite {\lstinline|b|}
+as {\lstinline|.a|} and the goal type becomes {\lstinline|a ≡ a|}.
+
+\begin{lstlisting}
+sym' : (a .a : ℕ) → a ≡ a → a ≡ a
+sym' a .a eq = ?
+\end{lstlisting}
+
+What happened under the hood is that {\lstinline|a|} and {\lstinline|b|} are
+\textit{unified} as the same thing. The second argument is dotted to signify that
+it is \textit{constrained} by the first argument {\lstinline|a|}. {\lstinline|a|}
+becomes the only argument available for further binding or pattern matching.
+
 \paragraph{Standard library}
 
 It would be inconvenient if we have to construct everything we need from scratch.
@@ -922,8 +993,8 @@ functions:
 \begin{itemize}
     \item {\lstinline|toℕ : ∀ {n} → Fin n → ℕ|}: converts from {\lstinline|Fin n|} to {\lstinline|ℕ|}.
     \item {\lstinline|fromℕ≤ : ∀ {m n} → m < n → Fin n|}: converts from {\lstinline|ℕ|} to {\lstinline|Fin n|} given the number is small enough.
-    \item {\lstinline|#_ : ∀ m {n} {m<n : True (suc m N≤? n)} → Fin n|}: similar to {\lstinline|fromℕ≤|}, but more convenient, since
-        the proof of {\lstinline|m<n|} is decidable thus can be inferred and made implicit.
+    \item {\lstinline|#_ : ∀ m {n} {m<n : True (suc m N≤? n)} → Fin n|}:
+        similar to {\lstinline|fromℕ≤|}, but more convenient, since the proof of {\lstinline|m<n|} is decidable thus can be inferred and made implicit.
     \item {\lstinline|inject≤ : ∀ {m n} → Fin m → m ≤ n → Fin n|}: converts a smaller {\lstinline|Fin|} to a larger {\lstinline|Fin|}.
 \end{itemize}
 
