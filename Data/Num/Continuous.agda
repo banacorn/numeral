@@ -1,5 +1,6 @@
 module Data.Num.Continuous where
 
+open import Data.Num.Digit
 open import Data.Num.Core
 open import Data.Num.Maximum
 open import Data.Num.Bounded
@@ -34,7 +35,7 @@ open DecTotalOrder decTotalOrder using (reflexive) renaming (refl to ≤-refl)
 ------------------------------------------------------------------------
 
 Continuous : ∀ b d o → Set
-Continuous b d o = (xs : Num b d o) → Incrementable xs
+Continuous b d o = (xs : Numeral b d o) → Incrementable xs
 
 Bounded⇒¬Continuous : ∀ {b d o}
     → Bounded b d o
@@ -60,7 +61,7 @@ Continuous-Proper-Gapped#0 : ∀ {b d o}
 Continuous-Proper-Gapped#0 {b} {d} {o} proper gapped cont
     = contradiction (cont counter-example) (Continuous-Proper-Gapped-counter-example proper gapped)
     where
-        counter-example : Num (suc b) (suc d) o
+        counter-example : Numeral (suc b) (suc d) o
         counter-example = greatest-digit d ∙
 
 Continuous-Proper-¬Gapped#0 : ∀ {b d o}
@@ -113,7 +114,7 @@ Continuous⇒¬Gapped#0 cont proper gapped#0 = contradiction (toWitness cont) (C
 --     → (True (Continuous? b (suc d) o))
 --     → (val : ℕ)
 --     → (True (o ≤? val))
---     → Num b (suc d) o
+--     → Numeral b (suc d) o
 -- fromℕ {o = zero} cont zero o≤n = z ∙
 -- fromℕ {o = zero} cont (suc n) o≤n = 1+ cont (fromℕ cont n tt)
 -- fromℕ {o = suc o} cont zero ()

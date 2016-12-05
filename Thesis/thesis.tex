@@ -782,6 +782,86 @@ Contrary to classical logic, where propositions evaluates to truth values.
 We can see that {\lstinline|⊤|} and {\lstinline|⊥|} correspondes to \textit{true}
 and \textit{false} in this sense.
 
+Negation can be defined as a function from a proposition to {\lstinline|⊥|}.
+
+\begin{lstlisting}
+¬ : Set → Set
+¬ P = P → ⊥
+\end{lstlisting}
+
+We could exploit {\lstinline|⊥|} further to deploy the principle of explosion
+of intuitionistic logic, which states that: "from falsehood, anything (follows)"
+(Latin: \textit{ex falso (sequitur) quodlibet}).
+
+\begin{lstlisting}
+⊥-elim : ∀ {Whatever : Set} → ⊥ → Whatever
+⊥-elim ()
+\end{lstlisting}
+
+\paragraph{Decidable propositions}
+
+A proposition is decidable when it can be proved \textit{or} disapproved.
+\footnote{The connective \textit{or} here is not a disjunction in the classical sense.
+Either way, a proof or a disproval has to be given.}
+
+\begin{lstlisting}
+data Dec (P : Set) : Set where
+    yes :   P → Dec P
+    no  : ¬ P → Dec P
+\end{lstlisting}
+
+{\lstinline|Dec|} is very similar to its two-valued cousin {\lstinline|Bool|},
+but way more powerful, because it also explains (with a proof) why a proposition
+holds or why it does not.
+
+Suppose we want to know if a natural is even or odd. We know that {\lstinline|zero|}
+is an even number, and if a number is even then its successor's successor is also even.
+
+\begin{lstlisting}
+    data Even : ℕ → Set where
+        base : Even zero
+        step : ∀ {n} → Even n → Even (suc (suc n))
+\end{lstlisting}
+
+We also need the opposite of {\lstinline|step|} as a lemma.
+
+\begin{lstlisting}
+    2-steps-back : ∀ {n} → ¬ (Even n) → ¬ (Even (suc (suc n)))
+    2-steps-back ¬p q = ?
+\end{lstlisting}
+
+{\lstinline|2-steps-back|} takes two argument instead of one because the return
+type {\lstinline|¬ (Even (suc (suc n)))|} is actually a synonym of
+{\lstinline|Even (suc (suc n)) → ⊥|}. Pattern matching on the second argument
+of type {\lstinline|Even (suc (suc n))|} further reveals that it could only be
+constructed by {\lstinline|step|}.  By contradicting {\lstinline|¬p : ¬ (Even n)|}
+and {\lstinline|p : Even n|}, we complete the proof of this lemma.
+
+\begin{lstlisting}
+    contradiction : ∀ {P Whatever : Set} → P → ¬ P → Whatever
+    contradiction p ¬p = ⊥-elim (¬p p)
+
+    two-steps-back : ∀ {n} → ¬ (Even n) → ¬ (Even (suc (suc n)))
+    two-steps-back ¬p (step p) = contradiction p ¬p
+\end{lstlisting}
+
+Finally, {\lstinline|Even?|} determines a number is even by induction on its
+predecessor's predecessor. {\lstinline|step|} and {\lstinline|two-steps-back|}
+can be viewed as functions that transforms proofs.
+
+\begin{lstlisting}
+    Even? : (n : ℕ) → Dec (Even n)
+    Even? zero          = yes base
+    Even? (suc zero)    = no (λ ())
+    Even? (suc (suc n)) with Even? n
+    Even? (suc (suc n)) | yes p = yes (step p)
+    Even? (suc (suc n)) | no ¬p = no  (two-steps-back ¬p)
+\end{lstlisting}
+
+The syntax of {\lstinline|λ ()|} looks weird, as the result of contracting
+an argument of type {\lstinline|⊥|} of a lambda expression {\lstinline|λ x → ?|}.
+It is a convention to suffix a decidable function's name with {\lstinline|?|}.
+
 \paragraph{Standard library}
 
 It would be inconvenient if we have to construct everything we need from scratch.

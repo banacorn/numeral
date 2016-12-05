@@ -1,5 +1,6 @@
 module Data.Num.Maximum where
 
+open import Data.Num.Digit
 open import Data.Num.Core
 
 open import Data.Nat
@@ -29,12 +30,12 @@ open DecTotalOrder decTotalOrder using (reflexive) renaming (refl to ≤-refl)
 
 ------------------------------------------------------------------------
 
-Maximum : ∀ {b d o} → (xs : Num b d o) → Set
-Maximum {b} {d} {o} xs = ∀ (ys : Num b d o) → ⟦ xs ⟧ ≥ ⟦ ys ⟧
+Maximum : ∀ {b d o} → (xs : Numeral b d o) → Set
+Maximum {b} {d} {o} xs = ∀ (ys : Numeral b d o) → ⟦ xs ⟧ ≥ ⟦ ys ⟧
 
 
 Maximum-unique : ∀ {b d o}
-    → (max xs : Num b d o)
+    → (max xs : Numeral b d o)
     → Maximum max
     → Maximum xs
     → ⟦ max ⟧ ≡ ⟦ xs ⟧
@@ -44,7 +45,7 @@ Maximum-unique max xs max-max xs-max = IsPartialOrder.antisym isPartialOrder
 
 toℕ-NullBase : ∀ {d o}
     → (x : Digit d)
-    → (xs : Num 0 d o)
+    → (xs : Numeral 0 d o)
     → ⟦ x ∷ xs ⟧ ≡ Digit-toℕ x o
 toℕ-NullBase {d} {o} x xs =
     begin
@@ -56,7 +57,7 @@ toℕ-NullBase {d} {o} x xs =
     ∎
 
 Maximum-NullBase-Greatest : ∀ {d} {o}
-    → (xs : Num 0 (suc d) o)
+    → (xs : Numeral 0 (suc d) o)
     → Greatest (lsd xs)
     → Maximum xs
 Maximum-NullBase-Greatest {_} {o} (x ∙) greatest (y ∙) = greatest-of-all o x y greatest
@@ -89,7 +90,7 @@ Maximum-NullBase-Greatest {_} {o} (x ∷ xs) greatest (y ∷ ys) =
 
 
 Maximum⇒Greatest : ∀ {b} {d} {o}
-    → (xs : Num b d o)
+    → (xs : Numeral b d o)
     → Maximum xs
     → Greatest (lsd xs)
 Maximum⇒Greatest (x ∙) max with Greatest? x
@@ -98,7 +99,7 @@ Maximum⇒Greatest {b} {zero} (() ∙) max | no ¬greatest
 Maximum⇒Greatest {b} {suc d} {o} (x ∙) max | no ¬greatest
     = contradiction p ¬p
     where
-        ys : Num b (suc d) o
+        ys : Numeral b (suc d) o
         ys = greatest-digit d ∙
 
         p : Digit-toℕ x o ≥ ⟦ ys ⟧
@@ -119,7 +120,7 @@ Maximum⇒Greatest {b} {zero}     (() ∷ xs) max | no greatest
 Maximum⇒Greatest {b} {suc d} {o} (x ∷ xs) max | no ¬greatest
     = contradiction p ¬p
     where
-        ys : Num b (suc d) o
+        ys : Numeral b (suc d) o
         ys = greatest-digit d ∷ xs
 
         p : ⟦ x ∷ xs ⟧ ≥ ⟦ ys ⟧
@@ -137,19 +138,19 @@ Maximum⇒Greatest {b} {suc d} {o} (x ∷ xs) max | no ¬greatest
 
 
 Maximum-NullBase : ∀ {d} {o}
-    → (xs : Num 0 (suc d) o)
+    → (xs : Numeral 0 (suc d) o)
     → Dec (Maximum xs)
 Maximum-NullBase {d} {o} xs with Greatest? (lsd xs)
 Maximum-NullBase {d} {o} xs | yes greatest = yes (Maximum-NullBase-Greatest xs greatest)
 Maximum-NullBase {d} {o} xs | no ¬greatest = no (contraposition (Maximum⇒Greatest xs) ¬greatest)
 
-toℕ-AllZeros : ∀ {b} → (xs : Num b 1 0) → ⟦ xs ⟧ ≡ 0
+toℕ-AllZeros : ∀ {b} → (xs : Numeral b 1 0) → ⟦ xs ⟧ ≡ 0
 toℕ-AllZeros     (z    ∙   ) = refl
 toℕ-AllZeros     (s () ∙   )
 toℕ-AllZeros {b} (z    ∷ xs) = cong (λ w → w * b) (toℕ-AllZeros xs)
 toℕ-AllZeros     (s () ∷ xs)
 
-Maximum-AllZeros : ∀ {b} → (xs : Num b 1 0) → Maximum xs
+Maximum-AllZeros : ∀ {b} → (xs : Numeral b 1 0) → Maximum xs
 Maximum-AllZeros xs ys = reflexive $
     begin
         ⟦ ys ⟧
@@ -160,7 +161,7 @@ Maximum-AllZeros xs ys = reflexive $
     ∎
 
 Maximum-Proper : ∀ {b d o}
-    → (xs : Num (suc b) (suc d) o)
+    → (xs : Numeral (suc b) (suc d) o)
     → (proper : 2 ≤ suc (d + o))
     → ¬ (Maximum xs)
 Maximum-Proper {b} {d} {o} xs proper claim = contradiction p ¬p
@@ -187,14 +188,14 @@ Maximum-Proper {b} {d} {o} xs proper claim = contradiction p ¬p
 
 
 Maximum? : ∀ {b d o}
-    → (xs : Num b d o)
+    → (xs : Numeral b d o)
     → Dec (Maximum xs)
 Maximum? {b} {d} {o} xs with numView b d o
 Maximum? xs | NullBase d o with ⟦ _∙ {0} {suc d} {o} (greatest-digit d) ⟧ ≟ ⟦ xs ⟧
 Maximum? xs | NullBase d o | yes p rewrite (sym p) = yes (Maximum-NullBase-Greatest (greatest-digit d ∙) (greatest-digit-is-the-Greatest d))
 Maximum? xs | NullBase d o | no ¬p = no (contraposition (Maximum-unique ys xs max-ys) ¬p)
     where
-        ys : Num 0 (suc d) o
+        ys : Numeral 0 (suc d) o
         ys = greatest-digit d ∙
 
         max-ys : Maximum ys

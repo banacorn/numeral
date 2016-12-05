@@ -1,5 +1,6 @@
 module Sandbox.Dev where
 
+open import Data.Num.Digit
 open import Data.Num.Core
 open import Data.Num.Bounded
 open import Data.Num.Maximum
@@ -36,6 +37,24 @@ open DecTotalOrder decTotalOrder using (reflexive) renaming (refl to ≤-refl)
 open import Induction
 open import Induction.WellFounded as WF
 open import Level using (Lift)
+
+
+
+data Even : ℕ → Set where
+    base : Even zero
+    step : ∀ {n} → Even n → Even (suc (suc n))
+
+Even? : (n : ℕ) → Dec (Even n)
+Even? zero = yes base
+Even? (suc zero) = no (λ ())
+Even? (suc (suc n)) with Even? n
+Even? (suc (suc n)) | yes p = yes (step p)
+Even? (suc (suc n)) | no ¬p = no (step-back ¬p)
+    where
+            step-back : ∀ {n} → ¬ (Even n) → ¬ (Even (suc (suc n)))
+            step-back ¬p (step p) = contradiction p ¬p
+
+
 
 -- _<-Num_ : ∀ {b d o}
 --     → (xs ys : Num b d o)

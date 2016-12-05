@@ -1,5 +1,6 @@
 module Data.Num.Increment where
 
+open import Data.Num.Digit
 open import Data.Num.Core
 open import Data.Num.Bounded
 open import Data.Num.Maximum
@@ -31,24 +32,24 @@ open ≤-Reasoning renaming (begin_ to start_; _∎ to _□; _≡⟨_⟩_ to _�
 open DecTotalOrder decTotalOrder using (reflexive) renaming (refl to ≤-refl)
 
 ------------------------------------------------------------------------
--- a number is incrementable if there exists some n' : Num b d o such that ⟦ n' ⟧ℕ ≡ suc ⟦ n ⟧ℕ
+-- a number is incrementable if there exists some n' : Numeral b d o such that ⟦ n' ⟧ℕ ≡ suc ⟦ n ⟧ℕ
 
-Incrementable : ∀ {b d o} → (xs : Num b d o) → Set
-Incrementable {b} {d} {o} xs = Σ[ xs' ∈ Num b d o ] ⟦ xs' ⟧ ≡ suc ⟦ xs ⟧
+Incrementable : ∀ {b d o} → (xs : Numeral b d o) → Set
+Incrementable {b} {d} {o} xs = Σ[ xs' ∈ Numeral b d o ] ⟦ xs' ⟧ ≡ suc ⟦ xs ⟧
 
 m≡1+n⇒m>n : ∀ {m n} → m ≡ suc n → m > n
 m≡1+n⇒m>n {zero}  {n}  ()
 m≡1+n⇒m>n {suc m} {.m} refl = s≤s ≤-refl
 
 Maximum⇒¬Incrementable : ∀ {b d o}
-    → (xs : Num b d o)
+    → (xs : Numeral b d o)
     → (max : Maximum xs)
     → ¬ (Incrementable xs)
 Maximum⇒¬Incrementable xs max (evidence , claim)
     = contradiction (max evidence) (>⇒≰ (m≡1+n⇒m>n claim))
 
 next-number-NullBase-lemma : ∀ {d o}
-    → (xs : Num 0 (suc d) o)
+    → (xs : Numeral 0 (suc d) o)
     → (¬max : ¬ (Maximum xs))
     → ⟦ next-number-NullBase xs ¬max ⟧ ≡ suc ⟦ xs ⟧
 next-number-NullBase-lemma {d} {o} xs ¬max with nullBaseView d o
@@ -69,7 +70,7 @@ next-number-NullBase-lemma {d} {o} (x ∷ xs) ¬max | Others bound | no ¬greate
     ∎
 
 IsGapped⇒¬Incrementable : ∀ {b d o}
-    → (xs : Num (suc b) (suc d) o)
+    → (xs : Numeral (suc b) (suc d) o)
     → (greatest : Greatest (lsd xs))
     → (proper : 2 ≤ suc (d + o))
     → (gapped : Gapped xs proper)
@@ -77,7 +78,7 @@ IsGapped⇒¬Incrementable : ∀ {b d o}
 IsGapped⇒¬Incrementable {b} {d} {o} xs greatest proper gapped (incremented , claim)
     = contradiction ⟦next⟧>⟦incremented⟧ ⟦next⟧≯⟦incremented⟧
     where
-        next : Num (suc b) (suc d) o
+        next : Numeral (suc b) (suc d) o
         next = next-number-Proper xs proper
 
         ⟦next⟧>⟦incremented⟧ : ⟦ next ⟧ > ⟦ incremented ⟧
@@ -99,7 +100,7 @@ IsGapped⇒¬Incrementable {b} {d} {o} xs greatest proper gapped (incremented , 
 
 
 Incrementable?-Proper : ∀ {b d o}
-    → (xs : Num (suc b) (suc d) o)
+    → (xs : Numeral (suc b) (suc d) o)
     → (proper : 2 ≤ suc (d + o))
     → Dec (Incrementable xs)
 Incrementable?-Proper xs proper with nextView xs proper
@@ -124,7 +125,7 @@ Incrementable?-Proper xs proper | NotGapped b d o greatest ¬gapped
 
 
 Incrementable? : ∀ {b d o}
-    → (xs : Num b d o)
+    → (xs : Numeral b d o)
     → Dec (Incrementable xs)
 Incrementable? xs with Maximum? xs
 Incrementable? xs | yes max = no (Maximum⇒¬Incrementable xs max)
@@ -139,13 +140,13 @@ Incrementable? xs | no ¬max | Proper b d o proper
     = Incrementable?-Proper xs proper
 
 increment : ∀ {b d o}
-    → (xs : Num b d o)
+    → (xs : Numeral b d o)
     → (incr : True (Incrementable? xs))
-    → Num b d o
+    → Numeral b d o
 increment xs incr = proj₁ $ toWitness incr
 
 increment-next-number-Proper : ∀ {b d o}
-    → (xs : Num (suc b) (suc d) o)
+    → (xs : Numeral (suc b) (suc d) o)
     → (proper : 2 ≤ suc (d + o))
     → (incr : True (Incrementable?-Proper xs proper))
     → proj₁ (toWitness incr) ≡ next-number-Proper xs proper
@@ -163,7 +164,7 @@ increment-next-number-Proper xs proper incr | NotGapped b d o greatest ¬gapped 
     ∎
 
 increment-next-number : ∀ {b d o}
-    → (xs : Num b d o)
+    → (xs : Numeral b d o)
     → (¬max : ¬ (Maximum xs))
     → (incr : True (Incrementable? xs))
     → increment xs incr ≡ next-number xs ¬max
@@ -179,7 +180,7 @@ increment-next-number xs _ incr | no ¬max | Proper b d o proper
 
 
 Gapped#N⇒Gapped#0 : ∀ {b d o}
-    → (xs : Num (suc b) (suc d) o)
+    → (xs : Numeral (suc b) (suc d) o)
     → (proper : 2 ≤ suc (d + o))
     → Gapped#N b d o xs proper
     → Gapped#0 b d o
@@ -224,7 +225,7 @@ Gapped#N⇒Gapped#0 xs proper gapped#N | NotGapped b d o greatest ¬gapped =
         □
 
 ¬Gapped#0⇒¬Gapped#N : ∀ {b d o}
-    → (xs : Num (suc b) (suc d) o)
+    → (xs : Numeral (suc b) (suc d) o)
     → (proper : 2 ≤ suc (d + o))
     → ¬ (Gapped#0 b d o)
     → ¬ (Gapped#N b d o xs proper)

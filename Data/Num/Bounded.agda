@@ -1,5 +1,6 @@
 module Data.Num.Bounded where
 
+open import Data.Num.Digit
 open import Data.Num.Core
 open import Data.Num.Maximum
 
@@ -31,7 +32,7 @@ open DecTotalOrder decTotalOrder using (reflexive) renaming (refl to ≤-refl)
 ------------------------------------------------------------------------
 -- a system is bounded if there exists the greatest number
 Bounded : ∀ b d o → Set
-Bounded b d o = Σ[ xs ∈ Num b d o ] Maximum xs
+Bounded b d o = Σ[ xs ∈ Numeral b d o ] Maximum xs
 
 Bounded-NullBase : ∀ d o → Bounded 0 (suc d) o
 Bounded-NullBase d o = (greatest-digit d ∙) , (Maximum-NullBase-Greatest (greatest-digit d ∙) (greatest-digit-is-the-Greatest d))
@@ -80,14 +81,14 @@ Bounded? _ _ _ | Proper b d o proper
 -- Misc
 
 Maximum⇒Bounded : ∀ {b d o}
-    → (xs : Num b d o)
+    → (xs : Numeral b d o)
     → Maximum xs
     → Bounded b d o
 Maximum⇒Bounded xs max = xs , max
 
 -- contraposition of Maximum⇒Bounded
 ¬Bounded⇒¬Maximum : ∀ {b d o}
-    → (xs : Num b d o)
+    → (xs : Numeral b d o)
     → ¬ (Bounded b d o)
     → ¬ (Maximum xs)
 ¬Bounded⇒¬Maximum xs = contraposition (Maximum⇒Bounded xs)
