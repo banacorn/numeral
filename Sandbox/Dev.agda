@@ -54,9 +54,17 @@ Even? (suc (suc n)) | no ¬p = no (step-back ¬p)
             step-back : ∀ {n} → ¬ (Even n) → ¬ (Even (suc (suc n)))
             step-back ¬p (step p) = contradiction p ¬p
 
++id : (a : ℕ) → a + zero ≡ a
++id zero = refl
++id (suc a) = cong suc (+id a)
 
-f : (a b : ℕ) → a ≡ b → b ≡ a
-f a .a refl = {!   !}
+-- com : (a b : ℕ) → a + b ≡ b + a
+-- com zero b = sym (+-right-identity b)
+-- com (suc a) b = trans (cong suc (com a b)) (sym (+-suc b a))
+
+assoc : (m n o : ℕ) → (m + n) + o ≡ m + (n + o)
+assoc zero    n o = refl
+assoc (suc m) n o = cong suc (assoc m n o)
 
 
 -- _<-Num_ : ∀ {b d o}

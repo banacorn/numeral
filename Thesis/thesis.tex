@@ -893,12 +893,12 @@ data _≡_ {A : Set} (x : A) : A → Set where
 \end{lstlisting}
 
 For all {\lstinline|a b : A|}, if {\lstinline|a|} and {\lstinline|b|} are
-\textit{computational equal}, that is, both computes to the same value,
+\textit{computationally equal}, that is, both computes to the same value,
 then {\lstinline|refl|} is a proof of {\lstinline|a ≡ b|},
 the \textit{propositional equality} of {\lstinline|a|} and {\lstinline|b|}.
 
-{\lstinline|_≡_|} is also an equivalence relation, meaning that these properties
-hold:
+{\lstinline|_≡_|} is an equivalence relation. It means that {\lstinline|_≡_|}
+is \textit{reflexive} (by definition), \textit{symmetric} and \textit{transitive}.
 
 \begin{lstlisting}
 sym : {A : Set} {a b : A} → a ≡ b → b ≡ a
@@ -906,7 +906,11 @@ sym refl = refl
 
 trans : {A : Set} {a b c : A} → a ≡ b → b ≡ c → a ≡ c
 trans refl refl = refl
+\end{lstlisting}
 
+{\lstinline|_≡_|} is congruent, meaning that we could \textbf{substitute equals for equals}.
+
+\begin{lstlisting}
 cong : {A B : Set} {a b : A} → (f : A → B) → a ≡ b → f a ≡ f b
 cong f refl = refl
 \end{lstlisting}
@@ -949,6 +953,129 @@ there's simply nothing special about it. We may as well as roll our own library.
 language pragmas exposed by Agda.}
 
 
+
+
+\section{Proving Properties of Numbers with Equational Reasoning}\label{eq-reasoning}
+
+Because this thesis is mostly about numbers, we will put more focus on
+proving numerical properties and equational reasoning.
+
+With propositional equality at our disposal, we will show how to prove properties
+such as the commutative property of addition. And as proofs get more complicated,
+we will introduce tools for equational reasoning to make life easier.
+
+\paragraph{Right identity of addition}
+
+Recap the definition of addition on {\lstinline|ℕ|}.
+
+\begin{lstlisting}
+_+_ : ℕ → ℕ → ℕ
+zero  + y = y
+suc x + y = suc (x + y)
+\end{lstlisting}
+
+{\lstinline|_+_|} is defined by induction on the first argument. That means we
+get the \textit{left identity} of addition for free, as {\lstinline|zero + y|}
+and {\lstinline|y|} are \textit{computationally equal}. But this is not the case
+for the \textit{right identity} of addition. It has to be proven explicitly.
+
+\begin{lstlisting}
++-right-identity : (n : ℕ) → n + 0 ≡ n
++-right-identity zero    = ?0
++-right-identity (suc n) = ?1
+\end{lstlisting}
+
+By induction on the only argument, we get two sub-goals:
+
+\begin{lstlisting}
+?0 : 0 ≡ 0
+?1 : suc (n + 0) ≡ suc n
+\end{lstlisting}
+
+{\lstinline|?0|} can be trivially proven with {\lstinline|refl|}.
+The type of {\lstinline|?1|} looks a lot like the proposition we are proving,
+except that both side of the equation are "coated" in a {\lstinline|suc|}.
+With {\lstinline|cong suc : ∀ {x y} → x ≡ y → suc x ≡ suc y|}, we could substitute
+something in {\lstinline|suc|} with another if they are also equal, and finish
+the proof by recursively calling itself with a \textit{smaller} argument.
+
+\begin{lstlisting}
++-right-identity : ∀ n → n + 0 ≡ n
++-right-identity zero    = refl
++-right-identity (suc n) = cong suc (+-right-identity n)
+\end{lstlisting}
+
+\paragraph{Moving suc to the other side}
+
+This is an essential lemma for proving other theorems.
+The proof also follows a similar pattern as that of {\lstinline|+-right-identity|}.
+\footnote{In fact, all of these proofs (hense programs) can be generalized with
+some kinds of \textit{fold}, but that is not the point here.}
+
+\begin{lstlisting}
++-suc : ∀ m n → m + suc n ≡ suc (m + n)
++-suc zero    n = refl
++-suc (suc m) n = cong suc (+-suc m n)
+\end{lstlisting}
+
+\paragraph{Commutative property of addition}
+
+Similarly, by induction on the first argument, we get two sub-goals:
+
+\begin{lstlisting}
++-comm : ∀ m n → m + n ≡ n + m
++-comm zero    n = ?0
++-comm (suc m) n = ?1
+
+?0 : n           ≡ m + zero
+?1 : suc (m + n) ≡ m + suc n
+\end{lstlisting}
+
+{\lstinline|?0|} can be solved with {\lstinline|+-right-identity|} with a "twist".
+The symmetry of equality {\lstinline|sym|} enable us to swap both sides of an equation.
+
+\begin{lstlisting}
++-comm zero    n = sym (+-right-identity n)
+\end{lstlisting}
+
+However, it is not obvious how to solve {\lstinline|?1|} straight out.
+The proof has to be break into two steps:
+
+\begin{enumerate}
+    \item Apply {\lstinline|+-suc|} with {\lstinline|sym|} to the right-hand side
+    of the equation to get {\lstinline|suc (m + n) ≡ suc (n + m)|}.
+    \item Apply the induction hypothesis to {\lstinline|cong suc|}.
+\end{enumerate}
+
+These small pieces of proofs are glued back together with the transitivity of
+equality {\lstinline|trans|}.
+
+\begin{lstlisting}
++-comm (suc m) n = trans (cong suc (+-comm m n)) (sym (+-suc n m))
+\end{lstlisting}
+
+\paragraph{Equational Reasoning}
+
+We see that proofs are composable just like programs.
+But look at the line we have just proven above:
+
+\begin{lstlisting}
+trans (cong suc (+-comm m n)) (sym (+-suc n m))
+\end{lstlisting}
+
+It is difficult to see what is going on in between these clauses, let alone
+proofs that involves dozens of {\lstinline|trans|}.
+Things only get worse as propositions get more complicated.
+
+Fortunately,
+% But it is not an easy task either to read or to write, for example, the line we
+% have just proven.
+
+% But it is not an easy task either to read or to write the proof
+
+
+% We see that proofs are composable and can be written in a modular fashion, just
+% like programs. But it is not an easy task either to read or to write the proof
 
 \section{Num : a representation for positional numeral systems}\label{representation}
 % [draft]
@@ -1103,7 +1230,7 @@ Converting to natural numbers is fairly trivial:
 ⟦_⟧ {b} {_} {o} (x ∷ xs) = Digit-toℕ x o + ⟦ xs ⟧ * b
 \end{lstlisting}
 
-\section{Dissecting Num: Properties of different kinds of numeral systems}\label{representation}
+\section{Dissecting Num: Properties of different kinds of numeral systems}\label{views}
 
 There are many kinds of numeral systems inhabit in {\lstinline|Num|}.
 Some have infinitely many numerals and some have none.
