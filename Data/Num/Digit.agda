@@ -1,8 +1,5 @@
 module Data.Num.Digit where
 
-open import Data.Unit using (⊤; tt)
-open import Data.Empty using (⊥)
-open import Data.Product
 open import Data.Nat
 open import Data.Nat.Properties
 open import Data.Nat.Properties.Simple
@@ -15,9 +12,7 @@ open import Function
 open import Relation.Binary.PropositionalEquality
 open import Relation.Nullary
 open import Relation.Nullary.Negation
-open import Relation.Nullary.Decidable
 open import Relation.Binary
-open import Function.Equality using (_⟶_)
 
 open ≡-Reasoning
 open ≤-Reasoning renaming (begin_ to start_; _∎ to _□; _≡⟨_⟩_ to _≈⟨_⟩_)

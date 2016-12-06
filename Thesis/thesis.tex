@@ -439,6 +439,10 @@ data ℕ : Set where
     suc : ℕ → ℕ
 \end{lstlisting}
 
+The decimal number "4" is represented as {\lstinline|suc (suc (suc (suc zero)))|}.
+Agda also accepts arabic literals if the datatype {\lstinline|ℕ|} complies with
+certain language pragma.
+
 Addition on {\lstinline|ℕ|} can be defined as a recursive function.
 
 \begin{lstlisting}
@@ -991,11 +995,14 @@ has exactly \textit{n} inhabitants.
 functions:
 
 \begin{itemize}
-    \item {\lstinline|toℕ : ∀ {n} → Fin n → ℕ|}: converts from {\lstinline|Fin n|} to {\lstinline|ℕ|}.
-    \item {\lstinline|fromℕ≤ : ∀ {m n} → m < n → Fin n|}: converts from {\lstinline|ℕ|} to {\lstinline|Fin n|} given the number is small enough.
-    \item {\lstinline|#_ : ∀ m {n} {m<n : True (suc m N≤? n)} → Fin n|}:
-        similar to {\lstinline|fromℕ≤|}, but more convenient, since the proof of {\lstinline|m<n|} is decidable thus can be inferred and made implicit.
-    \item {\lstinline|inject≤ : ∀ {m n} → Fin m → m ≤ n → Fin n|}: converts a smaller {\lstinline|Fin|} to a larger {\lstinline|Fin|}.
+    \item {\lstinline|toℕ : ∀ {n} → Fin n → ℕ|}
+        \\ converts from {\lstinline|Fin n|} to {\lstinline|ℕ|}.
+    \item {\lstinline|fromℕ≤ : ∀ {m n} → m < n → Fin n|}
+        \\ converts from {\lstinline|ℕ|} to {\lstinline|Fin n|} given the number is small enough.
+    \item {\lstinline|#_ : ∀ m {n} {m<n : True (suc m N≤? n)} → Fin n|}
+        \\ similar to {\lstinline|fromℕ≤|}, but more convenient, since the proof of {\lstinline|m<n|} is decidable thus can be inferred and made implicit.
+    \item {\lstinline|inject≤ : ∀ {m n} → Fin m → m ≤ n → Fin n|}
+        \\ converts a smaller {\lstinline|Fin|} to a larger {\lstinline|Fin|}.
 \end{itemize}
 
 \subsubsection{Definition}
@@ -1067,8 +1074,9 @@ Numerals in positional numeral systems are composed of sequences of \textbf{digi
 \subsubsection{Definition}
 The definition of {\lstinline|Numeral|} is similar to that of {\lstinline|List|},
 except that a {\lstinline|Numeral|} must contain at least one digit while a list
-may contain no elements at all. {\lstinline|Numeral|} is indexed by all three
-generalizations.
+may contain no elements at all. The most significant digit is placed in {\lstinline|_∙|}
+while the least significant digit is placed at the end of the sequence.
+{\lstinline|Numeral|} is indexed by all three generalizations.
 
 \begin{lstlisting}
 infixr 5 _∷_
@@ -1078,26 +1086,16 @@ data Numeral : ℕ → ℕ → ℕ → Set where
     _∷_ : ∀ {b d o} → Digit d → Numeral b d o → Numeral b d o
 \end{lstlisting}
 
-The decimal number "2016" for example can be represented like this:
+The decimal number "2016" for example can be represented as:
 
 \begin{lstlisting}
 MMXVI : Numeral 10 10 0
 MMXVI = # 6 ∷ # 1 ∷ # 0 ∷ (# 2) ∙
 \end{lstlisting}
 
-
-
-\begin{lstlisting}
-infixr 5 _∷_
-
-data Numeral : ℕ → ℕ → ℕ → Set where
-    _∙  : ∀ {b d o} → Digit d → Numeral b d o
-    _∷_ : ∀ {b d o} → Digit d → Numeral b d o → Numeral b d o
-\end{lstlisting}
-
-
-
 \subsubsection{Converting to natural numbers}
+
+Converting to natural numbers is fairly trivial:
 
 \begin{lstlisting}
 ⟦_⟧ : ∀ {b d o} → (xs : Numeral b d o) → ℕ
@@ -1105,13 +1103,35 @@ data Numeral : ℕ → ℕ → ℕ → Set where
 ⟦_⟧ {b} {_} {o} (x ∷ xs) = Digit-toℕ x o + ⟦ xs ⟧ * b
 \end{lstlisting}
 
-% Numerals in positional numeral systems are composed of sequences of symbols
-% so-called \textbf{digits}. A system can only have \textbf{finitely many} digits.
-% Operations on these digits, such as addition, must be \textbf{constant time}.
-% Notice that the problem size of time complexity we are discussing here refers
-% only to the value of a numeral. And since the value of digits is independent of
-% the value of a numeral, time complexity of functions on digits should be trivially
-% constant.
+\section{Dissecting Num: Properties of different kinds of numeral systems}\label{representation}
+
+There are many kinds of numeral systems inhabit in {\lstinline|Num|}.
+Some have infinitely many numerals and some have none.
+
+We sort the systems in {\lstinline|Num|} into four groups, each of them have
+different interesting properties.
+
+\subsection{Views}
+
+
+\begin{lstlisting}
+data NumView : ℕ → ℕ → ℕ → Set where
+    NullBase    : ∀   d o                            → NumView 0       (suc d) o
+    NoDigits    : ∀ b o                              → NumView b       0       o
+    AllZeros    : ∀ b                                → NumView (suc b) 1       0
+    Proper      : ∀ b d o → (proper : suc d + o ≥ 2) → NumView (suc b) (suc d) o
+\begin{lstlisting}
+
+\subsection{Maximum}
+
+A number is said to be \textit{maximum} if there are no other number greater than
+itself.
+
+\begin{lstlisting}
+Maximum : ∀ {b d o} → (xs : Numeral b d o) → Set
+Maximum {b} {d} {o} xs = ∀ (ys : Numeral b d o) → ⟦ xs ⟧ ≥ ⟦ ys ⟧
+\end{lstlisting}
+
 
 \section{Conclusions}\label{conclusions}
 
