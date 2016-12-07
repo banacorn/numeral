@@ -1063,19 +1063,38 @@ But look at the line we have just proven above:
 trans (cong suc (+-comm m n)) (sym (+-suc n m))
 \end{lstlisting}
 
-It is difficult to see what is going on in between these clauses, let alone
-proofs that involves dozens of {\lstinline|trans|}.
-Things only get worse as propositions get more complicated.
+It is difficult to see what is going on in between these clauses, and it could
+get only worse as propositions get more complicated.
+Imagine having dozens of {\lstinline|trans|}, {\lstinline|sym|} and {\lstinline|cong|}
+spreading everywhere.
 
-Fortunately,
-% But it is not an easy task either to read or to write, for example, the line we
-% have just proven.
+Fortunately, these complex proofs can be written in a concise and modular manner
+with a simple yet powerful technique called \textit{equational reasoning}.
+Agda's flexible mixfix syntax allows the technique to be implemented with just
+a few combinators\cite{erikhesselinkpaulvisschers2008}.
 
-% But it is not an easy task either to read or to write the proof
+This is best illustrated by an example:
 
+\begin{lstlisting}
++-comm : ∀ m n → m + n ≡ n + m
++-comm zero    n = sym (+-right-identity n)
++-comm (suc m) n =
+    begin
+        suc m + n
+    ≡⟨ refl ⟩
+        suc (m + n)
+    ≡⟨ cong suc (+-comm m n) ⟩
+        suc (n + m)
+    ≡⟨ sym (+-suc n m) ⟩
+        n + suc m
+    ∎
+\end{lstlisting}
 
-% We see that proofs are composable and can be written in a modular fashion, just
-% like programs. But it is not an easy task either to read or to write the proof
+With equational reasoning, we can see how a proposition equates with another,
+step by step, justified with theorems. {\lstinline|begin_|} marks the beginning
+of a reasoning; {\lstinline|_≡⟨_⟩_|} chains two propositions with the justication
+placed in between; {\lstinline|_∎|} marks the end of a reasoning.
+
 
 \section{Num : a representation for positional numeral systems}\label{representation}
 % [draft]
