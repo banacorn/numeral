@@ -1091,10 +1091,34 @@ This is best illustrated by an example:
 \end{lstlisting}
 
 With equational reasoning, we can see how a proposition equates with another,
-step by step, justified with theorems. {\lstinline|begin_|} marks the beginning
+step by step, justified with theorems. The first and the last step corresponds to
+two sides of the equation of the proposition. {\lstinline|begin_|} marks the beginning
 of a reasoning; {\lstinline|_≡⟨_⟩_|} chains two propositions with the justication
-placed in between; {\lstinline|_∎|} marks the end of a reasoning.
+placed in between; {\lstinline|_∎|} marks the end of a reasoning (\textit{QED}).
 
+These combinators can be further generalized to support preorder equational
+reasoning. (Preorders are {\lstinline|reflexive|} and {\lstinline|transitive|})
+
+Suppose we already have {\lstinline|m≤m+n : ∀ m n → m ≤ m + n|} and want to
+prove a slightly different theorem.
+
+\begin{lstlisting}
+m≤n+m : ∀ m n → m ≤ n + m
+m≤n+m m n =
+    start
+        m
+    ≤⟨ m≤m+n m n ⟩
+        m + n
+    ≈⟨ +-comm m n ⟩
+        n + m
+    □
+\end{lstlisting}
+
+Where {\lstinline|_≤⟨_⟩_|} and {\lstinline|_≈⟨_⟩_|} are respectively transitive
+and reflexive combinators.\footnote{Combinators are renamed to prevent conflictions.}
+
+
+% The set of combinators demonstrated above
 
 \section{Num : a representation for positional numeral systems}\label{representation}
 % [draft]
