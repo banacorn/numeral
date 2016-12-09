@@ -802,6 +802,7 @@ of intuitionistic logic, which states that: "from falsehood, anything (follows)"
 ⊥-elim ()
 \end{lstlisting}
 
+
 \paragraph{Decidable propositions}
 
 A proposition is decidable when it can be proved \textit{or} disapproved.
@@ -955,7 +956,7 @@ language pragmas exposed by Agda.}
 
 
 
-\section{Proving Properties of Numbers with Equational Reasoning}\label{eq-reasoning}
+\section{Properties of Natural Numbers and Equational Reasoning}\label{eq-reasoning}
 
 Because this thesis is mostly about numbers, we will put more focus on
 proving numerical properties and equational reasoning.
@@ -1054,7 +1055,7 @@ equality {\lstinline|trans|}.
 +-comm (suc m) n = trans (cong suc (+-comm m n)) (sym (+-suc n m))
 \end{lstlisting}
 
-\paragraph{Equational Reasoning}
+\subsection{Equational Reasoning}
 
 We see that proofs are composable just like programs.
 But look at the line we have just proven above:
@@ -1117,37 +1118,122 @@ m≤n+m m n =
 Where {\lstinline|_≤⟨_⟩_|} and {\lstinline|_≈⟨_⟩_|} are respectively transitive
 and reflexive combinators.\footnote{Combinators are renamed to prevent conflictions.}
 
+\subsection{Reasoning equational reasonings}
 
-% The set of combinators demonstrated above
+A typical equational reasoning can often be broken down into three parts.
 
-\section{Num : a representation for positional numeral systems}\label{representation}
-% [draft]
+\begin{enumerate}
+    \item
+        The reasoning will always and only starts from the left-hand side of the equation.
+        Terms will then be "arranged" into a form that allows the induction hypothesis
+        to be applied.
+        In the following example of {\lstinline|+-comm|}, nothing needs to be arrange
+        because the terms are computationally equal (the {\lstinline|refl|} can actually be omitted).
 
-In this section, we will demonstrate how to construct the representation for positional
-numeral systems in Agda. The representation is constructed as a datatype, indexed
-by the generalizations introduced in section~\ref{introduction}.
+        \begin{lstlisting}
+            begin
+                suc m + n
+            ≡⟨ refl ⟩
+                suc (m + n)
+        \end{lstlisting}
+    \item
+        {\lstinline|m + n|} emerged as part of the proposition which enable us
+        to apply the induction hypothesis.
+
+        \begin{lstlisting}
+                suc (m + n)
+            ≡⟨ cong suc (+-comm m n) ⟩
+                suc (n + m)
+        \end{lstlisting}
+    \item
+        After applying the induction hypothesis, terms are then "rearranged" into the
+        right-hand side of the equation, hence completes the proof.
+
+        \begin{lstlisting}
+                suc (n + m)
+            ≡⟨ sym (+-suc n m) ⟩
+                n + suc m
+            ∎
+        \end{lstlisting}
+\end{enumerate}
+
+
+To arrange those terms, we need properties such as commutativity or associativity
+of some operater, or some distributive property when there are more than
+one operator. Combination of operators such as addition and multiplication often
+forms a nice semiring structure that equips with those properties.
+
+From now on, we will dispense with the steps of term-rearrangement in the proofs,
+unless the process is too obscure.
+
+
+\subsection{Relevant properties of natural numbers}
+
+Properties of natural numbers play a big role in the development of proofs in
+this thesis. In this section, we will introduce various relevant properties of
+{\lstinline|ℕ|}. Most of the basic properties listed here (such as the ones demonstrated above)
+are taken from the stantard library while others are just lemmata or corollaries of
+these theorems.
+\footnote{\textit{Theorem}, \textit{lemma}, \textit{corollary} and \textit{property}
+are all synonyms for \textit{established proposition}. There are no formal
+distinction between these terms and they are used exchangeably in the thesis.}
+
+\paragraph{addition}
 
 \begin{itemize}
-    \item \textbf{base}: the base of a numeral system, denoted {\lstinline|b|}.
-    \item \textbf{\#digit}: the number of digits, denoted {\lstinline|d|}.
-    \item \textbf{offset}: the number where the digits starts from, denoted {\lstinline|o|}.
+    \item {\lstinline|+-assoc : ∀ m n o → (m + n) + o ≡ m + (n + o)|}
+        \\ the associative property of addition.
+    \item {\lstinline|+-right-identity : ∀ n → n + 0 ≡ n|}
+        \\ the right identity of addition.
+    \item {\lstinline|+-suc : ∀ m n → m + suc n ≡ suc (m + n)|}
+        \\ moving {\lstinline|suc|} from one term to another.
+    \item {\lstinline|+-comm : ∀ m n → m + n ≡ n + m|}
+        \\ the commutative property of addition.
+    \item {\lstinline|cancel-+-left : ∀ i {j k} → i + j ≡ i + k → j ≡ k|}
+        \\ the left cancellation property of addition.
+    \item {\lstinline|cancel-+-right : ∀ k {i j} → i + k ≡ j + k → i ≡ j|}
+        \\ the right cancellation property of addition.
 \end{itemize}
 
-\subsection{Digits}
+\paragraph{multiplication}
+
+\begin{itemize}
+    \item {\lstinline|+-*-suc : ∀ m n → m * suc n ≡ m + m * n|}
+        \\ multiplication over {\lstinline|suc|}.
+    \item {\lstinline|*-right-zero : ∀ n → n * 0 ≡ 0|}
+        \\ the right absorbing element of multiplication.
+    \item {\lstinline|*-comm : ∀ m n → m * n ≡ n * m|}
+        \\ the commutative property of multiplication.
+    \item {\lstinline|distribʳ-*-+ : ∀ m n o → (n + o) * m ≡ n * m + o * m|}
+        \\ the right distributive property of multiplication over addition.
+\end{itemize}
+
+\paragraph{join and meet}
+
+
+\paragraph{monotonicity of operations}
+
+
+\section{Digit: the basic building block}\label{representation}
 % [draft]
 
-A system can only have \textbf{finitely many} digits.
-Operations on these digits, such as addition, must be \textbf{constant time}.
-Notice that the problem size of time complexity we are discussing here refers
-only to the value of a numeral. And since the value of digits is independent of
-the value of a numeral, time complexity of functions on digits should be trivially
-constant.
+Numerals are composed of sequences of \textbf{digits}. We will demonstrate how
+to choose a suitable representation for digits in this section.
 
-\subsubsection{Fin}
+The same digit may represent different values in different numeral systems, so it
+is essential to make the context clear. Here are the generalizations introduced in
+section~\ref{introduction} that may effect the evaluation of a digit.
+
+\begin{itemize}
+    \item \textbf{\#digit}: the number of digits, denoted {\lstinline|d|}.
+    \item \textbf{offset}: the value where a digit starts from, denoted {\lstinline|o|}.
+\end{itemize}
+
+
+\subsection{Fin}
 
 To represent a digit, we use a datatype that is conventionally called \textit{Fin}
 which can be indexed to have some exact number of inhabitants.
-
 
 \begin{lstlisting}
 data Fin : ℕ → Set where
@@ -1159,7 +1245,7 @@ The definition of {\lstinline|Fin|} looks the same as {\lstinline|ℕ|} on the t
 level, but different on the type level. The index of a {\lstinline|Fin|} increases
 with every {\lstinline|suc|}, and there can only be at most {\lstinline|n|} of
 them before reaching {\lstinline|Fin (suc n)|}. In other words, {\lstinline|Fin n|}
-has exactly \textit{n} inhabitants.
+would have exactly \textit{n} inhabitants.
 
 \textit{Fin} is available in the stardard library, along with other auxiliary
 functions:
@@ -1175,16 +1261,17 @@ functions:
         \\ converts a smaller {\lstinline|Fin|} to a larger {\lstinline|Fin|}.
 \end{itemize}
 
-\subsubsection{Definition}
+\subsection{Definition}
 
-{\lstinline|Digit|} is simply just a synonym for {\lstinline|Fin|}.
+{\lstinline|Digit|} is simply just a synonym for {\lstinline|Fin|}, indexed by
+the number of digits {\lstinline|d|} of a system.
 
 \begin{lstlisting}
 Digit : ℕ → Set
-Digit = Fin
+Digit d = Fin d
 \end{lstlisting}
 
-Binary digits for example can be represented as:
+Binary digits for example can thus be represented as:
 
 \begin{lstlisting}
 Binary : Set
@@ -1197,7 +1284,7 @@ Binary = Digit 2
 一 = suc zero
 \end{lstlisting}
 
-\subsubsection{Converting from and to natural numbers}
+\subsection{Converting from and to natural numbers}
 
 Digit are evaluated together with the offset {\lstinline|o|} of a system.
 
@@ -1219,10 +1306,83 @@ Digit-fromℕ {d} n o upper-bound | no ¬p = contradiction p ¬p
                     n ∸ o
                 ≤⟨ ∸n-mono o upper-bound ⟩
                     (d + o) ∸ o
-                ≤⟨ reflexive (m+n∸n≡m d o) ⟩
+                ≈⟨ m+n∸n≡m d o ⟩
                     d
                 □
 \end{lstlisting}
+
+\subsection{Properties}
+
+{\lstinline|Digit-fromℕ-toℕ|} states that the value of a natural number should
+remain the same, after converted back and forth between {\lstinline|Digit|} and
+{\lstinline|ℕ|}.
+
+\begin{lstlisting}
+Digit-fromℕ-toℕ : ∀ {d o}
+    → (n : ℕ)
+    → (lower-bound :     o ≤ n)
+    → (upper-bound : d + o ≥ n)
+    → Digit-toℕ (Digit-fromℕ {d} n o upper-bound) o ≡ n
+Digit-fromℕ-toℕ {d} {o} n lb ub with n ∸ o ≤? d
+Digit-fromℕ-toℕ {d} {o} n lb ub | yes q =
+    begin
+        toℕ (fromℕ≤ (s≤s q)) + o
+    ≡⟨ cong (λ x → x + o) (toℕ-fromℕ≤ (s≤s q)) ⟩
+        n ∸ o + o
+    ≡⟨ m∸n+n≡m lb ⟩
+        n
+    ∎
+Digit-fromℕ-toℕ {d} {o} n lb ub | no ¬q = contradiction q ¬q
+    where   q : n ∸ o ≤ d
+            q = +n-mono-inverse o \$
+                start
+                    n ∸ o + o
+                ≈⟨ m∸n+n≡m lb ⟩
+                    n
+                ≤⟨ ub ⟩
+                    d + o
+                □
+\end{lstlisting}
+
+% A system can only have \textbf{finitely many} digits.
+% Operations on these digits, such as addition, must be \textbf{constant time}.
+% Notice that the problem size of time complexity we are discussing here refers
+% only to the value of a numeral. And since the value of digits is independent of
+% the value of a numeral, time complexity of functions on digits should be trivially
+% constant.
+
+
+
+
+% In section~\ref{introduction} we see that
+% different numeral systems a digit
+
+
+% As introduced in section~\ref{introduction}
+
+% Two generalizations introduced in section~\ref{introduction}
+%
+% \begin{itemize}
+%     \item \textbf{base}: the base of a numeral system, denoted {\lstinline|b|}.
+%     \item \textbf{\#digit}: the number of digits, denoted {\lstinline|d|}.
+%     \item \textbf{offset}: the number where the digits starts from, denoted {\lstinline|o|}.
+% \end{itemize}
+
+
+\section{Num: a representation for positional numeral systems}\label{representation}
+% [draft]
+
+In this section, we will demonstrate how to construct the representation for positional
+numeral systems in Agda. The representation is constructed as a datatype, indexed
+by the generalizations introduced in section~\ref{introduction}.
+
+\begin{itemize}
+    \item \textbf{base}: the base of a numeral system, denoted {\lstinline|b|}.
+    \item \textbf{\#digit}: the number of digits, denoted {\lstinline|d|}.
+    \item \textbf{offset}: the number where the digits starts from, denoted {\lstinline|o|}.
+\end{itemize}
+
+
 
 \subsubsection{Properties}
 
@@ -1304,6 +1464,7 @@ Maximum {b} {d} {o} xs = ∀ (ys : Numeral b d o) → ⟦ xs ⟧ ≥ ⟦ ys ⟧
 
 
 \section{Conclusions}\label{conclusions}
+
 
 \bibliographystyle{abbrv}
 \bibliography{thesis}

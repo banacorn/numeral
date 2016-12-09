@@ -171,7 +171,7 @@ open DecTotalOrder decTotalOrder using (reflexive) renaming (refl to ≤-refl)
 --         suc (suc (Fin.toℕ x) ∸ b)
 --     ≤⟨ s≤s (∸-mono ≤-refl b≥1) ⟩
 --         suc (Fin.toℕ x)
---     ≤⟨ reflexive p ⟩
+--     ≈⟨ p ⟩
 --         d
 --     □
 --
@@ -206,7 +206,7 @@ open DecTotalOrder decTotalOrder using (reflexive) renaming (refl to ≤-refl)
 --                 b
 --             ≤⟨ SurjCond⇒d≥b cond ⟩
 --                 d
---             ≤⟨ reflexive (sym p) ⟩
+--             ≈⟨ sym p ⟩
 --                 suc (Fin.toℕ x)
 --             □)) ⟩
 --         o + suc (Fin.toℕ x + toℕ xs * b)
@@ -348,9 +348,9 @@ open DecTotalOrder decTotalOrder using (reflexive) renaming (refl to ≤-refl)
 --         ⟦x∷xs⟧<1+o+d = s≤s $
 --             start
 --                 o + Fin.toℕ x + toℕ xs * zero
---             ≤⟨ reflexive (cong (λ w → o + Fin.toℕ x + w) (*-right-zero (toℕ xs))) ⟩
+--             ≈⟨ cong (λ w → o + Fin.toℕ x + w) (*-right-zero (toℕ xs)) ⟩
 --                 o + Fin.toℕ x + zero
---             ≤⟨ reflexive (+-right-identity (o + Fin.toℕ x)) ⟩
+--             ≈⟨ +-right-identity (o + Fin.toℕ x) ⟩
 --                 o + Fin.toℕ x
 --             ≤⟨ n+-mono o (
 --                 start
@@ -397,7 +397,7 @@ open DecTotalOrder decTotalOrder using (reflexive) renaming (refl to ≤-refl)
 --         ⟦x∷xs⟧>o+d : o + Fin.toℕ x + toℕ xs * b < o + d
 --         ⟦x∷xs⟧>o+d = start
 --                 suc (o + Fin.toℕ x + toℕ xs * b)
---             ≤⟨ reflexive (begin
+--             ≈⟨ begin
 --                     suc (o + Fin.toℕ x + toℕ xs * b)
 --                 ≡⟨ cong (λ w → suc (o + Fin.toℕ x + w * b)) ⟦xs⟧≡0 ⟩
 --                     suc (o + Fin.toℕ x + zero)
@@ -405,7 +405,7 @@ open DecTotalOrder decTotalOrder using (reflexive) renaming (refl to ≤-refl)
 --                     suc (o + Fin.toℕ x)
 --                 ≡⟨ sym (+-suc o (Fin.toℕ x)) ⟩
 --                     o + suc (Fin.toℕ x)
---                 ∎) ⟩
+--                 ∎ ⟩
 --                 o + suc (Fin.toℕ x)
 --             ≤⟨ n+-mono o (bounded x) ⟩
 --                 o + d
@@ -417,14 +417,14 @@ open DecTotalOrder decTotalOrder using (reflexive) renaming (refl to ≤-refl)
 --         ⟦x∷xs⟧>o+d : o + Fin.toℕ x + toℕ xs * b > o + d
 --         ⟦x∷xs⟧>o+d = start
 --                 suc (o + d)
---             ≤⟨ reflexive (sym (+-suc o d)) ⟩
+--             ≈⟨ sym (+-suc o d) ⟩
 --                 o + suc d
 --             ≤⟨ n+-mono o (
 --                 start
 --                     suc d
 --                 ≤⟨ ≰⇒> b≰d ⟩
 --                     b
---                 ≤⟨ reflexive (sym (*-left-identity b)) ⟩
+--                 ≈⟨ sym (*-left-identity b) ⟩
 --                     1 * b
 --                 ≤⟨ _*-mono_ {1} {toℕ xs} {b} {b} (≰⇒> ¬q) ≤-refl ⟩
 --                     toℕ xs * b
@@ -433,7 +433,7 @@ open DecTotalOrder decTotalOrder using (reflexive) renaming (refl to ≤-refl)
 --                 □
 --             ) ⟩
 --                 o + (Fin.toℕ x + toℕ xs * b)
---             ≤⟨ reflexive (sym (+-assoc o (Fin.toℕ x) (toℕ xs * b))) ⟩
+--             ≈⟨ sym (+-assoc o (Fin.toℕ x) (toℕ xs * b)) ⟩
 --                 o + Fin.toℕ x + toℕ xs * b
 --             □
 --

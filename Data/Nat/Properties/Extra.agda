@@ -16,17 +16,9 @@ open ≡-Reasoning
 open ≤-Reasoning renaming (begin_ to start_; _∎ to _□; _≡⟨_⟩_ to _≈⟨_⟩_)
 open DecTotalOrder decTotalOrder using (reflexive) renaming (refl to ≤-refl)
 
-
--- start
---     {!   !}
--- ≤⟨ {!   !} ⟩
---     {!   !}
--- ≤⟨ {!   !} ⟩
---     {!   !}
--- ≤⟨ {!   !} ⟩
---     {!   !}
--- □
-
+------------------------------------------------------------------------
+-- Misc
+------------------------------------------------------------------------
 
 isDecTotalOrder : IsDecTotalOrder {A = ℕ} _≡_ _≤_
 isDecTotalOrder = DecTotalOrder.isDecTotalOrder decTotalOrder
@@ -49,6 +41,13 @@ isSemiringWithoutOne = IsCommutativeSemiringWithoutOne.isSemiringWithoutOne ⊔-
 +-isCommutativeMonoid : IsCommutativeMonoid _≡_ _⊔_ zero
 +-isCommutativeMonoid = IsSemiringWithoutOne.+-isCommutativeMonoid  isSemiringWithoutOne
 
+cmp : Trichotomous _≡_ _<_
+cmp = StrictTotalOrder.compare strictTotalOrder
+
+------------------------------------------------------------------------
+-- _⊔_
+------------------------------------------------------------------------
+
 ⊔-comm : Commutative _⊔_
 ⊔-comm = IsCommutativeMonoid.comm +-isCommutativeMonoid
 
@@ -62,8 +61,9 @@ m⊓n≤n zero n          = z≤n
 m⊓n≤n (suc m) zero    = z≤n
 m⊓n≤n (suc m) (suc n) = s≤s (m⊓n≤n m n)
 
-cmp : Trichotomous _≡_ _<_
-cmp = StrictTotalOrder.compare strictTotalOrder
+------------------------------------------------------------------------
+-- _≤_
+------------------------------------------------------------------------
 
 ≤-trans : Transitive _≤_
 ≤-trans = IsPreorder.trans isPreorder
@@ -114,7 +114,7 @@ m≤n+m m n =
         m
     ≤⟨ m≤m+n m n ⟩
         m + n
-    ≤⟨ reflexive (+-comm m n) ⟩
+    ≈⟨ +-comm m n ⟩
         n + m
     □
 
@@ -139,11 +139,11 @@ n+-mono n = _+-mono_ {n} {n} ≤-refl
 +-comm-mono {a} {b} {c} {d} p =
     start
         b + a
-    ≤⟨ reflexive (+-comm b a) ⟩
+    ≈⟨ +-comm b a ⟩
         a + b
     ≤⟨ p ⟩
         c + d
-    ≤⟨ reflexive (+-comm c d) ⟩
+    ≈⟨ +-comm c d ⟩
         d + c
     □
 
@@ -153,11 +153,11 @@ n+-mono n = _+-mono_ {n} {n} ≤-refl
     where   p' : a + n ≤ b + n
             p' = ≤-pred $ start
                     suc (a + n)
-                ≤⟨ reflexive (sym (+-suc a n)) ⟩
+                ≈⟨ sym (+-suc a n) ⟩
                     a + suc n
                 ≤⟨ p ⟩
                     b + suc n
-                ≤⟨ reflexive (+-suc b n) ⟩
+                ≈⟨ +-suc b n ⟩
                     suc (b + n)
                 □
 
@@ -169,7 +169,7 @@ n+-mono n = _+-mono_ {n} {n} ≤-refl
         suc c
     ≤⟨ m≤n+m (suc c) (suc a) ⟩
         suc a + suc c
-    ≤⟨ reflexive (+-suc (suc a) c) ⟩
+    ≈⟨ +-suc (suc a) c ⟩
         suc (suc a) + c
     ≤⟨ q ⟩
         d
@@ -232,11 +232,11 @@ n*-mono-strict-inverse (suc n) {a} {b} p | no ¬q = contradiction p ¬p
 *-comm-mono {a} {b} {c} {d} p =
     start
         b * a
-    ≤⟨ reflexive (*-comm b a) ⟩
+    ≈⟨ *-comm b a ⟩
         a * b
     ≤⟨ p ⟩
         c * d
-    ≤⟨ reflexive (*-comm c d) ⟩
+    ≈⟨ *-comm c d ⟩
         d * c
     □
 
@@ -244,11 +244,11 @@ n*-mono-strict-inverse (suc n) {a} {b} p | no ¬q = contradiction p ¬p
 *-comm-mono-strict {a} {b} {c} {d} p =
     start
         suc (b * a)
-    ≤⟨ reflexive (cong suc (*-comm b a)) ⟩
+    ≈⟨ cong suc (*-comm b a) ⟩
         suc (a * b)
     ≤⟨ p ⟩
         c * d
-    ≤⟨ reflexive (*-comm c d) ⟩
+    ≈⟨ *-comm c d ⟩
         d * c
     □
 
@@ -326,7 +326,7 @@ m≤m*1+n m (suc n) =
         m
     ≤⟨ m≤m+n m (m * suc n) ⟩
         m + m * suc n
-    ≤⟨ reflexive (sym (+-*-suc m (suc n))) ⟩
+    ≈⟨ sym (+-*-suc m (suc n)) ⟩
         m * suc (suc n)
     □
 

@@ -67,7 +67,7 @@ some-lemma {b} (suc m) zero    Z      (S ns) p = contradiction p ¬p
             ¬p = <⇒≢ $ s≤s $
                 start
                     S (toℕ m ℕ+ Z)
-                ≤⟨ reflexive (+-right-identity (S (toℕ m))) ⟩
+                ≈⟨ +-right-identity (S (toℕ m)) ⟩
                     S (toℕ m)
                 ≤⟨ bounded m ⟩
                     b
@@ -80,7 +80,7 @@ some-lemma {b} (suc m) (suc n) Z      (S ns) p = contradiction p ¬p
             ¬p = <⇒≢ $ s≤s $
                 start
                     S (toℕ m ℕ+ Z)
-                ≤⟨ reflexive (+-right-identity (S (toℕ m))) ⟩
+                ≈⟨ +-right-identity (S (toℕ m)) ⟩
                     S (toℕ m)
                 ≤⟨ bounded m ⟩
                     b
@@ -98,7 +98,7 @@ some-lemma {b} zero    (suc n) (S ms) Z      p = contradiction p ¬p
             ¬p = >⇒≢ $ s≤s $
                 start
                     S (toℕ n ℕ+ Z)
-                ≤⟨ reflexive (+-right-identity (S (toℕ n))) ⟩
+                ≈⟨ +-right-identity (S (toℕ n)) ⟩
                     S (toℕ n)
                 ≤⟨ bounded n ⟩
                     b
@@ -112,7 +112,7 @@ some-lemma {b} (suc m) (suc n) (S ms) Z     p = contradiction p ¬p
             ¬p = >⇒≢ $ s≤s $
                 start
                     S (toℕ n ℕ+ Z)
-                ≤⟨ reflexive (+-right-identity (S (toℕ n))) ⟩
+                ≈⟨ +-right-identity (S (toℕ n)) ⟩
                     S (toℕ n)
                 ≤⟨ bounded n ⟩
                     b

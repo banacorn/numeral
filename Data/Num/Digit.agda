@@ -39,7 +39,7 @@ Digit-fromℕ {d} n o upper-bound | no ¬p = contradiction p ¬p
                     n ∸ o
                 ≤⟨ ∸n-mono o upper-bound ⟩
                     (d + o) ∸ o
-                ≤⟨ reflexive (m+n∸n≡m d o) ⟩
+                ≈⟨ m+n∸n≡m d o ⟩
                     d
                 □
 
@@ -62,7 +62,7 @@ Digit-fromℕ-toℕ {d} {o} n lb ub | no ¬q = contradiction q ¬q
             q = +n-mono-inverse o $
                 start
                     n ∸ o + o
-                ≤⟨ reflexive (m∸n+n≡m lb) ⟩
+                ≈⟨ m∸n+n≡m lb ⟩
                     n
                 ≤⟨ ub ⟩
                     d + o
@@ -211,7 +211,7 @@ digit+1-n-toℕ {suc d} {o} x greatest n n>0  n≤d =
             n
         ≤⟨ n≤d ⟩
             suc d
-        ≤⟨ reflexive (sym greatest) ⟩
+        ≈⟨ sym greatest ⟩
             suc (toℕ x)
         □)
     ⟩
