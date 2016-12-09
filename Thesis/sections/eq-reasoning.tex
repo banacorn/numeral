@@ -1,0 +1,261 @@
+\documentclass[../thesis.tex]{subfiles}
+\begin{document}
+
+\section{Properties of Natural Numbers and Equational Reasoning}\label{eq-reasoning}
+
+Because this thesis is mostly about numbers, we will put more focus on
+proving numerical properties and equational reasoning.
+
+With propositional equality at our disposal, we will show how to prove properties
+such as the commutative property of addition. And as proofs get more complicated,
+we will introduce tools for equational reasoning to make life easier.
+
+\paragraph{Right identity of addition}
+
+Recap the definition of addition on {\lstinline|ℕ|}.
+
+\begin{lstlisting}
+_+_ : ℕ → ℕ → ℕ
+zero  + y = y
+suc x + y = suc (x + y)
+\end{lstlisting}
+
+{\lstinline|_+_|} is defined by induction on the first argument. That means we
+get the \textit{left identity} of addition for free, as {\lstinline|zero + y|}
+and {\lstinline|y|} are \textit{computationally equal}. But this is not the case
+for the \textit{right identity} of addition. It has to be proven explicitly.
+
+\begin{lstlisting}
++-right-identity : (n : ℕ) → n + 0 ≡ n
++-right-identity zero    = ?0
++-right-identity (suc n) = ?1
+\end{lstlisting}
+
+By induction on the only argument, we get two sub-goals:
+
+\begin{lstlisting}
+?0 : 0 ≡ 0
+?1 : suc (n + 0) ≡ suc n
+\end{lstlisting}
+
+{\lstinline|?0|} can be trivially proven with {\lstinline|refl|}.
+The type of {\lstinline|?1|} looks a lot like the proposition we are proving,
+except that both side of the equation are "coated" in a {\lstinline|suc|}.
+With {\lstinline|cong suc : ∀ {x y} → x ≡ y → suc x ≡ suc y|}, we could substitute
+something in {\lstinline|suc|} with another if they are also equal, and finish
+the proof by recursively calling itself with a \textit{smaller} argument.
+
+\begin{lstlisting}
++-right-identity : ∀ n → n + 0 ≡ n
++-right-identity zero    = refl
++-right-identity (suc n) = cong suc (+-right-identity n)
+\end{lstlisting}
+
+\paragraph{Moving suc to the other side}
+
+This is an essential lemma for proving other theorems.
+The proof also follows a similar pattern as that of {\lstinline|+-right-identity|}.
+\footnote{In fact, all of these proofs (hense programs) can be generalized with
+some kinds of \textit{fold}, but that is not the point here.}
+
+\begin{lstlisting}
++-suc : ∀ m n → m + suc n ≡ suc (m + n)
++-suc zero    n = refl
++-suc (suc m) n = cong suc (+-suc m n)
+\end{lstlisting}
+
+\paragraph{Commutative property of addition}
+
+Similarly, by induction on the first argument, we get two sub-goals:
+
+\begin{lstlisting}
++-comm : ∀ m n → m + n ≡ n + m
++-comm zero    n = ?0
++-comm (suc m) n = ?1
+
+?0 : n           ≡ m + zero
+?1 : suc (m + n) ≡ m + suc n
+\end{lstlisting}
+
+{\lstinline|?0|} can be solved with {\lstinline|+-right-identity|} with a "twist".
+The symmetry of equality {\lstinline|sym|} enable us to swap both sides of an equation.
+
+\begin{lstlisting}
++-comm zero    n = sym (+-right-identity n)
+\end{lstlisting}
+
+However, it is not obvious how to solve {\lstinline|?1|} straight out.
+The proof has to be break into two steps:
+
+\begin{enumerate}
+    \item Apply {\lstinline|+-suc|} with {\lstinline|sym|} to the right-hand side
+    of the equation to get {\lstinline|suc (m + n) ≡ suc (n + m)|}.
+    \item Apply the induction hypothesis to {\lstinline|cong suc|}.
+\end{enumerate}
+
+These small pieces of proofs are glued back together with the transitivity of
+equality {\lstinline|trans|}.
+
+\begin{lstlisting}
++-comm (suc m) n = trans (cong suc (+-comm m n)) (sym (+-suc n m))
+\end{lstlisting}
+
+\subsection{Equational Reasoning}
+
+We see that proofs are composable just like programs.
+But look at the line we have just proven above:
+
+\begin{lstlisting}
+trans (cong suc (+-comm m n)) (sym (+-suc n m))
+\end{lstlisting}
+
+It is difficult to see what is going on in between these clauses, and it could
+get only worse as propositions get more complicated.
+Imagine having dozens of {\lstinline|trans|}, {\lstinline|sym|} and {\lstinline|cong|}
+spreading everywhere.
+
+Fortunately, these complex proofs can be written in a concise and modular manner
+with a simple yet powerful technique called \textit{equational reasoning}.
+Agda's flexible mixfix syntax allows the technique to be implemented with just
+a few combinators\cite{erikhesselinkpaulvisschers2008}.
+
+This is best illustrated by an example:
+
+\begin{lstlisting}
++-comm : ∀ m n → m + n ≡ n + m
++-comm zero    n = sym (+-right-identity n)
++-comm (suc m) n =
+    begin
+        suc m + n
+    ≡⟨ refl ⟩
+        suc (m + n)
+    ≡⟨ cong suc (+-comm m n) ⟩
+        suc (n + m)
+    ≡⟨ sym (+-suc n m) ⟩
+        n + suc m
+    ∎
+\end{lstlisting}
+
+With equational reasoning, we can see how a proposition equates with another,
+step by step, justified with theorems. The first and the last step corresponds to
+two sides of the equation of the proposition. {\lstinline|begin_|} marks the beginning
+of a reasoning; {\lstinline|_≡⟨_⟩_|} chains two propositions with the justication
+placed in between; {\lstinline|_∎|} marks the end of a reasoning (\textit{QED}).
+
+These combinators can be further generalized to support preorder equational
+reasoning. (Preorders are {\lstinline|reflexive|} and {\lstinline|transitive|})
+
+Suppose we already have {\lstinline|m≤m+n : ∀ m n → m ≤ m + n|} and want to
+prove a slightly different theorem.
+
+\begin{lstlisting}
+m≤n+m : ∀ m n → m ≤ n + m
+m≤n+m m n =
+    start
+        m
+    ≤⟨ m≤m+n m n ⟩
+        m + n
+    ≈⟨ +-comm m n ⟩
+        n + m
+    □
+\end{lstlisting}
+
+Where {\lstinline|_≤⟨_⟩_|} and {\lstinline|_≈⟨_⟩_|} are respectively transitive
+and reflexive combinators.\footnote{Combinators are renamed to prevent conflictions.}
+
+\subsection{Reasoning equational reasonings}
+
+A typical equational reasoning can often be broken down into three parts.
+
+\begin{enumerate}
+    \item
+        The reasoning will always and only starts from the left-hand side of the equation.
+        Terms will then be "arranged" into a form that allows the induction hypothesis
+        to be applied.
+        In the following example of {\lstinline|+-comm|}, nothing needs to be arrange
+        because the terms are computationally equal (the {\lstinline|refl|} can actually be omitted).
+
+        \begin{lstlisting}
+            begin
+                suc m + n
+            ≡⟨ refl ⟩
+                suc (m + n)
+        \end{lstlisting}
+    \item
+        {\lstinline|m + n|} emerged as part of the proposition which enable us
+        to apply the induction hypothesis.
+
+        \begin{lstlisting}
+                suc (m + n)
+            ≡⟨ cong suc (+-comm m n) ⟩
+                suc (n + m)
+        \end{lstlisting}
+    \item
+        After applying the induction hypothesis, terms are then "rearranged" into the
+        right-hand side of the equation, hence completes the proof.
+
+        \begin{lstlisting}
+                suc (n + m)
+            ≡⟨ sym (+-suc n m) ⟩
+                n + suc m
+            ∎
+        \end{lstlisting}
+\end{enumerate}
+
+
+To arrange those terms, we need properties such as commutativity or associativity
+of some operater, or some distributive property when there are more than
+one operator. Combination of operators such as addition and multiplication often
+forms a nice semiring structure that equips with those properties.
+
+From now on, we will dispense with the steps of term-rearrangement in the proofs,
+unless the process is too obscure.
+
+
+\subsection{Relevant properties of natural numbers}
+
+Properties of natural numbers play a big role in the development of proofs in
+this thesis. In this section, we will introduce various relevant properties of
+{\lstinline|ℕ|}. Most of the basic properties listed here (such as the ones demonstrated above)
+are taken from the stantard library while others are just lemmata or corollaries of
+these theorems.
+\footnote{\textit{Theorem}, \textit{lemma}, \textit{corollary} and \textit{property}
+are all synonyms for \textit{established proposition}. There are no formal
+distinction between these terms and they are used exchangeably in the thesis.}
+
+\paragraph{addition}
+
+\begin{itemize}
+    \item {\lstinline|+-assoc : ∀ m n o → (m + n) + o ≡ m + (n + o)|}
+        \\ the associative property of addition.
+    \item {\lstinline|+-right-identity : ∀ n → n + 0 ≡ n|}
+        \\ the right identity of addition.
+    \item {\lstinline|+-suc : ∀ m n → m + suc n ≡ suc (m + n)|}
+        \\ moving {\lstinline|suc|} from one term to another.
+    \item {\lstinline|+-comm : ∀ m n → m + n ≡ n + m|}
+        \\ the commutative property of addition.
+    \item {\lstinline|cancel-+-left : ∀ i {j k} → i + j ≡ i + k → j ≡ k|}
+        \\ the left cancellation property of addition.
+    \item {\lstinline|cancel-+-right : ∀ k {i j} → i + k ≡ j + k → i ≡ j|}
+        \\ the right cancellation property of addition.
+\end{itemize}
+
+\paragraph{multiplication}
+
+\begin{itemize}
+    \item {\lstinline|+-*-suc : ∀ m n → m * suc n ≡ m + m * n|}
+        \\ multiplication over {\lstinline|suc|}.
+    \item {\lstinline|*-right-zero : ∀ n → n * 0 ≡ 0|}
+        \\ the right absorbing element of multiplication.
+    \item {\lstinline|*-comm : ∀ m n → m * n ≡ n * m|}
+        \\ the commutative property of multiplication.
+    \item {\lstinline|distribʳ-*-+ : ∀ m n o → (n + o) * m ≡ n * m + o * m|}
+        \\ the right distributive property of multiplication over addition.
+\end{itemize}
+
+\paragraph{join and meet}
+
+
+\paragraph{monotonicity of operations}
+
+\end{document}

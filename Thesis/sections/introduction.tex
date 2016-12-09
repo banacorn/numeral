@@ -1,0 +1,261 @@
+\documentclass[../thesis.tex]{subfiles}
+\begin{document}
+
+\section{Introduction}\label{introduction}
+
+\subsection{Positional numeral systems}
+% [reviewed: 1]
+
+A numeral system is a writing system for expressing numbers, and humans have
+invented various kinds of numeral systems throughout history. Most of the
+systems we are using today are positional notations\cite{knuth1998art} because
+they can express infinite numbers with just a finite set of symbols called
+\textbf{digits}.
+
+Positional numeral systems represent a number by adding up a sequence of digits
+of different orders of magnitude. Take a decimal number for example:
+
+$$ (2016)_{10} = 2\times10^3 + 0\times10^2 + 1\times10^1 + 6\times10^0 $$
+
+$ 6 $ is called \textit{least significant digit} and $ 2 $ is called the
+\textit{most significant digit} in this example. From now on, except when writing
+decimal numbers, we will write down numbers in reverse order, from the least
+significant digit to the most significant digit, like $ 6102 $.
+
+To make things clear, we call a sequence of digits a \textbf{numeral}, or a \textbf{notation};
+and the number it expresses a \textbf{value}, or simply a \textbf{number}. That is,
+we distinguish syntax from semantics. Syntax bears no meaning; its semantics can
+only be carried out by converting to some other syntax. We call a function that
+converts notations to values an \textbf{evaluator}, and the process an
+\textbf{evaluation}.
+
+\subsubsection{Symtems of different bases}
+
+These numeral systems can take on different \textit{bases}. The ubiquitous decimal
+numeral system as we know has the base of 10. While the binaries that can be found
+in our machines nowadays has the base of 2. To evaluate a notation of certain
+system of base:
+
+$$
+    ({d_0d_1d_2d_3...})_{base}
+    =
+    d_0\times base^0 + d_1\times base^1 + d_2\times base^2 + d_3\times base^3 ...
+$$
+
+Where $ d_{n} $ is a digit that ranges from $ 0 $ to $ base - 1 $ for all $ n $.
+
+
+\subsubsection{Digits of different ranges}
+
+Some computer scientists and mathematicians seem to be more comfortable with
+unary (base-1) numbers because they are isomorphic to the natural numbers à la Peano.
+
+$$
+    (1111)_{1} \cong
+        \overbrace{\text{suc (suc (suc (suc}}^4 + \text{ zero)))}
+$$
+
+Statements established on such construction can be proven using mathematical
+induction. Moreover, people have implemented and proven a great deal of functions
+and properties on these unary numbers because they are easy to work with.
+
+However, the formula we have just put down for evaluating positional numeral systems
+doesn't work for unary numbers, as it requires the digits to range from $ 0 $ to
+$ base - 1 $. That is, the only digit has to be $ 0 $, yet the only digit unary
+numbers have is $ 1 $.
+
+To cooperate unary numbers, we relax the constraint on the range of digits
+by introducing a new variable, \textit{offset}:
+
+$$
+    ({d_0d_1d_2d_3...})_{base}
+    =
+    d_0\times base^0 + d_1\times base^1 + d_2\times base^2 + d_3\times base^3 ...
+$$
+
+Where $ d_{n} $ ranges from \textit{offset} to \textit{offset + base - 1} for
+all $ n $. Now that unary numbers would have an offset of $ 1 $,
+and systems of other bases would have offsets of $ 0 $.
+
+\subsubsection{Redundancy}
+
+With the generalization of \textit{base} and \textit{offset}, so far we have been
+able to cover some different kinds of numeral systems, but the binary numeral
+system that is implemented in virtually all arithmetic logic unit (ALU) hardware
+is not among them.
+
+In our representation, operations such as addition would take $ O(log{}n)$ for some
+number $ n $ in a system where $ base \text{\textgreater} 1 $. Since the number $ n $
+would have length $ log_{base} n $ and operations on each digit should be constant.
+However, these operations only takes constant time in machines!
+
+That seems to be a big performance issue, but there's a catch! Because our
+representation is capable of what is called \textit{arbitrary-precision arithmetic},
+i.e., it could perform calculations on numbers of arbitrary size while the binary
+numbers that reside in machines are bounded by the hardware, which could only
+perform \textit{fixed-precision arithmetic}.
+
+Surprisingly, we could fit these binary numbers into our representation with
+just a tweak. If we allow a system to have more digits, then a fixed-precision
+binary number can be regarded as a single digit! To illustrate this, a 32-bit
+binary number would become a single digit that ranges from $ 0 $ to $ 2^{32} $,
+while everything else including the base remains the same.
+
+Formerly in our representation, there are exactly \textit{base} number of digits
+that range from:
+
+$$
+    \text{offset}  ...  \text{offset} + \text{base} - 1
+$$
+
+We introduce a new index \textit{\#digit} to generalize the number of digits.
+Now they range from:
+
+$$
+    \text{offset}  ...  \text{offset} + \text{\#digit} - 1
+$$
+
+Here's a table of the configurations about the systems that we've addressed:
+
+\begin{center}
+    \begin{tabular}{l*{3}{r}}
+    Numeral system      & base  & \#digit    & offset    \\
+    \hline
+    Decimal             & 10    & 10        & 0         \\
+    Binary              & 2     & 2         & 0         \\
+    Unary               & 1     & 1         & 1         \\
+    Int32               & 2     & $ 2^{32} $ & 0        \\
+    \end{tabular}
+\end{center}
+
+Consider this numeral system, the oridinary binary numbers with an extra digit:
+$ 2 $.
+
+\begin{center}
+    \begin{tabular}{l*{3}{r}}
+    Numeral system      & base  & \#digit    & offset    \\
+    \hline
+    0-1-2 Binary        & 2     & 3          & 0         \\
+    \end{tabular}
+\end{center}
+
+\begin{center}
+    \begin{tabular}{c*{1}{l}}
+    Number (in decimal)  & Notation \\
+    \hline
+    0       & 0 \\
+    1       & 1 \\
+    2       & 01, 2 \\
+    3       & 11 \\
+    4       & 001, 21 \\
+    5       & 101, 12 \\
+    \end{tabular}
+\end{center}
+
+Such a numeral system is said to be \textbf{redundant}, because there are more than one
+way to represent a number. In fact, systems that allow $ 0 $ as one of the digits
+must be redundant, since we can always take a number and add leading zeros without
+changing it's value. Systems that does not have zeros are said to be \textbf{zeroless}.
+
+We will see that there's a deep connection between data
+structures and  numeral systems. Data structures modeled after redundant numeral
+systems have some interesting properties.
+
+\subsubsection{Numerical representation}
+
+One may notice that the structure of unary numbers looks suspiciously similar
+to that of lists'. Let's compare their definition in Haskell.
+
+% use minipage for juxtaposing two blocks of codes
+\noindent\begin{minipage}{.45\textwidth}
+\begin{lstlisting}
+data Nat = Zero
+         | Suc Nat
+\end{lstlisting}
+\end{minipage}\hfill
+\begin{minipage}{.48\textwidth}
+\begin{lstlisting}
+data List a = Nil
+            | Cons a (List a)
+\end{lstlisting}
+\end{minipage}
+
+If we replace every {\lstinline|Cons _|} with {\lstinline|Suc|} and {\lstinline|Nil|}
+with {\lstinline|Zero|}, then a list becomes an unary number.
+And that is exactly what the {\lstinline|length|} function,
+a homomorphism from lists to unary numbers, does.
+
+Now let's compare addition on unary number and merge (append) on lists:
+
+\noindent\begin{minipage}{.48\textwidth}
+\begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
+add : Nat → Nat → Nat
+add Zero    y = y
+add (Suc x) y =
+    Suc (add x y)
+\end{lstlisting}
+\end{minipage}\hfill
+\begin{minipage}{.45\textwidth}
+\begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
+append : List a → List a → List a
+append Nil         ys = ys
+append (Cons x xs) ys =
+    Cons x (append xs ys)
+\end{lstlisting}
+\end{minipage}
+
+Aside from having virtually identical implementations, operations on unary numbers
+and lists both have the same time complexity. Incrementing a unary number takes
+$ O(1) $, inserting an element into a list also takes $ O(1) $; adding two unary
+numbers takes $ O(n) $, appending a list to another also takes $ O(n) $.
+
+If we look at implementations and operations of binary numbers and binomial
+heaps, the resemblances are also uncanny.
+
+[insert some images here]
+
+The strong analogy between positional numeral systems and certain data structures
+suggests that, numeral systems can serve as templates for designing containers.
+Such data structures are called \textbf{Numerical Representations}\cite{okasaki1996purely}
+\cite{hinze1998numerical}.
+
+[say something about redundant data structures]
+
+% \subsubsection{From numeral systems to numbers}
+
+% But that simplicity comes at a cost, the time complexity of functions defined on
+% unary numbers is significantly
+
+% People have implemented and proven a great deal of functions and properties on
+% these unary numbers because they are easy to work with. But the simplicity comes
+% at a cost, the time complexity of functions defined on unary numbers is significantly
+% higher than those defined on systems of other bases, say, binary numbers. Hence,
+% it's not practical in doing heavy calculations.
+
+% The \textit{numbers} we are constructing in this work are the \textit{natural numbers}.
+% We learned how to count with these numbers when we are little. But what are numbers, really?
+
+% \paragraph{Recursive}
+
+% Paul Benacerraf once argued\cite{benacerraf1965numbers} that, there are two kinds
+% of \textit{counting} which corresponds to \textbf{transitive} and \textbf{intransitive}
+% uses of the verb "to count". Transitive counting, in his sense, is to assign one
+% of the numbers to the cardinality of a set, by establish a one-to-one correspondence
+% between the numbers and the objects one is counting, all the way from none to
+% all. Intransitive counting, on the other hand, is to generate a sequence of
+% notation, that could go as far as we need. And it seems that one can only learn
+% how to count intransitively first, before knowning how to count transitively,
+% but not vice versa.
+%
+% He further discussed that the numbers must be at least recursive
+
+% \paragraph{Numbers are recursive}
+%
+% \paragraph{Internal definition is immaterial}
+
+\paragraph{Outline}
+The remainder of the thesis is organized as follows.
+
+% Section~\ref{agda} .
+
+\end{document}
