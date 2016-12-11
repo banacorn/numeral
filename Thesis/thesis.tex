@@ -55,7 +55,7 @@
 \subfile{sections/agda.tex}
 \subfile{sections/eq-reasoning.tex}
 
-\section{Digit: the basic building block}\label{digit}
+\section{Digit: the basic building block}\label{representation}
 % [draft]
 
 Numerals are composed of sequences of \textbf{digits}. We will demonstrate how
@@ -134,26 +134,21 @@ Digit-toℕ : ∀ {d} → Digit d → ℕ → ℕ
 Digit-toℕ x o = toℕ x + o
 \end{lstlisting}
 
-Not all natural numbers can be converted to digits. The value has to be in certain
-range, between $ o $ and $ d + o $.
+However, not all natural numbers can be converted to digits.
+The value has to be in a certain range, between $ o $ and $ d + o $.
+Values less than $ o $ are [synonym of truncated] to $ o $.
+Values greater than $ d + o $ are prohibited by {\lstinline|upper-bound : d + o ≥ n|}.
 
 \begin{lstlisting}
-Digit-fromℕ : ∀ {d} → (n o : ℕ) → d + o ≥ n → Digit (suc d)
-Digit-fromℕ {d} n o upper-bound with n ∸ o ≤? d
-Digit-fromℕ {d} n o upper-bound | yes p = fromℕ≤ (s≤s p)
-Digit-fromℕ {d} n o upper-bound | no ¬p = contradiction p ¬p
-    where   p : n ∸ o ≤ d
-            p = start
-                    n ∸ o
-                ≤⟨ ∸n-mono o upper-bound ⟩
-                    (d + o) ∸ o
-                ≈⟨ m+n∸n≡m d o ⟩
-                    d
-                □
+Digit-fromℕ : ∀ {d}
+    → (n o : ℕ)
+    → (upper-bound : d + o ≥ n)
+    → Digit (suc d)
+Digit-fromℕ = ...
 \end{lstlisting}
 
-\subsection{Properties}
 
+\paragraph{Properties}
 {\lstinline|Digit-fromℕ-toℕ|} states that the value of a natural number should
 remain the same, after converted back and forth between {\lstinline|Digit|} and
 {\lstinline|ℕ|}.
@@ -164,26 +159,36 @@ Digit-fromℕ-toℕ : ∀ {d o}
     → (lower-bound :     o ≤ n)
     → (upper-bound : d + o ≥ n)
     → Digit-toℕ (Digit-fromℕ {d} n o upper-bound) o ≡ n
-Digit-fromℕ-toℕ {d} {o} n lb ub with n ∸ o ≤? d
-Digit-fromℕ-toℕ {d} {o} n lb ub | yes q =
-    begin
-        toℕ (fromℕ≤ (s≤s q)) + o
-    ≡⟨ cong (λ x → x + o) (toℕ-fromℕ≤ (s≤s q)) ⟩
-        n ∸ o + o
-    ≡⟨ m∸n+n≡m lb ⟩
-        n
-    ∎
-Digit-fromℕ-toℕ {d} {o} n lb ub | no ¬q = contradiction q ¬q
-    where   q : n ∸ o ≤ d
-            q = +n-mono-inverse o \$
-                start
-                    n ∸ o + o
-                ≈⟨ m∸n+n≡m lb ⟩
-                    n
-                ≤⟨ ub ⟩
-                    d + o
-                □
+Digit-fromℕ-toℕ = ...
 \end{lstlisting}
+
+Digits have a upper-bound and a lower-bound after evaluation.
+
+\begin{lstlisting}
+Digit-upper-bound : ∀ {d} → (o : ℕ) → (x : Digit d) → Digit-toℕ x o < d + o
+Digit-upper-bound {d} o x = +n-mono o (bounded x)
+
+Digit-lower-bound : ∀ {d} → (o : ℕ) → (x : Digit d) → Digit-toℕ x o ≥ o
+Digit-lower-bound {d} o x = m≤n+m o (toℕ x)
+\end{lstlisting}
+
+
+\subsection{Constants}
+
+These "constants" are special digits that inhabited in each system.
+
+
+% There are special digits in each system.
+
+\subsubsection{The greatest digit}
+
+\subsubsection{The carry}
+
+
+
+
+
+
 
 % A system can only have \textbf{finitely many} digits.
 % Operations on these digits, such as addition, must be \textbf{constant time}.

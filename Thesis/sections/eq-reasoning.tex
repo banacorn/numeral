@@ -99,7 +99,7 @@ equality {\lstinline|trans|}.
 +-comm (suc m) n = trans (cong suc (+-comm m n)) (sym (+-suc n m))
 \end{lstlisting}
 
-\subsection{Equational reasoning}
+\subsection{Equational Reasoning}
 
 We see that proofs are composable just like programs.
 However, look at the line we have just proven above:
@@ -141,6 +141,74 @@ two sides of the equation of a proposition. {\lstinline|begin_|} marks the begin
 of a reasoning; {\lstinline|_≡⟨_⟩_|} chains two expressions with the justification
 placed in between; {\lstinline|_∎|} marks the end of a reasoning (\textit{QED}).
 
+\subsubsection{Anatomy of Equational Reasoning}
+
+A typical equational reasoning can often be broken down into \textbf{three} parts.
+
+\begin{enumerate}
+    \item
+        Starting from the left-hand side of the equation, through a series of steps
+        , the expression will be "arranged" into a form that allows the induction
+        hypothesis to be applied.
+        In the following example of {\lstinline|+-comm|}, nothing needs to be arranged
+        because these two expressions are computationally equal
+        (the {\lstinline|refl|} can be omitted).
+
+        \begin{lstlisting}
+            begin
+                suc m + n
+            ≡⟨ refl ⟩
+                suc (m + n)
+        \end{lstlisting}
+    \item
+        {\lstinline|m + n|} emerged as part of the proposition which enables us
+        to apply the induction hypothesis.
+
+        \begin{lstlisting}
+                suc (m + n)
+            ≡⟨ cong suc (+-comm m n) ⟩
+                suc (n + m)
+        \end{lstlisting}
+    \item
+        After applying the induction hypothesis, the expression are then "rearranged"
+        into the right-hand side of the equation, hence completes the proof.
+
+        \begin{lstlisting}
+                suc (n + m)
+            ≡⟨ sym (+-suc n m) ⟩
+                n + suc m
+            ∎
+        \end{lstlisting}
+\end{enumerate}
+
+\paragraph{arranging expressions}
+
+To arrange an expression into the shape we desire, while remaining equal.
+We need properties such as commutativity or associativity of some operator,
+or distributive properties when there is more than one operator.
+
+The operators we will be dealing with often comes with these properties.
+Take addition and multiplication, for example;
+together they form a nice semiring structure.
+
+\paragraph{substituting equals for equals}
+
+Sometimes there is only a part of an expression needs to be substituted.
+Say, we have a proof {\lstinline|eq : X ≡ Y|}, and we want to substitute {\lstinline|X|}
+for {\lstinline|Y|} in a more complex expression {\lstinline|a b (c X) d|}.
+We could ask {\lstinline|cong|} to "target" the part to substitute by supplying a
+function like this:
+
+\begin{lstlisting}
+λ w → a b (c w) d
+\end{lstlisting}
+
+Which abstracts the part we want to substitute away, such that:
+
+\begin{lstlisting}
+cong (λ w → a b (c w) d) eq : a b (c X) d ≡ a b (c Y) d
+\end{lstlisting}
+
 \subsection{Preorder reasoning}
 
 These combinators can be further generalized to support \textit{preorder reasoning}.
@@ -163,60 +231,66 @@ m≤n+m m n =
 \end{lstlisting}
 
 Where {\lstinline|_≤⟨_⟩_|} and {\lstinline|_≈⟨_⟩_|} are respectively transitive
-and reflexive combinators.\footnote{Combinators are renamed to prevent conflictions.}
+and reflexive combinators.\footnote{Combinators for preorder reasoning are
+renamed to prevent conflictions with equational reasoning.}
 Step by step, starting from the left-hand side of the relation, expressions get
 greater and greater as it reaches the right-hand side the relation.
 
-\subsection{Reasoning equational reasonings}
+\subsubsection{Anatomy of Preorder Reasoning}
 
-A typical equational reasoning can often be broken down into three parts.
+Similar to that of equation reasoning, a typical preorder reasoning can also be
+broken down into parts. Since an equivalence relation is also a preorder, every
+steps of equational reasoning can also be found in preorder reasoning.
 
-\begin{enumerate}
-    \item
-        The reasoning will always and only starts from the left-hand side of the equation.
-        Terms will then be "arranged" into a form that allows the induction hypothesis
-        to be applied.
-        In the following example of {\lstinline|+-comm|}, nothing needs to be arrange
-        because the terms are computationally equal (the {\lstinline|refl|} can actually be omitted).
+\paragraph{monotonicity of operators}
 
-        \begin{lstlisting}
-            begin
-                suc m + n
-            ≡⟨ refl ⟩
-                suc (m + n)
-        \end{lstlisting}
-    \item
-        {\lstinline|m + n|} emerged as part of the proposition which enable us
-        to apply the induction hypothesis.
+In equational reasoning, we could substitute part of an expression with something
+equal with {\lstinline|cong|} because {\lstinline|_≡_|} is congruent.
+However, we cannot substitute part of an expression with something \textit{greater}
+in general.
+Take \textit{monus} \footnote{Monus, or \textit{truncated subtraction}, is a
+kind of subtraction that never goes negative when the subtrahend is greater then
+the minued.} {\lstinline|_∸_|} for example:
 
-        \begin{lstlisting}
-                suc (m + n)
-            ≡⟨ cong suc (+-comm m n) ⟩
-                suc (n + m)
-        \end{lstlisting}
-    \item
-        After applying the induction hypothesis, terms are then "rearranged" into the
-        right-hand side of the equation, hence completes the proof.
+\begin{lstlisting}
+f : ∀ m n
+    → (prop : m ≤ n)
+    → m ∸ m ≤ m ∸ n
+f m n prop =
+    start
+        m ∸ m
+    ≤⟨ ? ⟩
+        m ∸ n
+    □
+\end{lstlisting}
 
-        \begin{lstlisting}
-                suc (n + m)
-            ≡⟨ sym (+-suc n m) ⟩
-                n + suc m
-            ∎
-        \end{lstlisting}
-\end{enumerate}
+The proposition {\lstinline|f|} as seen above can only be disapproved, because
+the second argument of {\lstinline|_∸_|} is \textit{contravariant} in the sense
+that the result of {\lstinline|_∸_|} would increase when the second argument decreases.
+
+Even worse, the function that takes the substitute as an argument may not
+be even be \textit{monotonic} as monus. As a result, a generic mechanism like
+{\lstinline|cong|} does not exist in preorder reasoning. We can only substitute
+part of an expression when the function is \textit{monotonic}.
 
 
-To arrange those terms, we need properties such as commutativity or associativity
-of some operater, or some distributive property when there are more than
-one operator. Combination of operators such as addition and multiplication often
-forms a nice semiring structure that equips with those properties.
+%
+% Similar to that of equation reasoning, sometimes we need to rewrite expressions with
+% {\lstinline|_≈⟨_⟩_|} when they are equal to each other (An equivalence relation is also a
+% preorder). We would also skip these steps.
+%
+% Some of the obvious transitive steps (that is written in {\lstinline|_≤⟨_⟩_|})
+% will also be skipped.
 
-From now on, we will dispense with the steps of term-rearrangement in the proofs,
-unless the process is too obscure.
+\subsection{Dispense with trivial proofs}
 
+From now on, we will dispense with most of the steps and justifications in
+reasonings, because it is often obvious to see what happened in the process.
 
-\subsection{Relevant properties of natural numbers}
+In fact, there are is no formal distinction between the proofs we disregard and
+those we feel important. They are all equally indispensable to Agda.
+
+\subsection{Relevant Properties of Natural Numbers}
 
 Properties of natural numbers play a big role in the development of proofs in
 this thesis. In this section, we will introduce various relevant properties of
