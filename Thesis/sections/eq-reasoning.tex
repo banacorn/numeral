@@ -4,10 +4,37 @@
 \section{Properties of Natural Numbers and Equational Reasoning}\label{eq-reasoning}
 % [draft]
 
-With propositional equality at our disposal, we will demonstrate how to prove
-properties such as the commutative property of addition.
-As proofs get more complicated, we will introduce equational reasoning, a
-powerful tool that makes proving easier.
+% As constructing a representation of numeral systems would inevitably involve
+% a lot of things about natural numbers. In this section, we will:
+%
+% \begin{enumerate}
+%     \item introduce some common functions on natural numbers.
+%     \item introduce some properties of these functions.
+%     \item demonstrate how to prove these properties with equational reasoning.
+% \end{enumerate}
+%
+% There are mainly two kinds of properties:
+% \begin{itemize}
+%     \item properties stating that two expressions are equal.
+%     \item properties stating that one expression is greater than another.
+% \end{itemize}
+
+
+% \item demonstrate how to prove these properties with equational reasoning.
+
+
+% With propositional equality at our disposal, we will demonstrate how to prove
+% properties such as the commutative property of addition.
+% Except from equality, we would also introduce preorder relations on natural numbers.
+% Other than proving that two things are equal,
+
+Properties of natural numbers play a big role in the development of proofs in
+this thesis. With propositional equality at our disposal, we will demonstrate how
+to prove properties such as the commutative property of addition.
+As proofs get more complicated, we will make proving easier by introducing a
+powerful tool: \textit{equational reasoning}.
+
+\subsection{Proving Equational Propositions}
 
 \paragraph{Right identity of addition}
 
@@ -22,7 +49,7 @@ suc x + y = suc (x + y)
 {\lstinline|_+_|} is defined by induction on the first argument. That means we
 get the \textit{left identity} of addition for free, as {\lstinline|zero + y|}
 and {\lstinline|y|} are \textit{computationally equal}. However, this is not the
-case for the \textit{right identity} of addition. It has to be proven explicitly.
+case for the \textit{right identity}. It has to be proven explicitly.
 
 \begin{lstlisting}
 +-right-identity : (n : ℕ) → n + 0 ≡ n
@@ -146,7 +173,7 @@ placed in between; {\lstinline|_∎|} marks the end of a reasoning (\textit{QED}
 A typical equational reasoning can often be broken down into \textbf{three} parts.
 
 \begin{enumerate}
-    \item
+    \item\label{eq-part1}
         Starting from the left-hand side of the equation, through a series of steps
         , the expression will be "arranged" into a form that allows the induction
         hypothesis to be applied.
@@ -160,7 +187,7 @@ A typical equational reasoning can often be broken down into \textbf{three} part
             ≡⟨ refl ⟩
                 suc (m + n)
         \end{lstlisting}
-    \item
+    \item\label{eq-part2}
         {\lstinline|m + n|} emerged as part of the proposition which enables us
         to apply the induction hypothesis.
 
@@ -169,7 +196,7 @@ A typical equational reasoning can often be broken down into \textbf{three} part
             ≡⟨ cong suc (+-comm m n) ⟩
                 suc (n + m)
         \end{lstlisting}
-    \item
+    \item\label{eq-part3}
         After applying the induction hypothesis, the expression are then "rearranged"
         into the right-hand side of the equation, hence completes the proof.
 
@@ -183,7 +210,8 @@ A typical equational reasoning can often be broken down into \textbf{three} part
 
 \paragraph{arranging expressions}
 
-To arrange an expression into the shape we desire, while remaining equal.
+To arrange an expression into the shape we desire as in part \ref{eq-part1} and
+part \ref{eq-part3}, while remaining equal.
 We need properties such as commutativity or associativity of some operator,
 or distributive properties when there is more than one operator.
 
@@ -193,7 +221,8 @@ together they form a nice semiring structure.
 
 \paragraph{substituting equals for equals}
 
-Sometimes there is only a part of an expression needs to be substituted.
+As what we have seen in \ref{eq-part2}, sometimes there is only a part of an
+expression needs to be substituted.
 Say, we have a proof {\lstinline|eq : X ≡ Y|}, and we want to substitute {\lstinline|X|}
 for {\lstinline|Y|} in a more complex expression {\lstinline|a b (c X) d|}.
 We could ask {\lstinline|cong|} to "target" the part to substitute by supplying a
@@ -209,13 +238,52 @@ Which abstracts the part we want to substitute away, such that:
 cong (λ w → a b (c w) d) eq : a b (c X) d ≡ a b (c Y) d
 \end{lstlisting}
 
+\subsection{Preorder}
+
+Aside from stating that two expressions are equal, a proposition can also state
+that one expression is "less than or equal to" than another, given a preorder.
+
+A preorder is a binary relation that is {\lstinline|reflexive|} and {\lstinline|transitive|}.
+Often denoted as {\lstinline|_≤_|}, such a binary relation on natural numbers is
+defined as:
+
+\begin{lstlisting}
+data _≤_ : ℕ → ℕ → Set where
+    z≤n : ∀ {n}                 → zero  ≤ n
+    s≤s : ∀ {m n} (m≤n : m ≤ n) → suc m ≤ suc n
+\end{lstlisting}
+
+The following is a proof of $ 3 \leq 5 $:
+
+\begin{lstlisting}
+3≤5 : 3 ≤ 5
+3≤5 = s≤s (s≤s (s≤s z≤n))
+\end{lstlisting}
+
+To prove $ 3 \leq 5 $, we need a proof of $ 2 \leq 4 $ for {\lstinline|s≤s|},
+and so on, until it reaches zero where it ends with a {\lstinline|z≤n|}.
+
+Here are some other binary relations than can be defined with {\lstinline|_≤_|}.
+
+\begin{lstlisting}
+_<_ : Rel ℕ Level.zero
+m < n = suc m ≤ n
+
+_≰_ : Rel ℕ Level.zero
+a ≰ b = ¬ a ≤ b
+
+_≥_ : Rel ℕ Level.zero
+m ≥ n = n ≤ m
+\end{lstlisting}
+
 \subsection{Preorder reasoning}
 
-These combinators can be further generalized to support \textit{preorder reasoning}.
+Combinators for equational reasoning can be further generalized to support \textit{preorder reasoning}.
 Preorders are {\lstinline|reflexive|} and {\lstinline|transitive|}, that means
-expressions can be chained with a series of relations just like equational reasoning.
+expressions can be chained with a series of relations just as that of equational
+reasoning.
 
-Suppose we already have {\lstinline|m≤m+n : ∀ m n → m ≤ m + n|} and want to
+Suppose we already have {\lstinline|m≤m+n : ∀ m n → m ≤ m + n|} and we want to
 prove a slightly different theorem.
 
 \begin{lstlisting}
@@ -236,11 +304,9 @@ renamed to prevent conflictions with equational reasoning.}
 Step by step, starting from the left-hand side of the relation, expressions get
 greater and greater as it reaches the right-hand side the relation.
 
-\subsubsection{Anatomy of Preorder Reasoning}
-
-Similar to that of equation reasoning, a typical preorder reasoning can also be
-broken down into parts. Since an equivalence relation is also a preorder, every
-steps of equational reasoning can also be found in preorder reasoning.
+% Similar to that of equation reasoning, a typical preorder reasoning can also be
+% broken down into parts. Since an equivalence relation is also a preorder, every
+% steps of equational reasoning can also be found in preorder reasoning.
 
 \paragraph{monotonicity of operators}
 
@@ -248,30 +314,86 @@ In equational reasoning, we could substitute part of an expression with somethin
 equal with {\lstinline|cong|} because {\lstinline|_≡_|} is congruent.
 However, we cannot substitute part of an expression with something \textit{greater}
 in general.
-Take \textit{monus} \footnote{Monus, or \textit{truncated subtraction}, is a
-kind of subtraction that never goes negative when the subtrahend is greater then
-the minued.} {\lstinline|_∸_|} for example:
+
+Take the following function {\lstinline|f|} as example.
 
 \begin{lstlisting}
-f : ∀ m n
-    → (prop : m ≤ n)
-    → m ∸ m ≤ m ∸ n
-f m n prop =
-    start
-        m ∸ m
-    ≤⟨ ? ⟩
-        m ∸ n
-    □
+f : ℕ → ℕ
+f 0 = 1
+f 1 = 0
+f _ = 1
 \end{lstlisting}
 
-The proposition {\lstinline|f|} as seen above can only be disapproved, because
-the second argument of {\lstinline|_∸_|} is \textit{contravariant} in the sense
-that the result of {\lstinline|_∸_|} would increase when the second argument decreases.
+{\lstinline|f|} returns $ 1 $ on all inputs except for $ 1 $.
+{\lstinline|0 ≤ 1|} holds, but it does not imply that {\lstinline|f 0 ≤ f 1|} also holds.
+As a result, a generic mechanism like {\lstinline|cong|} does not exist in preorder reasoning.
+We can only substitute part of an expression when the function is \textit{monotonic}.
 
-Even worse, the function that takes the substitute as an argument may not
-be even be \textit{monotonic} as monus. As a result, a generic mechanism like
-{\lstinline|cong|} does not exist in preorder reasoning. We can only substitute
-part of an expression when the function is \textit{monotonic}.
+% Suppose we want to prove that {\lstinline|_+_|} is monotonic in both arguments.
+%
+% \begin{lstlisting}
+% +-mono : ∀ m₁ m₂ n₁ n₂ → m₁ ≤ m₂ → n₁ ≤ n₂ → m₁ + n₁ ≤ m₂ + n₂
+% \end{lstlisting}
+%
+% By induction on the argument of type {\lstinline|m₁ ≤ m₂|}, we get two goals.
+% The type and context of the first goal is as follows:
+%
+% \begin{lstlisting}
+% +-mono 0 m₂ n₁ n₂ z≤n n₁≤n₂ = ?0
+%
+% Goal of ?0 : n₁ ≤ m₂ + n₂
+% n₁≤n₂      : n₁ ≤ n₂
+% n₁, n₂, m₂ : ℕ
+% \end{lstlisting}
+%
+% \begin{lstlisting}
+% +-mono (suc m₁) (suc m₂) n₁ n₂ (s≤s p) n₁≤n₂ = ?1
+% \end{lstlisting}
+%
+% The induction forces {\lstinline|m₁ m₂|} to change as well.
+%
+% \begin{lstlisting}
+% +-mono : ∀ m₁ m₂ n₁ n₂ → m₁ ≤ m₂ → n₁ ≤ n₂ → m₁ + n₁ ≤ m₂ + n₂
+% +-mono 0        m₂       n₁ n₂ z≤n     n₁≤n₂ = ?0
+% +-mono (suc m₁) (suc m₂) n₁ n₂ (s≤s p) n₁≤n₂ = ?1
+% \end{lstlisting}
+
+% \begin{lstlisting}
+% +-mono : ∀ m₁ m₂ n₁ n₂ → m₁ ≤ m₂ → n₁ ≤ n₂ → m₁ + n₁ ≤ m₂ + n₂
+% +-mono 0        m₂       n₁ n₂ z≤n     n₁≤n₂ = ?0
+% +-mono (suc m₁) (suc m₂) n₁ n₂ (s≤s p) n₁≤n₂ = ?1
+% \end{lstlisting}
+
+% Take \textit{monus} \footnote{Monus, or \textit{truncated subtraction}, is a
+% kind of subtraction that never goes negative when the subtrahend is greater then
+% the minued.} {\lstinline|_∸_|} for example:
+%
+% \begin{lstlisting}
+% f : ∀ m n
+%     → (prop : m ≤ n)
+%     → m ∸ m ≤ m ∸ n
+% f m n prop =
+%     start
+%         m ∸ m
+%     ≤⟨ ? ⟩
+%         m ∸ n
+%     □
+% \end{lstlisting}
+%
+% We cannot prove {\lstinline|f|} because {\lstinline|m ≤ n|} does not imply
+% {\lstinline|m ∸ m ≤ m ∸ n|}\footnote{the second argument of {\lstinline|_∸_|}
+% is \textit{contravariant} in the sense that the result of {\lstinline|_∸_|} would
+% increase when the second argument decreases.}
+
+% The proposition {\lstinline|f|} as seen above can only be disapproved, because
+% the second argument of {\lstinline|_∸_|} is \textit{contravariant} in the sense
+% that the result of {\lstinline|_∸_|} would increase when the second argument decreases.
+
+% Even worse, the function that takes the substitute as an argument may not
+% even be \textit{monotonic} like monus. As a result, a generic mechanism like
+% {\lstinline|cong|} does not exist in preorder reasoning. We can only substitute
+% part of an expression when the function is \textit{monotonic}. The monotonicity
+% of each function are different and have to be proved
 
 
 %
@@ -282,36 +404,58 @@ part of an expression when the function is \textit{monotonic}.
 % Some of the obvious transitive steps (that is written in {\lstinline|_≤⟨_⟩_|})
 % will also be skipped.
 
-\subsection{Dispense with trivial proofs}
+\subsection{Skipping trivial proofs}
 
 From now on, we will dispense with most of the steps and justifications in
-reasonings, because it is often obvious to see what happened in the process.
+equational and preorder reasonings,
+because it is often obvious to see what happened in the process.
 
 In fact, there are is no formal distinction between the proofs we disregard and
 those we feel important. They are all equally indispensable to Agda.
 
 \subsection{Relevant Properties of Natural Numbers}
 
-Properties of natural numbers play a big role in the development of proofs in
-this thesis. In this section, we will introduce various relevant properties of
-{\lstinline|ℕ|}. Most of the basic properties listed here (such as the ones demonstrated above)
-are taken from the stantard library while others are just lemmata or corollaries of
-these theorems.
+Relevant properties of {\lstinline|ℕ|} used in the remainder of the thesis
+will be introduced in this section.
+
+Some of the properties listed here are taken from the stantard library.
 \footnote{\textit{Theorem}, \textit{lemma}, \textit{corollary} and \textit{property}
 are all synonyms for \textit{established proposition}. There are no formal
 distinction between these terms and they are used exchangeably in the thesis.}
 
+% In this section, we will introduce various relevant properties of {\lstinline|ℕ|}.
+
+% Most of the basic properties listed here (such as the ones demonstrated above)
+% are taken from the stantard library while others are just lemmata or corollaries of
+% these theorems.
+% \footnote{\textit{Theorem}, \textit{lemma}, \textit{corollary} and \textit{property}
+% are all synonyms for \textit{established proposition}. There are no formal
+% distinction between these terms and they are used exchangeably in the thesis.}
+
+\subsubsection{Equational Propositions}
+
+\paragraph{natural number}
+
+\begin{itemize}
+    \item {\lstinline|cancel-suc : ∀ {x y} → suc x ≡ suc y → x ≡ y|}
+        \\ suc is injective.
+\end{itemize}
+
 \paragraph{addition}
 
 \begin{itemize}
-    \item {\lstinline|+-assoc : ∀ m n o → (m + n) + o ≡ m + (n + o)|}
-        \\ the associative property of addition.
     \item {\lstinline|+-right-identity : ∀ n → n + 0 ≡ n|}
         \\ the right identity of addition.
     \item {\lstinline|+-suc : ∀ m n → m + suc n ≡ suc (m + n)|}
         \\ moving {\lstinline|suc|} from one term to another.
+    \item {\lstinline|+-assoc : ∀ m n o → (m + n) + o ≡ m + (n + o)|}
+        \\ the associative property of addition.
     \item {\lstinline|+-comm : ∀ m n → m + n ≡ n + m|}
         \\ the commutative property of addition.
+    \item {\lstinline|[a+b]+c≡[a+c]+b : ∀ a b c → a + b + c ≡ a + c + b|}
+        \\ a convenient corollary for swapping terms.
+    \item {\lstinline|a+[b+c]≡b+[a+c] : ∀ a b c → a + (b + c) ≡ b + (a + c)|}
+        \\ a convenient corollary for swapping terms.
     \item {\lstinline|cancel-+-left : ∀ i {j k} → i + j ≡ i + k → j ≡ k|}
         \\ the left cancellation property of addition.
     \item {\lstinline|cancel-+-right : ∀ k {i j} → i + k ≡ j + k → i ≡ j|}
@@ -321,19 +465,25 @@ distinction between these terms and they are used exchangeably in the thesis.}
 \paragraph{multiplication}
 
 \begin{itemize}
-    \item {\lstinline|+-*-suc : ∀ m n → m * suc n ≡ m + m * n|}
-        \\ multiplication over {\lstinline|suc|}.
     \item {\lstinline|*-right-zero : ∀ n → n * 0 ≡ 0|}
         \\ the right absorbing element of multiplication.
+    \item {\lstinline|+-*-suc : ∀ m n → m * suc n ≡ m + m * n|}
+        \\ multiplication over {\lstinline|suc|}.
+    \item {\lstinline|*-assoc : ∀ m n o → (m * n) * o ≡ m * (n * o)|}
+        \\ the associative property of multiplication.
     \item {\lstinline|*-comm : ∀ m n → m * n ≡ n * m|}
         \\ the commutative property of multiplication.
     \item {\lstinline|distribʳ-*-+ : ∀ m n o → (n + o) * m ≡ n * m + o * m|}
         \\ the right distributive property of multiplication over addition.
 \end{itemize}
 
-\paragraph{join and meet}
+
+\subsubsection{Relational Propositions}
 
 
-\paragraph{monotonicity of operations}
+% \paragraph{join and meet}
+%
+%
+% \paragraph{monotonicity of operations}
 
 \end{document}

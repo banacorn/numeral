@@ -45,6 +45,82 @@ cmp : Trichotomous _≡_ _<_
 cmp = StrictTotalOrder.compare strictTotalOrder
 
 ------------------------------------------------------------------------
+-- Equational
+------------------------------------------------------------------------
+
+
+-- ℕ
+cancel-suc : ∀ {x y} → suc x ≡ suc y → x ≡ y
+cancel-suc {x} {.x} refl = refl
+-- suc-injective : ∀ {x y} → suc x ≡ suc y → x ≡ y
+-- suc-injective {x} {.x} refl = refl
+
+-- _+_
+
+-- +1-injective : ∀ {x y} → x + 1 ≡ y + 1 → x ≡ y
+-- +1-injective {x} {y} p = suc-injective $
+--     begin
+--         1 + x
+--     ≡⟨ +-comm 1 x ⟩
+--         x + 1
+--     ≡⟨ p ⟩
+--         y + 1
+--     ≡⟨ +-comm y 1 ⟩
+--         1 + y
+--     ∎
+
+[a+b]+c≡[a+c]+b : ∀ a b c → a + b + c ≡ a + c + b
+[a+b]+c≡[a+c]+b a b c =
+    begin
+        a + b + c
+    ≡⟨ +-assoc a b c ⟩
+        a + (b + c)
+    ≡⟨ cong (λ x → a + x) (+-comm b c) ⟩
+        a + (c + b)
+    ≡⟨ sym (+-assoc a c b) ⟩
+        a + c + b
+    ∎
+
+a+[b+c]≡b+[a+c] : ∀ a b c → a + (b + c) ≡ b + (a + c)
+a+[b+c]≡b+[a+c] a b c =
+    begin
+        a + (b + c)
+    ≡⟨ sym (+-assoc a b c) ⟩
+        a + b + c
+    ≡⟨ cong (λ x → x + c) (+-comm a b) ⟩
+        b + a + c
+    ≡⟨ +-assoc b a c ⟩
+        b + (a + c)
+    ∎
+
+-- _*_
+*-right-identity : ∀ n → n * 1 ≡ n
+*-right-identity zero    = refl
+*-right-identity (suc n) = cong suc (*-right-identity n)
+
+*-left-identity : ∀ n → 1 * n ≡ n
+*-left-identity zero    = refl
+*-left-identity (suc n) = cong suc (*-left-identity n)
+
+
+-- _∸_
+m∸n+n≡m : ∀ {m n} → n ≤ m → m ∸ n + n ≡ m
+m∸n+n≡m {m} {n} n≤m =
+    begin
+        m ∸ n + n
+    ≡⟨ +-comm (m ∸ n) n ⟩
+        n + (m ∸ n)
+    ≡⟨ m+n∸m≡n n≤m ⟩
+        m
+    ∎
+
+
+
+------------------------------------------------------------------------
+-- Relational
+------------------------------------------------------------------------
+
+------------------------------------------------------------------------
 -- _⊔_
 ------------------------------------------------------------------------
 
@@ -269,55 +345,6 @@ i*j>0⇒i>0∧j>0 zero j ()
 i*j>0⇒i>0∧j>0 (suc i) zero p = contradiction (proj₂ (i*j>0⇒i>0∧j>0 i 0 p)) (λ ())
 i*j>0⇒i>0∧j>0 (suc i) (suc j) p = s≤s z≤n , s≤s z≤n
 
-suc-injective : ∀ {x y} → suc x ≡ suc y → x ≡ y
-suc-injective {x} {.x} refl = refl
-
-cancel-suc : ∀ {x y} → suc x ≡ suc y → x ≡ y
-cancel-suc {x} {.x} refl = refl
-
-+1-injective : ∀ {x y} → x + 1 ≡ y + 1 → x ≡ y
-+1-injective {x} {y} p = suc-injective $
-    begin
-        1 + x
-    ≡⟨ +-comm 1 x ⟩
-        x + 1
-    ≡⟨ p ⟩
-        y + 1
-    ≡⟨ +-comm y 1 ⟩
-        1 + y
-    ∎
-
-[a+b]+c≡[a+c]+b : ∀ a b c → a + b + c ≡ a + c + b
-[a+b]+c≡[a+c]+b a b c =
-    begin
-        a + b + c
-    ≡⟨ +-assoc a b c ⟩
-        a + (b + c)
-    ≡⟨ cong (λ x → a + x) (+-comm b c) ⟩
-        a + (c + b)
-    ≡⟨ sym (+-assoc a c b) ⟩
-        a + c + b
-    ∎
-
-a+[b+c]≡b+[a+c] : ∀ a b c → a + (b + c) ≡ b + (a + c)
-a+[b+c]≡b+[a+c] a b c =
-    begin
-        a + (b + c)
-    ≡⟨ sym (+-assoc a b c) ⟩
-        a + b + c
-    ≡⟨ cong (λ x → x + c) (+-comm a b) ⟩
-        b + a + c
-    ≡⟨ +-assoc b a c ⟩
-        b + (a + c)
-    ∎
-
-*-right-identity : ∀ n → n * 1 ≡ n
-*-right-identity zero    = refl
-*-right-identity (suc n) = cong suc (*-right-identity n)
-
-*-left-identity : ∀ n → 1 * n ≡ n
-*-left-identity zero    = refl
-*-left-identity (suc n) = cong suc (*-left-identity n)
 
 m≤m*1+n : ∀ m n → m ≤ m * suc n
 m≤m*1+n m zero = reflexive (sym (*-right-identity m))
@@ -343,7 +370,7 @@ cancel-+-right zero {i} {j} p  =
     ∎
 cancel-+-right (suc k) {i} {j} p = cancel-+-right k lemma
     where   lemma : i + k ≡ j + k
-            lemma = suc-injective $
+            lemma = cancel-suc $
                 begin
                     suc (i + k)
                 ≡⟨ sym (+-suc i k) ⟩
@@ -365,17 +392,6 @@ distrib-left-*-+ m n o =
     ≡⟨ cong₂ _+_ (*-comm n m) (*-comm o m) ⟩
         m * n + m * o
     ∎
-
-m∸n+n≡m : ∀ {m n} → n ≤ m → m ∸ n + n ≡ m
-m∸n+n≡m {m} {n} n≤m =
-    begin
-        m ∸ n + n
-    ≡⟨ +-comm (m ∸ n) n ⟩
-        n + (m ∸ n)
-    ≡⟨ m+n∸m≡n n≤m ⟩
-        m
-    ∎
-
 
 m∸[o∸n]+o≡m+n : ∀ m n o
     → n ≤ o
@@ -406,15 +422,15 @@ m≥n+o⇒m∸o≥n m n o p =
         m ∸ o
     □
 
-double : ∀ m → m + m ≡ m * 2
-double m =
-    begin
-        m + m
-    ≡⟨ cong (λ w → m + w) (sym (+-right-identity m)) ⟩
-        m + (m + zero)
-    ≡⟨ *-comm (suc (suc zero)) m ⟩
-        m * suc (suc zero)
-    ∎
+-- double : ∀ m → m + m ≡ m * 2
+-- double m =
+--     begin
+--         m + m
+--     ≡⟨ cong (λ w → m + w) (sym (+-right-identity m)) ⟩
+--         m + (m + zero)
+--     ≡⟨ *-comm (suc (suc zero)) m ⟩
+--         m * suc (suc zero)
+--     ∎
 
 m⊔n≤m+n : ∀ m n → m ⊔ n ≤ m + n
 m⊔n≤m+n zero n = ≤-refl
@@ -435,25 +451,6 @@ cancel-∸-right {suc m} {zero}  (suc o) p  () eq
 cancel-∸-right {suc m} {suc n} (suc o) p  q  eq = cong suc (cancel-∸-right o (≤-pred p) (≤-pred q) eq)
 
 
--- cancel-∸-right : ∀ {m n o} → n ≥ o → m ≡ n ∸ o → m + o ≡ n
--- cancel-∸-right {m} {n} {zero} p eq =
---     begin
---         m + zero
---     ≡⟨ +-right-identity m ⟩
---         m
---     ≡⟨ eq ⟩
---         n
---     ∎
--- cancel-∸-right {m} {zero} {suc o} () eq
--- cancel-∸-right {m} {suc n} {suc o} p eq =
---     begin
---         m + suc o
---     ≡⟨ +-suc m o ⟩
---         suc (m + o)
---     ≡⟨ cong suc (cancel-∸-right {m} {n} {o} (≤-pred p) eq) ⟩
---         suc n
---     ∎
---
 -- cancel-∸-right-inverse : ∀ m n o → n ≥ o → m + o ≡ n → m ≡ n ∸ o
 -- cancel-∸-right-inverse m n zero p eq =
 --     begin
