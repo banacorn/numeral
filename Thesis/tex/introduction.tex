@@ -1,9 +1,9 @@
 \documentclass[../thesis.tex]{subfiles}
 \begin{document}
 
-\section{Introduction}\label{introduction}
+\chapter{Introduction}\label{introduction}
 
-\subsection{Positional numeral systems}
+\section{Positional numeral systems}
 % [reviewed: 1]
 
 A numeral system is a writing system for expressing numbers, and humans have
@@ -29,7 +29,7 @@ only be carried out by converting to some other syntax. We call a function that
 converts notations to values an \textbf{evaluator}, and the process an
 \textbf{evaluation}.
 
-\subsubsection{Symtems of different bases}
+\subsection{Symtems of different bases}
 
 These numeral systems can take on different \textit{bases}. The ubiquitous decimal
 numeral system as we know has the base of 10. While the binaries that can be found
@@ -45,7 +45,7 @@ $$
 Where $ d_{n} $ is a digit that ranges from $ 0 $ to $ base - 1 $ for all $ n $.
 
 
-\subsubsection{Digits of different ranges}
+\subsection{Digits of different ranges}
 
 Some computer scientists and mathematicians seem to be more comfortable with
 unary (base-1) numbers because they are isomorphic to the natural numbers à la Peano.
@@ -77,7 +77,7 @@ Where $ d_{n} $ ranges from \textit{offset} to \textit{offset + base - 1} for
 all $ n $. Now that unary numbers would have an offset of $ 1 $,
 and systems of other bases would have offsets of $ 0 $.
 
-\subsubsection{Redundancy}
+\subsection{Redundancy}
 
 With the generalization of \textit{base} and \textit{offset}, so far we have been
 able to cover some different kinds of numeral systems, but the binary numeral
@@ -161,7 +161,7 @@ We will see that there's a deep connection between data
 structures and  numeral systems. Data structures modeled after redundant numeral
 systems have some interesting properties.
 
-\subsubsection{Numerical representation}
+\subsection{Numerical representation}
 
 One may notice that the structure of unary numbers looks suspiciously similar
 to that of lists'. Let's compare their definition in Haskell.

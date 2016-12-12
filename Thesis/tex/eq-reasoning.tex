@@ -1,7 +1,7 @@
 \documentclass[../thesis.tex]{subfiles}
 \begin{document}
 
-\section{Properties of Natural Numbers and Equational Reasoning}\label{eq-reasoning}
+\chapter{Properties of Natural Numbers and Equational Reasoning}\label{eq-reasoning}
 % [draft]
 
 % As constructing a representation of numeral systems would inevitably involve
@@ -34,7 +34,7 @@ to prove properties such as the commutative property of addition.
 As proofs get more complicated, we will make proving easier by introducing a
 powerful tool: \textit{equational reasoning}.
 
-\subsection{Proving Equational Propositions}
+\section{Proving Equational Propositions}
 
 \paragraph{Right identity of addition}
 
@@ -126,7 +126,7 @@ equality {\lstinline|trans|}.
 +-comm (suc m) n = trans (cong suc (+-comm m n)) (sym (+-suc n m))
 \end{lstlisting}
 
-\subsection{Equational Reasoning}
+\section{Equational Reasoning}
 
 We see that proofs are composable just like programs.
 However, look at the line we have just proven above:
@@ -168,7 +168,7 @@ two sides of the equation of a proposition. {\lstinline|begin_|} marks the begin
 of a reasoning; {\lstinline|_≡⟨_⟩_|} chains two expressions with the justification
 placed in between; {\lstinline|_∎|} marks the end of a reasoning (\textit{QED}).
 
-\subsubsection{Anatomy of Equational Reasoning}
+\subsection{Anatomy of Equational Reasoning}
 
 A typical equational reasoning can often be broken down into \textbf{three} parts.
 
@@ -238,7 +238,7 @@ Which abstracts the part we want to substitute away, such that:
 cong (λ w → a b (c w) d) eq : a b (c X) d ≡ a b (c Y) d
 \end{lstlisting}
 
-\subsection{Preorder}
+\section{Preorder}
 
 Aside from stating that two expressions are equal, a proposition can also state
 that one expression is "less than or equal to" than another, given a preorder.
@@ -276,7 +276,7 @@ _≥_ : Rel ℕ Level.zero
 m ≥ n = n ≤ m
 \end{lstlisting}
 
-\subsection{Preorder reasoning}
+\section{Preorder reasoning}
 
 Combinators for equational reasoning can be further generalized to support \textit{preorder reasoning}.
 Preorders are {\lstinline|reflexive|} and {\lstinline|transitive|}, that means
@@ -404,7 +404,7 @@ We can only substitute part of an expression when the function is \textit{monoto
 % Some of the obvious transitive steps (that is written in {\lstinline|_≤⟨_⟩_|})
 % will also be skipped.
 
-\subsection{Skipping trivial proofs}
+\section{Skipping trivial proofs}
 
 From now on, we will dispense with most of the steps and justifications in
 equational and preorder reasonings,
@@ -413,7 +413,7 @@ because it is often obvious to see what happened in the process.
 In fact, there are is no formal distinction between the proofs we disregard and
 those we feel important. They are all equally indispensable to Agda.
 
-\subsection{Relevant Properties of Natural Numbers}
+\section{Relevant Properties of Natural Numbers}
 
 Relevant properties of {\lstinline|ℕ|} used in the remainder of the thesis
 will be introduced in this section.
@@ -432,9 +432,9 @@ distinction between these terms and they are used exchangeably in the thesis.}
 % are all synonyms for \textit{established proposition}. There are no formal
 % distinction between these terms and they are used exchangeably in the thesis.}
 
-\subsubsection{Equational Propositions}
+\subsection{Equational Propositions}
 
-\paragraph{natural number}
+\subsubsection{natural number}
 
 \begin{itemize}
     \item {\lstinline|cancel-suc : ∀ {x y} → suc x ≡ suc y → x ≡ y|}
@@ -462,7 +462,7 @@ distinction between these terms and they are used exchangeably in the thesis.}
         \\ the right cancellation property of addition.
 \end{itemize}
 
-\paragraph{multiplication}
+\subsubsection{multiplication}
 
 \begin{itemize}
     \item {\lstinline|*-right-zero : ∀ n → n * 0 ≡ 0|}
@@ -478,7 +478,7 @@ distinction between these terms and they are used exchangeably in the thesis.}
 \end{itemize}
 
 
-\subsubsection{Relational Propositions}
+\subsection{Relational Propositions}
 
 
 % \paragraph{join and meet}
