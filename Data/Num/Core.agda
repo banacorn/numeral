@@ -1,11 +1,7 @@
 module Data.Num.Core where
 
-open import Data.Num.Digit
+open import Data.Num.Digit public
 
-
-open import Data.Unit using (⊤; tt)
-open import Data.Empty using (⊥)
-open import Data.Product
 open import Data.Nat
 open import Data.Nat.Properties
 open import Data.Nat.Properties.Simple

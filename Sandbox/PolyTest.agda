@@ -47,7 +47,7 @@ x ^ suc y = x * (x ^ y)
 -- Δ ι = κ 1
 -- Δ (plus (κ x) q ())
 -- Δ (plus ι (κ x) ())
--- Δ (plus ι ι eq) = plus (Δ ι) (Δ ι) (suc-injective eq)
+-- Δ (plus ι ι eq) = plus (Δ ι) (Δ ι) (cancel-suc eq)
 -- Δ (plus ι (plus p₂ q₂ eq₂) eq) = plus (Δ ι) (Δ {! (plus p₂ q₂ eq₂)  !}) {!   !}
 -- Δ (plus ι (times p₂ q₂ eq₂) eq) = {!   !}
 -- -- Δ (plus ι q eq) = plus (Δ ι) (Δ {!   !}) {!   !}

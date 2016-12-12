@@ -39,26 +39,26 @@ open DecTotalOrder decTotalOrder using (reflexive) renaming (refl to ≤-refl)
 
 1+ : ∀ {b d o}
     → {cont : True (Continuous? b d o)}
-    → (xs : Num b d o)
-    → Num b d o
+    → (xs : Numeral b d o)
+    → Numeral b d o
 1+ {cont = cont} xs = proj₁ (toWitness cont xs)
 
 1+-toℕ : ∀ {b d o}
     → {cont : True (Continuous? b d o)}
-    → (xs : Num b d o)
+    → (xs : Numeral b d o)
     → ⟦ 1+ {cont = cont} xs ⟧ ≡ suc ⟦ xs ⟧
 1+-toℕ {cont = cont} xs = proj₂ (toWitness cont xs)
 
 
--- fromℕ : ∀ {b d o}
---     → {cont : True (Continuous? b (suc d) o)}
---     → (n : ℕ)
---     → (n ≥ o)
---     → Num b (suc d) o
--- fromℕ {o = o}       n p with o ≟ n
--- fromℕ               n p | yes q = z ∙
--- fromℕ {cont = cont} n p | no ¬q = 1+ {cont = cont} (fromℕ n p)
-
+fromℕ : ∀ {b d o}
+    → {cont : True (Continuous? b (suc d) o)}
+    → (n : ℕ)
+    → (n ≥ o)
+    → Numeral b (suc d) o
+fromℕ {o = o}       n p  with o ≟ n
+fromℕ n p | yes q = z ∙
+fromℕ zero z≤n | no ¬q = z ∙
+fromℕ {cont = cont} (suc n) p | no ¬q = 1+ {cont = cont} (fromℕ {cont = cont} n (≤-pred $ ≤∧≢⇒< p ¬q))
 
 sum : ∀ {d}
     → (o : ℕ)
@@ -428,8 +428,8 @@ n+-Proper : ∀ {b d o}
     → (¬gapped : (1 ⊔ o) * suc b ≤ suc d)
     → (proper : suc d + o ≥ 2)
     → (x : Digit (suc d))
-    → (xs : Num (suc b) (suc d) o)
-    → Num (suc b) (suc d) o
+    → (xs : Numeral (suc b) (suc d) o)
+    → Numeral (suc b) (suc d) o
 n+-Proper {b} {d} {o} ¬gapped proper x xs with sumView b d o ¬gapped proper x (lsd xs)
 n+-Proper ¬gapped proper x (_ ∙)    | Below leftover property = leftover ∙
 n+-Proper ¬gapped proper x (_ ∷ xs) | Below leftover property = leftover ∷ xs
@@ -442,7 +442,7 @@ n+-Proper-toℕ : ∀ {b d o}
     → (¬gapped : (1 ⊔ o) * suc b ≤ suc d)
     → (proper : suc d + o ≥ 2)
     → (x : Digit (suc d))
-    → (xs : Num (suc b) (suc d) o)
+    → (xs : Numeral (suc b) (suc d) o)
     → ⟦ n+-Proper ¬gapped proper x xs ⟧ ≡ Digit-toℕ x o + ⟦ xs ⟧
 n+-Proper-toℕ {b} {d} {o} ¬gapped proper x xs with sumView b d o ¬gapped proper x (lsd xs)
 n+-Proper-toℕ {b} {d} {o} ¬gapped proper x (_ ∙)    | Below leftover property = property
@@ -497,13 +497,13 @@ data N+Closed : (b d o : ℕ) → Set where
 
 n+-ℤₙ : ∀ {o}
     → (n : Digit 1)
-    → (xs : Num 1 1 (o))
-    → Num 1 1 o
+    → (xs : Numeral 1 1 (o))
+    → Numeral 1 1 o
 n+-ℤₙ n xs = n ∷ xs
 
 n+-ℤₙ-toℕ : ∀ {o}
     → (n : Digit 1)
-    → (xs : Num 1 1 o)
+    → (xs : Numeral 1 1 o)
     → ⟦ n+-ℤₙ n xs ⟧ ≡ Digit-toℕ n o + ⟦ xs ⟧
 n+-ℤₙ-toℕ {o} n xs =
     begin
@@ -515,8 +515,8 @@ n+-ℤₙ-toℕ {o} n xs =
 n+ : ∀ {b d o}
     → {cond : N+Closed b d o}
     → (n : Digit d)
-    → (xs : Num b d o)
-    → Num b d o
+    → (xs : Numeral b d o)
+    → Numeral b d o
 n+ {b} {d} {o} {IsContinuous cont} n xs with numView b d o
 n+ {_} {_} {_} {IsContinuous ()}   n xs | NullBase d o
 n+ {_} {_} {_} {IsContinuous cont} n xs | NoDigits b o = NoDigits-explode xs
@@ -529,7 +529,7 @@ n+ {_} {_} {_} {ℤₙ}                n xs = n+-ℤₙ n xs
 n+-toℕ : ∀ {b d o}
     → {cond : N+Closed b d o}
     → (n : Digit d)
-    → (xs : Num b d o)
+    → (xs : Numeral b d o)
     → ⟦ n+ {cond = cond} n xs ⟧ ≡ Digit-toℕ n o + ⟦ xs ⟧
 n+-toℕ {b} {d} {o} {IsContinuous cont} n xs with numView b d o
 n+-toℕ {_} {_} {_} {IsContinuous ()}   n xs | NullBase d o
@@ -544,8 +544,8 @@ n+-toℕ {_} {_} {_} {ℤₙ}                n xs = n+-ℤₙ-toℕ n xs
 ⊹-Proper : ∀ {b d o}
     → (¬gapped : (1 ⊔ o) * suc b ≤ suc d)
     → (proper : suc d + o ≥ 2)
-    → (xs ys : Num (suc b) (suc d) o)
-    → Num (suc b) (suc d) o
+    → (xs ys : Numeral (suc b) (suc d) o)
+    → Numeral (suc b) (suc d) o
 ⊹-Proper ¬gapped proper (x ∙)    ys       = n+-Proper ¬gapped proper x ys
 ⊹-Proper ¬gapped proper (x ∷ xs) (y ∙)    = n+-Proper ¬gapped proper y (x ∷ xs)
 ⊹-Proper {b} {d} {o} ¬gapped proper (x ∷ xs) (y ∷ ys) with sumView b d o ¬gapped proper x y
@@ -554,15 +554,15 @@ n+-toℕ {_} {_} {_} {ℤₙ}                n xs = n+-ℤₙ-toℕ n xs
 ⊹-Proper ¬gapped proper (x ∷ xs) (y ∷ ys) | Above leftover carry property = leftover ∷ n+-Proper ¬gapped proper carry (⊹-Proper ¬gapped proper xs ys)
 
 ⊹-ℤₙ : ∀ {o}
-    → (xs ys : Num 1 1 o)
-    → Num 1 1 o
+    → (xs ys : Numeral 1 1 o)
+    → Numeral 1 1 o
 ⊹-ℤₙ (x ∙) ys = x ∷ ys
 ⊹-ℤₙ (x ∷ xs) ys = x ∷ ⊹-ℤₙ xs ys
 
 _⊹_ : ∀ {b d o}
     → {cond : N+Closed b d o}
-    → (xs ys : Num b d o)
-    → Num b d o
+    → (xs ys : Numeral b d o)
+    → Numeral b d o
 _⊹_ {b} {d} {o} {IsContinuous cont} xs ys with numView b d o
 _⊹_ {cond = IsContinuous ()} xs ys | NullBase d o
 _⊹_ {cond = IsContinuous cont} xs ys | NoDigits b o = NoDigits-explode xs
@@ -575,6 +575,6 @@ _⊹_ {cond = ℤₙ} xs ys = ⊹-ℤₙ xs ys
 infix 4 _≋_
 
 _≋_ : ∀ {b d o}
-    → (xs ys : Num b d o)
+    → (xs ys : Numeral b d o)
     → Set
 xs ≋ ys = ⟦ xs ⟧ ≡ ⟦ ys ⟧

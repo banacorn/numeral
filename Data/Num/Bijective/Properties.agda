@@ -12,7 +12,7 @@ open import Data.Fin.Extra
 open import Data.Fin.Properties         as FinP hiding (_≟_)
     renaming (toℕ-injective to Fin-toℕ-injective)
 open import Data.Fin.Properties.Extra   as FinPX
-    renaming (suc-injective to Fin-suc-injective)
+    renaming (cancel-suc to Fin-cancel-suc)
 
 open import Data.Product
 open import Function
@@ -85,7 +85,7 @@ digit+1-injective :  ∀ {b} (x y : Fin (suc b))
     → x ≡ y
 digit+1-injective         Fin.zero     Fin.zero     ¬p ¬q eq = refl
 digit+1-injective {zero}  Fin.zero     (Fin.suc ()) ¬p ¬q eq
-digit+1-injective {suc b} Fin.zero     (Fin.suc y)  ¬p ¬q eq = Fin-toℕ-injective (suc-injective eq')
+digit+1-injective {suc b} Fin.zero     (Fin.suc y)  ¬p ¬q eq = Fin-toℕ-injective (cancel-suc eq')
     where   eq' : Fin.toℕ {suc (suc b)} (digit+1 Fin.zero ¬p) ≡ suc (Fin.toℕ {suc (suc b)} (Fin.suc y))
             eq' = begin
                     Fin.toℕ {suc (suc b)} (Fin.suc Fin.zero)
@@ -95,7 +95,7 @@ digit+1-injective {suc b} Fin.zero     (Fin.suc y)  ¬p ¬q eq = Fin-toℕ-injec
                     suc (Fin.toℕ {suc (suc b)} (Fin.suc y))
                 ∎
 digit+1-injective {zero}  (Fin.suc ()) Fin.zero    ¬p ¬q eq
-digit+1-injective {suc b} (Fin.suc x)  Fin.zero    ¬p ¬q eq = Fin-toℕ-injective (suc-injective eq')
+digit+1-injective {suc b} (Fin.suc x)  Fin.zero    ¬p ¬q eq = Fin-toℕ-injective (cancel-suc eq')
     where   eq' : suc (Fin.toℕ {suc (suc b)} (Fin.suc x)) ≡ Fin.toℕ {suc (suc b)} (digit+1 Fin.zero ¬q)
             eq' = begin
                     suc (Fin.toℕ {suc (suc b)} (Fin.suc x))
@@ -105,7 +105,7 @@ digit+1-injective {suc b} (Fin.suc x)  Fin.zero    ¬p ¬q eq = Fin-toℕ-inject
                     Fin.toℕ {suc (suc b)} (Fin.suc Fin.zero)
                 ∎
 digit+1-injective {zero}  (Fin.suc ()) (Fin.suc y) ¬p ¬q eq
-digit+1-injective {suc b} (Fin.suc x)  (Fin.suc y) ¬p ¬q eq = cong Fin.suc (digit+1-injective x y (¬p ∘ cong suc) (¬q ∘ cong suc) (Fin-suc-injective eq))
+digit+1-injective {suc b} (Fin.suc x)  (Fin.suc y) ¬p ¬q eq = cong Fin.suc (digit+1-injective x y (¬p ∘ cong suc) (¬q ∘ cong suc) (Fin-cancel-suc eq))
     where   open import Data.Fin.Properties.Extra
 
 1+-injective : ∀ b → (xs ys : Bij (suc b)) → 1+ xs ≡ 1+ ys → xs ≡ ys
@@ -136,7 +136,7 @@ toℕ-injective (x ∷ xs) (y ∷ ys) eq =
     cong₂ _∷_ (proj₁ ind) (toℕ-injective xs ys (proj₂ ?))
     where
             ind : x ≡ y × toℕ xs ≡ toℕ ys
-            ind = some-lemma x y (toℕ xs) (toℕ ys) (suc-injective eq)
+            ind = some-lemma x y (toℕ xs) (toℕ ys) (cancel-suc eq)
 
 fromℕ-injective : ∀ b m n → fromℕ {b} m ≡ fromℕ {b} n → m ≡ n
 fromℕ-injective b zero    zero    eq = refl

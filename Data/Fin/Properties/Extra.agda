@@ -4,7 +4,7 @@ open import Data.Nat
     renaming (suc to S; zero to Z; _+_ to _ℕ+_; _*_ to _ℕ*_)
 open ≤-Reasoning renaming (begin_ to start_; _∎ to _□; _≡⟨_⟩_ to _≈⟨_⟩_)
 open import Data.Nat.Properties
-open import Data.Nat.Properties.Extra renaming (suc-injective to S-injective)
+open import Data.Nat.Properties.Extra renaming (cancel-suc to S-injective)
 open import Data.Nat.Properties.Simple
 open import Data.Fin
 open import Data.Fin.Extra
@@ -45,8 +45,8 @@ inject-1-lemma {Z}   (suc ()) ¬p
 inject-1-lemma {S n} zero     ¬p = refl
 inject-1-lemma {S n} (suc i)  ¬p = cong S (inject-1-lemma i (¬p ∘ cong S))
 
-suc-injective : ∀ {b} {x y : Fin b} → suc x ≡ suc y → x ≡ y
-suc-injective {b} {x} {.x} refl = refl
+cancel-suc : ∀ {b} {x y : Fin b} → suc x ≡ suc y → x ≡ y
+cancel-suc {b} {x} {.x} refl = refl
 
 
 

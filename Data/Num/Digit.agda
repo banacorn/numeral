@@ -96,13 +96,13 @@ greatest-digit-toℕ : ∀ {d o}
     → (x : Digit (suc d))
     → Greatest x
     → Digit-toℕ x o ≡ d + o
-greatest-digit-toℕ {d} {o} x greatest = suc-injective $ cong (λ w → w + o) greatest
+greatest-digit-toℕ {d} {o} x greatest = cancel-suc $ cong (λ w → w + o) greatest
 
 greatest-of-all : ∀ {d} (o : ℕ) → (x y : Digit d) → Greatest x → Digit-toℕ x o ≥ Digit-toℕ y o
 greatest-of-all o zero    zero     refl = ≤-refl
 greatest-of-all o zero    (suc ()) refl
 greatest-of-all o (suc x) zero     greatest = +n-mono o {zero} {suc (toℕ x)} z≤n
-greatest-of-all o (suc x) (suc y)  greatest = s≤s (greatest-of-all o x y (suc-injective greatest))
+greatest-of-all o (suc x) (suc y)  greatest = s≤s (greatest-of-all o x y (cancel-suc greatest))
 
 greatest-digit-is-the-Greatest : ∀ d → Greatest (greatest-digit d)
 greatest-digit-is-the-Greatest d = cong suc (FinProps.to-from d)

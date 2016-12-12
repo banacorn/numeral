@@ -1,6 +1,5 @@
 module Data.Num.Maximum where
 
-open import Data.Num.Digit
 open import Data.Num.Core
 
 open import Data.Nat
@@ -14,8 +13,6 @@ open import Data.Fin as Fin
 
 open import Data.Fin.Properties using (toℕ-fromℕ≤; bounded)
 open import Data.Product
-open import Data.Empty using (⊥)
-open import Data.Unit using (⊤; tt)
 
 open import Function
 open import Relation.Nullary.Decidable

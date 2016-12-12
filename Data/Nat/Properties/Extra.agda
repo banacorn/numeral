@@ -52,13 +52,13 @@ cmp = StrictTotalOrder.compare strictTotalOrder
 -- ℕ
 cancel-suc : ∀ {x y} → suc x ≡ suc y → x ≡ y
 cancel-suc {x} {.x} refl = refl
--- suc-injective : ∀ {x y} → suc x ≡ suc y → x ≡ y
--- suc-injective {x} {.x} refl = refl
+-- cancel-suc : ∀ {x y} → suc x ≡ suc y → x ≡ y
+-- cancel-suc {x} {.x} refl = refl
 
 -- _+_
 
 -- +1-injective : ∀ {x y} → x + 1 ≡ y + 1 → x ≡ y
--- +1-injective {x} {y} p = suc-injective $
+-- +1-injective {x} {y} p = cancel-suc $
 --     begin
 --         1 + x
 --     ≡⟨ +-comm 1 x ⟩
