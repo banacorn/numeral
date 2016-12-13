@@ -37,7 +37,7 @@ nullBaseView : ∀ d o → NullBaseView d o
 nullBaseView zero    zero     = AllZeros
 nullBaseView zero    (suc o)  = Others (s≤s ≤-refl)
 nullBaseView (suc d) zero     = Others (s≤s z≤n)
-nullBaseView (suc d) (suc o)  = Others (m≤n+m (suc o) (suc d))
+nullBaseView (suc d) (suc o)  = Others (n≤m+n (suc d) (suc o))
 
 --------------------------------------------------------------------------------
 -- next-number
@@ -652,7 +652,7 @@ next-number-is-LUB-Proper (x ∙) (y ∷ ys) proper prop | IsGapped b d o greate
         o + carry o * suc b
     ≤⟨ n+-mono o (*n-mono (suc b) ys-lower-bound) ⟩
         o + ⟦ ys ⟧ * suc b
-    ≤⟨ +n-mono (⟦ ys ⟧ * suc b) (m≤n+m o (Fin.toℕ y)) ⟩
+    ≤⟨ +n-mono (⟦ ys ⟧ * suc b) (n≤m+n (Fin.toℕ y) o) ⟩
         Digit-toℕ y o + ⟦ ys ⟧ * suc b
     □
     where
@@ -662,11 +662,11 @@ next-number-is-LUB-Proper (x ∙) (y ∷ ys) proper prop | IsGapped b d o greate
             → ⟦ xs ⟧ > 0
             → ⟦ xs ⟧ ≥ carry o
         ≥carry {_} {_} {zero}  xs proper prop = prop
-        ≥carry {_} {_} {suc o} (x ∙) proper prop = m≤n+m (suc o) (Fin.toℕ x)
+        ≥carry {_} {_} {suc o} (x ∙) proper prop = n≤m+n (Fin.toℕ x) (suc o)
         ≥carry {b} {_} {suc o} (x ∷ xs) proper prop =
             start
                 suc o
-            ≤⟨ m≤n+m (suc o) (Fin.toℕ x) ⟩
+            ≤⟨ n≤m+n (Fin.toℕ x) (suc o) ⟩
                 Fin.toℕ x + suc o
             ≤⟨ m≤m+n (Fin.toℕ x + suc o) (⟦ xs ⟧ * suc b) ⟩
                 Fin.toℕ x + suc o + ⟦ xs ⟧ * suc b
@@ -680,7 +680,7 @@ next-number-is-LUB-Proper (x ∷ xs) (y ∷ ys) proper prop | IsGapped b d o gre
         o + ⟦ next-xs ⟧ * suc b
     ≤⟨ n+-mono o (*n-mono (suc b) ⟦next-xs⟧≤⟦ys⟧) ⟩
         o + ⟦ ys ⟧ * suc b
-    ≤⟨ +n-mono (⟦ ys ⟧ * suc b) (m≤n+m o (Fin.toℕ y)) ⟩
+    ≤⟨ +n-mono (⟦ ys ⟧ * suc b) (n≤m+n (Fin.toℕ y) o) ⟩
         Digit-toℕ y o + ⟦ ys ⟧ * suc b
     □
     where

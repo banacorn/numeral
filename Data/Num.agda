@@ -71,7 +71,7 @@ sum≥o : ∀ {d} o
     → sum o x y ≥ o
 sum≥o o x y = start
         o
-    ≤⟨ m≤n+m o (Fin.toℕ x) ⟩
+    ≤⟨ n≤m+n o (Fin.toℕ x) ⟩
         Digit-toℕ x o
     ≤⟨ m≤m+n (Digit-toℕ x o) (Digit-toℕ y o) ⟩
         sum o x y
@@ -252,7 +252,7 @@ sumView b d o ¬gapped proper x y | no ¬below | no ¬within | result quotient r
         leftover-lower-bound-lemma z prop =
             start
                 o + (quotient + (1 ⊔ o)) * base
-            ≤⟨ +n-mono ((quotient + (1 ⊔ o)) * base) (m≤n+m o d) ⟩
+            ≤⟨ +n-mono ((quotient + (1 ⊔ o)) * base) (n≤m+n o d) ⟩
                 d + o + (quotient + (1 ⊔ o)) * base
             ≈⟨ cong (λ w → d + o + w) (distribʳ-*-+ base quotient (1 ⊔ o)) ⟩
                 d + o + (quotient * base + (1 ⊔ o) * base)
@@ -275,7 +275,7 @@ sumView b d o ¬gapped proper x y | no ¬below | no ¬within | result quotient r
             ≤⟨ n+-mono o
                 (n+-mono (1 * base)
                     (+n-mono ((1 ⊔ o) * base)
-                        (m≤n+m (quotient * base) (Fin.toℕ r)))) ⟩
+                        (n≤m+n (quotient * base) (Fin.toℕ r)))) ⟩
                 o + (1 * base + (Fin.toℕ r + quotient * base + (1 ⊔ o) * base))
             ≈⟨ a+[b+c]≡b+[a+c] o (1 * base) (Fin.toℕ r + quotient * base + (1 ⊔ o) * base) ⟩
                 1 * base + (o + (Fin.toℕ r + quotient * base + (1 ⊔ o) * base))
@@ -361,7 +361,7 @@ sumView b d o ¬gapped proper x y | no ¬below | no ¬within | result quotient r
                 o
             ≤⟨ m≤n⊔m o 1 ⟩
                 1 ⊔ o
-            ≤⟨ m≤n+m (1 ⊔ o) (1 ⊓ Fin.toℕ remainder + quotient) ⟩
+            ≤⟨ n≤m+n (1 ⊔ o) (1 ⊓ Fin.toℕ remainder + quotient) ⟩
                 1 ⊓ Fin.toℕ remainder + quotient + (1 ⊔ o)
             □
 
@@ -415,7 +415,7 @@ sumView b d o ¬gapped proper x y | no ¬below | no ¬within | result quotient r
             ≡⟨ m∸n+n≡m $
                 start
                     carry * base
-                ≤⟨ m≤n+m (carry * base) o ⟩
+                ≤⟨ n≤m+n (carry * base) o ⟩
                     o + carry * base
                 ≤⟨ leftover-lower-bound-lemma remainder divModProp ⟩
                     sum o x y

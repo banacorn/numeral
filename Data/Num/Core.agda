@@ -92,7 +92,7 @@ n∷-mono-strict {b} {d} {o} x xs y ys ⟦x⟧≡⟦y⟧ ⟦xs⟧<⟦ys⟧ =
         suc (Digit-toℕ x o) + ⟦ xs ⟧ * suc b
     ≈⟨ sym (+-suc (Digit-toℕ x o) (⟦ xs ⟧ * suc b)) ⟩
         Digit-toℕ x o + suc (⟦ xs ⟧ * suc b)
-    ≤⟨ n+-mono (Digit-toℕ x o) (s≤s (m≤n+m (⟦ xs ⟧ * suc b) b)) ⟩
+    ≤⟨ n+-mono (Digit-toℕ x o) (s≤s (n≤m+n b (⟦ xs ⟧ * suc b))) ⟩
         Digit-toℕ x o + (suc ⟦ xs ⟧) * suc b
     ≤⟨ (reflexive ⟦x⟧≡⟦y⟧) +-mono (*n-mono (suc b) ⟦xs⟧<⟦ys⟧) ⟩
         Digit-toℕ y o + ⟦ ys ⟧ * suc b

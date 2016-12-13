@@ -76,7 +76,7 @@ Digit-upper-bound : ∀ {d} → (o : ℕ) → (x : Digit d) → Digit-toℕ x o 
 Digit-upper-bound {d} o x = +n-mono o (bounded x)
 
 Digit-lower-bound : ∀ {d} → (o : ℕ) → (x : Digit d) → Digit-toℕ x o ≥ o
-Digit-lower-bound {d} o x = m≤n+m o (toℕ x)
+Digit-lower-bound {d} o x = n≤m+n (toℕ x) o
 
 --------------------------------------------------------------------------------
 -- Special Digits
@@ -116,7 +116,7 @@ carry-lower-bound {o} = m≤n⊔m o 1
 
 carry-upper-bound : ∀ {d o} → 2 ≤ suc d + o → carry o ≤ d + o
 carry-upper-bound {d} {zero}  proper = ≤-pred proper
-carry-upper-bound {d} {suc o} proper = m≤n+m (suc o) d
+carry-upper-bound {d} {suc o} proper = n≤m+n d (suc o)
 
 carry-digit : ∀ d o → 2 ≤ suc d + o → Digit (suc d)
 carry-digit d o proper = Digit-fromℕ (carry o) o (carry-upper-bound {d} proper)
@@ -128,7 +128,7 @@ carry-digit-toℕ d o proper = Digit-fromℕ-toℕ (carry o) (m≤n⊔m o 1) (ca
 
 
 -- LCD-upper-bound-prim d zero    proper = ≤-pred proper
--- LCD-upper-bound-prim d (suc o) proper = m≤n+m (suc o) d
+-- LCD-upper-bound-prim d (suc o) proper = n≤m+n (suc o) d
 --
 -- LCD : ∀ d o → 2 ≤ suc d + o → Digit (suc d)
 -- LCD d o proper = Digit-fromℕ (1 ⊔ o) o (LCD-upper-bound-prim d o proper)

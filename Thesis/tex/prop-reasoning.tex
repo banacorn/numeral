@@ -436,6 +436,12 @@ distinction between these terms and they are used exchangeably in the thesis.}
 
 \subsubsection{natural number}
 
+\begin{lstlisting}
+data ℕ : Set where
+    zero : ℕ
+    suc : ℕ → ℕ
+\end{lstlisting}
+
 \begin{itemize}
     \item {\lstinline|cancel-suc : ∀ {x y} → suc x ≡ suc y → x ≡ y|}
         \\ suc is injective.
@@ -443,6 +449,11 @@ distinction between these terms and they are used exchangeably in the thesis.}
 
 \subsubsection{addition}
 
+\begin{lstlisting}
+_+_ : ℕ → ℕ → ℕ
+zero  + y = y
+suc x + y = suc (x + y)
+\end{lstlisting}
 
 \begin{itemize}
     \item {\lstinline|+-right-identity : ∀ n → n + 0 ≡ n|}
@@ -465,9 +476,19 @@ distinction between these terms and they are used exchangeably in the thesis.}
 
 \subsubsection{multiplication}
 
+\begin{lstlisting}
+_*_ : ℕ → ℕ → ℕ
+zero  * y = y
+suc x * y = y + (x * y)
+\end{lstlisting}
+
 \begin{itemize}
     \item {\lstinline|*-right-zero : ∀ n → n * 0 ≡ 0|}
         \\ the right absorbing element of multiplication.
+    \item {\lstinline|*-left-identity : ∀ n → 1 * n ≡ n|}
+        \\ the left identity of addition multiplication.
+    \item {\lstinline|*-right-identity : ∀ n → n * 1 ≡ n|}
+        \\ the right identity of addition multiplication.
     \item {\lstinline|+-*-suc : ∀ m n → m * suc n ≡ m + m * n|}
         \\ multiplication over {\lstinline|suc|}.
     \item {\lstinline|*-assoc : ∀ m n o → (m * n) * o ≡ m * (n * o)|}
@@ -476,14 +497,93 @@ distinction between these terms and they are used exchangeably in the thesis.}
         \\ the commutative property of multiplication.
     \item {\lstinline|distribʳ-*-+ : ∀ m n o → (n + o) * m ≡ n * m + o * m|}
         \\ the right distributive property of multiplication over addition.
+    \item {\lstinline|distrib-left-*-+ : ∀ m n o → m * (n + o) ≡ m * n + m * o|}
+        \\ the left distributive property of multiplication over addition.
+\end{itemize}
+
+\subsubsection{monus}
+
+Monus, or \textit{truncated subtraction}, is a kind of subtraction that never
+goes negative when the subtrahend is greater than the minued.
+
+\begin{lstlisting}
+_∸_ : Nat → Nat → Nat
+n     ∸ zero = n
+zero  ∸ suc m = zero
+suc n ∸ suc m = n ∸ m
+\end{lstlisting}
+
+\begin{itemize}
+    \item {\lstinline|0∸n≡0 : ∀ n → 0 ∸ n ≡ 0|}
+    \item {\lstinline|n∸n≡0 : ∀ n → n ∸ n ≡ 0|}
+    \item {\lstinline|m+n∸n≡m : ∀ m n → (m + n) ∸ n ≡ m|}
+    \item {\lstinline|m+n∸m≡n : ∀ {m n} → m ≤ n → m + (n ∸ m) ≡ n|}
+    \item {\lstinline|m∸n+n≡m : ∀ {m n} → n ≤ m → m ∸ n + n ≡ m|}
+    \item {\lstinline|∸-+-assoc : ∀ m n o → (m ∸ n) ∸ o ≡ m ∸ (n + o)|}
+        \\ the associative property of monus and addition.
+    \item {\lstinline|+-∸-assoc : ∀ m {n o} → o ≤ n → (m + n) ∸ o ≡ m + (n ∸ o)|}
+        \\ the associative property of monus and addition.
+    \item {\lstinline|*-distrib-∸ʳ : ∀ m n o → (n ∸ o) * m ≡ n * m ∸ o * m|}
+        \\ the right distributive property of monus over multiplication.
 \end{itemize}
 
 \subsubsection{min and max}
 
+So called {\lstinline|min|} and {\lstinline|max|} in Haskell.
+Min {\lstinline|_⊓_|} computes the lesser of two numbers.
 
+\begin{lstlisting}
+_⊓_ : ℕ → ℕ → ℕ
+zero  ⊓ n     = zero
+suc m ⊓ zero  = zero
+suc m ⊓ suc n = suc (m ⊓ n)
+\end{lstlisting}
+
+Max {\lstinline|_⊔_|} computes the greater of two numbers.
+
+\begin{lstlisting}
+_⊔_ : ℕ → ℕ → ℕ
+zero  ⊔ n     = n
+suc m ⊔ zero  = suc m
+suc m ⊔ suc n = suc (m ⊔ n)
+\end{lstlisting}
+
+\begin{itemize}
+    \item {\lstinline|⊓-comm : ∀ m n → m ⊓ n ≡ n ⊓ m|}
+        \\ the commutative property of min.
+    \item {\lstinline|⊔-comm : ∀ m n → m ⊔ n ≡ n ⊔ m|}
+        \\ the commutative property of max.
+\end{itemize}
 
 \subsection{Relational Propositions}
 
+\subsubsection{natural number}
+
+\begin{itemize}
+    \item {\lstinline|≤-pred : ∀ {m n} → suc m ≤ suc n → m ≤ n|}
+\end{itemize}
+
+\subsubsection{addition}
+
+\begin{itemize}
+    \item {\lstinline|≤-step : ∀ {m n} → m ≤ n → m ≤ 1 + n|}
+    \item {\lstinline|≤-steps : ∀ {m n} k → m ≤ n → m ≤ k + n|}
+    \item {\lstinline|m≤m+n : ∀ m n → m ≤ m + n|}
+    \item {\lstinline|n≤m+n : ∀ m n → n ≤ m + n|}
+    \item {\lstinline|_+-mono_ : ∀ {m₁ m₂ n₁ n₂} → m₁ ≤ m₂ → n₁ ≤ n₂ → m₁ + n₁ ≤ m₂ + n₂|}
+        \\ the monotonicity of addition
+    \item {\lstinline|n+-mono : ∀ {i j} n → i ≤ j → n + i ≤ n + j|}
+        \\ {\lstinline|_+-mono_|} with the first argument fixed.
+    \item {\lstinline|+n-mono : ∀ {i j} n → i ≤ j → n + i ≤ n + j|}
+        \\ {\lstinline|_+-mono_|} with the second argument fixed.
+    \item {\lstinline|n+-mono-inverse : ∀ n → ∀ {a b} → n + a ≤ n + b → a ≤ b|}
+        \\ the inverse of {\lstinline|n+-mono|}
+    \item {\lstinline|+n-mono-inverse : ∀ n → ∀ {a b} → a + n ≤ b + n → a ≤ b|}
+        \\ the inverse of {\lstinline|+n-mono|}
+    \item {\lstinline|+-mono-contra : ∀ {a b c d} → a ≥ b → a + c < b + d → c < d|}
+    \item {\lstinline||}
+    \item {\lstinline||}
+\end{itemize}
 
 % \paragraph{join and meet}
 %
