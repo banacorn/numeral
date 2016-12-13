@@ -37,6 +37,13 @@ open ≡-Reasoning
 open ≤-Reasoning renaming (begin_ to start_; _∎ to _□; _≡⟨_⟩_ to _≈⟨_⟩_)
 open DecTotalOrder decTotalOrder using (reflexive) renaming (refl to ≤-refl)
 
+infix 4 _≋_
+
+_≋_ : ∀ {b d o}
+    → (xs ys : Numeral b d o)
+    → Set
+xs ≋ ys = ⟦ xs ⟧ ≡ ⟦ ys ⟧
+
 1+ : ∀ {b d o}
     → {cont : True (Continuous? b d o)}
     → (xs : Numeral b d o)
@@ -53,12 +60,38 @@ open DecTotalOrder decTotalOrder using (reflexive) renaming (refl to ≤-refl)
 fromℕ : ∀ {b d o}
     → {cont : True (Continuous? b (suc d) o)}
     → (n : ℕ)
-    → (n ≥ o)
+    → n ≥ o
     → Numeral b (suc d) o
 fromℕ {o = o}       n p  with o ≟ n
-fromℕ n p | yes q = z ∙
-fromℕ zero z≤n | no ¬q = z ∙
-fromℕ {cont = cont} (suc n) p | no ¬q = 1+ {cont = cont} (fromℕ {cont = cont} n (≤-pred $ ≤∧≢⇒< p ¬q))
+fromℕ n n≥o | yes eq = z ∙
+fromℕ {o = o} zero n≥o | no ¬eq = contradiction (≤0⇒≡0 o n≥o) ¬eq
+fromℕ {cont = cont} (suc n) n≥o | no ¬eq = 1+ {cont = cont} (fromℕ {cont = cont} n (≤-pred $ ≤∧≢⇒< n≥o ¬eq))
+
+fromℕ-toℕ : ∀ {b d o}
+    → (cont : True (Continuous? b (suc d) o))
+    → (n : ℕ)
+    → (n≥o : n ≥ o)
+    → ⟦ fromℕ {cont = cont} n n≥o ⟧ ≡ n
+fromℕ-toℕ {o = o} cont n n≥o with o ≟ n
+fromℕ-toℕ cont n n≥o | yes eq = eq
+fromℕ-toℕ {o = o} cont zero n≥o | no ¬eq = contradiction (≤0⇒≡0 o n≥o) ¬eq
+fromℕ-toℕ cont (suc n) n≥o | no ¬eq =
+    let
+        n≥o' = ≤-pred (≤∧≢⇒< n≥o ¬eq)
+    in
+    begin
+        ⟦ 1+ {cont = cont} (fromℕ {cont = cont} n n≥o') ⟧
+    ≡⟨ 1+-toℕ {cont = cont} (fromℕ {cont = cont} n n≥o') ⟩
+        suc ⟦ fromℕ {cont = cont} n n≥o' ⟧
+    ≡⟨ cong suc (fromℕ-toℕ cont n n≥o') ⟩
+        suc n
+    ∎
+
+toℕ-fromℕ : ∀ {b d o}
+    → (cont : True (Continuous? b (suc d) o))
+    → (xs : Numeral b (suc d) o)
+    → fromℕ {cont = cont} ⟦ xs ⟧ (Num-lower-bound xs) ≋ xs
+toℕ-fromℕ cont xs = fromℕ-toℕ cont ⟦ xs ⟧ (Num-lower-bound xs)
 
 sum : ∀ {d}
     → (o : ℕ)
@@ -71,7 +104,7 @@ sum≥o : ∀ {d} o
     → sum o x y ≥ o
 sum≥o o x y = start
         o
-    ≤⟨ n≤m+n o (Fin.toℕ x) ⟩
+    ≤⟨ n≤m+n (Fin.toℕ x) o ⟩
         Digit-toℕ x o
     ≤⟨ m≤m+n (Digit-toℕ x o) (Digit-toℕ y o) ⟩
         sum o x y
@@ -252,7 +285,7 @@ sumView b d o ¬gapped proper x y | no ¬below | no ¬within | result quotient r
         leftover-lower-bound-lemma z prop =
             start
                 o + (quotient + (1 ⊔ o)) * base
-            ≤⟨ +n-mono ((quotient + (1 ⊔ o)) * base) (n≤m+n o d) ⟩
+            ≤⟨ +n-mono ((quotient + (1 ⊔ o)) * base) (n≤m+n d o) ⟩
                 d + o + (quotient + (1 ⊔ o)) * base
             ≈⟨ cong (λ w → d + o + w) (distribʳ-*-+ base quotient (1 ⊔ o)) ⟩
                 d + o + (quotient * base + (1 ⊔ o) * base)
@@ -275,7 +308,7 @@ sumView b d o ¬gapped proper x y | no ¬below | no ¬within | result quotient r
             ≤⟨ n+-mono o
                 (n+-mono (1 * base)
                     (+n-mono ((1 ⊔ o) * base)
-                        (n≤m+n (quotient * base) (Fin.toℕ r)))) ⟩
+                        (n≤m+n (Fin.toℕ r) (quotient * base)))) ⟩
                 o + (1 * base + (Fin.toℕ r + quotient * base + (1 ⊔ o) * base))
             ≈⟨ a+[b+c]≡b+[a+c] o (1 * base) (Fin.toℕ r + quotient * base + (1 ⊔ o) * base) ⟩
                 1 * base + (o + (Fin.toℕ r + quotient * base + (1 ⊔ o) * base))
@@ -361,7 +394,7 @@ sumView b d o ¬gapped proper x y | no ¬below | no ¬within | result quotient r
                 o
             ≤⟨ m≤n⊔m o 1 ⟩
                 1 ⊔ o
-            ≤⟨ n≤m+n (1 ⊔ o) (1 ⊓ Fin.toℕ remainder + quotient) ⟩
+            ≤⟨ n≤m+n (1 ⊓ Fin.toℕ remainder + quotient) (1 ⊔ o) ⟩
                 1 ⊓ Fin.toℕ remainder + quotient + (1 ⊔ o)
             □
 
@@ -415,7 +448,7 @@ sumView b d o ¬gapped proper x y | no ¬below | no ¬within | result quotient r
             ≡⟨ m∸n+n≡m $
                 start
                     carry * base
-                ≤⟨ n≤m+n (carry * base) o ⟩
+                ≤⟨ n≤m+n o (carry * base) ⟩
                     o + carry * base
                 ≤⟨ leftover-lower-bound-lemma remainder divModProp ⟩
                     sum o x y
@@ -571,10 +604,3 @@ _⊹_ {cond = IsContinuous cont} xs ys | Proper b d o proper with Gapped#0? b d 
 _⊹_ {cond = IsContinuous ()} xs ys | Proper b d o proper | yes ¬gapped#0
 _⊹_ {cond = IsContinuous cont} xs ys | Proper b d o proper | no ¬gapped#0 = ⊹-Proper (≤-pred (≰⇒> ¬gapped#0)) proper xs ys
 _⊹_ {cond = ℤₙ} xs ys = ⊹-ℤₙ xs ys
-
-infix 4 _≋_
-
-_≋_ : ∀ {b d o}
-    → (xs ys : Numeral b d o)
-    → Set
-xs ≋ ys = ⟦ xs ⟧ ≡ ⟦ ys ⟧

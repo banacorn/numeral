@@ -51,7 +51,7 @@ open DecTotalOrder decTotalOrder using (reflexive) renaming (refl to ≤-refl)
 -- ∎
 
 toℕ-⊹-ℤₙ-homo : ∀ {o}
-    → (xs ys : Num 1 1 o)
+    → (xs ys : Numeral 1 1 o)
     → ⟦ ⊹-ℤₙ xs ys ⟧ ≡ ⟦ xs ⟧ + ⟦ ys ⟧
 toℕ-⊹-ℤₙ-homo {o} (x ∙) ys =
     begin
@@ -75,7 +75,7 @@ toℕ-⊹-ℤₙ-homo {o} (x ∷ xs) ys =
 toℕ-⊹-Proper-homo : ∀ {b d o}
     → (¬gapped : (1 ⊔ o) * suc b ≤ suc d)
     → (proper : suc d + o ≥ 2)
-    → (xs ys : Num (suc b) (suc d) o)
+    → (xs ys : Numeral (suc b) (suc d) o)
     →  ⟦ ⊹-Proper ¬gapped proper xs ys ⟧ ≡ ⟦ xs ⟧ + ⟦ ys ⟧
 toℕ-⊹-Proper-homo {b} {d} {o} ¬gapped proper (x ∙) ys = n+-Proper-toℕ ¬gapped proper x ys
 toℕ-⊹-Proper-homo {b} {d} {o} ¬gapped proper (x ∷ xs) (y ∙) =
@@ -151,8 +151,8 @@ toℕ-⊹-Proper-homo {b} {d} {o} ¬gapped proper (x ∷ xs) (y ∷ ys) | Above 
 
 -- _⊹_ : ∀ {b d o}
 --     → {cond : N+Closed b d o}
---     → (xs ys : Num b d o)
---     → Num b d o
+--     → (xs ys : Numeral b d o)
+--     → Numeral b d o
 -- _⊹_ {b} {d} {o} {IsContinuous cont} xs ys with numView b d o
 -- _⊹_ {cond = IsContinuous ()} xs ys | NullBase d o
 -- _⊹_ {cond = IsContinuous cont} xs ys | NoDigits b o = NoDigits-explode xs
@@ -164,7 +164,7 @@ toℕ-⊹-Proper-homo {b} {d} {o} ¬gapped proper (x ∷ xs) (y ∷ ys) | Above 
 
 toℕ-⊹-homo : ∀ {b d o}
     → (cond : N+Closed b d o)
-    → (xs ys : Num b d o)
+    → (xs ys : Numeral b d o)
     → ⟦ _⊹_ {cond = cond} xs ys ⟧ ≡ ⟦ xs ⟧ + ⟦ ys ⟧
 toℕ-⊹-homo {b} {d} {o} (IsContinuous cont) xs ys with numView b d o
 toℕ-⊹-homo (IsContinuous ()) xs ys | NullBase d o
@@ -184,15 +184,15 @@ toℕ-⊹-homo ℤₙ xs ys = toℕ-⊹-ℤₙ-homo xs ys
 -- toℕ-≋-ℕ⇒Num-lemma-2 zero    n p = contradiction refl p
 -- toℕ-≋-ℕ⇒Num-lemma-2 (suc m) n p ()
 --
--- toℕ-≋-ℕ⇒Num : ∀ {b d o}
---     → (xs ys : Num b d o)
+-- toℕ-≋-ℕ⇒Numeral : ∀ {b d o}
+--     → (xs ys : Numeral b d o)
 --     → toℕ xs ≡ toℕ ys
 --     → xs ≋ ys
--- toℕ-≋-ℕ⇒Num ∙ ∙        ⟦xs⟧≡⟦ys⟧ = tt
--- toℕ-≋-ℕ⇒Num {b} {zero} ∙ (() ∷ ys) ⟦∙⟧≡⟦y∷ys⟧
--- toℕ-≋-ℕ⇒Num {b} {suc d} {o} ∙ (y ∷ ys) ⟦∙⟧≡⟦y∷ys⟧ with Digit-toℕ y o ≟ 0
--- toℕ-≋-ℕ⇒Num {zero} {suc d} ∙ (y ∷ ys) ⟦∙⟧≡⟦y∷ys⟧ | yes p = tt
--- toℕ-≋-ℕ⇒Num {suc b} {suc d} {o} ∙ (y ∷ ys) ⟦∙⟧≡⟦y∷ys⟧ | yes p =
+-- toℕ-≋-ℕ⇒Numeral ∙ ∙        ⟦xs⟧≡⟦ys⟧ = tt
+-- toℕ-≋-ℕ⇒Numeral {b} {zero} ∙ (() ∷ ys) ⟦∙⟧≡⟦y∷ys⟧
+-- toℕ-≋-ℕ⇒Numeral {b} {suc d} {o} ∙ (y ∷ ys) ⟦∙⟧≡⟦y∷ys⟧ with Digit-toℕ y o ≟ 0
+-- toℕ-≋-ℕ⇒Numeral {zero} {suc d} ∙ (y ∷ ys) ⟦∙⟧≡⟦y∷ys⟧ | yes p = tt
+-- toℕ-≋-ℕ⇒Numeral {suc b} {suc d} {o} ∙ (y ∷ ys) ⟦∙⟧≡⟦y∷ys⟧ | yes p =
 --     let ⟦ys⟧≡0 : toℕ ys * suc b ≡ 0
 --         ⟦ys⟧≡0 =
 --             begin
@@ -203,14 +203,14 @@ toℕ-⊹-homo ℤₙ xs ys = toℕ-⊹-ℤₙ-homo xs ys
 --                 zero
 --             ∎
 --     in
---     toℕ-≋-ℕ⇒Num ∙ ys (sym (toℕ-≋-ℕ⇒Num-lemma-1 (toℕ ys) b ⟦ys⟧≡0))
--- toℕ-≋-ℕ⇒Num {b} {suc d} {o} ∙ (y ∷ ys) ⟦∙⟧≡⟦y∷ys⟧ | no ¬p = toℕ-≋-ℕ⇒Num-lemma-2 (Digit-toℕ y o) (toℕ ys * b) ¬p (sym ⟦∙⟧≡⟦y∷ys⟧)
--- toℕ-≋-ℕ⇒Num {b} {zero} (() ∷ xs) ∙ ⟦x∷xs⟧≡⟦∙⟧
--- toℕ-≋-ℕ⇒Num {b} {suc d} {o} (x ∷ xs) ∙ ⟦x∷xs⟧≡⟦∙⟧ with Digit-toℕ x o ≟ 0
--- toℕ-≋-ℕ⇒Num {zero} {suc d} (x ∷ xs) ∙ ⟦x∷xs⟧≡⟦∙⟧ | yes p = tt
--- toℕ-≋-ℕ⇒Num {suc b} {suc d} (x ∷ xs) ∙ ⟦x∷xs⟧≡⟦∙⟧ | yes p = {!   !}
--- toℕ-≋-ℕ⇒Num {b} {suc d} (x ∷ xs) ∙ ⟦x∷xs⟧≡⟦∙⟧ | no ¬p = {!   !}
--- toℕ-≋-ℕ⇒Num (x ∷ xs) (x₁ ∷ ys) ⟦xs⟧≡⟦ys⟧ = {!   !}
+--     toℕ-≋-ℕ⇒Numeral ∙ ys (sym (toℕ-≋-ℕ⇒Num-lemma-1 (toℕ ys) b ⟦ys⟧≡0))
+-- toℕ-≋-ℕ⇒Numeral {b} {suc d} {o} ∙ (y ∷ ys) ⟦∙⟧≡⟦y∷ys⟧ | no ¬p = toℕ-≋-ℕ⇒Num-lemma-2 (Digit-toℕ y o) (toℕ ys * b) ¬p (sym ⟦∙⟧≡⟦y∷ys⟧)
+-- toℕ-≋-ℕ⇒Numeral {b} {zero} (() ∷ xs) ∙ ⟦x∷xs⟧≡⟦∙⟧
+-- toℕ-≋-ℕ⇒Numeral {b} {suc d} {o} (x ∷ xs) ∙ ⟦x∷xs⟧≡⟦∙⟧ with Digit-toℕ x o ≟ 0
+-- toℕ-≋-ℕ⇒Numeral {zero} {suc d} (x ∷ xs) ∙ ⟦x∷xs⟧≡⟦∙⟧ | yes p = tt
+-- toℕ-≋-ℕ⇒Numeral {suc b} {suc d} (x ∷ xs) ∙ ⟦x∷xs⟧≡⟦∙⟧ | yes p = {!   !}
+-- toℕ-≋-ℕ⇒Numeral {b} {suc d} (x ∷ xs) ∙ ⟦x∷xs⟧≡⟦∙⟧ | no ¬p = {!   !}
+-- toℕ-≋-ℕ⇒Numeral (x ∷ xs) (x₁ ∷ ys) ⟦xs⟧≡⟦ys⟧ = {!   !}
 
 
 -- begin

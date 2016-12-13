@@ -45,6 +45,19 @@ MMXVI = # 6 ∷ # 1 ∷ # 0 ∷ (# 2) ∙
 ⟦_⟧ {_} {_} {o} (x ∙)    = Digit-toℕ x o
 ⟦_⟧ {b} {_} {o} (x ∷ xs) = Digit-toℕ x o + ⟦ xs ⟧ * b
 
+Num-lower-bound : ∀ {b d o}
+    → (xs : Numeral b (suc d) o)
+    → ⟦ xs ⟧ ≥ o
+Num-lower-bound {_} {_} {o} (x ∙) = Digit-lower-bound o x
+Num-lower-bound {b} {d} {o} (x ∷ xs) =
+    start
+        o
+    ≤⟨ m≤m+n o (⟦ xs ⟧ * b) ⟩
+        o + ⟦ xs ⟧ * b
+    ≤⟨ +n-mono (⟦ xs ⟧ * b) (Digit-lower-bound o x) ⟩
+        Digit-toℕ x o + ⟦ xs ⟧ * b
+    □
+
 -- the least significant digit
 lsd : ∀ {b d o} → (xs : Numeral b d o) → Digit d
 lsd (x ∙   ) = x
