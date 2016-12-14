@@ -3,6 +3,7 @@ module Data.Num.Pred where
 open import Data.Num.Core
 open import Data.Num
 open import Data.Num.Properties
+open import Data.Num.Continuous
 -- open import Data.Num.Bijection
 
 open import Data.Nat
@@ -45,8 +46,8 @@ open Signature
 ℕ-sig : Signature
 ℕ-sig = sig ℕ _+_ _≡_
 
-Numeral-sig : (b d o : ℕ) → N+Closed b d o → Signature
-Numeral-sig b d o prop = sig (Numeral b d o) (_⊹_ {cond = prop}) _≋_
+Numeral-sig : (b d o : ℕ) → True (Continuous? b d o) → Signature
+Numeral-sig b d o cont = sig (Numeral b d o) (_⊹_ {cont = cont}) _≋_
 
 -- BijN-sig : ℕ → Signature
 -- BijN-sig b = sig (BijN b) (_⊹_ {surj = fromWitness (BijN⇒Surjective b)}) _≡_
@@ -84,7 +85,7 @@ module Example-1 where
     ≋-trans-ℕ : Set
     ≋-trans-ℕ = ⟦ ≋-trans ⟧P ℕ-sig []
 
-    ≋-trans-Numeral : (b d o : ℕ) → N+Closed b d o → Set
+    ≋-trans-Numeral : (b d o : ℕ) → True (Continuous? b d o) → Set
     ≋-trans-Numeral b d o prop = ⟦ ≋-trans ⟧P (Numeral-sig b d o prop) []
 
 -- lemma for env
@@ -105,47 +106,47 @@ lookup-map f (x ∷ xs) (suc i) = lookup-map f xs i
 
 
 toℕ-term-homo : ∀ {b d o n}
-    → (closed : N+Closed b d o)
+    → (cont : True (Continuous? b d o))
     → (t : Term n)
     → (env : Vec (Numeral b d o) n)
-    → ⟦ t ⟧T ℕ-sig (map ⟦_⟧ env) ≡ ⟦ ⟦ t ⟧T (Numeral-sig b d o closed) env ⟧
-toℕ-term-homo     closed (var i)   env = lookup-map ⟦_⟧ env i
-toℕ-term-homo {b} {d} {o} closed (t₁ ∔ t₂) env
-    rewrite toℕ-term-homo closed t₁ env | toℕ-term-homo closed t₂ env
-    = sym (toℕ-⊹-homo closed (⟦ t₁ ⟧T (Numeral-sig b d o closed) env) (⟦ t₂ ⟧T (Numeral-sig b d o closed) env))
+    → ⟦ t ⟧T ℕ-sig (map ⟦_⟧ env) ≡ ⟦ ⟦ t ⟧T (Numeral-sig b d o cont) env ⟧
+toℕ-term-homo     cont (var i)   env = lookup-map ⟦_⟧ env i
+toℕ-term-homo {b} {d} {o} cont (t₁ ∔ t₂) env
+    rewrite toℕ-term-homo cont t₁ env | toℕ-term-homo cont t₂ env
+    = sym (toℕ-⊹-homo cont (⟦ t₁ ⟧T (Numeral-sig b d o cont) env) (⟦ t₂ ⟧T (Numeral-sig b d o cont) env))
 
 mutual
     toℕ-pred-ℕ⇒Numeral : ∀ {b d o n}
-        → (closed : N+Closed b d o)
+        → (cont : True (Continuous? b d o))
         → (pred : Predicate n)
         → (env : Vec (Numeral b d o) n)
         → ⟦ pred ⟧P ℕ-sig (map ⟦_⟧ env)
-        → ⟦ pred ⟧P (Numeral-sig b d o closed) env
-    toℕ-pred-ℕ⇒Numeral closed (t₁ ≋P t₂) env v
-        rewrite toℕ-term-homo closed t₁ env | toℕ-term-homo closed t₂ env
+        → ⟦ pred ⟧P (Numeral-sig b d o cont) env
+    toℕ-pred-ℕ⇒Numeral cont (t₁ ≋P t₂) env v
+        rewrite toℕ-term-homo cont t₁ env | toℕ-term-homo cont t₂ env
         = v
-    toℕ-pred-ℕ⇒Numeral closed (p →P q) env v w = toℕ-pred-ℕ⇒Numeral closed q env (v (toℕ-pred-Num⇒ℕ closed p env w))
-    toℕ-pred-ℕ⇒Numeral closed (∀P pred) env v x = toℕ-pred-ℕ⇒Numeral closed pred (x ∷ env) (v ⟦ x ⟧)
+    toℕ-pred-ℕ⇒Numeral cont (p →P q) env v w = toℕ-pred-ℕ⇒Numeral cont q env (v (toℕ-pred-Num⇒ℕ cont p env w))
+    toℕ-pred-ℕ⇒Numeral cont (∀P pred) env v x = toℕ-pred-ℕ⇒Numeral cont pred (x ∷ env) (v ⟦ x ⟧)
 
     toℕ-pred-Num⇒ℕ : ∀ {b d o n}
-        → (closed : N+Closed b d o)
+        → (cont : True (Continuous? b d o))
         → (pred : Predicate n)
         → (env : Vec (Numeral b d o) n)
-        → ⟦ pred ⟧P (Numeral-sig b d o closed) env
+        → ⟦ pred ⟧P (Numeral-sig b d o cont) env
         → ⟦ pred ⟧P ℕ-sig (map ⟦_⟧ env)
-    toℕ-pred-Num⇒ℕ {b} {d} {o} closed (t₁ ≋P t₂) env v =
+    toℕ-pred-Num⇒ℕ {b} {d} {o} cont (t₁ ≋P t₂) env v =
         begin
             ⟦ t₁ ⟧T (sig ℕ _+_ _≡_) (map ⟦_⟧ env)
-        ≡⟨ toℕ-term-homo closed t₁ env ⟩
-            ⟦ ⟦ t₁ ⟧T (Numeral-sig b d o closed) env ⟧
+        ≡⟨ toℕ-term-homo cont t₁ env ⟩
+            ⟦ ⟦ t₁ ⟧T (Numeral-sig b d o cont) env ⟧
         ≡⟨ v ⟩
-            ⟦ ⟦ t₂ ⟧T (Numeral-sig b d o closed) env ⟧
-        ≡⟨ sym (toℕ-term-homo closed t₂ env) ⟩
+            ⟦ ⟦ t₂ ⟧T (Numeral-sig b d o cont) env ⟧
+        ≡⟨ sym (toℕ-term-homo cont t₂ env) ⟩
             ⟦ t₂ ⟧T (sig ℕ _+_ _≡_) (map ⟦_⟧ env)
         ∎
-    toℕ-pred-Num⇒ℕ closed (p →P q) env v w = toℕ-pred-Num⇒ℕ closed q env (v (toℕ-pred-ℕ⇒Numeral closed p env w))
+    toℕ-pred-Num⇒ℕ cont (p →P q) env v w = toℕ-pred-Num⇒ℕ cont q env (v (toℕ-pred-ℕ⇒Numeral cont p env w))
     -- toℕ-pred-Num⇒ℕ closed (∀P pred) env v x = toℕ-pred-Num⇒ℕ closed pred {!    !} {!   !}
-    toℕ-pred-Num⇒ℕ {b} {d} {o} closed (∀P pred) env v x = {!   !}
+    toℕ-pred-Num⇒ℕ {b} {d} {o} cont (∀P pred) env v x = toℕ-pred-Num⇒ℕ cont pred ({! fromℕ  !} ∷ env) {!   !}
 
 
 --
