@@ -3,6 +3,7 @@ module Data.Num.Properties where
 open import Data.Num
 open import Data.Num.Core
 open import Data.Num.Next
+open import Data.Num.Continuous
 
 open import Data.Nat
 open import Data.Nat.Properties
@@ -50,27 +51,27 @@ open DecTotalOrder decTotalOrder using (reflexive) renaming (refl to ≤-refl)
 --     {!   !}
 -- ∎
 
-toℕ-⊹-ℤₙ-homo : ∀ {o}
-    → (xs ys : Numeral 1 1 o)
-    → ⟦ ⊹-ℤₙ xs ys ⟧ ≡ ⟦ xs ⟧ + ⟦ ys ⟧
-toℕ-⊹-ℤₙ-homo {o} (x ∙) ys =
-    begin
-        Digit-toℕ x o + ⟦ ys ⟧ * 1
-    ≡⟨ cong (_+_ (Digit-toℕ x o)) (*-right-identity ⟦ ys ⟧) ⟩
-        Digit-toℕ x o + ⟦ ys ⟧
-    ∎
-toℕ-⊹-ℤₙ-homo {o} (x ∷ xs) ys =
-    begin
-        Digit-toℕ x o + ⟦ ⊹-ℤₙ xs ys ⟧ * 1
-    ≡⟨ cong (λ w → Digit-toℕ x o + w * 1) (toℕ-⊹-ℤₙ-homo xs ys) ⟩
-        Digit-toℕ x o + (⟦ xs ⟧ + ⟦ ys ⟧) * 1
-    ≡⟨ cong (_+_ (Digit-toℕ x o)) (distribʳ-*-+ 1 ⟦ xs ⟧ ⟦ ys ⟧) ⟩
-        Digit-toℕ x o + (⟦ xs ⟧ * 1 + ⟦ ys ⟧ * 1)
-    ≡⟨ cong (λ w → Digit-toℕ x o + (⟦ xs ⟧ * 1 + w)) (*-right-identity ⟦ ys ⟧) ⟩
-        Digit-toℕ x o + (⟦ xs ⟧ * 1 + ⟦ ys ⟧)
-    ≡⟨ sym (+-assoc (Digit-toℕ x o) (⟦ xs ⟧ * 1) ⟦ ys ⟧) ⟩
-        Digit-toℕ x o + ⟦ xs ⟧ * 1 + ⟦ ys ⟧
-    ∎
+-- toℕ-⊹-ℤₙ-homo : ∀ {o}
+--     → (xs ys : Numeral 1 1 o)
+--     → ⟦ ⊹-ℤₙ xs ys ⟧ ≡ ⟦ xs ⟧ + ⟦ ys ⟧
+-- toℕ-⊹-ℤₙ-homo {o} (x ∙) ys =
+--     begin
+--         Digit-toℕ x o + ⟦ ys ⟧ * 1
+--     ≡⟨ cong (_+_ (Digit-toℕ x o)) (*-right-identity ⟦ ys ⟧) ⟩
+--         Digit-toℕ x o + ⟦ ys ⟧
+--     ∎
+-- toℕ-⊹-ℤₙ-homo {o} (x ∷ xs) ys =
+--     begin
+--         Digit-toℕ x o + ⟦ ⊹-ℤₙ xs ys ⟧ * 1
+--     ≡⟨ cong (λ w → Digit-toℕ x o + w * 1) (toℕ-⊹-ℤₙ-homo xs ys) ⟩
+--         Digit-toℕ x o + (⟦ xs ⟧ + ⟦ ys ⟧) * 1
+--     ≡⟨ cong (_+_ (Digit-toℕ x o)) (distribʳ-*-+ 1 ⟦ xs ⟧ ⟦ ys ⟧) ⟩
+--         Digit-toℕ x o + (⟦ xs ⟧ * 1 + ⟦ ys ⟧ * 1)
+--     ≡⟨ cong (λ w → Digit-toℕ x o + (⟦ xs ⟧ * 1 + w)) (*-right-identity ⟦ ys ⟧) ⟩
+--         Digit-toℕ x o + (⟦ xs ⟧ * 1 + ⟦ ys ⟧)
+--     ≡⟨ sym (+-assoc (Digit-toℕ x o) (⟦ xs ⟧ * 1) ⟦ ys ⟧) ⟩
+--         Digit-toℕ x o + ⟦ xs ⟧ * 1 + ⟦ ys ⟧
+--     ∎
 
 toℕ-⊹-Proper-homo : ∀ {b d o}
     → (¬gapped : (1 ⊔ o) * suc b ≤ suc d)
@@ -163,17 +164,16 @@ toℕ-⊹-Proper-homo {b} {d} {o} ¬gapped proper (x ∷ xs) (y ∷ ys) | Above 
 -- _⊹_ {cond = ℤₙ} xs ys = ⊹-ℤₙ xs ys
 
 toℕ-⊹-homo : ∀ {b d o}
-    → (cond : N+Closed b d o)
+    → (cont : True (Continuous? b d o))
     → (xs ys : Numeral b d o)
-    → ⟦ _⊹_ {cond = cond} xs ys ⟧ ≡ ⟦ xs ⟧ + ⟦ ys ⟧
-toℕ-⊹-homo {b} {d} {o} (IsContinuous cont) xs ys with numView b d o
-toℕ-⊹-homo (IsContinuous ()) xs ys | NullBase d o
-toℕ-⊹-homo (IsContinuous cont) xs ys | NoDigits b o = NoDigits-explode xs
-toℕ-⊹-homo (IsContinuous ()) xs ys | AllZeros b
-toℕ-⊹-homo (IsContinuous cont) xs ys | Proper b d o proper with Gapped#0? b d o
-toℕ-⊹-homo (IsContinuous ()) xs ys | Proper b d o proper | yes gapped#0
-toℕ-⊹-homo (IsContinuous cont) xs ys | Proper b d o proper | no ¬gapped#0 = toℕ-⊹-Proper-homo (≤-pred (≰⇒> ¬gapped#0)) proper xs ys
-toℕ-⊹-homo ℤₙ xs ys = toℕ-⊹-ℤₙ-homo xs ys
+    → ⟦ _⊹_ {cont = cont} xs ys ⟧ ≡ ⟦ xs ⟧ + ⟦ ys ⟧
+toℕ-⊹-homo {b} {d} {o} cont xs ys with numView b d o
+toℕ-⊹-homo ()   xs ys | NullBase d o
+toℕ-⊹-homo cont xs ys | NoDigits b o = NoDigits-explode xs
+toℕ-⊹-homo ()   xs ys | AllZeros b
+toℕ-⊹-homo cont xs ys | Proper b d o proper with Gapped#0? b d o
+toℕ-⊹-homo ()   xs ys | Proper b d o proper | yes gapped#0
+toℕ-⊹-homo cont xs ys | Proper b d o proper | no ¬gapped#0 = toℕ-⊹-Proper-homo (≤-pred (≰⇒> ¬gapped#0)) proper xs ys
 
 -- toℕ-≋-ℕ⇒Num-lemma-1 : ∀ m n → m * suc n ≡ 0 → m ≡ 0
 -- toℕ-≋-ℕ⇒Num-lemma-1 zero n p = refl

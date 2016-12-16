@@ -524,55 +524,53 @@ n+-Proper-toℕ {b} {d} {o} ¬gapped proper x (x' ∷ xs) | Above leftover carry
         Digit-toℕ x o + (Digit-toℕ x' o + ⟦ xs ⟧ * suc b)
     ∎
 
-data N+Closed : (b d o : ℕ) → Set where
-    IsContinuous : ∀ {b d o} → (cont : True (Continuous? b d o)) → N+Closed b d o
-    ℤₙ : ∀ {o} → N+Closed 1 1 o
+-- data N+Closed : (b d o : ℕ) → Set where
+--     IsContinuous : ∀ {b d o} → (cont : True (Continuous? b d o)) → N+Closed b d o
+--     ℤₙ : ∀ {o} → N+Closed 1 1 o
+--
+-- n+-ℤₙ : ∀ {o}
+--     → (n : Digit 1)
+--     → (xs : Numeral 1 1 (o))
+--     → Numeral 1 1 o
+-- n+-ℤₙ n xs = n ∷ xs
+--
+-- n+-ℤₙ-toℕ : ∀ {o}
+--     → (n : Digit 1)
+--     → (xs : Numeral 1 1 o)
+--     → ⟦ n+-ℤₙ n xs ⟧ ≡ Digit-toℕ n o + ⟦ xs ⟧
+-- n+-ℤₙ-toℕ {o} n xs =
+--     begin
+--         Fin.toℕ n + o + ⟦ xs ⟧ * suc zero
+--     ≡⟨ cong (λ w → Fin.toℕ n + o + w) (*-right-identity ⟦ xs ⟧) ⟩
+--         Fin.toℕ n + o + ⟦ xs ⟧
+--     ∎
 
-n+-ℤₙ : ∀ {o}
-    → (n : Digit 1)
-    → (xs : Numeral 1 1 (o))
-    → Numeral 1 1 o
-n+-ℤₙ n xs = n ∷ xs
-
-n+-ℤₙ-toℕ : ∀ {o}
-    → (n : Digit 1)
-    → (xs : Numeral 1 1 o)
-    → ⟦ n+-ℤₙ n xs ⟧ ≡ Digit-toℕ n o + ⟦ xs ⟧
-n+-ℤₙ-toℕ {o} n xs =
-    begin
-        Fin.toℕ n + o + ⟦ xs ⟧ * suc zero
-    ≡⟨ cong (λ w → Fin.toℕ n + o + w) (*-right-identity ⟦ xs ⟧) ⟩
-        Fin.toℕ n + o + ⟦ xs ⟧
-    ∎
 
 n+ : ∀ {b d o}
-    → {cond : N+Closed b d o}
+    → {cont : True (Continuous? b d o)}
     → (n : Digit d)
     → (xs : Numeral b d o)
     → Numeral b d o
-n+ {b} {d} {o} {IsContinuous cont} n xs with numView b d o
-n+ {_} {_} {_} {IsContinuous ()}   n xs | NullBase d o
-n+ {_} {_} {_} {IsContinuous cont} n xs | NoDigits b o = NoDigits-explode xs
-n+ {_} {_} {_} {IsContinuous ()}   n xs | AllZeros b
-n+ {_} {_} {_} {IsContinuous cont} n xs | Proper b d o proper with Gapped#0? b d o
-n+ {_} {_} {_} {IsContinuous ()}   n xs | Proper b d o proper | yes gapped#0
-n+ {_} {_} {_} {IsContinuous cont} n xs | Proper b d o proper | no ¬gapped#0 = n+-Proper (≤-pred (≰⇒> ¬gapped#0)) proper n xs
-n+ {_} {_} {_} {ℤₙ}                n xs = n+-ℤₙ n xs
+n+ {b} {d} {o}      n xs with numView b d o
+n+ {_} {_} {_} {()} n xs | NullBase d o
+n+ {_} {_} {_}      n xs | NoDigits b o = NoDigits-explode xs
+n+ {_} {_} {_} {()} n xs | AllZeros b
+n+ {_} {_} {_}      n xs | Proper b d o proper with Gapped#0? b d o
+n+ {_} {_} {_} {()} n xs | Proper b d o proper | yes gapped#0
+n+ {_} {_} {_}      n xs | Proper b d o proper | no ¬gapped#0 = n+-Proper (≤-pred (≰⇒> ¬gapped#0)) proper n xs
 
 n+-toℕ : ∀ {b d o}
-    → {cond : N+Closed b d o}
+    → {cont : True (Continuous? b d o)}
     → (n : Digit d)
     → (xs : Numeral b d o)
-    → ⟦ n+ {cond = cond} n xs ⟧ ≡ Digit-toℕ n o + ⟦ xs ⟧
-n+-toℕ {b} {d} {o} {IsContinuous cont} n xs with numView b d o
-n+-toℕ {_} {_} {_} {IsContinuous ()}   n xs | NullBase d o
-n+-toℕ {_} {_} {_} {IsContinuous cont} n xs | NoDigits b o = NoDigits-explode xs
-n+-toℕ {_} {_} {_} {IsContinuous ()}   n xs | AllZeros b
-n+-toℕ {_} {_} {_} {IsContinuous cont} n xs | Proper b d o proper with Gapped#0? b d o
-n+-toℕ {_} {_} {_} {IsContinuous ()}   n xs | Proper b d o proper | yes gapped#0
-n+-toℕ {_} {_} {_} {IsContinuous cont} n xs | Proper b d o proper | no ¬gapped#0 = n+-Proper-toℕ (≤-pred (≰⇒> ¬gapped#0)) proper n xs
-n+-toℕ {_} {_} {_} {ℤₙ}                n xs = n+-ℤₙ-toℕ n xs
-
+    → ⟦ n+ {cont = cont} n xs ⟧ ≡ Digit-toℕ n o + ⟦ xs ⟧
+n+-toℕ {b} {d} {o}      n xs with numView b d o
+n+-toℕ {_} {_} {_} {()} n xs | NullBase d o
+n+-toℕ {_} {_} {_}      n xs | NoDigits b o = NoDigits-explode xs
+n+-toℕ {_} {_} {_} {()} n xs | AllZeros b
+n+-toℕ {_} {_} {_}      n xs | Proper b d o proper with Gapped#0? b d o
+n+-toℕ {_} {_} {_} {()} n xs | Proper b d o proper | yes gapped#0
+n+-toℕ {_} {_} {_}      n xs | Proper b d o proper | no ¬gapped#0 = n+-Proper-toℕ (≤-pred (≰⇒> ¬gapped#0)) proper n xs
 
 ⊹-Proper : ∀ {b d o}
     → (¬gapped : (1 ⊔ o) * suc b ≤ suc d)
@@ -586,21 +584,14 @@ n+-toℕ {_} {_} {_} {ℤₙ}                n xs = n+-ℤₙ-toℕ n xs
 ⊹-Proper ¬gapped proper (x ∷ xs) (y ∷ ys) | Within leftover carry property = leftover ∷ n+-Proper ¬gapped proper carry (⊹-Proper ¬gapped proper xs ys)
 ⊹-Proper ¬gapped proper (x ∷ xs) (y ∷ ys) | Above leftover carry property = leftover ∷ n+-Proper ¬gapped proper carry (⊹-Proper ¬gapped proper xs ys)
 
-⊹-ℤₙ : ∀ {o}
-    → (xs ys : Numeral 1 1 o)
-    → Numeral 1 1 o
-⊹-ℤₙ (x ∙) ys = x ∷ ys
-⊹-ℤₙ (x ∷ xs) ys = x ∷ ⊹-ℤₙ xs ys
-
 _⊹_ : ∀ {b d o}
-    → {cond : N+Closed b d o}
+    → {cont : True (Continuous? b d o)}
     → (xs ys : Numeral b d o)
     → Numeral b d o
-_⊹_ {b} {d} {o} {IsContinuous cont} xs ys with numView b d o
-_⊹_ {cond = IsContinuous ()} xs ys | NullBase d o
-_⊹_ {cond = IsContinuous cont} xs ys | NoDigits b o = NoDigits-explode xs
-_⊹_ {cond = IsContinuous ()} xs ys | AllZeros b
-_⊹_ {cond = IsContinuous cont} xs ys | Proper b d o proper with Gapped#0? b d o
-_⊹_ {cond = IsContinuous ()} xs ys | Proper b d o proper | yes ¬gapped#0
-_⊹_ {cond = IsContinuous cont} xs ys | Proper b d o proper | no ¬gapped#0 = ⊹-Proper (≤-pred (≰⇒> ¬gapped#0)) proper xs ys
-_⊹_ {cond = ℤₙ} xs ys = ⊹-ℤₙ xs ys
+_⊹_ {b} {d} {o}  xs ys with numView b d o
+_⊹_ {cont = ()}   xs ys | NullBase d o
+_⊹_ {cont = cont} xs ys | NoDigits b o = NoDigits-explode xs
+_⊹_ {cont = ()}   xs ys | AllZeros b
+_⊹_ {cont = cont} xs ys | Proper b d o proper with Gapped#0? b d o
+_⊹_ {cont = ()}   xs ys | Proper b d o proper | yes ¬gapped#0
+_⊹_ {cont = cont} xs ys | Proper b d o proper | no ¬gapped#0 = ⊹-Proper (≤-pred (≰⇒> ¬gapped#0)) proper xs ys
