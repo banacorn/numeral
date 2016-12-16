@@ -1,44 +1,83 @@
 \documentclass[../thesis.tex]{subfiles}
 \begin{document}
 
+\graphicspath{ {../images/} }
+
 \chapter{Introduction}\label{introduction}
 
 \section{Positional Numeral Systems}
 
 A numeral system is a writing system for expressing numbers, and humans have
 invented various kinds of numeral systems throughout history.
+The number "2016" for example:
 
-[show some different numeral systems here]
+\begin{center}
+    \begin{tabular}{ | l | r | }
+    \textbf{Numeral system} & \textbf{notation}  \\
+    \hline
+    Chinese numerals    & 兩千零一十六    \\
+    Roman numerals      & MMXVI         \\
+    Egyptian numerals   & \includegraphics[width=2em]{egyptian/2016.png} \\
+    \end{tabular}
+\end{center}
 
 Even so, most of the systems we are using today are positional notations\cite{knuth1998art}
 because they can express infinite numbers with just a finite set of symbols called \textbf{digits}.
 
-Positional numeral systems represent a number by adding up a sequence of digits
-of different orders of magnitude. Take a decimal number for example:
+\subsection{Digits}
 
-$$ (2016)_{10} = 2\times10^3 + 0\times10^2 + 1\times10^1 + 6\times10^0 $$
+Any set of symbols can be used as digits as long as we know how to \textit{assign}
+each digit to the value it represents.
 
-$ 6 $ is called \textit{least significant digit} and $ 2 $ is called the
-\textit{most significant digit}. Except when writing decimal numbers,
-we will write down numbers in reverse order, from the least significant digit to
-the most significant digit, like $ 6102 $.
+\begin{center}
+    \begin{adjustbox}{max width=\textwidth}
+    \begin{tabular}{ | l | *{16}{l} | }
+    \textbf{Numeral system} & \multicolumn{16}{c |}{\textbf{Digits} } \\
+    \hline
+    decimal         & 0 & 1 & 2 & 3 & 4 & 5 & 6 & 7 & 8 & 9 &    &    &    &    &    &    \\
+    binary          & 0 & 1 &   &   &   &   &   &   &   &   &    &    &    &    &    &    \\
+    hexadecimal     & 0 & 1 & 2 & 3 & 4 & 5 & 6 & 7 & 8 & 9 & A  & B  & C  & D  & E  & F  \\
+    \hline
+    \textbf{Assigned value}  & \textbf{0} & \textbf{1} & \textbf{2} & \textbf{3} & \textbf{4} & \textbf{5} & \textbf{6} & \textbf{7} & \textbf{8} & \textbf{9} & \textbf{10} & \textbf{11} & \textbf{12} & \textbf{13} & \textbf{14} & \textbf{15} \\
+    \end{tabular}
+    \end{adjustbox}
+\end{center}
+
+We place a bar above a digit to indicate the assignment. The digit $ F $ in
+hexadecimal for example is assigned $ 15 $.
+
+$$
+    \bar{F} = 15
+$$
+
+Positional numeral systems represent a number by lining up a series of digits:
+
+$$ \xrightarrow{2016} $$
+
+In this case, $ 6 $ is called \textit{least significant digit} and $ 2 $ is called
+the \textit{most significant digit}.
+Except when writing decimal numbers,
+we will write down numbers in reverse order,
+from the least significant digit to the most significant digit like this
+
+$$ \xleftarrow{6102} $$
 
 \subsection{Syntax and Semantics}
 
 Syntax bears no meaning;
 its semantics can only be carried out by \textit{converting} to some other syntax.
 Numeral systems are merely syntax.
-The same notation can represent different numbers in different \textit{context}.
+The same notation can represent different numbers in different context.
 
 Take the notation "11" for example, it could have several meanings.
 
 \begin{center}
     \begin{tabular}{ | l | r | }
-    Numeral system      & number in decimal  \\
+    \textbf{Numeral system}      & \textbf{number in decimal}  \\
     \hline
-    Decimal             & 11    \\
-    Binary              & 3     \\
-    Hexadecimal         & 61    \\
+    decimal             & 11    \\
+    binary              & 3     \\
+    hexadecimal         & 17    \\
     \end{tabular}
 \end{center}
 
@@ -48,41 +87,48 @@ the process that converts notations to values an \textbf{evaluation}.
 From now on, \textbf{numeral systems} only refer to the positional ones,
 we will not be converning ourselves with other kinds of numeral systems.
 
-\subsection{Evaluating Numerals of Symtems of Different Bases}
+\subsection{Evaluating Numerals}
 
-What we mean by \textit{context} is exactly the \textbf{base} of numeral systems.
+What we mean by \textit{context} in the previous section is the \textbf{base} of
+a numeral system.
 The ubiquitous decimal numeral system as we know has the base of 10.
 While the binaries that can be found in our machines nowadays has the base of 2.
 
-The base of a system is annotated by subscripting it to the right of a numeral,
-like the followings.
-
 \begin{center}
-    \begin{tabular}{ | l | l | r | }
-    Numeral system      & notation          & value (in decimal)  \\
+    \begin{adjustbox}{max width=\textwidth}
+    \begin{tabular}{ | l | l | *{16}{l} | }
+    \textbf{Numeral system} & \textbf{Base}  & \multicolumn{16}{c |}{\textbf{Digits} } \\
     \hline
-    Decimal             & $ ({11})_{10} $   & 11    \\
-    Binary              & $ ({11})_{2} $    & 3     \\
-    Hexadecimal         & $ ({11})_{60} $   & 61    \\
+    decimal         & 10 & 0 & 1 & 2 & 3 & 4 & 5 & 6 & 7 & 8 & 9 &    &    &    &    &    &    \\
+    binary          & 2  & 0 & 1 &   &   &   &   &   &   &   &   &    &    &    &    &    &    \\
+    hexadecimal     & 16 & 0 & 1 & 2 & 3 & 4 & 5 & 6 & 7 & 8 & 9 & A  & B  & C  & D  & E  & F  \\
+    \hline
+    \textbf{Assigned value}  & & \textbf{0} & \textbf{1} & \textbf{2} & \textbf{3} & \textbf{4} & \textbf{5} & \textbf{6} & \textbf{7} & \textbf{8} & \textbf{9} & \textbf{10} & \textbf{11} & \textbf{12} & \textbf{13} & \textbf{14} & \textbf{15} \\
     \end{tabular}
+    \end{adjustbox}
 \end{center}
 
-We replace the parenthesis with a fancy pair of semantics brackets,
-like $ [\![ 11 ]\!]_{10} $, as if it is a function (indeed it is!).
-To evaluate a notation of a certain base:
+We can see that a system would have exactly \textbf{\textit{base}} number of digits and the
+assigned value of a digit ranges \textbf{from \textit{0} to \textit{base - 1}}.
 
+Conventionally, the base of a system is annotated by subscripting it to the
+right of a numeral, like $ ({2016})_{10} $.
+We replace the parenthesis with a fancy pair of semantics brackets,
+like $ [\![ 2016 ]\!]_{10} $ to emphasize its role as the evaluation function.
+
+To evaluate a notation of a certain base:
 $$
     [\![d_0d_1d_2...d_n]\!]_{base}
     =
-    d_0\times base^0 + d_1\times base^1 + d_2\times base^2 + ... + d_n\times base^n
+    \bar{d_0}\times base^0 + \bar{d_1}\times base^1 + \bar{d_2}\times base^2 + ... + \bar{d_n}\times base^n
 $$
 
-Where $ d_{n} $ is a digit that ranges from $ 0 $ to $ base - 1 $ for all $ n $.
+Where $ d_{n} $ is a digit for all $ n $.
 
-\section{Problems of Evaluation}
+\section{Problems}
 
-The formula we have just put down for evaluating positional numeral systems
-looks obvious and trivial, and that's that, or how else should we evaluate a numeral?
+% The formula we have just put down for evaluating positional numeral systems
+% looks obvious and trivial, and that's that, or how else should we evaluate a numeral?
 
 \subsection{Unary Numbers and Peano Numbers}
 
@@ -91,7 +137,6 @@ unary (base-1) numbers because they are isomorphic to the natural numbers à la 
 
 $$
     [\![1111]\!]_{1} \cong
-    (1111)_{1}
         \overbrace{\text{suc (suc (suc (suc}}^4 + \text{ zero)))}
 $$
 
@@ -99,11 +144,30 @@ Statements established on such construction can be proven using mathematical
 induction. Moreover, people have implemented and proven a great deal of functions
 and properties on these unary numbers because they are easy to work with.
 
-However, our beautiful pair of brackets does not work for unary numbers,
-as it requires the digits to range from $ 0 $ to $ base - 1 $.
-That is, the only digit has to be $ 0 $, but the only digit unary numbers have is $ 1 $.
+However, if we are to evaluate unary numberals with the model we have just settled,
+the only digit of the unary system would have to be assigned as $ 0 $ and
+every numeral would evaluate to zero as a result.
 
-\subsection{Redundancy}
+We could generalize the definition of digit assignments to allow unary digits to
+start counting from $ 1 $, but that would lead to inconsistency among systems
+of other bases.
+
+\begin{center}
+    \begin{adjustbox}{max width=\textwidth}
+    \begin{tabular}{ | l | l | *{16}{l} | }
+    \textbf{Numeral system} & \textbf{Base}  & \multicolumn{16}{c |}{\textbf{Digits} } \\
+    \hline
+    decimal         & 10 & 0 & 1 & 2 & 3 & 4 & 5 & 6 & 7 & 8 & 9 &    &    &    &    &    &    \\
+    binary          & 2  & 0 & 1 &   &   &   &   &   &   &   &   &    &    &    &    &    &    \\
+    hexadecimal     & 16 & 0 & 1 & 2 & 3 & 4 & 5 & 6 & 7 & 8 & 9 & A  & B  & C  & D  & E  & F  \\
+    unary           & 1  &   & 1 &   &   &   &   &   &   &   &   &    &    &    &    &    &    \\
+    \hline
+    \textbf{Assigned value}  & & \textbf{0} & \textbf{1} & \textbf{2} & \textbf{3} & \textbf{4} & \textbf{5} & \textbf{6} & \textbf{7} & \textbf{8} & \textbf{9} & \textbf{10} & \textbf{11} & \textbf{12} & \textbf{13} & \textbf{14} & \textbf{15} \\
+    \end{tabular}
+    \end{adjustbox}
+\end{center}
+
+\subsection{Binary Numerals in Digital Circults}
 
 Recall how arithmetics such as long addition are performed by hand.
 
@@ -118,14 +182,11 @@ Recall how arithmetics such as long addition are performed by hand.
 
 The greater a number is, the longer its notation will be, which in terms
 determines the time it takes to perform operations.
-
-$$
-    \overbrace{\text{123456789}}^{log_{10} 123456789}
-$$
-
-So the time complexity of operations such as long addition would be $ O(lg n) $
-at best. The choice of the base of notations is immaterial as long as it is not
-unary (which would degenerate to $ O(n) $).
+Since a system can only have \textbf{finitely many} digits, operations such as
+addition on these digits must be \textbf{constant time}.
+Consequently, the time complexity of operations such as long addition on a numeral
+would be $ O(lg n) $ at best.
+The choice of the base is immaterial as long as it is not unary (which would degenerate to $ O(n) $).
 
 However, this is not the case for the binary numeral system implemented in
 arithmetic logic units (ALU). These hardwares are designed to perform fast
@@ -138,7 +199,9 @@ i.e., we could perform calculations on numbers of arbitrary size
 while the binary numbers that reside in machines are bounded by the hardware,
 which could only perform \textit{fixed-precision arithmetic}.
 
-
+Judging from the time complexity of operations, the binary numerals running in
+digital circuits is certainly different from the ordinary binary numerals we have
+known. And the current representation of numeral system has failed to capture this.
 
 % To cooperate unary numbers, we relax the constraint on the range of digits
 % by introducing a new variable, \textit{offset}:
