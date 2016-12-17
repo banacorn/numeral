@@ -9,7 +9,7 @@
 
 A numeral system is a writing system for expressing numbers, and humans have
 invented various kinds of numeral systems throughout history.
-The number "2016" for example:
+Take the number "2016" for example:
 
 \begin{center}
     \begin{tabular}{ | l | r | }
@@ -43,19 +43,26 @@ each digit to the value it represents.
     \end{adjustbox}
 \end{center}
 
-We place a bar above a digit to indicate the assignment. The digit $ F $ in
-hexadecimal for example is assigned $ 15 $.
+We place a bar above a digit to indicate its assignment.
+Below is the assignments of hexadecimal digits.
 
-$$
-    \bar{F} = 15
-$$
+\begin{center}
+    \begin{adjustbox}{max width=\textwidth}
+    \begin{tabular}{ *{4}{c} }
+    $ \bar{0} \mapsto 0 $ & $ \bar{1} \mapsto 1 $ & $ \bar{2} \mapsto 2 $ & $ \bar{3} \mapsto 3 $ \\
+    $ \bar{4} \mapsto 4 $ & $ \bar{5} \mapsto 5 $ & $ \bar{6} \mapsto 6 $ & $ \bar{7} \mapsto 7 $ \\
+    $ \bar{8} \mapsto 8 $ & $ \bar{9} \mapsto 9 $ & $ \bar{A} \mapsto 10 $ & $ \bar{B} \mapsto 11 $ \\
+    $ \bar{C} \mapsto 12 $ & $ \bar{D} \mapsto 13 $ & $ \bar{E} \mapsto 14 $ & $ \bar{F} \mapsto 15 $ \\
+    \end{tabular}
+    \end{adjustbox}
+\end{center}
 
 Positional numeral systems represent a number by lining up a series of digits:
 
 $$ \xrightarrow{2016} $$
 
-In this case, $ 6 $ is called \textit{least significant digit} and $ 2 $ is called
-the \textit{most significant digit}.
+In this case, $ 6 $ is called \textit{least significant digit},
+and $ 2 $ is known as the \textit{most significant digit}.
 Except when writing decimal numbers,
 we will write down numbers in reverse order,
 from the least significant digit to the most significant digit like this
@@ -69,7 +76,7 @@ its semantics can only be carried out by \textit{converting} to some other synta
 Numeral systems are merely syntax.
 The same notation can represent different numbers in different context.
 
-Take the notation "11" for example, it could have several meanings.
+Take the notation "11" for example; it could have several meanings.
 
 \begin{center}
     \begin{tabular}{ | l | r | }
@@ -81,15 +88,15 @@ Take the notation "11" for example, it could have several meanings.
     \end{tabular}
 \end{center}
 
-To make things clear, we call a sequence of digits a \textbf{numeral}, or a \textbf{notation};
+To make things clear, we call a sequence of digits a \textbf{numeral}, or \textbf{notation};
 the number it expresses a \textbf{value}, or simply a \textbf{number};
 the process that converts notations to values an \textbf{evaluation}.
-From now on, \textbf{numeral systems} only refer to the positional ones,
-we will not be converning ourselves with other kinds of numeral systems.
+From now on, \textbf{numeral systems} only refer to the positional ones.
+We will not concern ourselves with other kinds of numeral systems.
 
 \subsection{Evaluating Numerals}
 
-What we mean by \textit{context} in the previous section is the \textbf{base} of
+What we mean by a \textit{context} in the previous section is the \textbf{base} of
 a numeral system.
 The ubiquitous decimal numeral system as we know has the base of 10.
 While the binaries that can be found in our machines nowadays has the base of 2.
@@ -108,8 +115,8 @@ While the binaries that can be found in our machines nowadays has the base of 2.
     \end{adjustbox}
 \end{center}
 
-We can see that a system would have exactly \textbf{\textit{base}} number of digits and the
-assigned value of a digit ranges \textbf{from \textit{0} to \textit{base - 1}}.
+We can see that a system would have exactly \textbf{\textit{base}} number of digits
+and the assigned value of a digit ranges \textbf{from \textit{0} to \textit{base - 1}}.
 
 Conventionally, the base of a system is annotated by subscripting it to the
 right of a numeral, like $ ({2016})_{10} $.
@@ -139,7 +146,7 @@ Statements established on such construction can be proven using mathematical
 induction. Moreover, people have implemented and proven a great deal of functions
 and properties on these unary numbers because they are easy to work with.
 
-However, if we are to evaluate unary numberals with the model we have just settled,
+However, if we are to evaluate unary numerals with the model we have just settled,
 the only digit of the unary system would have to be assigned as $ 0 $ and
 every numeral would evaluate to zero as a result.
 
@@ -184,7 +191,7 @@ would be $ O(lg n) $ at best.
 The choice of the base is immaterial as long as it is not unary (which would degenerate to $ O(n) $).
 
 However, this is not the case for the binary numeral system implemented in
-arithmetic logic units (ALU). These hardwares are designed to perform fast
+arithmetic logic units (ALU). These digital circuits are designed to perform fast
 arithmetics. Regarding addition, it takes only \textit{constant time}.
 
 It seems that either we have been doing long addition wrong since primary school,
@@ -196,7 +203,7 @@ which could only perform \textit{fixed-precision arithmetic}.
 
 Judging from the time complexity of operations, the binary numerals running in
 digital circuits is certainly different from the ordinary binary numerals we have
-known. And the current representation of numeral system has failed to capture this.
+known. Moreover, the current representation of numeral system has failed to capture this.
 
 \section{Numerical representation}
 
@@ -218,11 +225,11 @@ data List a = Nil
 \end{minipage}
 
 If we replace every {\lstinline|Cons _|} with {\lstinline|Suc|} and {\lstinline|Nil|}
-with {\lstinline|Zero|}, then a list becomes an unary number.
-And that is exactly what the {\lstinline|length|} function,
+with {\lstinline|Zero|}, then a list becomes an unary number,
+and that is precisely what the {\lstinline|length|} function,
 a homomorphism from lists to unary numbers, does.
 
-Now let's compare addition on unary number and merge (append) on lists:
+Now let's compare addition on unary numbers and merge (append) on lists:
 
 \noindent\begin{minipage}{.48\textwidth}
 \begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
@@ -252,7 +259,7 @@ heaps, the resemblances are also uncanny.
 [insert some images here]
 
 The strong analogy between positional numeral systems and certain data structures
-suggests that, numeral systems can serve as templates for designing containers.
+suggests that numeral systems can serve as templates for designing containers.
 A container with $ n $ elements can be modeled after the representation of the number $ n $.
 Such data structures are called \textbf{Numerical Representations}\cite{okasaki1996purely}
 \cite{hinze1998numerical}.
