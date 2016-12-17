@@ -125,12 +125,7 @@ $$
 
 Where $ d_{n} $ is a digit for all $ n $.
 
-\section{Problems}
-
-% The formula we have just put down for evaluating positional numeral systems
-% looks obvious and trivial, and that's that, or how else should we evaluate a numeral?
-
-\subsection{Unary Numbers and Peano Numbers}
+\section{Unary Numbers and Peano Numbers}
 
 Some computer scientists and mathematicians seem to be more comfortable with
 unary (base-1) numbers because they are isomorphic to the natural numbers à la Peano.
@@ -167,7 +162,7 @@ of other bases.
     \end{adjustbox}
 \end{center}
 
-\subsection{Binary Numerals in Digital Circults}
+\section{Binary Numerals in Digital Circults}
 
 Recall how arithmetics such as long addition are performed by hand.
 
@@ -202,6 +197,73 @@ which could only perform \textit{fixed-precision arithmetic}.
 Judging from the time complexity of operations, the binary numerals running in
 digital circuits is certainly different from the ordinary binary numerals we have
 known. And the current representation of numeral system has failed to capture this.
+
+\section{Numerical representation}
+
+One may notice that the structure of unary numbers looks suspiciously similar
+to that of lists'. Let's compare their definition in Haskell.
+
+% use minipage for juxtaposing two blocks of codes
+\noindent\begin{minipage}{.45\textwidth}
+\begin{lstlisting}
+data Nat = Zero
+         | Suc Nat
+\end{lstlisting}
+\end{minipage}\hfill
+\begin{minipage}{.48\textwidth}
+\begin{lstlisting}
+data List a = Nil
+            | Cons a (List a)
+\end{lstlisting}
+\end{minipage}
+
+If we replace every {\lstinline|Cons _|} with {\lstinline|Suc|} and {\lstinline|Nil|}
+with {\lstinline|Zero|}, then a list becomes an unary number.
+And that is exactly what the {\lstinline|length|} function,
+a homomorphism from lists to unary numbers, does.
+
+Now let's compare addition on unary number and merge (append) on lists:
+
+\noindent\begin{minipage}{.48\textwidth}
+\begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
+add : Nat → Nat → Nat
+add Zero    y = y
+add (Suc x) y =
+    Suc (add x y)
+\end{lstlisting}
+\end{minipage}\hfill
+\begin{minipage}{.45\textwidth}
+\begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
+append : List a → List a → List a
+append Nil         ys = ys
+append (Cons x xs) ys =
+    Cons x (append xs ys)
+\end{lstlisting}
+\end{minipage}
+
+Aside from having virtually identical implementations, operations on unary numbers
+and lists both have the same time complexity. Incrementing a unary number takes
+$ O(1) $, inserting an element into a list also takes $ O(1) $; adding two unary
+numbers takes $ O(n) $, appending a list to another also takes $ O(n) $.
+
+If we look at implementations and operations of binary numbers and binomial
+heaps, the resemblances are also uncanny.
+
+[insert some images here]
+
+The strong analogy between positional numeral systems and certain data structures
+suggests that, numeral systems can serve as templates for designing containers.
+A container with $ n $ elements can be modeled after the representation of the number $ n $.
+Such data structures are called \textbf{Numerical Representations}\cite{okasaki1996purely}
+\cite{hinze1998numerical}.
+
+However, conventional numeral systems is incapable of modelling these numerical
+representations. Instead, we need a more versatile numeral system.
+
+% [say something about redundant data structures]
+
+% 1. RAL {0, 1}, {1, 2}, {1, 2, 3}
+
 
 % To cooperate unary numbers, we relax the constraint on the range of digits
 % by introducing a new variable, \textit{offset}:
@@ -282,65 +344,6 @@ known. And the current representation of numeral system has failed to capture th
 % structures and  numeral systems. Data structures modeled after redundant numeral
 % systems have some interesting properties.
 %
-% \subsection{Numerical representation}
-%
-% One may notice that the structure of unary numbers looks suspiciously similar
-% to that of lists'. Let's compare their definition in Haskell.
-%
-% % use minipage for juxtaposing two blocks of codes
-% \noindent\begin{minipage}{.45\textwidth}
-% \begin{lstlisting}
-% data Nat = Zero
-%          | Suc Nat
-% \end{lstlisting}
-% \end{minipage}\hfill
-% \begin{minipage}{.48\textwidth}
-% \begin{lstlisting}
-% data List a = Nil
-%             | Cons a (List a)
-% \end{lstlisting}
-% \end{minipage}
-%
-% If we replace every {\lstinline|Cons _|} with {\lstinline|Suc|} and {\lstinline|Nil|}
-% with {\lstinline|Zero|}, then a list becomes an unary number.
-% And that is exactly what the {\lstinline|length|} function,
-% a homomorphism from lists to unary numbers, does.
-%
-% Now let's compare addition on unary number and merge (append) on lists:
-%
-% \noindent\begin{minipage}{.48\textwidth}
-% \begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
-% add : Nat → Nat → Nat
-% add Zero    y = y
-% add (Suc x) y =
-%     Suc (add x y)
-% \end{lstlisting}
-% \end{minipage}\hfill
-% \begin{minipage}{.45\textwidth}
-% \begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
-% append : List a → List a → List a
-% append Nil         ys = ys
-% append (Cons x xs) ys =
-%     Cons x (append xs ys)
-% \end{lstlisting}
-% \end{minipage}
-%
-% Aside from having virtually identical implementations, operations on unary numbers
-% and lists both have the same time complexity. Incrementing a unary number takes
-% $ O(1) $, inserting an element into a list also takes $ O(1) $; adding two unary
-% numbers takes $ O(n) $, appending a list to another also takes $ O(n) $.
-%
-% If we look at implementations and operations of binary numbers and binomial
-% heaps, the resemblances are also uncanny.
-%
-% [insert some images here]
-%
-% The strong analogy between positional numeral systems and certain data structures
-% suggests that, numeral systems can serve as templates for designing containers.
-% Such data structures are called \textbf{Numerical Representations}\cite{okasaki1996purely}
-% \cite{hinze1998numerical}.
-%
-% [say something about redundant data structures]
 %
 % % \subsubsection{From numeral systems to numbers}
 %
