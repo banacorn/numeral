@@ -8,7 +8,7 @@ There are already plenty of tutorials and introductions of Agda\cite{norell2009d
 We will nonetheless compile a simple and self-contained tutorial from the
 materials cited above, covering the part (and only the part) we need in this work.
 
-Some of the more advenced constructions (such as views and universes) used in
+Some of the more advenced \scm{advanced} constructions (such as views and universes) used in
 the following sections will be introduced along the way.
 
 We assume that all readers have some basic understanding of Haskell, and those
@@ -28,9 +28,9 @@ during his PhD at Chalmers University of Technology.
 
 We say that Agda is interactive because proving
 theorems involves a lot of conversations between the programmer and the type checker.
-And it is often difficult, if not impossible, to develop and prove a theorom at one stroke.
+And it is often difficult, if not impossible, to develop and prove a theorom \scm{theorem} at one stroke.
 Just like programming, the process is incremental.
-So Agda allows us to leave some "holes" in a program, refine them gradually, and
+So Agda allows us to leave some "holes" \scm{``holes''} in a program, refine them gradually, and
 complete the proofs "hole by hole".
 
 Take this half-finished function definition for instance, we could leave out the
@@ -49,7 +49,8 @@ GOAL : Bool
 x : Int
 \end{lstlisting}
 
-Then we may ask Agda to pattern match on {\lstinline|x|} and rewrite the program for us:
+Then we may ask Agda to pattern match on {\lstinline|x|} and rewrite the program for us: \scm{Is \lstinline|Int| constructed by \lstinline|zero|
+and \lstinline|suc|?}
 
 \begin{lstlisting}
 is-zero : Int → Bool
@@ -58,7 +59,9 @@ is-zero (suc x) = ?
 \end{lstlisting}
 
 We could fulfill these goals by giving an answer, we may even ask Agda to solve
-the problem for us, if it is not too difficult.
+the problem for us, if it is not too difficult. \scm{This sentence implies that
+Agda is able to fill in \lstinline|true| and \lstinline|false| for
+\lstinline|is-zero|. Is this possible?}
 
 \begin{lstlisting}
 is-zero : Int → Bool
@@ -69,7 +72,10 @@ is-zero (suc x) = false
 After all of the goals have been accomplished and type-checked, we consider the
 program to be finished. Often, there's not much point in running a Agda program,
 because it's mostly about static constructions that is checked in compile-time.
-This is basically what pragramming and proving things looks like in Agda.
+This is basically what pragramming \scm{programming} and proving things looks like in Agda.
+
+\scm{In formal papers, try avoid using abbreviation such as
+``there's'', ``it's'', etc. Say ``there is'' and ``it is.''}
 
 \section{Simply typed programming in Agda}
 
@@ -102,12 +108,14 @@ of {\lstinline|Set|}, and so on. They form a hierarchy of types.}
     \item {\lstinline|true|} has the type of {\lstinline|Bool|}
     \item {\lstinline|false|} has the type of {\lstinline|Bool|}
 \end{enumerate}
+\scm{I would just say ``{\lstinline|true|} has type {\lstinline|Bool|}}'',
+etc.}
 
 \paragraph{Pattern matching}
 % [draft]
-Similar to Haskell, datatypes are eliminated with pattern matching.
+Similar to Haskell, datatypes are eliminated with \scm{by?} pattern matching.
 
-Here's a function that pattern matches on {\lstinline|Bool|}.
+Here's \scm{Here is} a function that pattern matches on {\lstinline|Bool|}.
 
 \begin{lstlisting}
 not : Bool → Bool
@@ -115,10 +123,12 @@ not true  = false
 not false = true
 \end{lstlisting}
 
-Agda is a \textit{total} language, that means partial functions are not valid constructions.
-Functions are guarantee to terminate and will not crash on all possible inputs.
-The following example won't be accecpted by the type checker, because the case
+Agda is a \textit{total} language, that means \scm{which means that} partial functions are not valid constructions.
+Functions are guarantee \scm{guaranteed} to terminate and will not crash on all possible inputs.
+The following example won't be accecpted \scm{accepted} by the type checker \scm{termination checker?}, because the case
 {\lstinline|false|} is missing.
+\scm{I think the right tune is ``programmers are obliged to convince Agda that
+a program terminates.''}
 
 \begin{lstlisting}
 not : Bool → Bool
@@ -126,9 +136,10 @@ not true  = false
 \end{lstlisting}
 
 In practice, Agda would automatically expand all of the cases for us on demand.
+\scm{Not sure why this sentence is here...}
 
 \paragraph{Inductive datatype} Let's move on to a more interesting datatype with
-inductive definition. Here's the type of natural numbers.
+\scm{an} inductive definition. Here's the type of natural numbers.
 % [draft]
 \begin{lstlisting}
 data ℕ : Set where
@@ -137,7 +148,7 @@ data ℕ : Set where
 \end{lstlisting}
 
 The decimal number "4" is represented as {\lstinline|suc (suc (suc (suc zero)))|}.
-Agda also accepts arabic literals if the datatype {\lstinline|ℕ|} complies with
+Agda also accepts arabic \scm{decimal?} literals if the datatype {\lstinline|ℕ|} complies with
 certain language pragma.
 
 Addition on {\lstinline|ℕ|} can be defined as a recursive function.
@@ -175,7 +186,7 @@ to be abstracted away. That is, we need parametric polymorphism, and this is
 where dependent types come into play.
 
 A dependent type is a type whose definition may depend on a value. A dependent
-function is a function whose result type may depend on the value of an argument.
+function is a function whose result type \scm{remove ``result''?} may depend on the value of an argument \scm{its argument(s)?}.
 
 In Agda, function types are denoted as:
 
@@ -345,7 +356,7 @@ On the other hand, indices may affect which inhabitants are allowed in the
 datatype. Different constructors may have different indices. In that case, pattern
 matching on indices may yield relevant information about their constructors.
 
-For example, if there's term whose type is {\lstinline|Vec Bool zero|}, then
+For example, if there's term whose type is \scm{given a term whose type is...}  {\lstinline|Vec Bool zero|}, then
 we are certain that the constructor must be {\lstinline|[]|}, and if the type
  is {\lstinline|Vec Bool (suc n)|} for some {\lstinline|n|}, then the constructor
 must be {\lstinline|_∷_|}.
@@ -463,6 +474,11 @@ Whenever an empty list is applied to {\lstinline|head|},
 the resulting function would have type {\lstinline|head [] : ⊥ → A|},
 which is impossible to fulfill unless one could find a value of type {\lstinline|⊥|}.
 
+\scm{It is better to change the tune a bit and explain that what
+actually happens is that, when {\lstinline|head|} is applied to
+some list {\lstinline|xs|}, the programmer is obliged to convince
+Agda that {\lstinline|non-empty xs|} reduces to {\lstinline|⊤|}.}
+
 \paragraph{Propositions as types, proofs as programs}
 
 The previous paragraphs are mostly about the \textit{programming}
@@ -473,13 +489,13 @@ programs. A proof exists for a proposition the way that a value inhabits a type.
 So {\lstinline|non-empty xs|} is a type, but it can also be thought of as a
 proposition stating that {\lstinline|xs|} is not empty.
 When {\lstinline|non-empty xs|} evaluates to {\lstinline|⊥|}, no value inhabits
-{\lstinline|⊥|}, that means no proof exists for the proposition {\lstinline|⊥|};
-when {\lstinline|non-empty xs|} evaluates to {\lstinline|⊥|}, {\lstinline|tt|}
+{\lstinline|⊥|}, that {\scm which} means no proof exists for the proposition {\lstinline|⊥|};
+when {\lstinline|non-empty xs|} evaluates to {\lstinline|⊥|} \scm{you mean {\lstinline|⊤|}?}, {\lstinline|tt|}
 inhabits {\lstinline|⊥|}, a trivial proof exists for the proposition {\lstinline|⊤|}.
 
 In intuitionistic logic, a proposition is considered to be "true" when it is
 inhabited by a proof, and considered to be "false" when there exists no proof.
-Contrary to classical logic, where propositions evaluates to truth values.
+Contrary to classical logic, where propositions evaluates to truth values. \scm{no verb in this sentence}
 We can see that {\lstinline|⊤|} and {\lstinline|⊥|} correspondes to \textit{true}
 and \textit{false} in this sense.
 
@@ -516,7 +532,7 @@ data Dec (P : Set) : Set where
 but way more powerful, because it also explains (with a proof) why a proposition
 holds or why it does not.
 
-Suppose we want to know if a natural is even or odd. We know that {\lstinline|zero|}
+Suppose we want to know if a natural \scm{number} is even or odd. We know that {\lstinline|zero|}
 is an even number, and if a number is even then its successor's successor is also even.
 
 \begin{lstlisting}
@@ -582,7 +598,7 @@ For example, {\lstinline|1 + 1|} and {\lstinline|2|} are equal in Agda in this n
 
 But we cannot say that {\lstinline|a + b|} and {\lstinline|b + a|}
 are equal with definitional or computational equality, because this kind of equality
-is \textit{extensional}. However, it could be expressed as a \textit{proposition}
+is \textit{extensional}. \scm{What does this mean?} However, it could be expressed as a \textit{proposition}
 with \textit{identity types}.
 
 \begin{lstlisting}
@@ -594,6 +610,9 @@ For all {\lstinline|a b : A|}, if {\lstinline|a|} and {\lstinline|b|} are
 \textit{computationally equal}, that is, both computes to the same value,
 then {\lstinline|refl|} is a proof of {\lstinline|a ≡ b|},
 the \textit{propositional equality} of {\lstinline|a|} and {\lstinline|b|}.
+\scm{It sounds like computational equality and propositional
+equality are the same thing!}
+
 
 {\lstinline|_≡_|} is an equivalence relation. It means that {\lstinline|_≡_|}
 is \textit{reflexive} (by definition), \textit{symmetric} and \textit{transitive}.
@@ -628,7 +647,7 @@ sym' a b eq = ?
 Where {\lstinline|eq|} has type {\lstinline|a ≡ b|}.
 If we pattern match on {\lstinline|eq|} then Agda would rewrite {\lstinline|b|}
 as {\lstinline|.a|} and the goal type becomes {\lstinline|a ≡ a|}.
-
+\scm{should the following {\lstinline|eq|} be refined to {\lstinline|refl|}?}
 \begin{lstlisting}
 sym' : (a .a : ℕ) → a ≡ a → a ≡ a
 sym' a .a eq = ?
@@ -647,8 +666,8 @@ and common constructions.
 
 The standard library is not "chartered" by the compiler or the type checker,
 there's simply nothing special about it. We may as well as roll our own library.
-\footnote{Some primitives that require special treatments, such as IO, are take cared with
-language pragmas exposed by Agda.}
+\footnote{Some primitives that require special treatments, such as IO, are take cared with \scm{taken care of by}
+language pragmas exposed \scm{provided} by Agda.}
 
 
 \end{document}
