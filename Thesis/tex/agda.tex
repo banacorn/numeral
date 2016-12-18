@@ -2,7 +2,7 @@
 \begin{document}
 
 \chapter{A gentle introduction to dependently typed programming in Agda}\label{agda}
-% [draft]
+
 
 There are already plenty of tutorials and introductions of Agda
 \cite{norell2009dependently}\cite{FLOLAC16DTP}\cite{brutal}.
@@ -16,7 +16,7 @@ We assume that readers have some basic understanding of Haskell, and those
 who are familiar with Agda and dependently typed programming may skip this chapter.
 
 \section{Some basics}
-% [draft]
+
 
 Agda is a \textit{dependently typed functional programming language} and also an
 \textit{interactive proof assistant}. This language can serve both purposes because
@@ -79,7 +79,7 @@ Since Agda was heavily influenced by Haskell, simply typed programming in Agda
 is similar to that in Haskell.
 
 \paragraph{Datatypes}
-% [draft]
+
 
 Unlike in other programming languages, there are no "built-in"
 datatypes such as \textit{Int}, \textit{String}, or \textit{Bool}.
@@ -107,7 +107,7 @@ of {\lstinline|Set|}, and so on. They form a hierarchy of types.}
 \end{enumerate}
 
 \paragraph{Pattern matching}
-% [draft]
+
 Similar to Haskell, datatypes are eliminated with pattern matching.
 
 Here's a function that pattern matches on {\lstinline|Bool|}.
@@ -133,7 +133,7 @@ In practice, Agda would automatically expand all of the cases for us on demand.
 
 \paragraph{Inductive datatype} Let's move on to a more interesting datatype with
 inductive definitions. Here's the type of natural numbers.
-% [draft]
+
 \begin{lstlisting}
 data ℕ : Set where
     zero : ℕ
@@ -214,11 +214,10 @@ id : (A : Set) → A → A
 id A x = x
 \end{lstlisting}
 
-{\lstinline|id|} now takes an extra argument, the type of the second arguement.
+{\lstinline|id|} now takes an extra argument, the type of the second argument.
 {\lstinline|id Bool true|} evaluates to {\lstinline|true|}
 
 \paragraph{Implicit arguments}
-% [reviewed: 1]
 
 We have implemented an identity function and seen how polymorphism can be modeled
 with dependent types. However, the additional argument that the identity function
@@ -260,7 +259,7 @@ silly-not {false} = true
 \end{lstlisting}
 
 \paragraph{More syntax sugars}
-% [draft]
+
 We could skip arrows between arguments in parentheses or braces:
 
 \begin{lstlisting}
@@ -268,7 +267,7 @@ id : {A : Set} (a : A) → A
 id {A} x = x
 \end{lstlisting}
 
-And there is a shorthand for merging names of arguments of the same type, implicit or not:
+Also, there is a shorthand for merging names of arguments of the same type, implicit or not:
 
 \begin{lstlisting}
 const : {A B : Set} → A → B → A
@@ -281,7 +280,7 @@ the type with an underscore, say {\lstinline|(A : _)|}, or we could write it as
 written as {\lstinline|∀ {A}|}.
 
 \paragraph{Parameterized Datatypes}
-% [draft]
+
 
 Just as functions can be polymorphic, datatypes can be parameterized by other
 types, too. The datatype of lists is defined as follows:
@@ -292,7 +291,7 @@ data List (A : Set) : Set where
     _∷_ : A → List A → List A
 \end{lstlisting}
 
-The scope of the parameters extends over the entire declaration, so they can
+The scope of the parameters spreads over the entire declaration so that they can
 appear in the constructors.
 Here are the types of the datatype and its constructors.
 
@@ -309,12 +308,12 @@ as long as it is of type {\lstinline|Set|}. {\lstinline|infixr|} specifies the
 precedence of the operator {\lstinline|_∷_|}.
 
 \paragraph{Indexed Datatypes}
-% [draft]
+
 
 % Indexed datatypes, or inductive families, allow us to not only
 
 {\lstinline|Vec|} is a datatype that is similar to {\lstinline|List|}, but more
-powerful, in that it can tell you not only the type of its element, but also its
+powerful, in that it encodes not only the type of its element but also its
 length.
 
 \begin{lstlisting}
@@ -336,12 +335,12 @@ vec = true ∷ false ∷ []
 
 We say that {\lstinline|Vec|} is \textit{parameterized} by a type of {\lstinline|Set|}
 and is \textit{indexed} by values of {\lstinline|ℕ|}.
-And we distinct indices from parameters. However, it is not obvious how they are
+We distinguish indices from parameters. However, it is not obvious how they are
 different by looking at the declaration.
 
 Parameters are \textit{parametric}, in the sense that, they have no effect on the "shape" of a datatype.
 The choice of parameters only effects which kind of values are placed there.
-Pattern matching on parameters does not reveal any insights about their whereabouts.
+Pattern matching on parameters does not reveal any insights into their whereabouts.
 Because they are \textit{uniform} across all constructors, one can always replace
 the value of a parameter with another one of the same type.
 
@@ -349,12 +348,12 @@ On the other hand, indices may affect which inhabitants are allowed in the
 datatype. Different constructors may have different indices. In that case, pattern
 matching on indices may yield relevant information about their constructors.
 
-For example, if there's term whose type is {\lstinline|Vec Bool zero|}, then
-we are certain that the constructor must be {\lstinline|[]|}, and if the type
- is {\lstinline|Vec Bool (suc n)|} for some {\lstinline|n|}, then the constructor
-must be {\lstinline|_∷_|}.
+For example, if there is a term whose type is {\lstinline|Vec Bool zero|},
+then we are certain that the constructor must be {\lstinline|[]|},
+and if the type is {\lstinline|Vec Bool (suc n)|} for some {\lstinline|n|},
+then the constructor must be {\lstinline|_∷_|}.
 
-We could for instance define a {\lstinline|head|} function that cannot crash.
+We could, for instance, define a {\lstinline|head|} function that cannot crash.
 
 \begin{lstlisting}
 head : ∀ {A n} → Vec A (suc n) → A
@@ -362,10 +361,10 @@ head (x ∷ xs) = x
 \end{lstlisting}
 
 As a side note, parameters can be thought as a degenerate case of indices whose
-distribution of values are uniform across all constructors.
+distribution of values is uniform across all constructors.
 
 \paragraph{With abstraction}
-% [draft]
+
 
 Say, we want to define {\lstinline|filter|} on {\lstinline|List|}:
 
@@ -375,7 +374,7 @@ filter p [] = []
 filter p (x ∷ xs) = ?
 \end{lstlisting}
 
-We are stuck here, because the result of {\lstinline|p x|} is only available in
+We are stuck here because the result of {\lstinline|p x|} is only available at
 runtime. Fortunately, with abstraction allows us to pattern match on the result
 of an intermediate computation by adding the result as an extra argument on the
 left-hand side:
@@ -389,7 +388,6 @@ filter p (x ∷ xs) | false = filter p xs
 \end{lstlisting}
 
 \paragraph{Absurd patterns}
-% [draft]
 
 The \textit{unit type}, or \textit{top}, is a datatype inhabited by
 exactly one value, denoted {\lstinline|tt|}.
@@ -443,19 +441,19 @@ head []       proof = ?
 head (x ∷ xs) proof = x
 \end{lstlisting}
 
-In the {\lstinline|(x ∷ xs)|} case, the arguement {\lstinline|proof|} would
+In the {\lstinline|(x ∷ xs)|} case, the argument {\lstinline|proof|} would
 have type {\lstinline|⊤|}, and the right-hand side is simply {\lstinline|x|};
-in the {\lstinline|[]|} case, the arguement {\lstinline|proof|} would
+in the {\lstinline|[]|} case, the argument {\lstinline|proof|} would
 have type {\lstinline|⊥|}, but what should be returned at the right-hand side?
 
 It turns out that, the right-hand side of the {\lstinline|[]|} case would be the
-least thing to worry about, because it is completely impossible to have such a case.
+least thing to worry about because it is completely impossible to have such a case.
 Recall that {\lstinline|⊥|} has no inhabitants, so if a case has an argument of
 that type, it is too good to be true.
 
-Type inhabitance is in general an undecidable problem.
+Type inhabitance is, in general, an undecidable problem.
 However, when pattern matching on a type that is obviously empty (such as {\lstinline|⊥|}),
-Agda allows us to drop the right-hand side and eliminate the arguement with {\lstinline|()|}.
+Agda allows us to drop the right-hand side and eliminate the argument with {\lstinline|()|}.
 
 \begin{lstlisting}
 head : ∀ {A} → (xs : List A) → non-empty xs → A
@@ -474,20 +472,20 @@ aspect of the language, but there is another aspect to it.
 Recall the Curry–Howard correspondence, propositions are types and proofs are
 programs. A proof exists for a proposition the way that a value inhabits a type.
 
-So {\lstinline|non-empty xs|} is a type, but it can also be thought of as a
+{\lstinline|non-empty xs|} is a type, but it can also be thought of as a
 proposition stating that {\lstinline|xs|} is not empty.
 When {\lstinline|non-empty xs|} evaluates to {\lstinline|⊥|}, no value inhabits
-{\lstinline|⊥|}, that means no proof exists for the proposition {\lstinline|⊥|};
+{\lstinline|⊥|}, and that means no proof exists for the proposition {\lstinline|⊥|};
 when {\lstinline|non-empty xs|} evaluates to {\lstinline|⊥|}, {\lstinline|tt|}
 inhabits {\lstinline|⊥|}, a trivial proof exists for the proposition {\lstinline|⊤|}.
 
 In intuitionistic logic, a proposition is considered to be "true" when it is
 inhabited by a proof, and considered to be "false" when there exists no proof.
 Contrary to classical logic, where propositions evaluates to truth values.
-We can see that {\lstinline|⊤|} and {\lstinline|⊥|} correspondes to \textit{true}
+We can see that {\lstinline|⊤|} and {\lstinline|⊥|} corresponds to \textit{true}
 and \textit{false} in this sense.
 
-Negation can be defined as a function from a proposition to {\lstinline|⊥|}.
+Negation is defined as a function from a proposition to {\lstinline|⊥|}.
 
 \begin{lstlisting}
 ¬ : Set → Set
@@ -536,7 +534,7 @@ We also need the opposite of {\lstinline|step|} as a lemma.
     2-steps-back ¬p q = ?
 \end{lstlisting}
 
-{\lstinline|2-steps-back|} takes two argument instead of one because the return
+{\lstinline|2-steps-back|} takes two arguments instead of one because the return
 type {\lstinline|¬ (Even (suc (suc n)))|} is actually a synonym of
 {\lstinline|Even (suc (suc n)) → ⊥|}. Pattern matching on the second argument
 of type {\lstinline|Even (suc (suc n))|} further reveals that it could only be
@@ -551,9 +549,9 @@ and {\lstinline|p : Even n|}, we complete the proof of this lemma.
     two-steps-back ¬p (step p) = contradiction p ¬p
 \end{lstlisting}
 
-Finally, {\lstinline|Even?|} determines a number is even by induction on its
+Finally, {\lstinline|Even?|} determines a number be even by induction on its
 predecessor's predecessor. {\lstinline|step|} and {\lstinline|two-steps-back|}
-can be viewed as functions that transforms proofs.
+can be viewed as functions that transform proofs.
 
 \begin{lstlisting}
     Even? : (n : ℕ) → Dec (Even n)
@@ -571,9 +569,8 @@ It is a convention to suffix a decidable function's name with {\lstinline|?|}.
 \paragraph{Propositional equality}
 
 Saying that two things are "equal" is a notoriously intricate topic in type theory.
-There are many different notions of equality
-\cite{equality}. We will not go
-into each kind of equalities in depth but only skim through those exist in Agda.
+There are many different notions of equality \cite{equality}.
+We will not go into each kind of equalities in depth but only skim through those exist in Agda.
 
 \textit{Definitional equality}, or \textit{intensional equality} is simply a
 synonym, a relation between linguistic expressions. It is a primitive judgement
@@ -584,9 +581,9 @@ of the system, stating that two things are the same to the type checker
 Two programs are consider equal if they compute (beta-reduce) to the same value.
 For example, {\lstinline|1 + 1|} and {\lstinline|2|} are equal in Agda in this notion.
 
-But we cannot say that {\lstinline|a + b|} and {\lstinline|b + a|}
-are equal with definitional or computational equality, because this kind of equality
-is \textit{extensional}. However, it could be expressed as a \textit{proposition}
+However, we cannot say that {\lstinline|a + b|} and {\lstinline|b + a|}
+are equal with definitional or computational equality because this kind of equality
+is \textit{extensional}. Still, it could be expressed as a \textit{proposition}
 with \textit{identity types}.
 
 \begin{lstlisting}
@@ -617,8 +614,8 @@ cong : {A B : Set} {a b : A} → (f : A → B) → a ≡ b → f a ≡ f b
 cong f refl = refl
 \end{lstlisting}
 
-Although these {\lstinline|refl|}s look all the same at term level, they
-are proofs of different propositional equalities.
+Although these {\lstinline|refl|}s look all the same at term level,
+they are proofs of different propositional equalities.
 
 \paragraph{Dotted patterns}
 
@@ -653,6 +650,5 @@ The standard library is not "chartered" by the compiler or the type checker,
 there's simply nothing special about it. We may as well as roll our own library.
 \footnote{Some primitives that require special treatments, such as IO, are take cared with
 language pragmas exposed by Agda.}
-
 
 \end{document}
