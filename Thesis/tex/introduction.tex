@@ -201,6 +201,7 @@ i.e., we could perform calculations on numbers of arbitrary size
 while the binary numbers that reside in machines are bounded by the hardware,
 which could only perform \textit{fixed-precision arithmetic}.
 
+\paragraph{problem}
 Judging from the time complexity of operations, the binary numerals running in
 digital circuits is certainly different from the ordinary binary numerals we have
 known. Moreover, the current representation of numeral system has failed to capture this.
@@ -260,16 +261,22 @@ heaps, the resemblances are also uncanny.
 
 The strong analogy between positional numeral systems and certain data structures
 suggests that numeral systems can serve as templates for designing containers.
-A container with $ n $ elements can be modeled after the representation of the number $ n $.
 Such data structures are called \textbf{Numerical Representations}\cite{okasaki1996purely}
 \cite{hinze1998numerical}.
 
+A container with $ n $ elements can be modeled after the representation of the number $ n $.
+These containers are composed of smaller building blocks that house elements
+as numerals are composed of digits.
+
+\paragraph{problem}
 However, conventional numeral systems are incapable of modelling these numerical
-representations. Instead, we need a more versatile representation for numeral systems.
+representations.
+
+[insert a table of numerical representation and their correspondense numeral systems]
 
 \section{Outline}
 The remainder of the thesis is organized as follows.
-Chapter~\ref{generalization} proposes some generalizations to accommodate the
+Chapter~\ref{generalizations} proposes some generalizations to accommodate the
 needs of having a more versatile representation of numeral systems.
 Chapter~\ref{agda} gives a introduction to \textit{Agda}, the language we use to
 construct and formalize the representation.
@@ -278,25 +285,10 @@ of natural numbers used in the rest of the thesis.
 Chapter~\ref{construction} constructs the representation for numeral systems and
 develops properties of such representation.
 
-
 % [say something about redundant data structures]
 
 % 1. RAL {0, 1}, {1, 2}, {1, 2, 3}
 
-
-% To cooperate unary numbers, we relax the constraint on the range of digits
-% by introducing a new variable, \textit{offset}:
-%
-% $$
-%     ({d_0d_1d_2d_3...})_{base}
-%     =
-%     d_0\times base^0 + d_1\times base^1 + d_2\times base^2 + d_3\times base^3 ...
-% $$
-%
-% Where $ d_{n} $ ranges from \textit{offset} to \textit{offset + base - 1} for
-% all $ n $. Now that unary numbers would have an offset of $ 1 $,
-% and systems of other bases would have offsets of $ 0 $.
-%
 % Surprisingly, we could fit these binary numbers into our representation with
 % just a tweak. If we allow a system to have more digits, then a fixed-precision
 % binary number can be regarded as a single digit! To illustrate this, a 32-bit
