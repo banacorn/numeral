@@ -4,52 +4,54 @@
 \chapter{A gentle introduction to dependently typed programming in Agda}\label{agda}
 % [draft]
 
-There are already plenty of tutorials and introductions of Agda\cite{norell2009dependently}\cite{FLOLAC16DTP}\cite{brutal}.
+There are already plenty of tutorials and introductions of Agda
+\cite{norell2009dependently}\cite{FLOLAC16DTP}\cite{brutal}.
 We will nonetheless compile a simple and self-contained tutorial from the
-materials cited above, covering the part (and only the part) we need in this work.
+materials cited above, covering the part (and only the part) we need in this thesis.
 
-Some of the more advenced constructions (such as views and universes) used in
-the following sections will be introduced along the way.
+Some of the more advanced constructions (such as views and universes) will not
+be introduced in this chapter, but in other places where we need them.
 
-We assume that all readers have some basic understanding of Haskell, and those
+We assume that readers have some basic understanding of Haskell, and those
 who are familiar with Agda and dependently typed programming may skip this chapter.
 
 \section{Some basics}
 % [draft]
 
 Agda is a \textit{dependently typed functional programming language} and also an
-\textit{interactive proof assistant}. It can be both because it's based on
-\textit{Martin-Löf type theory}\cite{martin1984intuitionistic}, hence the Curry-Howard
-correspondence\cite{sorensen2006lectures}, which states that: "propositions are types"
-and "proofs are programs". In other words, proving theorems and writing programs
-are essentially the same. In Agda we are free to interchange between these two
-interpretations. The current version (Agda2) is a completely rewrite by Ulf Norell
-during his PhD at Chalmers University of Technology.
+\textit{interactive proof assistant}. This language can serve both purposes because
+it is based on \textit{Martin-Löf type theory}\cite{martin1984intuitionistic},
+hence the Curry-Howard correspondence\cite{sorensen2006lectures},
+which states that: "propositions are types" and "proofs are programs."
+In other words, proving theorems and writing programs are essentially the same.
+In Agda we are free to interchange between these two interpretations.
+The current version (Agda2) is a completely rewrite by Ulf Norell during his
+Ph.D. at Chalmers University of Technology.
 
-We say that Agda is interactive because proving
-theorems involves a lot of conversations between the programmer and the type checker.
-And it is often difficult, if not impossible, to develop and prove a theorom at one stroke.
+We say that Agda is interactive because theorem proving involves many
+conversations between the programmer and the type checker.
+Moreover, it is often difficult, if not impossible, to develop and prove a theorom at one stroke.
 Just like programming, the process is incremental.
-So Agda allows us to leave some "holes" in a program, refine them gradually, and
-complete the proofs "hole by hole".
+Agda allows us to leave some "holes" in a program, refine them gradually, and
+complete the proofs "hole by hole."
 
-Take this half-finished function definition for instance, we could leave out the
-right-hand side.
+Take this half-finished function definition for example.
 
 \begin{lstlisting}
 is-zero : Int → Bool
 is-zero x = ?
 \end{lstlisting}
 
-In practice, we would ask, for example, "what's the type of the goal?",
- "what's the context of this case?", etc. And Agda would reply us with:
+We can leave out the right-hand side and ask:
+"what's the type of the goal?", "what's the context of this case?", etc.
+Agda would reply us with:
 
 \begin{lstlisting}
 GOAL : Bool
 x : Int
 \end{lstlisting}
 
-Then we may ask Agda to pattern match on {\lstinline|x|} and rewrite the program for us:
+Next, we may ask Agda to pattern match on {\lstinline|x|} and rewrite the program for us:
 
 \begin{lstlisting}
 is-zero : Int → Bool
@@ -57,8 +59,8 @@ is-zero zero    = ?
 is-zero (suc x) = ?
 \end{lstlisting}
 
-We could fulfill these goals by giving an answer, we may even ask Agda to solve
-the problem for us, if it is not too difficult.
+We could fulfill these goals by giving an answer,
+or even ask Agda to solve the problem for us if it is not too difficult.
 
 \begin{lstlisting}
 is-zero : Int → Bool
@@ -66,10 +68,10 @@ is-zero zero    = true
 is-zero (suc x) = false
 \end{lstlisting}
 
-After all of the goals have been accomplished and type-checked, we consider the
-program to be finished. Often, there's not much point in running a Agda program,
-because it's mostly about static constructions that is checked in compile-time.
-This is basically what pragramming and proving things looks like in Agda.
+After all of the goals have been accomplished and type-checked,
+we consider the program to be finished.
+Often, there's not much point in running an Agda program,
+because it is mostly about compile-time static constructions.
 
 \section{Simply typed programming in Agda}
 
@@ -92,9 +94,10 @@ data Bool : Set where
     false : Bool
 \end{lstlisting}
 
-The name of the datatype ({\lstinline|Bool|}) and its constructors
-({\lstinline|true|} and {\lstinline|false|}) are brought into scope in this declaration.
-This notation also allow us to explicitly specify the types of these newly introduced entities.
+This declaration brings the name of the datatype ({\lstinline|Bool|})
+and its constructors ({\lstinline|true|} and {\lstinline|false|}) into scope.
+The notation allow us to explicitly specify the types of these newly introduced
+entities.
 
 \begin{enumerate}
     \item {\lstinline|Bool|} has the type of {\lstinline|Set|}\footnote{{\lstinline|Set|} is the type of small types, and {\lstinline|Set₁|} is the type
@@ -115,9 +118,10 @@ not true  = false
 not false = true
 \end{lstlisting}
 
-Agda is a \textit{total} language, that means partial functions are not valid constructions.
-Functions are guarantee to terminate and will not crash on all possible inputs.
-The following example won't be accecpted by the type checker, because the case
+Agda is a \textit{total} language.
+That means partial functions are not valid constructions.
+Functions are guaranteed to terminate and will not crash on all possible inputs.
+The following example will not be accepted by the type checker since the case
 {\lstinline|false|} is missing.
 
 \begin{lstlisting}
@@ -128,7 +132,7 @@ not true  = false
 In practice, Agda would automatically expand all of the cases for us on demand.
 
 \paragraph{Inductive datatype} Let's move on to a more interesting datatype with
-inductive definition. Here's the type of natural numbers.
+inductive definitions. Here's the type of natural numbers.
 % [draft]
 \begin{lstlisting}
 data ℕ : Set where
@@ -137,7 +141,7 @@ data ℕ : Set where
 \end{lstlisting}
 
 The decimal number "4" is represented as {\lstinline|suc (suc (suc (suc zero)))|}.
-Agda also accepts arabic literals if the datatype {\lstinline|ℕ|} complies with
+Agda also accepts Arabic literals if the datatype {\lstinline|ℕ|} complies with
 certain language pragma.
 
 Addition on {\lstinline|ℕ|} can be defined as a recursive function.
@@ -153,12 +157,12 @@ in two cases: the base case, and the inductive step. We are allowed to make
 recursive calls, as long as the type checker is convinced that the function
 would terminate.
 
-The underlines surrounding {\lstinline|_+_|} act as placeholders for arguments, making
+Those underlines surrounding {\lstinline|_+_|} act as placeholders for arguments, making
 it an infix function in this instance.
 
 \paragraph{Dependent functions and type arguments}
-% [reviewed: 1]
-Up till now everything looks much the same as in Haskell, but a problem arises as
+
+Up till now, everything looks much the same as in Haskell, but a problem arises as
 we move on to defining something that needs more power of abstraction. Take identity
 functions for example:
 
@@ -170,8 +174,8 @@ id-ℕ : ℕ → ℕ
 id-ℕ x = x
 \end{lstlisting}
 
-In order to define a more general identity function, those concrete types have
-to be abstracted away. That is, we need parametric polymorphism, and this is
+In order to define a more general identity function, those concrete types need
+to be abstracted away. That is, we need \textit{parametric polymorphism}, and this is
 where dependent types come into play.
 
 A dependent type is a type whose definition may depend on a value. A dependent
