@@ -2,31 +2,6 @@
 \begin{document}
 
 \chapter{Properties of Natural Numbers and Equational Reasoning}\label{props}
-% [draft]
-
-% As constructing a representation of numeral systems would inevitably involve
-% a lot of things about natural numbers. In this section, we will:
-%
-% \begin{enumerate}
-%     \item introduce some common functions on natural numbers.
-%     \item introduce some properties of these functions.
-%     \item demonstrate how to prove these properties with equational reasoning.
-% \end{enumerate}
-%
-% There are mainly two kinds of properties:
-% \begin{itemize}
-%     \item properties stating that two expressions are equal.
-%     \item properties stating that one expression is greater than another.
-% \end{itemize}
-
-
-% \item demonstrate how to prove these properties with equational reasoning.
-
-
-% With propositional equality at our disposal, we will demonstrate how to prove
-% properties such as the commutative property of addition.
-% Except from equality, we would also introduce preorder relations on natural numbers.
-% Other than proving that two things are equal,
 
 Properties of natural numbers play a big role in the development of proofs in
 this thesis. With propositional equality at our disposal, we will demonstrate how
@@ -66,7 +41,7 @@ By induction on the only argument, we get two sub-goals:
 
 {\lstinline|?0|} can be trivially proven with {\lstinline|refl|}.
 As for {\lstinline|?1|}, we see that its type looks a lot like the proposition
-we are proving, except that both sides of the equation are "coated" with a {\lstinline|suc|}.
+we are proving, except that both sides of the equation are ``coated'' with a {\lstinline|suc|}.
 With {\lstinline|cong suc : ∀ {x y} → x ≡ y → suc x ≡ suc y|}, we could substitute
 a term in {\lstinline|suc|} with another if they are equal, and finish
 the proof by recursively calling itself with a \textit{smaller} argument.
@@ -103,7 +78,7 @@ Similarly, by induction on the first argument, we get two sub-goals:
 ?1 : suc (m + n) ≡ m + suc n
 \end{lstlisting}
 
-{\lstinline|?0|} can be solved with {\lstinline|+-right-identity|} with a "twist".
+{\lstinline|?0|} can be solved with {\lstinline|+-right-identity|} with a ``twist''.
 The symmetry of equality {\lstinline|sym|} enables us to swap both sides of an equation.
 
 \begin{lstlisting}
@@ -128,14 +103,13 @@ equality {\lstinline|trans|}.
 
 \section{Equational Reasoning}
 
-We see that proofs are composable just like programs.
-However, look at the line we have just proven above:
+We can see that proofs are composable just like programs.
 
 \begin{lstlisting}
 trans (cong suc (+-comm m n)) (sym (+-suc n m))
 \end{lstlisting}
 
-It is difficult to see what is going on in between these clauses, and it could
+However, it is difficult to see what is going on in between these clauses, and it could
 get only worse as propositions get more complicated.
 Imagine having dozens of {\lstinline|trans|}, {\lstinline|sym|} and {\lstinline|cong|}
 spreading everywhere.
@@ -175,7 +149,7 @@ A typical equational reasoning can often be broken down into \textbf{three} part
 \begin{enumerate}
     \item\label{eq-part1}
         Starting from the left-hand side of the equation, through a series of steps
-        , the expression will be "arranged" into a form that allows the induction
+        , the expression will be ``arranged'' into a form that allows the induction
         hypothesis to be applied.
         In the following example of {\lstinline|+-comm|}, nothing needs to be arranged
         because these two expressions are computationally equal
@@ -197,7 +171,7 @@ A typical equational reasoning can often be broken down into \textbf{three} part
                 suc (n + m)
         \end{lstlisting}
     \item\label{eq-part3}
-        After applying the induction hypothesis, the expression are then "rearranged"
+        After applying the induction hypothesis, the expression is then ``rearranged''
         into the right-hand side of the equation, hence completes the proof.
 
         \begin{lstlisting}
@@ -210,14 +184,14 @@ A typical equational reasoning can often be broken down into \textbf{three} part
 
 \paragraph{arranging expressions}
 
-To arrange an expression into the shape we desire as in part \ref{eq-part1} and
+To arrange an expression into the shape that we desire as in part \ref{eq-part1} and
 part \ref{eq-part3}, while remaining equal.
 We need properties such as commutativity or associativity of some operator,
 or distributive properties when there is more than one operator.
 
 The operators we will be dealing with often comes with these properties.
-Take addition and multiplication, for example;
-together they form a nice semiring structure.
+Take addition and multiplication, for example, together they form a nice semiring
+structure.
 
 \paragraph{substituting equals for equals}
 
@@ -243,7 +217,7 @@ cong (λ w → a b (c w) d) eq : a b (c X) d ≡ a b (c Y) d
 Aside from stating that two expressions are equal, a proposition can also state
 that one expression is "less than or equal to" than another, given a preorder.
 
-A preorder is a binary relation that is {\lstinline|reflexive|} and {\lstinline|transitive|}.
+A preorder is a binary relation that is \textit{reflexive} and \textit{transitive}.
 Often denoted as {\lstinline|_≤_|}, such a binary relation on natural numbers is
 defined as:
 
@@ -279,9 +253,9 @@ m ≥ n = n ≤ m
 \section{Preorder reasoning}
 
 Combinators for equational reasoning can be further generalized to support \textit{preorder reasoning}.
-Preorders are {\lstinline|reflexive|} and {\lstinline|transitive|}, that means
-expressions can be chained with a series of relations just as that of equational
-reasoning.
+Preorders are \textit{reflexive} and \textit{transitive},
+which means that expressions can be chained with a series of relations just as that of
+equational reasoning.
 
 Suppose we already have {\lstinline|m≤m+n : ∀ m n → m ≤ m + n|} and we want to
 prove a slightly different theorem.
@@ -303,10 +277,6 @@ and reflexive combinators.\footnote{Combinators for preorder reasoning are
 renamed to prevent conflictions with equational reasoning.}
 Step by step, starting from the left-hand side of the relation, expressions get
 greater and greater as it reaches the right-hand side the relation.
-
-% Similar to that of equation reasoning, a typical preorder reasoning can also be
-% broken down into parts. Since an equivalence relation is also a preorder, every
-% steps of equational reasoning can also be found in preorder reasoning.
 
 \paragraph{monotonicity of operators}
 
@@ -416,21 +386,13 @@ those we feel important. They are all equally indispensable to Agda.
 \section{Relevant Properties of Natural Numbers}
 
 Relevant properties of {\lstinline|ℕ|} used in the remainder of the thesis
-will be introduced in this section.
+are introduced in this section.
 
-Some of the properties listed here are taken from the stantard library.
+Aside from some basic properties taken from the stantard library, we have
+also added some useful theorems, lemmata, and corollaries.
 \footnote{\textit{Theorem}, \textit{lemma}, \textit{corollary} and \textit{property}
 are all synonyms for \textit{established proposition}. There are no formal
 distinction between these terms and they are used exchangeably in the thesis.}
-
-% In this section, we will introduce various relevant properties of {\lstinline|ℕ|}.
-
-% Most of the basic properties listed here (such as the ones demonstrated above)
-% are taken from the stantard library while others are just lemmata or corollaries of
-% these theorems.
-% \footnote{\textit{Theorem}, \textit{lemma}, \textit{corollary} and \textit{property}
-% are all synonyms for \textit{established proposition}. There are no formal
-% distinction between these terms and they are used exchangeably in the thesis.}
 
 \subsection{Equational Propositions}
 
@@ -584,10 +546,10 @@ suc m ⊔ suc n = suc (m ⊔ n)
     \item {\lstinline||}
     \item {\lstinline||}
 \end{itemize}
+\subsubsection{multiplication}
+\subsubsection{monus}
+\subsubsection{min and max}
 
-% \paragraph{join and meet}
-%
-%
-% \paragraph{monotonicity of operations}
+
 
 \end{document}
