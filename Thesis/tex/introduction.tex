@@ -9,7 +9,7 @@
 
 A numeral system is a writing system for expressing numbers, and humans have
 invented various kinds of numeral systems throughout history.
-Take the number "2016" \scm{use ``2016'' for quotes} for example:
+Take the number ``2016'' for example:
 
 \begin{center}
     \begin{tabular}{ | l | r | }
@@ -61,7 +61,7 @@ Positional numeral systems represent a number by lining up a series of digits:
 
 $$ \xrightarrow{2016} $$
 
-In this case, $ 6 $ is called \scm{the} \textit{least significant digit},
+In this case, $ 6 $ is called the \textit{least significant digit},
 and $ 2 $ is known as the \textit{most significant digit}.
 Except when writing decimal numbers,
 we will write down numbers in reverse order,
@@ -72,7 +72,7 @@ $$ \xleftarrow{6102} $$
 \subsection{Syntax and Semantics}
 
 Syntax bears no meaning;
-its semantics can only be carried out by \textit{converting} to some other syntax. \scm{not sure what ``carried out'' means...}
+its semantics can only be expressed through the process of \textit{converting} to some other syntax.
 Numeral systems are merely syntax.
 The same notation can represent different numbers in different context.
 
@@ -98,9 +98,8 @@ We will not concern ourselves with other kinds of numeral systems.
 
 What we mean by a \textit{context} in the previous section is the \textbf{base} of
 a numeral system.
-The ubiquitous decimal numeral system as we know has the base of 10.
-While the binaries that can be found in our machines nowadays has the base of 2.
-\scm{..., while ...}
+The ubiquitous decimal numeral system as we know has the base of 10,
+while the binaries that can be found in our machines nowadays has the base of 2.
 
 \begin{center}
     \begin{adjustbox}{max width=\textwidth}
@@ -116,10 +115,9 @@ While the binaries that can be found in our machines nowadays has the base of 2.
     \end{adjustbox}
 \end{center}
 
-We can see that a system would have exactly \textbf{\textit{base}} number of digits
-and the assigned value of a digit ranges \textbf{from \textit{0} to \textit{base - 1}}.
-\scm{A numeral system of base $n$ has exactly $n$ digits, which are assigned
-values from $0$ to $n-1$.}
+
+A numeral system of base $n$ has exactly $n$ digits, which are assigned values
+from $0$ to $n-1$.
 
 Conventionally, the base of a system is annotated by subscripting it to the
 right of a numeral, like $ ({2016})_{10} $.
@@ -153,11 +151,11 @@ However, if we are to evaluate unary numerals with the model we have just settle
 the only digit of the unary system would have to be assigned as $ 0 $ and
 every numeral would evaluate to zero as a result.
 
-We could generalize the definition of digit assignments to allow unary digits to
+\paragraph{problem}
+The definition of digit assignments can be modified to allow unary digits to
 start counting from $ 1 $, but that would lead to inconsistency among systems
-of other bases.
-
-\scm{You left a dangling question here: will this inconsistency be resolved?}
+of other bases. We will resolve this inconsistency by generalizing digit assignments
+in the next chapter.
 
 \begin{center}
     \begin{adjustbox}{max width=\textwidth}
@@ -199,9 +197,6 @@ However, this is not the case for the binary numeral system implemented in
 arithmetic logic units (ALU). These digital circuits are designed to perform fast
 arithmetics. Regarding addition, it takes only \textit{constant time}.
 
-\scm{Immediately I was thinking: because the ALU is not a complete
-implementation of arithmetics!}
-
 It seems that either we have been doing long addition wrong since primary school,
 or the chip manufacturers have been cheating all the time. But there's a catch!
 Because we are capable of what is called \textit{arbitrary-precision arithmetic},
@@ -212,10 +207,8 @@ which could only perform \textit{fixed-precision arithmetic}.
 \paragraph{problem}
 Judging from the time complexity of operations, the binary numerals running in
 digital circuits is certainly different from the ordinary binary numerals we have
-known. Moreover, the current representation of numeral system has failed to capture this.
-
-\scm{Hmm... a bit awkward here. I'd say that the circuits fail to capture
-real arithmetics, rather than the other way round.}
+known. In the next chapter, we will show that these special characteristics can
+be captured by ordinary numeral systems with just a little tweak.
 
 \section{Numerical representation}
 
@@ -284,12 +277,16 @@ as numerals are composed of digits.
 However, conventional numeral systems are incapable of modelling these numerical
 representations.
 
+[explain why]
 [insert a table of numerical representation and their correspondense numeral systems]
+
+We need a more versatile numeral system to accommodate these numerical representations.
+
 
 \section{Outline}
 The remainder of the thesis is organized as follows.
-Chapter~\ref{generalizations} proposes some generalizations to accommodate the
-needs of having a more versatile representation of numeral systems.
+Chapter~\ref{generalizations} resolves the problems we have addressed in this chapter
+by proposing some generalizations to the conventional positional numeral systems.
 Chapter~\ref{agda} gives a introduction to \textit{Agda}, the language we use to
 construct and formalize the representation.
 Chapter~\ref{props} introduces \textit{equational reasoning} and relevent properties
@@ -297,21 +294,21 @@ of natural numbers used in the rest of the thesis.
 Chapter~\ref{construction} constructs the representation for numeral systems and
 develops properties of such representation.
 
-=======
-However, conventional numeral systems is incapable of modelling these numerical
-representations \scm{why not? Some brief explanation?}. Instead, we need a more versatile numeral system.
-
-\scm{You raised several potential questions in this chapter, for example:
-inconsistency between unary and other representations, inconsistency
-between ALU and arbitrary precision arithmetics, needing a more versatile
-numeral system, etc. However, it is not clear where all these questions
-lead to, and what you are trying to achieve in this thesis.
-
-It might help adding a section summarising what you did (and how that
-relates to the questions above). It also helps to give an outline of this thesis,
-so the readers would know what to expect in each chapters of this thesis.
-}
->>>>>>> b542c5f8d1eefb58159d3ae7438f53ce219d9997
+% =======
+% However, conventional numeral systems is incapable of modelling these numerical
+% representations \scm{why not? Some brief explanation?}. Instead, we need a more versatile numeral system.
+%
+% \scm{You raised several potential questions in this chapter, for example:
+% inconsistency between unary and other representations, inconsistency
+% between ALU and arbitrary precision arithmetics, needing a more versatile
+% numeral system, etc. However, it is not clear where all these questions
+% lead to, and what you are trying to achieve in this thesis.
+%
+% It might help adding a section summarising what you did (and how that
+% relates to the questions above). It also helps to give an outline of this thesis,
+% so the readers would know what to expect in each chapters of this thesis.
+% }
+% >>>>>>> b542c5f8d1eefb58159d3ae7438f53ce219d9997
 % [say something about redundant data structures]
 
 % 1. RAL {0, 1}, {1, 2}, {1, 2, 3}
