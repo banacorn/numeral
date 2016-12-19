@@ -1,7 +1,5 @@
 # Thesis
 
-## Fonts
+Fonts required to build the document are available in `Thesis/fonts`.
 
-Available in `Thesis/fonts`:
-
-* Noto Mono
+* DejaVu Sans Mono
