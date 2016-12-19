@@ -120,20 +120,15 @@ not false = true
 
 Agda is a \textit{total} language,
 which means that partial functions are not valid constructions.
-Functions are guaranteed to terminate and will not crash on all possible inputs.
-The following example will not be accepted by the termination checker because the case
-{\lstinline|false|} is missing.
-
-\scm{I think the right tune is ``programmers are obliged to convince Agda that
-a program terminates.''}
+Programmers are obliged to convince Agda that a program terminates and does not
+crash on all possible inputs.
+The following example will not be accepted by the termination checker because the
+case {\lstinline|false|} is missing.
 
 \begin{lstlisting}
 not : Bool → Bool
 not true  = false
 \end{lstlisting}
-
-In practice, Agda would automatically expand all of the cases for us on demand.
-\scm{Not sure why this sentence is here...}
 
 \paragraph{Inductive datatype} Let us move on to a more interesting datatype with
 an inductive definition. Here is the type of natural numbers.
@@ -590,30 +585,30 @@ of the system, stating that two things are the same to the type checker
 Two programs are consider equal if they compute (beta-reduce) to the same value.
 For example, {\lstinline|1 + 1|} and {\lstinline|2|} are equal in Agda in this notion.
 
-However, {\lstinline|a + b|} and {\lstinline|b + a|} are neither definitionally
-equal nor computationally equal.
+However, expressions such as {\lstinline|a + b|} and {\lstinline|b + a|} are not
+considered equal by Agda, neither \textit{definitionally} nor \textit{computationally},
+because there are simply no rules in Agda saying so.
 
-<<<<<<< HEAD
-However, we cannot say that {\lstinline|a + b|} and {\lstinline|b + a|}
-are equal with definitional or computational equality because this kind of equality
-is \textit{extensional}. Still, it could be expressed as a \textit{proposition}
-=======
-is \textit{extensional}. \scm{What does this mean?} However, it could be expressed as a \textit{proposition}
->>>>>>> b542c5f8d1eefb58159d3ae7438f53ce219d9997
-with \textit{identity types}.
+{\lstinline|a + b|} and {\lstinline|b + a|} are only \textit{extensionally equal}
+in the sense that, given \textbf{any} pair of numbers, say {\lstinline|1|} and {\lstinline|2|},
+Agda can see that {\lstinline|1 + 2|} and {\lstinline|2 + 1|} are computationally equal.
+But when it comes to \textbf{every} pair of numbers, Agda fails to justify that.
+
+We could convince Agda about the fact that {\lstinline|a + b|} and {\lstinline|b + a|}
+are equal for every pair of {\lstinline|a|} and {\lstinline|b|} by encoding this
+theorem in a \textit{proposition} and then prove that the proposition holds.
+This kind of proposition can be expressed with \textit{identity types}.
 
 \begin{lstlisting}
 data _≡_ {A : Set} (x : A) : A → Set where
     refl : x ≡ x
 \end{lstlisting}
 
-For all {\lstinline|a b : A|}, if {\lstinline|a|} and {\lstinline|b|} are
-\textit{computationally equal}, that is, both computes to the same value,
+This inductive datatype says that: for all {\lstinline|a b : A|},
+if {\lstinline|a|} and {\lstinline|b|} are \textit{computationally equal},
+that is, both computes to the same value,
 then {\lstinline|refl|} is a proof of {\lstinline|a ≡ b|},
-the \textit{propositional equality} of {\lstinline|a|} and {\lstinline|b|}.
-\scm{It sounds like computational equality and propositional
-equality are the same thing!}
-
+and we say that {\lstinline|a|} and {\lstinline|b|} are \textit{propositionally equal}!
 
 {\lstinline|_≡_|} is an equivalence relation. It means that {\lstinline|_≡_|}
 is \textit{reflexive} (by definition), \textit{symmetric} and \textit{transitive}.
@@ -648,10 +643,9 @@ sym' a b eq = ?
 Where {\lstinline|eq|} has type {\lstinline|a ≡ b|}.
 If we pattern match on {\lstinline|eq|} then Agda would rewrite {\lstinline|b|}
 as {\lstinline|.a|} and the goal type becomes {\lstinline|a ≡ a|}.
-\scm{should the following {\lstinline|eq|} be refined to {\lstinline|refl|}?}
 \begin{lstlisting}
 sym' : (a .a : ℕ) → a ≡ a → a ≡ a
-sym' a .a eq = ?
+sym' a .a refl = ?
 \end{lstlisting}
 
 What happened under the hood is that {\lstinline|a|} and {\lstinline|b|} are
@@ -667,7 +661,7 @@ and common constructions.
 
 The standard library is not "chartered" by the compiler or the type checker,
 there's simply nothing special about it. We may as well as roll our own library.
-\footnote{Some primitives that require special treatments, such as IO, are take cared with \scm{taken care of by}
-language pragmas exposed \scm{provided} by Agda.}
+\footnote{Some primitives that require special treatments, such as IO, are taken
+care of by language pragmas provided by Agda.}
 
 \end{document}
