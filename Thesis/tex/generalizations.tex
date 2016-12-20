@@ -20,7 +20,6 @@ But nonetheless, it is a good basis for further generalizations.
 
 \section{Offset}
 
-
 To cooperate unary numerals, we relax the constraint on the range of digit assignment
 by introducing a new variable, \textit{offset}:
 
@@ -77,27 +76,27 @@ Let us see how to count to ten in a binary numeral system with an offset of $ 1 
     \end{adjustbox}
 \end{center}
 
-Such a numeral system is also named \textit{1-2 binary system} because its digits are assigned
-$ 1 $ and $ 2 $. Notice that how the symbol of digits are deliberately chosen to
-match their assigned value.
+Such a numeral system is also named \textit{1-2 binary system} because its digits
+are assigned $ 1 $ and $ 2 $.
+Notice that how the symbol of digits are deliberately chosen to match their assigned value.
 
-\begin{center}
-    \begin{adjustbox}{max width=\textwidth}
-    \begin{tabular}{ | l | r | r | }
-    \textbf{Numeral system} & \textbf{Base} & \textbf{Offset} \\
-    \hline
-    decimal         & 10 & 0 \\
-    binary          & 2  & 0 \\
-    hexadecimal     & 16 & 0 \\
-    unary           & 1  & 1 \\
-    1-2 binary      & 2  & 1 \\
-    \end{tabular}
-    \end{adjustbox}
-\end{center}
+% \begin{center}
+%     \begin{adjustbox}{max width=\textwidth}
+%     \begin{tabular}{ | l | r | r | }
+%     \textbf{Numeral system} & \textbf{Base} & \textbf{Offset} \\
+%     \hline
+%     decimal         & 10 & 0 \\
+%     binary          & 2  & 0 \\
+%     hexadecimal     & 16 & 0 \\
+%     unary           & 1  & 1 \\
+%     1-2 binary      & 2  & 1 \\
+%     \end{tabular}
+%     \end{adjustbox}
+% \end{center}
 
 A numeral system is said to be \textit{zeroless} if no digits are assigned $ 0 $,
-i.e., $ \text{offset} \textgreater 0 $. Data structures modeled after zeroless
-systems are called \textit{zeroless representations}.
+i.e., $ \text{offset} \textgreater 0 $.
+Data structures modeled after zeroless systems are called \textit{zeroless representations}.
 These containers are preferable to their "zeroful" counterparts.
 Because a digit of value $ 0 $ corresponds to a building block with $ 0 $ elements,
 and a building block that contains no element is not only useless,
@@ -106,14 +105,16 @@ but also hinders traversal as it takes time to skip over these empty nodes.
 \section{Number of Digits}
 
 The binary numeral system running in circuits looks different from what we have
-in hand. Surprisingly, these binary numbers can fit into our representation
-with just a tweak. If we allow a system to have more digits, then a fixed-precision
-binary number can be regarded as a single digit! To illustrate this, a 32-bit
-binary number would become a single digit that ranges from $ 0 $ to $ 2^{32} $,
+in hand.
+Surprisingly, these binary numbers can fit into our representation with just a tweak.
+If we allow a system to have more digits,
+then a fixed-precision binary number can be regarded as a single digit!
+To illustrate this,
+a 32-bit binary number would become a single digit that ranges from $ 0 $ to $ 2^{32} $,
 while everything else including the base remains the same.
 
-Formerly in our representation, there are exactly \textit{base} number of digits
-and their assignments range from:
+Formerly in our representation,
+there are exactly \textit{base} number of digits and their assignments range from:
 
 $$
     \text{offset}  ...  \text{offset} + \text{base} - 1
@@ -126,8 +127,10 @@ $$
     \text{offset}  ...  \text{offset} + \text{\#digit} - 1
 $$
 
-Taking \textit{\#digit} into account, here is a table of all the numeral systems
-we have addressed along with machine integer types such as \textit{Int32}.
+The following table contains all of the numeral systems we have addressed so far,
+with \textit{base}, \textit{offset}, and \textit{\#digit} taken into account.
+\textit{Int32} and \textit{Int64} are respectively 32-bit and 64-bit machine
+integers.
 
 \begin{center}
     \begin{adjustbox}{max width=\textwidth}
@@ -144,56 +147,6 @@ we have addressed along with machine integer types such as \textit{Int32}.
     \end{tabular}
     \end{adjustbox}
 \end{center}
-
-
-% Here's a table of the configurations about the systems that we've addressed:
-%
-% \begin{center}
-%     \begin{tabular}{l*{3}{r}}
-%     Numeral system      & base  & \#digit    & offset    \\
-%     \hline
-%     Decimal             & 10    & 10        & 0         \\
-%     Binary              & 2     & 2         & 0         \\
-%     Unary               & 1     & 1         & 1         \\
-%     Int32               & 2     & $ 2^{32} $ & 0        \\
-%     \end{tabular}
-% \end{center}
-
-
-% Here's a table of the configurations about the systems that we've addressed:
-%
-% \begin{center}
-%     \begin{tabular}{l*{3}{r}}
-%     Numeral system      & base  & \#digit    & offset    \\
-%     \hline
-%     Decimal             & 10    & 10        & 0         \\
-%     Binary              & 2     & 2         & 0         \\
-%     Unary               & 1     & 1         & 1         \\
-%     Int32               & 2     & $ 2^{32} $ & 0        \\
-%     \end{tabular}
-% \end{center}
-
-
-
-
-% However, to accommodate
-
-%
-
-% In this chapter we will introduce other generalizations that
-
-
-% \section{Different Digits assignments}
-
-% The simplest generalization we already have is the base of numeral system.
-
-% Where $ d_{n} $ is a digit for all $ n $.
-
-% The \textbf{base} of numeral systems
-
-% The generalization we already have is
-
-% \section{System }
 
 
 

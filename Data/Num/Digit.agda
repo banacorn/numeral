@@ -96,7 +96,12 @@ greatest-digit-toℕ : ∀ {d o}
     → (x : Digit (suc d))
     → Greatest x
     → Digit-toℕ x o ≡ d + o
-greatest-digit-toℕ {d} {o} x greatest = cancel-suc $ cong (λ w → w + o) greatest
+greatest-digit-toℕ {d} {o} x greatest = cancel-suc $
+    begin
+        suc (Digit-toℕ x o)
+    ≡⟨ cong (λ w → w + o) greatest ⟩
+        suc (d + o)
+    ∎
 
 greatest-of-all : ∀ {d} (o : ℕ) → (x y : Digit d) → Greatest x → Digit-toℕ x o ≥ Digit-toℕ y o
 greatest-of-all o zero    zero     refl = ≤-refl
