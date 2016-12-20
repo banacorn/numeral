@@ -212,6 +212,33 @@ Which abstracts the part we want to substitute away, such that:
 cong (λ w → a b (c w) d) eq : a b (c X) d ≡ a b (c Y) d
 \end{lstlisting}
 
+\section{Decidable Equality on Natural Numbers}
+
+Equality is decidable on natural numbers, which means that we can always tell
+whether two numbers are equal, and explain the reason with a proof.
+
+\begin{lstlisting}
+_≟_ : Decidable {A = ℕ} _≡_
+zero  ≟ zero   = yes refl
+suc m ≟ suc n  with m ≟ n
+suc m ≟ suc .m | yes refl = yes refl
+suc m ≟ suc n  | no prf   =
+    no (prf ∘ (λ p → subst (λ x → m ≡ pred x) p refl))
+zero  ≟ suc n  = no λ()
+suc m ≟ zero   = no λ()
+\end{lstlisting}
+
+Decidable functions are often used together with \textit{with-abstractions}.
+
+\begin{lstlisting}
+answer : ℕ → Bool
+answer n with n ≟ 42
+answer n | yes p = true
+answer n | no ¬p = false
+\end{lstlisting}
+
+Where {\lstinline|p : n ≡ 42|} and  {\lstinline|¬p : n ≢ 42|}.
+
 \section{Preorder}
 
 Aside from stating that two expressions are equal, a proposition can also state
@@ -298,6 +325,31 @@ f _ = 1
 {\lstinline|0 ≤ 1|} holds, but it does not imply that {\lstinline|f 0 ≤ f 1|} also holds.
 As a result, a generic mechanism like {\lstinline|cong|} does not exist in preorder reasoning.
 We can only substitute part of an expression when the function is \textit{monotonic}.
+
+\section{Decidable Preorder on Natural Numbers}
+
+Preorder is also decidable on natural numbers, which means that we can always tell
+whether one number is less than or equal to another.
+
+\begin{lstlisting}
+_≤?_ : Decidable _≤_
+zero  ≤? _     = yes z≤n
+suc m ≤? zero  = no λ()
+suc m ≤? suc n with m ≤? n
+...            | yes m≤n = yes (s≤s m≤n)
+...            | no  m≰n = no  (m≰n ∘ ≤-pred)
+\end{lstlisting}
+
+With with-abstractions we could define some function like this:
+
+\begin{lstlisting}
+threshold : ℕ → ℕ
+threshold n with n ≤? 87
+threshold n | yes p = n
+threshold n | no ¬p = 87
+\end{lstlisting}
+
+Where {\lstinline|p : n ≤ 42|} and {\lstinline|¬p : n ≰ 42|}.
 
 % Suppose we want to prove that {\lstinline|_+_|} is monotonic in both arguments.
 %
