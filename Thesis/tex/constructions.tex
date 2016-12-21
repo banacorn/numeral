@@ -3,6 +3,16 @@
 \chapter{Constructions}
 %  [draft]
 
+The representation for positional numeral systems in Agda will be constructed in this
+chapter, along with the generalizations introduced in section~\ref{generalizations}.
+
+\begin{itemize}
+    \item \textbf{base}: the base of a numeral system, denoted {\lstinline|b|}.
+    \item \textbf{\#digit}: the number of digits, denoted {\lstinline|d|}.
+    \item \textbf{offset}: the number where the digits starts from, denoted {\lstinline|o|}.
+\end{itemize}
+
+
 \paragraph{remark}
 
 
@@ -268,10 +278,10 @@ The carry is defined as the greater of these two values:
 
 \begin{itemize}
     \item the least digit of a system
-    \item the digit that is assigned as $ 1 $
+    \item the digit that is assigned to $ 1 $
 \end{itemize}
 
-In case that that the least digit is assigned as $ 0 $, rendering the carry useless.
+In case that that the least digit is assigned to $ 0 $, rendering the carry useless.
 Since the least digit is determined by the offset $ o $, the value of the carry
 is defined as follows.
 
@@ -317,118 +327,159 @@ carry-upper-bound {d} {zero}  proper = ≤-pred proper
 carry-upper-bound {d} {suc o} proper = n≤m+n d (suc o)
 \end{lstlisting}
 
-
-
-
-
-
-% A system can only have \textbf{finitely many} digits.
-% Operations on these digits, such as addition, must be \textbf{constant time}.
-% Notice that the problem size of time complexity we are discussing here refers
-% only to the value of a numeral. And since the value of digits is independent of
-% the value of a numeral, time complexity of functions on digits should be trivially
-% constant.
-
-
-
-
-% In section~\ref{introduction} we see that
-% different numeral systems a digit
-
-
-% As introduced in section~\ref{introduction}
-
-% Two generalizations introduced in section~\ref{introduction}
-%
-% \begin{itemize}
-%     \item \textbf{base}: the base of a numeral system, denoted {\lstinline|b|}.
-%     \item \textbf{\#digit}: the number of digits, denoted {\lstinline|d|}.
-%     \item \textbf{offset}: the number where the digits starts from, denoted {\lstinline|o|}.
-% \end{itemize}
-
-
 \section{Num: a representation for positional numeral systems}\label{representation}
 
-% In this section, we will demonstrate how to construct the representation for positional
-% numeral systems in Agda. The representation is constructed as a datatype, indexed
-% by the generalizations introduced in section~\ref{introduction}.
-%
-% \begin{itemize}
-%     \item \textbf{base}: the base of a numeral system, denoted {\lstinline|b|}.
-%     \item \textbf{\#digit}: the number of digits, denoted {\lstinline|d|}.
-%     \item \textbf{offset}: the number where the digits starts from, denoted {\lstinline|o|}.
-% \end{itemize}
-%
-%
-%
-% \subsubsection{Properties}
-%
-% % A digit is bounded to have
-% %
-% % \begin{lstlisting}
-% % Digit-upper-bound : ∀ {d} → (o : ℕ) → (x : Digit d) → Digit-toℕ x o < d + o
-% % Digit-upper-bound {d} o x = +n-mono o (bounded x)
-% %
-% % Digit-lower-bound : ∀ {d} → (o : ℕ) → (x : Digit d) → Digit-toℕ x o ≥ o
-% % Digit-lower-bound {d} o x = m≤n+m o (toℕ x)
-% % \end{lstlisting}
-%
-% \subsection{Num}
-% % [draft]
-%
-% Numerals in positional numeral systems are composed of sequences of \textbf{digits}.
-%
-% \subsubsection{Definition}
-% The definition of {\lstinline|Numeral|} is similar to that of {\lstinline|List|},
-% except that a {\lstinline|Numeral|} must contain at least one digit while a list
-% may contain no elements at all. The most significant digit is placed in {\lstinline|_∙|}
-% while the least significant digit is placed at the end of the sequence.
-% {\lstinline|Numeral|} is indexed by all three generalizations.
-%
-% \begin{lstlisting}
-% infixr 5 _∷_
-%
-% data Numeral : ℕ → ℕ → ℕ → Set where
-%     _∙  : ∀ {b d o} → Digit d → Numeral b d o
-%     _∷_ : ∀ {b d o} → Digit d → Numeral b d o → Numeral b d o
-% \end{lstlisting}
-%
-% The decimal number "2016" for example can be represented as:
-%
-% \begin{lstlisting}
-% MMXVI : Numeral 10 10 0
-% MMXVI = # 6 ∷ # 1 ∷ # 0 ∷ (# 2) ∙
-% \end{lstlisting}
-%
-% \subsubsection{Converting to natural numbers}
-%
-% Converting to natural numbers is fairly trivial:
-%
-% \begin{lstlisting}
-% ⟦_⟧ : ∀ {b d o} → (xs : Numeral b d o) → ℕ
-% ⟦_⟧ {_} {_} {o} (x ∙)    = Digit-toℕ x o
-% ⟦_⟧ {b} {_} {o} (x ∷ xs) = Digit-toℕ x o + ⟦ xs ⟧ * b
-% \end{lstlisting}
-%
-% \section{Dissecting Num: Properties of different kinds of numeral systems}\label{views}
-%
-% There are many kinds of numeral systems inhabit in {\lstinline|Num|}.
-% Some have infinitely many numerals and some have none.
-%
-% We sort the systems in {\lstinline|Num|} into four groups, each of them have
-% different interesting properties.
-%
-% \subsection{Views}
-%
-%
-% \begin{lstlisting}
-% data NumView : ℕ → ℕ → ℕ → Set where
-%     NullBase    : ∀   d o                            → NumView 0       (suc d) o
-%     NoDigits    : ∀ b o                              → NumView b       0       o
-%     AllZeros    : ∀ b                                → NumView (suc b) 1       0
-%     Proper      : ∀ b d o → (proper : suc d + o ≥ 2) → NumView (suc b) (suc d) o
-% \begin{lstlisting}
-%
+\subsection{Definition}
+
+Numerals in positional numeral systems are composed of sequences of digits.
+So the definition of {\lstinline|Numeral|} will be similar to that of {\lstinline|List|},
+except that a {\lstinline|Numeral|} must contain at least one digit while a list
+may contain no elements at all. The most significant digit is placed in {\lstinline|_∙|}
+while the least significant digit is placed at the end of the sequence.
+{\lstinline|Numeral|} is indexed by all three generalizations.
+
+\begin{lstlisting}
+infixr 5 _∷_
+
+data Numeral : ℕ → ℕ → ℕ → Set where
+    _∙  : ∀ {b d o} → Digit d → Numeral b d o
+    _∷_ : ∀ {b d o} → Digit d → Numeral b d o → Numeral b d o
+\end{lstlisting}
+
+The decimal number ``2016'' for example can be represented as:
+
+\begin{lstlisting}
+MMXVI : Numeral 10 10 0
+MMXVI = # 6 ∷ # 1 ∷ # 0 ∷ (# 2) ∙
+\end{lstlisting}
+
+Where {\lstinline|#_ : ∀ m {n} {m<n : True (suc m ≤? n)} → Fin n|} converts from
+{\lstinline|ℕ|} to {\lstinline|Fin n|} given the number is small enough.
+
+\subsection{Converting to natural numbers}
+
+Converting to natural numbers is fairly trivial.
+
+\begin{lstlisting}
+⟦_⟧ : ∀ {b d o} → (xs : Numeral b d o) → ℕ
+⟦_⟧ {_} {_} {o} (x ∙)    = Digit-toℕ x o
+⟦_⟧ {b} {_} {o} (x ∷ xs) = Digit-toℕ x o + ⟦ xs ⟧ * b
+\end{lstlisting}
+
+% TODO: discuss the relation between Numeral and ℕ
+
+\section{Dissecting Numeral Systems with Views}\label{views}
+
+There are many kinds of numeral systems inhabit in {\lstinline|Numeral|}.
+These systems have different interesting properties and they should be treated
+differently, so we sort them into \textbf{four categories} accordingly.
+
+\paragraph{Systems with no digits at all}
+
+The number of digits of a system is determined by the index {\lstinline|d|}.
+If {\lstinline|d|} happens to be $ 0 $, then there will be no digits in any of
+these systems. Although they seem useless, these systems have plenty of properties.
+Since there are not digits at all, any property that is related to digits would
+hold vacuously.
+
+\paragraph{Systems with the base of $ 0 $}
+
+If {\lstinline|b|}, the base of a system, happens to be $ 0 $,
+then only the least significant digit would have effects on the evaluation,
+because the rest of the digits would diminish into nothing.
+
+\begin{lstlisting}
+⟦ x ∙    ⟧ = Digit-toℕ x o
+⟦ x ∷ xs ⟧ = Digit-toℕ x o + ⟦ xs ⟧ * 0
+\end{lstlisting}
+
+\paragraph{Systems with only zeros}
+
+Consider when {\lstinline|d|} is set to $ 1 $ and {\lstinline|o|} set to $ 0 $.
+There will be one digit but the only digit is assigned to $ 0 $.
+
+\begin{lstlisting}
+0, 00, 000, 0000, ...
+\end{lstlisting}
+
+As a result, every numeral would evaluate to $ 0 $ regardless of the base.
+
+\paragraph{``Proper'' systems}
+
+The rest of systems that does not fall into any of the categories above
+are considered \textit{proper}.
+
+\subsection{Categorizing Systems}
+
+These ``categories'' are represented with a datatype called {\lstinline|NumView|}
+that is indexed by the three indices: {\lstinline|b|}, {\lstinline|d|}, and {\lstinline|o|}.
+
+\begin{lstlisting}
+data NumView : (b d o : ℕ) → Set where
+    NullBase    : ∀   d o → NumView 0       (suc d) o
+    NoDigits    : ∀ b o   → NumView b       0       o
+    AllZeros    : ∀ b     → NumView (suc b) 1       0
+    Proper      : ∀ b d o → (proper : suc d + o ≥ 2)
+                          → NumView (suc b) (suc d) o
+\end{lstlisting}
+
+By pattern matching on indices, different configurations of indices are sorted into
+different {\lstinline|NumView|}s.
+
+\begin{lstlisting}
+numView : ∀ b d o → NumView b d o
+numView b       zero          o       = NoDigits b o
+numView zero    (suc d)       o       = NullBase d o
+numView (suc b) (suc zero)    zero    = AllZeros b
+numView (suc b) (suc zero)    (suc o) = Proper b zero (suc o) _
+numView (suc b) (suc (suc d)) o       = Proper b (suc d) o _
+\end{lstlisting}
+
+Together with \textit{with-abstractions}, we can, for example, define a function
+to determine whether a numeral system is boring or not:
+
+\begin{lstlisting}
+boring : ∀ b d o → Bool
+boring b d o with numView b d o
+boring _ _ _ | NullBase d o         = false
+boring _ _ _ | NoDigits b o         = false
+boring _ _ _ | AllZeros b           = false
+boring _ _ _ | Proper b d o proper  = true
+\end{lstlisting}
+
+As we can see, the function {\lstinline|numView|} does more than sorting indices
+into different categories. It also reveals relevant infomation and properties
+about these categories. For instance, if a system {\lstinline|Numeral b d o|}
+is classified as \textit{Proper}, then we know that:
+
+\begin{itemize}
+    \item {\lstinline|b|} is greater than $ 0 $.
+    \item {\lstinline|d|} is also greater than $ 0 $.
+    \item {\lstinline|o|} can be any value as long as {\lstinline|d + o ≥ 2|}.
+\end{itemize}
+
+\subsection{Views}
+
+The sole purpose of {\lstinline|NumView|} is to sort out and expose some
+interesting properties about its indices.
+Such datatypes are called \textit{views}\cite{wadler1987views} as they present
+different aspects of the same entity. Functions like {\lstinline|numView|} are
+called \textit{view functions} or \textit{eliminators}\cite{mcbride2004views}
+because they provide different ways of eliminating a datatype.
+
+Views are like special lenses that are customized to our needs, and they are
+\textit{reusable} which frees us from having to pattern match on the same
+indices or data again and again.
+
+We will define more views and use them extensively in the coming sections.
+
+\subsection{Maximum}
+\subsection{Bounded}
+\subsection{Next}
+\subsection{Increment}
+\subsection{Continuous}
+
+
 % \subsection{Maximum}
 %
 % A number is said to be \textit{maximum} if there are no other number greater than
