@@ -84,15 +84,34 @@ numView (suc b) (suc zero)    zero    = AllZeros b
 numView (suc b) (suc zero)    (suc o) = Proper b zero (suc o) (s≤s (s≤s z≤n))
 numView (suc b) (suc (suc d)) o       = Proper b (suc d) o (s≤s (s≤s z≤n))
 
+------------------------------------------------------------------------
+-- Properties of Num
+------------------------------------------------------------------------
+
 NoDigits-explode : ∀ {b o a} {Whatever : Set a}
     → (xs : Numeral b 0 o)
     → Whatever
 NoDigits-explode (() ∙   )
 NoDigits-explode (() ∷ xs)
 
-------------------------------------------------------------------------
--- Properties of Num
-------------------------------------------------------------------------
+toℕ-NullBase : ∀ {d o}
+    → (x : Digit d)
+    → (xs : Numeral 0 d o)
+    → ⟦ x ∷ xs ⟧ ≡ Digit-toℕ x o
+toℕ-NullBase {d} {o} x xs =
+    begin
+        Digit-toℕ x o + ⟦ xs ⟧ * 0
+    ≡⟨ cong (λ w → Digit-toℕ x o + w) (*-right-zero ⟦ xs ⟧) ⟩
+        Digit-toℕ x o + 0
+    ≡⟨ +-right-identity (Digit-toℕ x o) ⟩
+        Digit-toℕ x o
+    ∎
+
+toℕ-AllZeros : ∀ {b} → (xs : Numeral b 1 0) → ⟦ xs ⟧ ≡ 0
+toℕ-AllZeros     (z    ∙   ) = refl
+toℕ-AllZeros     (s () ∙   )
+toℕ-AllZeros {b} (z    ∷ xs) = cong (λ w → w * b) (toℕ-AllZeros xs)
+toℕ-AllZeros     (s () ∷ xs)
 
 n∷-mono-strict : ∀ {b d o}
     → (x : Fin d) (xs : Numeral (suc b) d o)

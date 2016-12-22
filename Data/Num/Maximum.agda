@@ -40,19 +40,6 @@ Maximum-unique max xs max-max xs-max = IsPartialOrder.antisym isPartialOrder
     (xs-max max)
     (max-max xs)
 
-toℕ-NullBase : ∀ {d o}
-    → (x : Digit d)
-    → (xs : Numeral 0 d o)
-    → ⟦ x ∷ xs ⟧ ≡ Digit-toℕ x o
-toℕ-NullBase {d} {o} x xs =
-    begin
-        Digit-toℕ x o + ⟦ xs ⟧ * 0
-    ≡⟨ cong (λ w → Digit-toℕ x o + w) (*-right-zero ⟦ xs ⟧) ⟩
-        Digit-toℕ x o + 0
-    ≡⟨ +-right-identity (Digit-toℕ x o) ⟩
-        Digit-toℕ x o
-    ∎
-
 Maximum-NullBase-Greatest : ∀ {d} {o}
     → (xs : Numeral 0 (suc d) o)
     → Greatest (lsd xs)
@@ -140,12 +127,6 @@ Maximum-NullBase : ∀ {d} {o}
 Maximum-NullBase {d} {o} xs with Greatest? (lsd xs)
 Maximum-NullBase {d} {o} xs | yes greatest = yes (Maximum-NullBase-Greatest xs greatest)
 Maximum-NullBase {d} {o} xs | no ¬greatest = no (contraposition (Maximum⇒Greatest xs) ¬greatest)
-
-toℕ-AllZeros : ∀ {b} → (xs : Numeral b 1 0) → ⟦ xs ⟧ ≡ 0
-toℕ-AllZeros     (z    ∙   ) = refl
-toℕ-AllZeros     (s () ∙   )
-toℕ-AllZeros {b} (z    ∷ xs) = cong (λ w → w * b) (toℕ-AllZeros xs)
-toℕ-AllZeros     (s () ∷ xs)
 
 Maximum-AllZeros : ∀ {b} → (xs : Numeral b 1 0) → Maximum xs
 Maximum-AllZeros xs ys = reflexive $
