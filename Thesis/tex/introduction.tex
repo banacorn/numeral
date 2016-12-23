@@ -3,7 +3,7 @@
 
 \graphicspath{ {images/}{../images/} }
 
-\chapter{Introduction [still writing]}\label{introduction}
+\chapter{Introduction [still working on it]}\label{introduction}
 
 \section{Positional Numeral Systems}
 
@@ -44,7 +44,7 @@ each digit to the value it represents.
 \end{center}
 
 We place a bar above a digit to indicate its assignment.
-Below is the assignments of hexadecimal digits.
+For instance, these are the assignments of hexadecimal digits.
 
 \begin{center}
     \begin{adjustbox}{max width=\textwidth}
@@ -96,8 +96,8 @@ We will not concern ourselves with other kinds of numeral systems.
 
 \subsection{Evaluating Numerals}
 
-What we mean by a \textit{context} in the previous section is the \textbf{base} of
-a numeral system.
+What we mean by a \textit{context} in the previous section is the \textbf{base}
+of a numeral system.
 The ubiquitous decimal numeral system as we know has the base of 10,
 while the binaries that can be found in our machines nowadays has the base of 2.
 
@@ -154,8 +154,7 @@ every numeral would evaluate to zero as a result.
 \paragraph{problem}
 The definition of digit assignments can be modified to allow unary digits to
 start counting from $ 1 $, but that would lead to inconsistency among systems
-of other bases. We will resolve this inconsistency by generalizing digit assignments
-in the next chapter.
+of other bases.
 
 \begin{center}
     \begin{adjustbox}{max width=\textwidth}
@@ -189,13 +188,14 @@ The greater a number is, the longer its notation will be, which in terms
 determines the time it takes to perform operations.
 Since a system can only have \textbf{finitely many} digits, operations such as
 addition on these digits must be \textbf{constant time}.
-Consequently, the time complexity of operations such as long addition on a numeral
-would be $ O(lg n) $ at best.
-The choice of the base is immaterial as long as it is not unary (which would degenerate to $ O(n) $).
+Consequently, the time complexity of operations such as long addition on a
+numeral would be $ O(lg n) $ at best.
+The choice of the base is immaterial as long as it is not unary
+(which would degenerate to $ O(n) $).
 
 However, this is not the case for the binary numeral system implemented in
-arithmetic logic units (ALU). These digital circuits are designed to perform fast
-arithmetics. Regarding addition, it takes only \textit{constant time}.
+arithmetic logic units (ALU). These digital circuits are designed to perform
+fast arithmetics. Regarding addition, it takes only \textit{constant time}.
 
 It seems that either we have been doing long addition wrong since primary school,
 or the chip manufacturers have been cheating all the time. But there's a catch!
@@ -207,15 +207,18 @@ which could only perform \textit{fixed-precision arithmetic}.
 \paragraph{problem}
 Judging from the time complexity of operations, the binary numerals running in
 digital circuits is certainly different from the ordinary binary numerals we have
-known. In the next chapter, we will show that these special characteristics can
-be captured by ordinary numeral systems with just a little tweak.
+known.
+
+% In the next chapter, we will show that these special characteristics can
+% be captured by ordinary numeral systems with just a little tweak.
 
 \section{Numerical representation}
+
+\paragraph{lists and unary numbers}
 
 One may notice that the structure of unary numbers looks suspiciously similar
 to that of lists'. Let's compare their definition in Haskell.
 
-% use minipage for juxtaposing two blocks of codes
 \noindent\begin{minipage}{.45\textwidth}
 \begin{lstlisting}
 data Nat = Zero
@@ -229,14 +232,24 @@ data List a = Nil
 \end{lstlisting}
 \end{minipage}
 
-If we replace every {\lstinline|Cons _|} with {\lstinline|Suc|} and {\lstinline|Nil|}
-with {\lstinline|Zero|}, then a list becomes an unary number,
-and that is precisely what the {\lstinline|length|} function,
+If we replace every {\lstinline|Cons _|} with {\lstinline|Suc|} and
+{\lstinline|Nil|} with {\lstinline|Zero|}, then a list becomes an unary number.
+This is precisely what the {\lstinline|length|} function,
 a homomorphism from lists to unary numbers, does.
+
+
+% \begin{tikzpicture}
+% \node[circle,draw](z)
+%     {$20$}
+%   child[missing]{}
+%   child{
+%     node[circle,draw]{40} child{node[circle,draw] {20}} child[missing]
+%   };
+% \end{tikzpicture}
 
 Now let's compare addition on unary numbers and merge (append) on lists:
 
-\noindent\begin{minipage}{.48\textwidth}
+\noindent\begin{minipage}{.45\textwidth}
 \begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
 add : Nat → Nat → Nat
 add Zero    y = y
@@ -244,7 +257,7 @@ add (Suc x) y =
     Suc (add x y)
 \end{lstlisting}
 \end{minipage}\hfill
-\begin{minipage}{.45\textwidth}
+\begin{minipage}{.48\textwidth}
 \begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
 append : List a → List a → List a
 append Nil         ys = ys
@@ -258,28 +271,67 @@ and lists both have the same time complexity. Incrementing a unary number takes
 $ O(1) $, inserting an element into a list also takes $ O(1) $; adding two unary
 numbers takes $ O(n) $, appending a list to another also takes $ O(n) $.
 
+\paragraph{binomial heaps and binary numbers}
+
 If we look at implementations and operations of binary numbers and binomial
 heaps, the resemblances are also uncanny.
 
-[insert some images here]
+[insert an image of binomial heaps here]
 
-The strong analogy between positional numeral systems and certain data structures
+A binomial heap is composed of binomial trees just as a numeral is composed
+of digits. A binomial tree of rank $ n $ contains $ 2^n $ elements and
+correspondes to a digit of weight $ 2^n $.
+Theses binomial trees are called \textit{building blocks}.
+
+[insert an image of other building blocks]
+
+
+\subsection{The correspondence}
+
+The strong analogy between data structures and positional numeral systems
 suggests that numeral systems can serve as templates for designing containers.
 Such data structures are called \textbf{Numerical Representations}\cite{okasaki1996purely}
 \cite{hinze1998numerical}.
 
-A container with $ n $ elements can be modeled after the representation of the number $ n $.
-These containers are composed of smaller building blocks that house elements
-as numerals are composed of digits.
+\begin{center}
+    \begin{adjustbox}{max width=\textwidth}
+    \begin{tabular}{ l l l }
+    a container of size $ n $ & corresponds to & a numeral of $ n $ \\
+    a building block of rank $ n $ & corresponds to & a digit of weight $ n^2 $ \\
+    inserting an element      & corresponds to & incrementing a numeral \\
+    merging two containers    & corresponds to & adding two numerals \\
+    \end{tabular}
+    \end{adjustbox}
+\end{center}
 
 \paragraph{problem}
-However, conventional numeral systems are incapable of modelling these numerical
-representations.
 
-[explain why]
-[insert a table of numerical representation and their correspondense numeral systems]
+Accessing an element on lists typically takes $ O(n) $.
+Instead of using single cells, \textit{Random access lists} adopts complete
+binary trees as building blocks.
 
-We need a more versatile numeral system to accommodate these numerical representations.
+[insert an image of RAL]
+
+This improves the time complexity of random access from $ O(n) $ to $ O(lg n) $
+as a random access lists would have at most $ O(lg n) $ building blocks and
+the tallest complete binary tree takes at most $ O(lglg n) $ to traverse.
+
+As we can see, random access lists are modelled after binary numerals.
+
+
+However, retreiving the first element ({\lstinline|head|}) from a random
+access list takes $ O(lg n) $ as opposed to constant time on lists.
+% Consider a random access list with $ 8 $ elements, it would take
+
+
+%
+% However, conventional numeral systems are incapable of modelling these numerical
+% representations.
+%
+% [explain why]
+% [insert a table of numerical representation and their correspondense numeral systems]
+%
+% We need a more versatile numeral system to accommodate these numerical representations.
 
 
 \section{Outline}
