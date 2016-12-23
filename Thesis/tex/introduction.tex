@@ -237,15 +237,17 @@ If we replace every {\lstinline|Cons _|} with {\lstinline|Suc|} and
 This is precisely what the {\lstinline|length|} function,
 a homomorphism from lists to unary numbers, does.
 
+\tikzset{knoten/.style={draw, circle, thick}}
+\tikzset{pfeil/.style={draw, -latex}}
 
-% \begin{tikzpicture}
-% \node[circle,draw](z)
-%     {$20$}
-%   child[missing]{}
-%   child{
-%     node[circle,draw]{40} child{node[circle,draw] {20}} child[missing]
-%   };
-% \end{tikzpicture}
+\begin{center}
+    \begin{tikzpicture}
+        \node[knoten]{$10$}
+            child[grow=right] {node[knoten]{$20$} 
+                child[grow=right] {node[knoten]{$30$}
+                    child[grow=right] {node[knoten]{$40$}}}};
+    \end{tikzpicture}
+\end{center}
 
 Now let's compare addition on unary numbers and merge (append) on lists:
 
