@@ -237,15 +237,30 @@ If we replace every {\lstinline|Cons _|} with {\lstinline|Suc|} and
 This is precisely what the {\lstinline|length|} function,
 a homomorphism from lists to unary numbers, does.
 
-\tikzset{knoten/.style={draw, circle, thick}}
-\tikzset{pfeil/.style={draw, -latex}}
+\tikzset{
+    one/.style = {draw, circle, inner sep=0pt, minimum size=10pt, fill=black},
+    zero/.style = {draw, circle, inner sep=0pt, minimum size=10pt},
+    cons/.style = {draw, circle, inner sep=0pt, minimum size=25pt, font=\scriptsize},
+    nil/.style = {draw, rectangle, inner sep=0pt, minimum size=20pt, font=\scriptsize},
+    txt/.style = {circle},
+}
 
 \begin{center}
-    \begin{tikzpicture}
-        \node[knoten]{$10$}
-            child[grow=right] {node[knoten]{$20$} 
-                child[grow=right] {node[knoten]{$30$}
-                    child[grow=right] {node[knoten]{$40$}}}};
+    \begin{tikzpicture}[edge from parent/.style = {draw, -latex}]
+        \node[cons]{cons}
+            child[grow=right] {node[cons]{cons}
+                child[grow=right] {node[cons]{cons}
+                    child[grow=right] {node[cons]{cons}
+                        child[grow=right] {node[nil]{nil}
+                            child[grow=down] {node[txt]{zero} edge from parent[-, dashed]}
+                        }
+                        child[grow=down] {node[txt]{suc} edge from parent[-, dashed]}
+                    }
+                    child[grow=down] {node[txt]{suc} edge from parent[-, dashed]}
+                }
+                child[grow=down] {node[txt]{suc} edge from parent[-, dashed]}
+            }
+            child[grow=down] {node[txt]{suc} edge from parent[-, dashed]};
     \end{tikzpicture}
 \end{center}
 
@@ -278,15 +293,92 @@ numbers takes $ O(n) $, appending a list to another also takes $ O(n) $.
 If we look at implementations and operations of binary numbers and binomial
 heaps, the resemblances are also uncanny.
 
-[insert an image of binomial heaps here]
+\begin{center}
+    \begin{tikzpicture}[
+        edge from parent/.style = {draw, -latex},
+        node distance=40pt
+    ]
+        \node[one] (A) {}
+            child[grow=up] {node[txt]{1} edge from parent[-, dashed]}
+            child[grow=right] {node[zero] (B) {}
+                child[grow=up] {node[txt]{0} edge from parent[-, dashed]}
+                child[grow=right] {node[one, xshift=40pt] (C) {}
+                    child[grow=up] {node[txt]{1} edge from parent[-, dashed]}
+                    child[grow=down] {node[one] (C-1) {}}
+                    child {node[one, left of = C-1] {}
+                        child[grow=down] {node[one]{}}
+                    }
+                    child[grow=right] {node[one, xshift=120pt] (D) {}
+                        child[grow=up] {node[txt]{1} edge from parent[-, dashed]}
+                        child[grow=down] {node[one] (D-1) {}}
+                        child {node[one, left of = D-1] (D-2) {}
+                            child[grow=down] {node[one]{}}
+                        }
+                        child {node[one, left of = D-2] (D-3) {}
+                            child[grow=down] {node[one] (D-3-1) {}}
+                            child {node[one, left of = D-3-1] {}
+                                child[grow=down] {node[one]{}}
+                            }
+                        }
+                    }
+                }
+            };
+    \end{tikzpicture}
+\end{center}
 
+The figure above is a binomial heap containing $ 13 $ elements.
+Nodes that contain elements are painted black.
+From left to right, there are \textit{binomial trees} of different \textit{ranks}
+attached to the path that we call \textit{``spine''}.
 A binomial heap is composed of binomial trees just as a numeral is composed
-of digits. A binomial tree of rank $ n $ contains $ 2^n $ elements and
-correspondes to a digit of weight $ 2^n $.
-Theses binomial trees are called \textit{building blocks}.
+of digits. If we read the nodes with binomial trees as $ 1 $ and those without
+as $ 0 $, then we get the numeral of $ 13 $ in binary.
 
-[insert an image of other building blocks]
 
+\paragraph{building blocks}
+
+Single cells in lists and binomial trees in binomial heaps are all different
+kind of simple data structures that are called \textit{building blocks}.
+There are also other kinds of building blocks, such as complete leaf trees.
+
+\begin{center}
+    \begin{tikzpicture}[
+        edge from parent/.style = {draw, -latex},
+        level/.style={sibling distance = 80pt/#1},
+        level distance = 20pt
+    ]
+        \node[zero]{}
+            child {node[zero]{}
+                child {node[zero]{}
+                    child {node[one]{}}
+                    child {node[one]{}}
+                }
+                child {node[zero]{}
+                    child {node[one]{}}
+                    child {node[one]{}}
+                }
+            }
+            child {node[zero]{}
+                child {node[zero]{}
+                    child {node[one]{}}
+                    child {node[one]{}}
+                }
+                child {node[zero]{}
+                    child {node[one]{}}
+                    child {node[one]{}}
+                }
+            };
+    \end{tikzpicture}
+\end{center}
+
+These building blocks can have different ranks.
+A numerical representation is composed of a series of building blocks
+of different ranks and are ordered accordingly.
+A binary leaf tree of rank n, for instance, would contain $ 2^n $ elements.
+
+However, these building blocks do not necessarily have to be binary based,
+as long as multiple building blocks of the same rank can be merged into a
+building block of a higher rank or vice versa.
 
 \subsection{The correspondence}
 
@@ -299,7 +391,7 @@ Such data structures are called \textbf{Numerical Representations}\cite{okasaki1
     \begin{adjustbox}{max width=\textwidth}
     \begin{tabular}{ l l l }
     a container of size $ n $ & corresponds to & a numeral of $ n $ \\
-    a building block of rank $ n $ & corresponds to & a digit of weight $ n^2 $ \\
+    a building block of rank $ n $ & corresponds to & a digit of weight $ base^n $ \\
     inserting an element      & corresponds to & incrementing a numeral \\
     merging two containers    & corresponds to & adding two numerals \\
     \end{tabular}
@@ -308,21 +400,22 @@ Such data structures are called \textbf{Numerical Representations}\cite{okasaki1
 
 \paragraph{problem}
 
-Accessing an element on lists typically takes $ O(n) $.
-Instead of using single cells, \textit{Random access lists} adopts complete
-binary trees as building blocks.
-
-[insert an image of RAL]
-
-This improves the time complexity of random access from $ O(n) $ to $ O(lg n) $
-as a random access lists would have at most $ O(lg n) $ building blocks and
-the tallest complete binary tree takes at most $ O(lglg n) $ to traverse.
-
-As we can see, random access lists are modelled after binary numerals.
-
-
-However, retreiving the first element ({\lstinline|head|}) from a random
-access list takes $ O(lg n) $ as opposed to constant time on lists.
+% Accessing an element on lists typically takes $ O(n) $.
+% Instead of using single cells, \textit{Random access lists} adopts complete
+% binary leaf trees as building blocks.
+%
+% [insert an image of RAL]
+%
+% This improves the time complexity of random access from $ O(n) $ to $ O(lg n) $
+% as a random access lists would have at most $ O(lg n) $ building blocks and
+% the tallest perfect binary tree takes at most $ O(lglg n) $ to traverse.
+%
+% As we can see, random access lists are modelled after binary numerals.
+%
+%
+% However, retreiving the first element ({\lstinline|head|}) from a random
+% access list takes $ O(lg n) $ as opposed to constant time on lists.
+% This is caused by
 % Consider a random access list with $ 8 $ elements, it would take
 
 
