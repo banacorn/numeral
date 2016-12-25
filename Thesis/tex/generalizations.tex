@@ -16,12 +16,13 @@ $$
 Where $ \bar{d_n} $ ranges from $ 0 $ to $ base - 1 $ for all $ n $.
 
 As we can see the base of numeral systems has already been generalized.
-But nonetheless, it is a good basis for further generalizations.
+But nonetheless, it is a good start and we will continue to abstract more things
+away.
 
 \section{Offset}
 
-To cooperate unary numerals, we relax the constraint on the range of digit assignment
-by introducing a new variable, \textit{offset}:
+To cooperate unary numerals, we relax the constraint on the range of digit
+assignment by introducing a new variable, \textit{offset}:
 
 $$
     [\![d_0d_1d_2...d_n]\!]_{base}
@@ -45,11 +46,11 @@ The codomain of the digit assignment function is \textit{shifted} by \textit{off
 Now that unary numerals would have an offset of $ 1 $
 and systems of other bases would have offsets of $ 0 $.
 
-Systems with an offset of $ 1 $ are known as \textit{bijective numerations}
-because every number can be represented by exactly one numeral. In other words,
-the evaluation function is bijective.
-
-Let us see how to count to ten in a binary numeral system with an offset of $ 1 $.
+\paragraph{1-2 binary system}
+Recall \textit{1-2 random access lists} from the previous chapter,
+which is the numerical representation of a binary numeral system with an offset
+of $ 1 $.
+Let us see how to count to ten in the 1-2 binary system.
 \footnote{As a reminder, the order of digits are reversed.}
 
 \begin{center}
@@ -76,9 +77,9 @@ Let us see how to count to ten in a binary numeral system with an offset of $ 1 
     \end{adjustbox}
 \end{center}
 
-Such a numeral system is also named \textit{1-2 binary system} because its digits
-are assigned $ 1 $ and $ 2 $.
-Notice that how the symbol of digits are deliberately chosen to match their assigned value.
+There are no restrictions on the symbols of digits.
+But nonetheless, it is reasonable to choose symbols that match their assigned
+values, as we choose the symbol ``1'' and ``2'' as digits for the 1-2 binary system.
 
 % \begin{center}
 %     \begin{adjustbox}{max width=\textwidth}
@@ -94,13 +95,20 @@ Notice that how the symbol of digits are deliberately chosen to match their assi
 %     \end{adjustbox}
 % \end{center}
 
+\paragraph{bijective numerations}
+Systems with an offset of $ 1 $ are also known as \textit{bijective numerations}
+because every number can be represented by exactly one numeral. In other words,
+the evaluation function is bijective. The 1-2 binary system is one such numeration.
+
+\paragraph{zeroless representations}
 A numeral system is said to be \textit{zeroless} if no digits are assigned $ 0 $,
 i.e., $ \text{offset} \textgreater 0 $.
 Data structures modeled after zeroless systems are called \textit{zeroless representations}.
 These containers are preferable to their "zeroful" counterparts.
 Because a digit of value $ 0 $ corresponds to a building block with $ 0 $ elements,
 and a building block that contains no element is not only useless,
-but also hinders traversal as it takes time to skip over these empty nodes.
+but also hinders traversal as it takes time to skip over these empty nodes,
+as we have seen in random access lists from the previous chapter.
 
 \section{Number of Digits}
 
@@ -127,10 +135,16 @@ $$
     \text{offset}  ...  \text{offset} + \text{\#digit} - 1
 $$
 
+
+
+\section{Relation with Natural Numbers}
+
 The following table contains all of the numeral systems we have addressed so far,
 with \textit{base}, \textit{offset}, and \textit{\#digit} taken into account.
+\footnote{
 \textit{Int32} and \textit{Int64} are respectively 32-bit and 64-bit machine
 integers.
+}
 
 \begin{center}
     \begin{adjustbox}{max width=\textwidth}
@@ -148,6 +162,12 @@ integers.
     \end{adjustbox}
 \end{center}
 
+With great power of generalizations comes poor properties.
 
+Although we are now capable of expressing those numeral systems with just a few
+indices, there are also some unexpected inhabitant included in this representation.
+
+\subsection{Surjectiveness}
+We can see immediately that,
 
 \end{document}
