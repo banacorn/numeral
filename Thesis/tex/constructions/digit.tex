@@ -1,0 +1,433 @@
+\providecommand{\main}{../..}
+\documentclass[\main/thesis.tex]{subfiles}
+\begin{document}
+
+\section{Digit: the basic building block}\label{digit}
+% [draft]
+
+As the basic building block of numerals, we will demonstrate how to choose a
+suitable representation for digits in this section.
+
+\subsection{Fin}
+
+To represent a digit, we use a datatype that is conventionally called \textit{Fin}
+which can be indexed to have some exact number of inhabitants.
+
+\begin{lstlisting}
+data Fin : ℕ → Set where
+    zero : {n : ℕ} → Fin (suc n)
+    suc  : {n : ℕ} (i : Fin n) → Fin (suc n)
+\end{lstlisting}
+
+The definition of {\lstinline|Fin|} looks the same as {\lstinline|ℕ|} on the term
+level, but different on the type level. The index of a {\lstinline|Fin|} increases
+with every {\lstinline|suc|}, and there can only be at most {\lstinline|n|} of
+them before reaching {\lstinline|Fin (suc n)|}. In other words, {\lstinline|Fin n|}
+would have exactly \textit{n} inhabitants.
+
+\subsection{Definition}
+
+{\lstinline|Digit|} is simply just a synonym for {\lstinline|Fin|}, indexed by
+the number of digits {\lstinline|d|} of a system.
+Since the same digit may represent different values in different numeral systems,
+it is essential to make the context clear.
+
+\begin{lstlisting}
+Digit : ℕ → Set
+Digit d = Fin d
+\end{lstlisting}
+
+Ordinary binary digits for example can thus be represented as:
+
+\begin{lstlisting}
+Binary : Set
+Binary = Digit 2
+
+零 : Binary
+零 = zero
+
+一 : Binary
+一 = suc zero
+\end{lstlisting}
+
+\subsection{Digit Assignment}
+
+\begin{center}
+    \begin{tikzpicture}
+        % a straight line segment
+        \draw (0, 0) -- (10, 0);
+        % the ticks and their labels
+        \draw[xshift=0cm] (0pt,2pt) -- (0pt,-1pt) node[below,fill=white] {\the\numexpr0};
+        % \foreach \x  in {0,...,10}
+        %   \draw[xshift=\x cm] (0pt,2pt) -- (0pt,-1pt) node[below,fill=white] {\the\numexpr\x\relax};
+        % the thicker segment
+        \draw[ultra thick] (1,0) -- (9,0);
+        % the labels
+        \node[fill=white,draw=black,circle,inner sep=2pt,label=above:{$o$}] at (1,0) {};
+        \node[fill=white,draw=black,circle,inner sep=2pt,label=above:{$d+o$}] at (9,0) {};
+        \node at (5, -0.5) {{\lstinline|ℕ|}};
+    \end{tikzpicture}
+\end{center}
+
+Digits are assigned to {\lstinline|ℕ|} together with the offset {\lstinline|o|} of a system,
+ranging from $ o $ to $ d + o $.
+
+\begin{lstlisting}
+Digit-toℕ : ∀ {d} → Digit d → ℕ → ℕ
+Digit-toℕ x o = toℕ x + o
+\end{lstlisting}
+\footnote{
+    {\lstinline|toℕ : ∀ {n} → Fin n → ℕ|}
+    \newline\hspace*{4em} converts from {\lstinline|Fin n|} to {\lstinline|ℕ|}.
+}
+
+
+However, not all natural numbers can be converted to digits.
+The value has to be in a certain range, between $ o $ and $ d + o $.
+Values less than $ o $ are increased to $ o $.
+Values greater than $ d + o $ are prohibited by the supplied upper-bound.
+
+\begin{lstlisting}
+Digit-fromℕ : ∀ {d}
+    → (n o : ℕ)
+    → (upper-bound : d + o ≥ n)
+    → Digit (suc d)
+Digit-fromℕ {d} n o upper-bound with n ∸ o ≤? d
+Digit-fromℕ {d} n o upper-bound | yes p = fromℕ≤ (s≤s p)
+Digit-fromℕ {d} n o upper-bound | no ¬p = contradiction p ¬p
+    where   p : n ∸ o ≤ d
+            p = start
+                    n ∸ o
+                ≤⟨ ∸n-mono o upper-bound ⟩
+                    (d + o) ∸ o
+                ≈⟨ m+n∸n≡m d o ⟩
+                    d
+                □
+\end{lstlisting}
+\footnote{
+    {\lstinline|fromℕ≤ : ∀ {m n} → m < n → Fin n|}
+    \newline\hspace*{4em} converts from {\lstinline|ℕ|} to {\lstinline|Fin n|} given the number is small enough.
+}
+
+
+\paragraph{properties}
+
+\begin{center}
+    \begin{tikzpicture}
+        \matrix (m) [matrix of nodes,row sep=6em,column sep=8em,minimum width=4em]
+            {
+                {\lstinline|ℕ|} & {\lstinline|Digit d|} \\
+            };
+        \path[-stealth]
+            ($(m-1-1.east)+(0,+0.1)$)
+                edge node [above] {{\lstinline|Digit-fromℕ|}}
+                ($(m-1-2.west)+(0,+0.1)$)
+            ($(m-1-2.west)+(0,-0.1)$)
+                edge node [below] {{\lstinline|Digit-toℕ|}}
+                ($(m-1-1.east)+(0,-0.1)$)
+            ;
+    \end{tikzpicture}
+\end{center}
+
+{\lstinline|Digit-fromℕ-toℕ|} states that the value of a natural number should
+remain the same, after converting back and forth between {\lstinline|Digit|} and
+{\lstinline|ℕ|}.
+
+\begin{lstlisting}
+Digit-fromℕ-toℕ : ∀ {d o}
+    → (n : ℕ)
+    → (lower-bound :     o ≤ n)
+    → (upper-bound : d + o ≥ n)
+    → Digit-toℕ (Digit-fromℕ {d} n o upper-bound) o ≡ n
+Digit-fromℕ-toℕ {d} {o} n lb ub with n ∸ o ≤? d
+Digit-fromℕ-toℕ {d} {o} n lb ub | yes q =
+    begin
+        toℕ (fromℕ≤ (s≤s q)) + o
+    ≡⟨ cong (λ x → x + o) (toℕ-fromℕ≤ (s≤s q)) ⟩
+        n ∸ o + o
+    ≡⟨ m∸n+n≡m lb ⟩
+        n
+    ∎
+Digit-fromℕ-toℕ {d} {o} n lb ub | no ¬q = contradiction q ¬q
+    where   q : n ∸ o ≤ d
+            q = +n-mono-inverse o (
+                start
+                    n ∸ o + o
+                ≈⟨ m∸n+n≡m lb ⟩
+                    n
+                ≤⟨ ub ⟩
+                    d + o
+                □)
+\end{lstlisting}
+\footnote{
+    {\lstinline|toℕ-fromℕ≤ : ∀ {m n} (m<n : m < n) → toℕ (fromℕ≤ m<n) ≡ m|}
+    \newline\hspace*{4em} states that a number should remain the same after converting back and forth.
+}
+
+Digits have a upper-bound and a lower-bound after evaluation.
+
+\begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
+Digit-upper-bound : ∀ {d} → (o : ℕ) → (x : Digit d) → Digit-toℕ x o < d + o
+Digit-upper-bound {d} o x = +n-mono o (bounded x)
+
+Digit-lower-bound : ∀ {d} → (o : ℕ) → (x : Digit d) → Digit-toℕ x o ≥ o
+Digit-lower-bound {d} o x = m≤n+m o (toℕ x)
+\end{lstlisting}
+\footnote{
+    {\lstinline|bounded : ∀ {n} (i : Fin n) → toℕ i < n|}
+    \newline\hspace*{4em} a property about the upper-bound of a {\lstinline|Fin n|}.
+}
+
+\subsection{Operations}
+
+\subsubsection{Increment}
+
+To increment a digit, the digit must not be \textit{the greatest}.
+
+\begin{lstlisting}
+digit+1 : ∀ {d}
+    → (x : Digit d)
+    → (¬greatest : ¬ (Greatest x))
+    → Fin d
+digit+1 x ¬greatest =
+    fromℕ≤ {suc (toℕ x)} (≤∧≢⇒< (bounded x) ¬greatest)
+\end{lstlisting}
+
+Where {\lstinline|≤∧≢⇒< (bounded x) ¬greatest : suc (toℕ x) < d|}.
+
+\paragraph{properties}
+
+\begin{center}
+    \begin{tikzpicture}
+        \matrix (m) [matrix of nodes,row sep=6em,column sep=8em,minimum width=4em]
+            {
+                {\lstinline|Digit d|} & {\lstinline|Digit d|} \\
+                {\lstinline|ℕ|} & {\lstinline|ℕ|} \\
+            };
+      \path[-stealth]
+            (m-1-1)
+                edge node [left] {{\lstinline|Digit-toℕ|}} (m-2-1)
+                edge node [above] {{\lstinline|digit+1|}} (m-1-2)
+            (m-2-1.east|-m-2-2)
+                edge node [below] {{\lstinline|suc|}} (m-2-2)
+            (m-1-2)
+                edge node [right] {{\lstinline|Digit-toℕ|}} (m-2-2);
+                % edge [dashed,-] (m-2-1);
+    \end{tikzpicture}
+\end{center}
+
+A digit taking these two routes should result in the same {{\lstinline|ℕ|}}.
+
+\begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
+digit+1-toℕ : ∀ {d o}
+    → (x : Digit d)
+    → (¬greatest : ¬ (Greatest x))
+    → Digit-toℕ (digit+1 x ¬greatest) o ≡ suc (Digit-toℕ x o)
+digit+1-toℕ {d} {o} x ¬greatest =
+    begin
+        Digit-toℕ (digit+1 x ¬greatest) o
+    ≡⟨ cong (λ w → w + o) (toℕ-fromℕ≤ (≤∧≢⇒< (bounded x) ¬greatest)) ⟩
+        suc (Digit-toℕ x o)
+    ∎
+\end{lstlisting}
+
+\subsubsection{Increase then Subtract}
+
+Increases a digit and then subtract it by $ n $.
+This function is useful for implementing \textit{carrying}.
+When the digit to increase is already the greatest, we have to subtract it by
+an amount (usually the base) after the increment.
+
+\begin{lstlisting}
+digit+1-n : ∀ {d}
+    → (x : Digit d)
+    → Greatest x
+    → (n : ℕ)
+    → n > 0
+    → Digit d
+digit+1-n x greatest n n>0 =
+    fromℕ≤ (digit+1-n-lemma x greatest n n>0)
+\end{lstlisting}
+
+\paragraph{properties}
+
+\begin{center}
+    \begin{tikzpicture}
+        \matrix (m) [matrix of nodes,row sep=4em,column sep=6em,minimum width=2em]
+            {
+                {\lstinline|Digit d|} & & {\lstinline|Digit d|} \\
+                {\lstinline|ℕ|} & {\lstinline|ℕ|} & {\lstinline|ℕ|} \\
+            };
+      \path[-stealth]
+            (m-1-1)
+                edge node [left] {{\lstinline|Digit-toℕ|}} (m-2-1)
+                edge node [above] {{\lstinline|digit+1-n|}} (m-1-3)
+            (m-2-1)
+                edge node [below] {{\lstinline|suc|}} (m-2-2)
+            (m-2-2)
+                edge node [below] {{\lstinline|∸ n|}} (m-2-3)
+            (m-1-3)
+                edge node [right] {{\lstinline|Digit-toℕ|}} (m-2-3);
+    \end{tikzpicture}
+\end{center}
+
+A digit taking these two routes should result in the same {{\lstinline|ℕ|}}.
+
+\begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
+digit+1-n-toℕ : ∀ {d o}
+    → (x : Digit d)
+    → (greatest : Greatest x)
+    → (n : ℕ)
+    → (n>0 : n > 0)
+    → n ≤ d
+    → Digit-toℕ (digit+1-n x greatest n n>0) o ≡ suc (Digit-toℕ x o) ∸ n
+digit+1-n-toℕ {zero}  {o} () greatest n n>0 n≤d
+digit+1-n-toℕ {suc d} {o} x greatest n n>0  n≤d =
+    begin
+        toℕ (digit+1-n x greatest n n>0) + o
+    ≡⟨ cong (λ w → w + o) (toℕ-fromℕ≤ (digit+1-n-lemma x greatest n n>0)) ⟩
+        suc (toℕ x) ∸ n + o
+    ≡⟨ +-comm (suc (toℕ x) ∸ n) o ⟩
+        o + (suc (toℕ x) ∸ n)
+    ≡⟨ sym (+-∸-assoc o {suc (toℕ x)} {n} (
+        start
+            n
+        ≤⟨ n≤d ⟩
+            suc d
+        ≈⟨ sym greatest ⟩
+            suc (toℕ x)
+        □)
+    ⟩
+        (o + suc (toℕ x)) ∸ n
+    ≡⟨ cong (λ w → w ∸ n) (+-comm o (suc (toℕ x))) ⟩
+        suc (toℕ x) + o ∸ n
+    ∎)
+\end{lstlisting}
+
+
+\subsection{Special Digits}
+
+\subsubsection{The Greatest Digit}
+
+\paragraph{constructions}
+
+The greatest digit of a system is constructed by converting the index {\lstinline|d|}
+to {\lstinline|Fin|}.
+
+\begin{lstlisting}
+greatest-digit : ∀ d → Digit (suc d)
+greatest-digit d = fromℕ d
+\end{lstlisting}
+\footnote{
+    {\lstinline|fromℕ : ∀ {n} → Fin n → ℕ|}
+    \newline\hspace*{4em} construct the greatest possible {\lstinline|Fin n|} when given an index {\lstinline|n|}.
+}
+
+\paragraph{predicates}
+
+Judging whether a digit is the greatest by converting it to {\lstinline|ℕ|}.
+This predicate also comes with a decidable version.
+
+\begin{lstlisting}
+Greatest : ∀ {d} (x : Digit d) → Set
+Greatest {d} x = suc (toℕ x) ≡ d
+
+Greatest? : ∀ {d} (x : Digit d) → Dec (Greatest x)
+Greatest? {d} x = suc (toℕ x) ≟ d
+\end{lstlisting}
+
+\paragraph{properties}
+
+Converting from the greatest digit to {\lstinline|ℕ|} should result in {\lstinline|d + o|}.
+
+\begin{lstlisting}
+greatest-digit-toℕ : ∀ {d o}
+    → (x : Digit (suc d))
+    → Greatest x
+    → Digit-toℕ x o ≡ d + o
+greatest-digit-toℕ {d} {o} x greatest = cancel-suc (
+    begin
+        suc (Digit-toℕ x o)
+    ≡⟨ refl ⟩
+        suc (toℕ x) + o
+    ≡⟨ cong (λ w → w + o) greatest ⟩
+        suc d + o
+    ∎)
+\end{lstlisting}
+
+A digit is the greatest if and only if it is greater than or equal to all other
+digits. This proposition is proven by induction on both of the compared digits.
+
+\begin{lstlisting}
+greatest-of-all : ∀ {d} (o : ℕ) → (x y : Digit d)
+    → Greatest x
+    → Digit-toℕ x o ≥ Digit-toℕ y o
+greatest-of-all o zero    zero     refl     = ≤-refl
+greatest-of-all o zero    (suc ()) refl
+greatest-of-all o (suc x) zero     greatest
+    = +n-mono o {zero} {suc (toℕ x)} z≤n
+greatest-of-all o (suc x) (suc y)  greatest
+    = s≤s (greatest-of-all o x y (cancel-suc greatest))
+\end{lstlisting}
+
+\subsubsection{The Carry}
+
+A carry is a digit that is transferred to a more significant digit to compensate
+the ``loss'' of the original digit.
+
+\paragraph{constructions}
+
+The carry is defined as the greater of these two values:
+
+\begin{itemize}
+    \item the least digit of a system
+    \item the digit that is assigned to $ 1 $
+\end{itemize}
+
+In case that that the least digit is assigned to $ 0 $, rendering the carry useless.
+Since the least digit is determined by the offset $ o $, the value of the carry
+is defined as follows.
+
+\begin{lstlisting}
+carry : ℕ → ℕ
+carry o = 1 ⊔ o
+\end{lstlisting}
+
+And then we construct the carry by converting {\lstinline|carry o|} to {\lstinline|Digit|}:
+
+\begin{lstlisting}
+carry-digit : ∀ d o → 2 ≤ suc d + o → Digit (suc d)
+carry-digit d o proper =
+    Digit-fromℕ
+        (carry o)
+        o
+        (carry-upper-bound {d} proper)
+\end{lstlisting}
+
+\paragraph{properties}
+
+The value of the carry should remain the same after converting back and forth.
+
+\begin{lstlisting}
+carry-digit-toℕ : ∀ d o
+    → (proper : 2 ≤ suc (d + o))
+    → Digit-toℕ (carry-digit d o proper) o ≡ carry o
+carry-digit-toℕ d o proper
+    = Digit-fromℕ-toℕ
+        (carry o)
+        (m≤n⊔m o 1)
+        (carry-upper-bound {d} proper)
+\end{lstlisting}
+
+The carry also have an upper-bound and a lower-bound, similar to that of {\lstinline|Digit|}.
+
+\begin{lstlisting}
+carry-lower-bound : ∀ {o} → carry o ≥ o
+carry-lower-bound {o} = m≤n⊔m o 1
+
+carry-upper-bound : ∀ {d o} → 2 ≤ suc d + o → carry o ≤ d + o
+carry-upper-bound {d} {zero}  proper = ≤-pred proper
+carry-upper-bound {d} {suc o} proper = n≤m+n d (suc o)
+\end{lstlisting}
+
+\end{document}

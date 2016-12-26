@@ -168,6 +168,7 @@ m∸[o∸n]+o≡m+n m n o n≤o o∸n≤m =
 ------------------------------------------------------------------------
 -- Relational
 ------------------------------------------------------------------------
+
 -- _≤_
 ≤-trans : Transitive _≤_
 ≤-trans = IsPreorder.trans isPreorder
@@ -217,14 +218,14 @@ m∸[o∸n]+o≡m+n m n o n≤o o∸n≤m =
 ≤0⇒≡0 (suc n) ()
 
 
-≤-suc : ∀ {m n} → m ≤ n → suc m ≤ suc n
-≤-suc z≤n = s≤s z≤n
-≤-suc (s≤s rel) = s≤s (s≤s rel)
+-- ≤-suc : ∀ {m n} → m ≤ n → suc m ≤ suc n
+-- ≤-suc z≤n = s≤s z≤n
+-- ≤-suc (s≤s rel) = s≤s (s≤s rel)
 
-i*j>0⇒i>0∧j>0 : ∀ i j → i * j > 0 → (i > 0 × j > 0)
-i*j>0⇒i>0∧j>0 zero j ()
-i*j>0⇒i>0∧j>0 (suc i) zero p = contradiction (proj₂ (i*j>0⇒i>0∧j>0 i 0 p)) (λ ())
-i*j>0⇒i>0∧j>0 (suc i) (suc j) p = s≤s z≤n , s≤s z≤n
+-- i*j>0⇒i>0∧j>0 : ∀ i j → i * j > 0 → (i > 0 × j > 0)
+-- i*j>0⇒i>0∧j>0 zero j ()
+-- i*j>0⇒i>0∧j>0 (suc i) zero p = contradiction (proj₂ (i*j>0⇒i>0∧j>0 i 0 p)) (λ ())
+-- i*j>0⇒i>0∧j>0 (suc i) (suc j) p = s≤s z≤n , s≤s z≤n
 
 
 -- _+_

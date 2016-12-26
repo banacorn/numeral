@@ -575,6 +575,16 @@ suc m ⊔ suc n = suc (m ⊔ n)
 
 \begin{itemize}
     \item {\lstinline|≤-pred : ∀ {m n} → suc m ≤ suc n → m ≤ n|}
+        \\ inverse of {\lstinline|s≤s|}.
+    \item {\lstinline|<⇒≤ : _<_ ⇒ _≤_|}
+    \item {\lstinline|>⇒≰ : _>_ ⇒ _≰_|}
+    \item {\lstinline|≤⇒≯ : _≤_ ⇒ _≯_|}
+    \item {\lstinline|<⇒≱ : _<_ ⇒ _≱_|}
+    \item {\lstinline|>⇒≢ : _>_ ⇒ _≢_|}
+    \item {\lstinline|≥⇒≮ : _≥_ ⇒ _≮_|}
+    \item {\lstinline|<⇒≢ : _<_ ⇒ _≢_|}
+    \item {\lstinline|≤∧≢⇒< : ∀ {m n} → m ≤ n → m ≢ n → m < n|}
+    \item {\lstinline|≥∧≢⇒> : ∀ {m n} → m ≥ n → m ≢ n → m > n|}
 \end{itemize}
 
 \subsubsection{addition}

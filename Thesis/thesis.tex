@@ -9,6 +9,7 @@
 
 % for multiple tex files
 \usepackage{subfiles}
+\providecommand{\main}{.} % relative path to master.tex
 
 % for unicode symbols
 \usepackage{fontspec}
@@ -24,7 +25,9 @@
 % for diagrams
 \usepackage{tikz}
 \usetikzlibrary{shapes.geometric}
+\usetikzlibrary{matrix,arrows}
 \usetikzlibrary{positioning}
+\usetikzlibrary{calc}
 
 % for tables
 \usepackage{adjustbox}
