@@ -210,9 +210,6 @@ Judging from the time complexity of operations, the binary numerals running in
 digital circuits is certainly different from the ordinary binary numerals we have
 known.
 
-% In the next chapter, we will show that these special characteristics can
-% be captured by ordinary numeral systems with just a little tweak.
-
 \section{Numerical representation}
 
 \paragraph{lists and unary numbers}
@@ -469,13 +466,15 @@ To illustrate the problem, consider a random access list with $ 32 $ elements:
     \end{tikzpicture}
 \end{center}
 
-Nodes on the spine that correspond to the digit ``0'' contains no elements.
-To access \textit{any} element of the list above, one has to skip four empty
-nodes before reaching the first building block.
+To access any elements from the list above, we have to skip
+through four empty nodes before reaching the first building block.
+Nodes that correspond to the digit ``0'' contain no elements.
+They are not only ineffective but also hinders traversal.
 
-However, if we use the digits ``1'' and ``2'' instead of ``0'' and ``1'',
-then the number $ 32 $ can be represented as $ 21111 $ instead of $ 000001 $,
-and hence eliminates empty nodes and shortens the spine a bit.
+However, if we replace the digits ``0'' and ``1'' with ``1'' and ``2'',
+then the number $ 32 $ can be represented as $ 21111 $ instead of $ 000001 $.
+By doing so, we eliminate empty nodes and shorten the spine, thus improving
+the performance of list traversal.
 
 \begin{center}
     \begin{tikzpicture}[
@@ -508,18 +507,31 @@ and hence eliminates empty nodes and shortens the spine a bit.
     \end{tikzpicture}
 \end{center}
 
-The data structure introduced above is called a \textit{1-2 random access list}
-by Hinze\cite{hinze1998numerical},
-which suggests that a binary numeral system with digits ``1'' and ``2'' should be admissible.
+The data structure introduced above is called the \textit{1-2 random access list}.
+Its presence suggests that a binary numeral system with digits ``1'' and ``2''
+should be admissible.
 
-Hinze further argues that if we add the digit ``0'' back to \textit{1-2 random access list},
-then the resulting numerical representation, so-called \textit{0-1-2 random access list},
+Hinze argues\cite{hinze1998numerical} that if we add the digit ``0'' back to the
+\textit{1-2 random access list}, then the resulting numerical representation,
+so-called \textit{0-1-2 random access list},
 would even have a better performance of insertion and deletion in certain edge cases.
 
 To accommodate these numerical representations, we need a more versatile
 representation for numeral systems.
 
-\section{Outline [still working on it]}
+\section{Motivation and Outline}
+
+We started off with numerical representations, but then we found that their
+corresponding numeral systems alone are interesting enough.
+
+\begin{itemize}
+    \item How to capture the numeral systems behind these data structures?
+    \item What are these numeral systems capable of?
+    \item Which kind of numeral systems are suitable for modelling numerical
+        representations? Do they support increment (insertion) or addition (merge)?
+    \item What are the relations between these numeral systems and the natural numbers?
+\end{itemize}
+
 The remainder of the thesis is organized as follows.
 
 \begin{description}
@@ -532,9 +544,10 @@ The remainder of the thesis is organized as follows.
    \item[Chapter~\ref{props}]
         introduces \textit{equational reasoning} and relevent properties
         of natural numbers used in the coming chapters.
-   \item[Chapter~\ref{construction}]
-%         constructs the representation for numeral systems and
-% develops properties of such representation.
+   \item[Chapter~\ref{construction}] constructs the representation for these
+        numeral systems, defines operations such as increment and addition,
+        search for suitable systems for modelling data structures,
+        and examime the relations between these systems and the natural numbers.
 \end{description}
 
 

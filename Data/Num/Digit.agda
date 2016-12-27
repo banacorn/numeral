@@ -167,13 +167,12 @@ digit+1-toℕ : ∀ {d o}
     → (x : Digit d)
     → (¬greatest : ¬ (Greatest x))
     → Digit-toℕ (digit+1 x ¬greatest) o ≡ suc (Digit-toℕ x o)
-digit+1-toℕ {d} {o} x ¬greatest = {! ≤∧≢⇒< (bounded x) ¬greatest  !}
-    -- begin
-    --     Digit-toℕ (digit+1 x ¬greatest) o
-    -- ≡⟨ cong (λ w → w + o) (toℕ-fromℕ≤ (≤∧≢⇒< (bounded x) ¬greatest)) ⟩
-    --     suc (Digit-toℕ x o)
-    -- ∎
- -- cong (λ w → w + o) (toℕ-fromℕ≤ (≤∧≢⇒< (bounded x) ¬greatest))
+digit+1-toℕ {d} {o} x ¬greatest =
+    begin
+        Digit-toℕ (digit+1 x ¬greatest) o
+    ≡⟨ cong (λ w → w + o) (toℕ-fromℕ≤ (≤∧≢⇒< (bounded x) ¬greatest)) ⟩
+        suc (Digit-toℕ x o)
+    ∎
 
 digit+1-n-lemma : ∀ {d}
     → (x : Digit d)

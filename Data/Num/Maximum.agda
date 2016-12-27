@@ -28,23 +28,23 @@ open DecTotalOrder decTotalOrder using (reflexive) renaming (refl to ≤-refl)
 ------------------------------------------------------------------------
 
 Maximum : ∀ {b d o} → (xs : Numeral b d o) → Set
-Maximum {b} {d} {o} xs = ∀ (ys : Numeral b d o) → ⟦ xs ⟧ ≥ ⟦ ys ⟧
+Maximum {b} {d} {o} xs = (ys : Numeral b d o) → ⟦ xs ⟧ ≥ ⟦ ys ⟧
 
-
-Maximum-unique : ∀ {b d o}
-    → (max xs : Numeral b d o)
-    → Maximum max
-    → Maximum xs
-    → ⟦ max ⟧ ≡ ⟦ xs ⟧
-Maximum-unique max xs max-max xs-max = IsPartialOrder.antisym isPartialOrder
-    (xs-max max)
-    (max-max xs)
+-- Maximum-unique : ∀ {b d o}
+--     → (max xs : Numeral b d o)
+--     → Maximum max
+--     → Maximum xs
+--     → ⟦ max ⟧ ≡ ⟦ xs ⟧
+-- Maximum-unique max xs max-max xs-max = IsPartialOrder.antisym isPartialOrder
+--     (xs-max max)
+--     (max-max xs)
 
 Maximum-NullBase-Greatest : ∀ {d} {o}
     → (xs : Numeral 0 (suc d) o)
     → Greatest (lsd xs)
     → Maximum xs
-Maximum-NullBase-Greatest {_} {o} (x ∙) greatest (y ∙) = greatest-of-all o x y greatest
+Maximum-NullBase-Greatest {_} {o} (x ∙) greatest (y ∙) =
+    greatest-of-all o x y greatest
 Maximum-NullBase-Greatest {_} {o} (x ∙) greatest (y ∷ ys) =
     start
         Fin.toℕ y + o + ⟦ ys ⟧ * 0
@@ -72,15 +72,14 @@ Maximum-NullBase-Greatest {_} {o} (x ∷ xs) greatest (y ∷ ys) =
         ⟦ x ∷ xs ⟧
     □
 
-
-Maximum⇒Greatest : ∀ {b} {d} {o}
+Maximum⇒Greatest-LSD : ∀ {b} {d} {o}
     → (xs : Numeral b d o)
     → Maximum xs
     → Greatest (lsd xs)
-Maximum⇒Greatest (x ∙) max with Greatest? x
-Maximum⇒Greatest (x ∙) max | yes greatest = greatest
-Maximum⇒Greatest {b} {zero} (() ∙) max | no ¬greatest
-Maximum⇒Greatest {b} {suc d} {o} (x ∙) max | no ¬greatest
+Maximum⇒Greatest-LSD xs max with Greatest? (lsd xs)
+Maximum⇒Greatest-LSD xs max | yes greatest = greatest
+Maximum⇒Greatest-LSD {b} {zero}      xs       max | no ¬greatest = NoDigits-explode xs
+Maximum⇒Greatest-LSD {b} {suc d} {o} (x ∙)    max | no ¬greatest
     = contradiction p ¬p
     where
         ys : Numeral b (suc d) o
@@ -96,12 +95,11 @@ Maximum⇒Greatest {b} {suc d} {o} (x ∙) max | no ¬greatest
             ≤⟨ +n-mono o (≤-pred (≤∧≢⇒< (bounded x) ¬greatest)) ⟩
                 d + o
             ≈⟨ sym (greatest-digit-toℕ (Fin.fromℕ d) (greatest-digit-is-the-Greatest d)) ⟩
+                Digit-toℕ (greatest-digit d) o
+            ≈⟨ refl ⟩
                 ⟦ ys ⟧
             □
-Maximum⇒Greatest                 (x ∷ xs) max with Greatest? x
-Maximum⇒Greatest                 (x ∷ xs) max | yes greatest = greatest
-Maximum⇒Greatest {b} {zero}     (() ∷ xs) max | no greatest
-Maximum⇒Greatest {b} {suc d} {o} (x ∷ xs) max | no ¬greatest
+Maximum⇒Greatest-LSD {b} {suc d} {o} (x ∷ xs) max | no ¬greatest
     = contradiction p ¬p
     where
         ys : Numeral b (suc d) o
@@ -120,13 +118,12 @@ Maximum⇒Greatest {b} {suc d} {o} (x ∷ xs) max | no ¬greatest
                 (Digit-toℕ (greatest-digit d) o)
             □
 
-
 Maximum-NullBase : ∀ {d} {o}
     → (xs : Numeral 0 (suc d) o)
     → Dec (Maximum xs)
-Maximum-NullBase {d} {o} xs with Greatest? (lsd xs)
-Maximum-NullBase {d} {o} xs | yes greatest = yes (Maximum-NullBase-Greatest xs greatest)
-Maximum-NullBase {d} {o} xs | no ¬greatest = no (contraposition (Maximum⇒Greatest xs) ¬greatest)
+Maximum-NullBase xs with Greatest? (lsd xs)
+Maximum-NullBase xs | yes greatest = yes (Maximum-NullBase-Greatest xs greatest)
+Maximum-NullBase xs | no ¬greatest = no (contraposition (Maximum⇒Greatest-LSD xs) ¬greatest)
 
 Maximum-AllZeros : ∀ {b} → (xs : Numeral b 1 0) → Maximum xs
 Maximum-AllZeros xs ys = reflexive $
@@ -163,22 +160,11 @@ Maximum-Proper {b} {d} {o} xs proper claim = contradiction p ¬p
                 ⟦ greatest-digit d ∷ xs ⟧
             □
 
-
-
 Maximum? : ∀ {b d o}
     → (xs : Numeral b d o)
     → Dec (Maximum xs)
 Maximum? {b} {d} {o} xs with numView b d o
-Maximum? xs | NullBase d o with ⟦ _∙ {0} {suc d} {o} (greatest-digit d) ⟧ ≟ ⟦ xs ⟧
-Maximum? xs | NullBase d o | yes p rewrite (sym p) = yes (Maximum-NullBase-Greatest (greatest-digit d ∙) (greatest-digit-is-the-Greatest d))
-Maximum? xs | NullBase d o | no ¬p = no (contraposition (Maximum-unique ys xs max-ys) ¬p)
-    where
-        ys : Numeral 0 (suc d) o
-        ys = greatest-digit d ∙
-
-        max-ys : Maximum ys
-        max-ys = Maximum-NullBase-Greatest ys (greatest-digit-is-the-Greatest d)
-
+Maximum? xs | NullBase d o = Maximum-NullBase xs
 Maximum? xs | NoDigits b o = no (NoDigits-explode xs)
 Maximum? xs | AllZeros b   = yes (Maximum-AllZeros xs)
 Maximum? xs | Proper b d o proper = no (Maximum-Proper xs proper)

@@ -108,10 +108,10 @@ toℕ-NullBase {d} {o} x xs =
     ∎
 
 toℕ-AllZeros : ∀ {b} → (xs : Numeral b 1 0) → ⟦ xs ⟧ ≡ 0
-toℕ-AllZeros     (z    ∙   ) = refl
-toℕ-AllZeros     (s () ∙   )
-toℕ-AllZeros {b} (z    ∷ xs) = cong (λ w → w * b) (toℕ-AllZeros xs)
-toℕ-AllZeros     (s () ∷ xs)
+toℕ-AllZeros     (zero   ∙   ) = refl
+toℕ-AllZeros     (suc () ∙   )
+toℕ-AllZeros {b} (zero   ∷ xs) = cong (λ w → w * b) (toℕ-AllZeros xs)
+toℕ-AllZeros     (suc () ∷ xs)
 
 n∷-mono-strict : ∀ {b d o}
     → (x : Fin d) (xs : Numeral (suc b) d o)

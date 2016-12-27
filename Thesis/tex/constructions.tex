@@ -151,7 +151,8 @@ is classified as \textit{Proper}, then we know that:
 \begin{itemize}
     \item {\lstinline|b|} is greater than $ 0 $.
     \item {\lstinline|d|} is also greater than $ 0 $.
-    \item {\lstinline|o|} can be any value as long as {\lstinline|d + o ≥ 2|}.
+    \item {\lstinline|o|} can be any value as long as {\lstinline|d + o ≥ 2|};
+        we name this requirement \textit{proper}.
 \end{itemize}
 
 \subsection{Views}
@@ -223,43 +224,226 @@ toℕ-AllZeros     (s () ∷ xs)
 \end{lstlisting}
 
 
-\section{Maximum}
+\section{The Maximum Numeral}
 
-A number is said to be \textit{maximum} if there are no other numbers greater than
-itself.
+A number is said to be the \textit{maximum} if there are no other numbers greater
+than itself.
 
 \begin{lstlisting}
 Maximum : ∀ {b d o} → (xs : Numeral b d o) → Set
-Maximum {b} {d} {o} xs = ∀ (ys : Numeral b d o) → ⟦ xs ⟧ ≥ ⟦ ys ⟧
+Maximum {b} {d} {o} xs = (ys : Numeral b d o) → ⟦ xs ⟧ ≥ ⟦ ys ⟧
+\end{lstlisting}
+
+If a numeral is the maximum
+\footnote{More precisely, ``If a \text{value} of a numeral is the maximum ...''}
+ then its least significant digit (LSD) must be the
+greatest.
+
+\begin{lstlisting}
+Maximum⇒Greatest-LSD : ∀ {b} {d} {o}
+    → (xs : Numeral b d o)
+    → Maximum xs
+    → Greatest (lsd xs)
+\end{lstlisting}
+
+\subsection{Properties of each Category}
+
+\paragraph{NullBase}
+
+\begin{center}
+    \begin{tikzpicture}
+        % a straight line segment
+        \draw (0, 0) -- (10, 0);
+        % the ticks and their labels
+        \draw[xshift=0cm] (0pt,2pt) -- (0pt,-1pt) node[below,fill=white] {\the\numexpr0};
+        % the thicker segment
+        \draw[ultra thick] (1,0) -- (9,0);
+        % the labels
+        \node[fill=black,draw=black,circle,inner sep=2pt,label=above:{$o$}] at (1,0) {};
+        \node[fill=black,draw=black,circle,inner sep=2pt,label=above:{$d+o$}] at (9,0) {};
+        \node at (5, -0.5) {{\lstinline|ℕ|}};
+    \end{tikzpicture}
+\end{center}
+
+It is obvious that systems of {\lstinline|NullBase|} have maxima.
+If a numeral's LSD happens to be the greatest,
+then the numeral must be the maximum.
+
+\begin{lstlisting}
+Maximum-NullBase-Greatest : ∀ {d} {o}
+    → (xs : Numeral 0 (suc d) o)
+    → Greatest (lsd xs)
+    → Maximum xs
+\end{lstlisting}
+
+With this lemma, we can tell whether a numeral is the maximum by looking at its
+LSD. In case that the LSD is not the greatest, we could say no by contraposition.
+
+\begin{lstlisting}
+    Maximum-NullBase : ∀ {d} {o}
+        → (xs : Numeral 0 (suc d) o)
+        → Dec (Maximum xs)
+    Maximum-NullBase xs with Greatest? (lsd xs)
+    Maximum-NullBase xs | yes greatest =
+        yes (Maximum-NullBase-Greatest xs greatest)
+    Maximum-NullBase | no ¬greatest =
+        no (contraposition (Maximum⇒Greatest-LSD xs) ¬greatest)
+\end{lstlisting}
+
+\paragraph{AllZeros}
+
+\begin{center}
+    \begin{tikzpicture}
+        % a straight line segment
+        \draw (0, 0) -- (4, 0);
+        % the ticks and their labels
+        \draw[xshift=0cm] (0pt,2pt) -- (0pt,-1pt) node[below,fill=white] {\the\numexpr0};
+        % the thicker segment
+        \draw[ultra thick] (0,0) -- (0,0);
+        % the labels
+        \node[fill=white,draw=black,circle,inner sep=2pt,label=above:{$0$}] at (0,0) {};
+        \node at (2, -0.5) {{\lstinline|ℕ|}};
+    \end{tikzpicture}
+\end{center}
+
+\textit{All} numerals of systems of {\lstinline|AllZeros|} are maxima
+since they are all mapped to $ 0 $.
+
+\begin{lstlisting}
+Maximum-AllZeros : ∀ {b}
+    → (xs : Numeral b 1 0)
+    → Maximum xs
+Maximum-AllZeros xs ys = reflexive (
+    begin
+        ⟦ ys ⟧
+    ≡⟨ toℕ-AllZeros ys ⟩
+        zero
+    ≡⟨ sym (toℕ-AllZeros xs) ⟩
+        ⟦ xs ⟧
+    ∎)
+\end{lstlisting}
+
+\paragraph{Proper}
+
+On the contrary, there are no maxima in the systems of {\lstinline|Proper|}.
+In fact, that is the reason why they are categorized as \textit{proper} in the
+first place. This theorem is proven by contradicting two propositions:
+
+\begin{itemize}
+    \item Given {\lstinline|claim : Maximum xs|}, we claim that {\lstinline|xs|}
+        is greater than or equal to {\lstinline|greatest-digit d ∷ xs|}, a numeral
+        we composed by prefixing it with the greatest digit.
+    \item On the other hand, We prove that {\lstinline|xs|} is less than
+        {\lstinline|greatest-digit d ∷ xs|}.
+\end{itemize}
+
+\begin{lstlisting}
+Maximum-Proper : ∀ {b d o}
+    → (xs : Numeral (suc b) (suc d) o)
+    → (proper : 2 ≤ suc (d + o))
+    → ¬ (Maximum xs)
+Maximum-Proper {b} {d} {o} xs proper claim = contradiction p ¬p
+    where
+        p : ⟦ xs ⟧ ≥ ⟦ greatest-digit d ∷ xs ⟧
+        p = claim (greatest-digit d ∷ xs)
+        ¬p : ⟦ xs ⟧ ≱ ⟦ greatest-digit d ∷ xs ⟧
+        ¬p = <⇒≱ (
+            start
+                suc ⟦ xs ⟧
+            ≈⟨ cong suc (sym (*-right-identity ⟦ xs ⟧)) ⟩
+                suc (⟦ xs ⟧ * 1)
+            ≤⟨ s≤s (n*-mono ⟦ xs ⟧ (s≤s z≤n)) ⟩
+                suc (⟦ xs ⟧ * suc b)
+            ≤⟨ +n-mono (⟦ xs ⟧ * suc b) (≤-pred proper) ⟩
+                d + o + ⟦ xs ⟧ * suc b
+            ≈⟨ cong
+                (λ w → w + ⟦ xs ⟧ * suc b)
+                (sym (greatest-digit-toℕ (Fin.fromℕ d)
+                (greatest-digit-is-the-Greatest d)))
+            ⟩
+                ⟦ greatest-digit d ∷ xs ⟧
+            □)
 \end{lstlisting}
 
 
+\subsection{Determine the Maximum}
+
+We can \textit{decide} whether a numeral is the maximum by applying them to
+lemmata of each categories.
+
+\begin{lstlisting}
+Maximum? : ∀ {b d o}
+    → (xs : Numeral b d o)
+    → Dec (Maximum xs)
+Maximum? {b} {d} {o} xs with numView b d o
+Maximum? xs | NullBase d o = Maximum-NullBase xs
+Maximum? xs | NoDigits b o = no (NoDigits-explode xs)
+Maximum? xs | AllZeros b   = yes (Maximum-AllZeros xs)
+Maximum? xs | Proper b d o proper = no (Maximum-Proper xs proper)
+\end{lstlisting}
+
+% This theorem is proven by examine whether the LSD is the greatest.
+% If it is the greatest, then we are done.
 %
 % \begin{lstlisting}
-% Maximum? : ∀ {b d o}
-%     → (xs : Numeral b d o)
-%     → Dec (Maximum xs)
-% Maximum? {b} {d} {o} xs with numView b d o
-% Maximum? xs | NullBase d o with ⟦ _∙ {0} {suc d} {o} (greatest-digit d) ⟧ ≟ ⟦ xs ⟧
-% Maximum? xs | NullBase d o | yes p rewrite (sym p) = yes (Maximum-NullBase-Greatest (greatest-digit d ∙) (greatest-digit-is-the-Greatest d))
-% Maximum? xs | NullBase d o | no ¬p = no (contraposition (Maximum-unique ys xs max-ys) ¬p)
+% Maximum⇒Greatest-LSD xs max with Greatest? (lsd xs)
+% Maximum⇒Greatest-LSD xs max | yes greatest = greatest
+% \end{lstlisting}
+%
+% If the LSD is not the greatest, we examine the index $ d $.
+% If $ d $ is zero then we apply the principle of explosion to eliminate this case.
+%
+% \begin{lstlisting}
+% Maximum⇒Greatest-LSD {b} {zero}      xs       max | no ¬greatest = NoDigits-explode xs
+% \end{lstlisting}
+%
+%
+%
+% \begin{lstlisting}
+% Maximum⇒Greatest-LSD {b} {suc d} {o} (x ∙)    max | no ¬greatest
+%     = contradiction p ¬p
 %     where
-%         ys : Numeral 0 (suc d) o
+%         ys : Numeral b (suc d) o
 %         ys = greatest-digit d ∙
 %
-%         max-ys : Maximum ys
-%         max-ys = Maximum-NullBase-Greatest ys (greatest-digit-is-the-Greatest d)
+%         p : Digit-toℕ x o ≥ ⟦ ys ⟧
+%         p = max ys
 %
-% Maximum? xs | NoDigits b o = no (NoDigits-explode xs)
-% Maximum? xs | AllZeros b   = yes (Maximum-AllZeros xs)
-% Maximum? xs | Proper b d o proper = no (Maximum-Proper xs proper)
+%         ¬p : Digit-toℕ x o ≱ ⟦ ys ⟧
+%         ¬p = <⇒≱ (
+%             start
+%                 suc (Digit-toℕ x o)
+%             ≤⟨ +n-mono o (≤-pred (≤∧≢⇒< (bounded x) ¬greatest)) ⟩
+%                 d + o
+%             ≈⟨ sym (greatest-digit-toℕ (Fin.fromℕ d) (greatest-digit-is-the-Greatest d)) ⟩
+%                 Digit-toℕ (greatest-digit d) o
+%             ≈⟨ refl ⟩
+%                 ⟦ ys ⟧
+%             □)
+% Maximum⇒Greatest-LSD {b} {suc d} {o} (x ∷ xs) max | no ¬greatest
+%     = contradiction p ¬p
+%     where
+%         ys : Numeral b (suc d) o
+%         ys = greatest-digit d ∷ xs
+%
+%         p : ⟦ x ∷ xs ⟧ ≥ ⟦ ys ⟧
+%         p = max ys
+%
+%         ¬p : ⟦ x ∷ xs ⟧ ≱ ⟦ ys ⟧
+%         ¬p = <⇒≱ (+n-mono (⟦ xs ⟧ * b) (
+%             start
+%                 suc (Digit-toℕ x o)
+%             ≤⟨ +n-mono o (≤-pred (≤∧≢⇒< (bounded x) ¬greatest)) ⟩
+%                 d + o
+%             ≈⟨ sym (greatest-digit-toℕ (Fin.fromℕ d) (greatest-digit-is-the-Greatest d)) ⟩
+%                 (Digit-toℕ (greatest-digit d) o)
+%             □))
 % \end{lstlisting}
 
-
-\section{Bounded}
-\section{Next}
-\subsection{Increment}
-\subsection{Continuous}
+\section{Systems with an Upper Bound}
+\section{The Next Numeral}
+\subsection{Incrementing a Numeral}
+\subsection{Continuous Systems}
 
 
 % \subsection{Maximum}
