@@ -119,8 +119,8 @@ Surprisingly, these binary numbers can fit into our representation with just a t
 If we allow a system to have more digits,
 then a fixed-precision binary number can be regarded as a single digit!
 To illustrate this,
-a 32-bit binary number would become a single digit that ranges from $ 0 $ to $ 2^{32} $,
-while everything else including the base remains the same.
+a 32-bit binary number (\textit{Int32}) would become a single digit that ranges
+from $ 0 $ to $ 2^{32} $, while everything else including the base remains the same.
 
 Formerly in our representation,
 there are exactly \textit{base} number of digits and their assignments range from:
@@ -136,7 +136,20 @@ $$
     \text{offset}  ...  \text{offset} + \text{\#digit} - 1
 $$
 
+\subsection{Redundancy}
 
+Numeral systems like \textit{Int32} are said to be \textbf{redundant},
+because there is more than one way to represent a number.
+In fact, systems that admit $ 0 $ as one of the digits must be redundant,
+since we can always take a numeral and add leading zeros without changing it's value.
+
+Incrementing a decimal numeral such as $ 999999 $ takes much more time than
+$ 999998 $ because carries or borrows can cascade.
+Redundancy provides ``buffer'' against operations these carries and borrows.
+
+Numerical representations modeled after redundant numeral systems also enjoy
+similar properties. When designed properly, redundancy can improve the performance
+of operations of data structures.
 
 \section{Relations with Natural Numbers}
 
@@ -168,9 +181,10 @@ With great power of generalizations comes poor properties.
 Although we are now capable of expressing those numeral systems with just a few
 indices, there are also some unexpected inhabitant included in this representation.
 
-\subsection{Surjectiveness}
-\subsection{Injectiveness}
-\subsection{Continuity}
+
+% \subsection{Surjectiveness}
+% \subsection{Injectiveness}
+% \subsection{Continuity}
 %
 % We can immediately see that not every number can be represented by every numeral
 % system.
