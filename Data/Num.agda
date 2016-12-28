@@ -62,9 +62,9 @@ fromℕ : ∀ {b d o}
     → (n : ℕ)
     → n ≥ o
     → Numeral b (suc d) o
-fromℕ {o = o}       n p  with o ≟ n
-fromℕ n n≥o | yes eq = z ∙
-fromℕ {o = o} zero n≥o | no ¬eq = contradiction (≤0⇒≡0 o n≥o) ¬eq
+fromℕ {o = o}       n       p   with o ≟ n
+fromℕ               n       n≥o | yes eq = z ∙
+fromℕ {o = o}       zero    n≥o | no ¬eq = contradiction (≤0⇒≡0 o n≥o) ¬eq
 fromℕ {cont = cont} (suc n) n≥o | no ¬eq = 1+ {cont = cont} (fromℕ {cont = cont} n (≤-pred $ ≤∧≢⇒< n≥o ¬eq))
 
 fromℕ-toℕ : ∀ {b d o}

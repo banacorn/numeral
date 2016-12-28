@@ -7,12 +7,15 @@ open import Data.Num.Continuous
 -- open import Data.Num.Bijection
 
 open import Data.Nat
+open import Data.Nat.Properties.Extra
 open import Data.Fin using (Fin; suc; zero; #_)
 open import Data.Vec
 open import Data.Product hiding (map)
 open import Relation.Binary
 open import Relation.Binary.PropositionalEquality
-open import Relation.Nullary.Decidable using (True; fromWitness)
+open import Relation.Nullary
+open import Relation.Nullary.Negation
+open import Relation.Nullary.Decidable using (True; fromWitness; toWitness)
 
 open ≡-Reasoning
 open ≤-Reasoning renaming (begin_ to start_; _∎ to _□; _≡⟨_⟩_ to _≈⟨_⟩_)
@@ -46,8 +49,8 @@ open Signature
 ℕ-sig : Signature
 ℕ-sig = sig ℕ _+_ _≡_
 
-Numeral-sig : (b d o : ℕ) → True (Continuous? b d o) → Signature
-Numeral-sig b d o cont = sig (Numeral b d o) (_⊹_ {cont = cont}) _≋_
+Numeral-sig : (b d : ℕ) → True (Continuous? b d 0) → Signature
+Numeral-sig b d cont = sig (Numeral b d 0) (_⊹_ {cont = cont}) _≋_
 
 -- BijN-sig : ℕ → Signature
 -- BijN-sig b = sig (BijN b) (_⊹_ {surj = fromWitness (BijN⇒Surjective b)}) _≡_
@@ -85,8 +88,8 @@ module Example-1 where
     ≋-trans-ℕ : Set
     ≋-trans-ℕ = ⟦ ≋-trans ⟧P ℕ-sig []
 
-    ≋-trans-Numeral : (b d o : ℕ) → True (Continuous? b d o) → Set
-    ≋-trans-Numeral b d o prop = ⟦ ≋-trans ⟧P (Numeral-sig b d o prop) []
+    ≋-trans-Numeral : (b d : ℕ) → True (Continuous? b d 0) → Set
+    ≋-trans-Numeral b d prop = ⟦ ≋-trans ⟧P (Numeral-sig b d prop) []
 
 -- lemma for env
 lookup-map : ∀ {i j} → {A : Set i} {B : Set j}
@@ -105,48 +108,65 @@ lookup-map f (x ∷ xs) (suc i) = lookup-map f xs i
 -- ------------------------------------------------------------------------
 
 
-toℕ-term-homo : ∀ {b d o n}
-    → (cont : True (Continuous? b d o))
+toℕ-term-homo : ∀ {b d n}
+    → (cont : True (Continuous? b d 0))
     → (t : Term n)
-    → (env : Vec (Numeral b d o) n)
-    → ⟦ t ⟧T ℕ-sig (map ⟦_⟧ env) ≡ ⟦ ⟦ t ⟧T (Numeral-sig b d o cont) env ⟧
+    → (env : Vec (Numeral b d 0) n)
+    → ⟦ t ⟧T ℕ-sig (map ⟦_⟧ env) ≡ ⟦ ⟦ t ⟧T (Numeral-sig b d cont) env ⟧
 toℕ-term-homo     cont (var i)   env = lookup-map ⟦_⟧ env i
-toℕ-term-homo {b} {d} {o} cont (t₁ ∔ t₂) env
+toℕ-term-homo {b} {d} cont (t₁ ∔ t₂) env
     rewrite toℕ-term-homo cont t₁ env | toℕ-term-homo cont t₂ env
-    = sym (toℕ-⊹-homo cont (⟦ t₁ ⟧T (Numeral-sig b d o cont) env) (⟦ t₂ ⟧T (Numeral-sig b d o cont) env))
+    = sym (toℕ-⊹-homo cont (⟦ t₁ ⟧T (Numeral-sig b d cont) env) (⟦ t₂ ⟧T (Numeral-sig b d cont) env))
 
 mutual
-    toℕ-pred-ℕ⇒Numeral : ∀ {b d o n}
-        → (cont : True (Continuous? b d o))
+    toℕ-pred-ℕ⇒Numeral : ∀ {b d n}
+        → (cont : True (Continuous? b (suc d) 0))
         → (pred : Predicate n)
-        → (env : Vec (Numeral b d o) n)
+        → (env : Vec (Numeral b (suc d) 0) n)
         → ⟦ pred ⟧P ℕ-sig (map ⟦_⟧ env)
-        → ⟦ pred ⟧P (Numeral-sig b d o cont) env
-    toℕ-pred-ℕ⇒Numeral cont (t₁ ≋P t₂) env v
-        rewrite toℕ-term-homo cont t₁ env | toℕ-term-homo cont t₂ env
-        = v
-    toℕ-pred-ℕ⇒Numeral cont (p →P q) env v w = toℕ-pred-ℕ⇒Numeral cont q env (v (toℕ-pred-Num⇒ℕ cont p env w))
-    toℕ-pred-ℕ⇒Numeral cont (∀P pred) env v x = toℕ-pred-ℕ⇒Numeral cont pred (x ∷ env) (v ⟦ x ⟧)
-
-    toℕ-pred-Num⇒ℕ : ∀ {b d o n}
-        → (cont : True (Continuous? b d o))
-        → (pred : Predicate n)
-        → (env : Vec (Numeral b d o) n)
-        → ⟦ pred ⟧P (Numeral-sig b d o cont) env
-        → ⟦ pred ⟧P ℕ-sig (map ⟦_⟧ env)
-    toℕ-pred-Num⇒ℕ {b} {d} {o} cont (t₁ ≋P t₂) env v =
+        → ⟦ pred ⟧P (Numeral-sig b (suc d) cont) env
+    toℕ-pred-ℕ⇒Numeral {b} {d} cont (t₁ ≋P t₂) env sem-ℕ =
         begin
-            ⟦ t₁ ⟧T (sig ℕ _+_ _≡_) (map ⟦_⟧ env)
-        ≡⟨ toℕ-term-homo cont t₁ env ⟩
-            ⟦ ⟦ t₁ ⟧T (Numeral-sig b d o cont) env ⟧
-        ≡⟨ v ⟩
-            ⟦ ⟦ t₂ ⟧T (Numeral-sig b d o cont) env ⟧
-        ≡⟨ sym (toℕ-term-homo cont t₂ env) ⟩
-            ⟦ t₂ ⟧T (sig ℕ _+_ _≡_) (map ⟦_⟧ env)
+            ⟦ ⟦ t₁ ⟧T (Numeral-sig b (suc d) cont) env ⟧
+        ≡⟨ sym (toℕ-term-homo cont t₁ env) ⟩
+            ⟦ t₁ ⟧T ℕ-sig (map ⟦_⟧ env)
+        ≡⟨ sem-ℕ ⟩
+            ⟦ t₂ ⟧T ℕ-sig (map ⟦_⟧ env)
+        ≡⟨ toℕ-term-homo cont t₂ env ⟩
+            ⟦ ⟦ t₂ ⟧T (Numeral-sig b (suc d) cont) env ⟧
         ∎
-    toℕ-pred-Num⇒ℕ cont (p →P q) env v w = toℕ-pred-Num⇒ℕ cont q env (v (toℕ-pred-ℕ⇒Numeral cont p env w))
-    -- toℕ-pred-Num⇒ℕ closed (∀P pred) env v x = toℕ-pred-Num⇒ℕ closed pred {!    !} {!   !}
-    toℕ-pred-Num⇒ℕ {b} {d} {o} cont (∀P pred) env v x = toℕ-pred-Num⇒ℕ cont pred ({! fromℕ  !} ∷ env) {!   !}
+    toℕ-pred-ℕ⇒Numeral cont (p →P q) env sem-ℕ ⟦p⟧P =
+        toℕ-pred-ℕ⇒Numeral cont q env
+            (sem-ℕ (toℕ-pred-Numeral⇒ℕ cont p env ⟦p⟧P))
+    toℕ-pred-ℕ⇒Numeral cont (∀P pred) env sem-ℕ x =
+        toℕ-pred-ℕ⇒Numeral cont pred (x ∷ env) (sem-ℕ ⟦ x ⟧)
+
+    toℕ-pred-Numeral⇒ℕ : ∀ {b d n}
+        → (cont : True (Continuous? b (suc d) 0))
+        → (pred : Predicate n)
+        → (env : Vec (Numeral b (suc d) 0) n)
+        → ⟦ pred ⟧P (Numeral-sig b (suc d) cont) env
+        → ⟦ pred ⟧P ℕ-sig (map ⟦_⟧ env)
+    toℕ-pred-Numeral⇒ℕ {b} {d} cont (t₁ ≋P t₂) env sem-Num =
+        begin
+            ⟦ t₁ ⟧T ℕ-sig (map ⟦_⟧ env)
+        ≡⟨ toℕ-term-homo cont t₁ env ⟩
+            ⟦ ⟦ t₁ ⟧T (Numeral-sig b (suc d) cont) env ⟧
+        ≡⟨ sem-Num ⟩
+            ⟦ ⟦ t₂ ⟧T (Numeral-sig b (suc d) cont) env ⟧
+        ≡⟨ sym (toℕ-term-homo cont t₂ env) ⟩
+            ⟦ t₂ ⟧T ℕ-sig (map ⟦_⟧ env)
+        ∎
+    toℕ-pred-Numeral⇒ℕ cont (p →P q) env sem-Num ⟦p⟧P
+        = toℕ-pred-Numeral⇒ℕ cont q env
+            (sem-Num
+                (toℕ-pred-ℕ⇒Numeral cont p env ⟦p⟧P))
+    toℕ-pred-Numeral⇒ℕ {b} {d} cont (∀P pred) env sem-Num n with n ≟ ⟦ fromℕ {cont = cont} n z≤n ⟧
+    toℕ-pred-Numeral⇒ℕ {b} {d} cont (∀P pred) env sem-Num n | yes eq
+        rewrite eq
+        = toℕ-pred-Numeral⇒ℕ cont pred (fromℕ {cont = cont} n _ ∷ env) (sem-Num (fromℕ {cont = cont} n _))
+    toℕ-pred-Numeral⇒ℕ {b} {d} cont (∀P pred) env sem-Num n | no ¬eq
+        = contradiction (sym (fromℕ-toℕ cont n _)) ¬eq
 
 
 --
