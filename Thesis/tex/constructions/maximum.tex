@@ -159,6 +159,19 @@ Maximum? xs | AllZeros b   = yes (Maximum-AllZeros xs)
 Maximum? xs | Proper b d o proper = no (Maximum-Proper xs proper)
 \end{lstlisting}
 
+\paragraph{Summary}
+
+\begin{center}
+    \begin{adjustbox}{max width=\textwidth}
+    \begin{tabular}{ | l | c | c | c | c | }
+    \textbf{Properties} & \textbf{NullBase} & \textbf{NoDigits} & \textbf{AllZeros} & \textbf{Proper} \\
+    \hline
+    has an maximum & yes & no & yes & no \\
+    \end{tabular}
+    \end{adjustbox}
+\end{center}
+
+
 % This theorem is proven by examine whether the LSD is the greatest.
 % If it is the greatest, then we are done.
 %

@@ -15,7 +15,8 @@ cabal.config
 Temp*.agda
 Relation/Binary/InjReasoning.agda
 */Dev.agda
-
+Thesis/tex/constructions/*.pdf
+**/*/.DS_store
 
 ## Core latex/pdflatex auxiliary files:
 *.aux

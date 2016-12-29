@@ -41,26 +41,8 @@ Bounded-AllZeros : ∀ b → Bounded (suc b) 1 0
 Bounded-AllZeros b = (z ∙) , Maximum-AllZeros (z ∙)
 
 Bounded-Proper : ∀ b d o → 2 ≤ suc (d + o) → ¬ (Bounded (suc b) (suc d) o)
-Bounded-Proper b d o proper (xs , claim) = contradiction p ¬p
-    where
-        p : ⟦ xs ⟧ ≥ ⟦ greatest-digit d ∷ xs ⟧
-        p = claim (greatest-digit d ∷ xs)
-        ¬p : ⟦ xs ⟧ ≱ ⟦ greatest-digit d ∷ xs ⟧
-        ¬p = <⇒≱ $
-            start
-                suc ⟦ xs ⟧
-            ≈⟨ cong suc (sym (*-right-identity ⟦ xs ⟧)) ⟩
-                suc (⟦ xs ⟧ * 1)
-            ≤⟨ s≤s (n*-mono ⟦ xs ⟧ (s≤s z≤n)) ⟩
-                suc (⟦ xs ⟧ * suc b)
-            ≤⟨ +n-mono (⟦ xs ⟧ * suc b) (≤-pred proper) ⟩
-                d + o + ⟦ xs ⟧ * suc b
-            ≈⟨ cong
-                (λ w → w + ⟦ xs ⟧ * suc b)
-                (sym (greatest-digit-toℕ (Fin.fromℕ d) (greatest-digit-is-the-Greatest d)))
-            ⟩
-                ⟦ greatest-digit d ∷ xs ⟧
-            □
+Bounded-Proper b d o proper (xs , claim) =
+    contradiction claim (Maximum-Proper xs proper)
 
 Bounded? : ∀ b d o → Dec (Bounded b d o)
 Bounded? b d o with numView b d o
