@@ -41,8 +41,6 @@ to be a maximum on the left of the pair, and a proof to prove that on the right.
 
 \subsection{Properties of each Category}
 
-Again, we examine this property on each category.
-
 \paragraph{NullBase}
 
 We have proven that any numeral with the greatest digit as its LSD is a maximum.
@@ -63,7 +61,7 @@ we are given an addition argument, which is a proof claiming that the system is
 bounded.
 Pattern match on this argument yields a pair with a numeral of {\lstinline|Numeral b 0 o|} on the left.
 At this point, we do not actually care whether the numeral is a maximum
-because it should not have existed anyway.
+because it should not have existed in the first place.
 Hand the numeral to {\lstinline|NoDigits-explode|} and we are done.
 
 \begin{lstlisting}
@@ -121,63 +119,5 @@ Bounded? _ _ _ | Proper b d o proper
     \end{tabular}
     \end{adjustbox}
 \end{center}
-
-% This theorem is proven by examine whether the LSD is the greatest.
-% If it is the greatest, then we are done.
-%
-% \begin{lstlisting}
-% Maximum⇒Greatest-LSD xs max with Greatest? (lsd xs)
-% Maximum⇒Greatest-LSD xs max | yes greatest = greatest
-% \end{lstlisting}
-%
-% If the LSD is not the greatest, we examine the index $ d $.
-% If $ d $ is zero then we apply the principle of explosion to eliminate this case.
-%
-% \begin{lstlisting}
-% Maximum⇒Greatest-LSD {b} {zero}      xs       max | no ¬greatest = NoDigits-explode xs
-% \end{lstlisting}
-%
-%
-%
-% \begin{lstlisting}
-% Maximum⇒Greatest-LSD {b} {suc d} {o} (x ∙)    max | no ¬greatest
-%     = contradiction p ¬p
-%     where
-%         ys : Numeral b (suc d) o
-%         ys = greatest-digit d ∙
-%
-%         p : Digit-toℕ x o ≥ ⟦ ys ⟧
-%         p = max ys
-%
-%         ¬p : Digit-toℕ x o ≱ ⟦ ys ⟧
-%         ¬p = <⇒≱ (
-%             start
-%                 suc (Digit-toℕ x o)
-%             ≤⟨ +n-mono o (≤-pred (≤∧≢⇒< (bounded x) ¬greatest)) ⟩
-%                 d + o
-%             ≈⟨ sym (greatest-digit-toℕ (Fin.fromℕ d) (greatest-digit-is-the-Greatest d)) ⟩
-%                 Digit-toℕ (greatest-digit d) o
-%             ≈⟨ refl ⟩
-%                 ⟦ ys ⟧
-%             □)
-% Maximum⇒Greatest-LSD {b} {suc d} {o} (x ∷ xs) max | no ¬greatest
-%     = contradiction p ¬p
-%     where
-%         ys : Numeral b (suc d) o
-%         ys = greatest-digit d ∷ xs
-%
-%         p : ⟦ x ∷ xs ⟧ ≥ ⟦ ys ⟧
-%         p = max ys
-%
-%         ¬p : ⟦ x ∷ xs ⟧ ≱ ⟦ ys ⟧
-%         ¬p = <⇒≱ (+n-mono (⟦ xs ⟧ * b) (
-%             start
-%                 suc (Digit-toℕ x o)
-%             ≤⟨ +n-mono o (≤-pred (≤∧≢⇒< (bounded x) ¬greatest)) ⟩
-%                 d + o
-%             ≈⟨ sym (greatest-digit-toℕ (Fin.fromℕ d) (greatest-digit-is-the-Greatest d)) ⟩
-%                 (Digit-toℕ (greatest-digit d) o)
-%             □))
-% \end{lstlisting}
 
 \end{document}

@@ -1,0 +1,46 @@
+\providecommand{\main}{../..}
+\documentclass[\main/thesis.tex]{subfiles}
+\begin{document}
+
+\section{The Next Numeral}\label{next}
+
+Paul Benacerraf once argued\cite{benacerraf1965numbers} that, there are two kinds
+of \textit{counting} which correspond to \textbf{transitive} and \textbf{intransitive}
+uses of the verb ``to count.'' Transitive counting, in his sense, is to assign one
+of the numbers to the cardinality of a set, by establishing a one-to-one correspondence
+between the numbers and the objects one is counting, all the way from none to
+all. Intransitive counting, on the other hand, is to generate a sequence of
+notation, that could go as far as we need. And it seems that one can only learn
+how to count intransitively first, before knowning how to count transitively,
+but not vice versa. So it is important to know how to generate the next numeral
+we need.
+
+\subsection{Definition}
+
+% In natural numbers à la Peano, finding the next number is as simple as placing
+% a counting rod. The syntax aligns perfectly with the semantics (or we can argue
+% that the syntax itself is the semantics we are persuing)
+% , nothing can go wrong.
+
+
+% In natural numbers, the successor also happens to be the next number.
+% However, things are not so simple in our representation.
+
+%
+%
+% Given a numeral that is not a maximum, find the next.
+
+\begin{lstlisting}
+next-number : ∀ {b d o}
+    → (xs : Numeral b d o)
+    → ¬ (Maximum xs)
+    → Numeral b d o
+next-number {b} {d} {o} xs ¬max with numView b d o
+next-number xs ¬max | NullBase d o = ?
+next-number xs ¬max | NoDigits b o = NoDigits-explode xs
+next-number xs ¬max | AllZeros b   = contradiction (Maximum-AllZeros xs) ¬max
+next-number xs ¬max | Proper b d o proper = ?
+\end{lstlisting}
+
+
+\end{document}
