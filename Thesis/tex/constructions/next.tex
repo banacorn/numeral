@@ -66,11 +66,11 @@ Therefore, we define the next numeral as \textbf{the least numeral that is great
 \subsection{Implementation}
 
 Given a numeral, say {\lstinline|xs|}, to find the next numeral of {\lstinline|xs|},
-it sensible to expect that {\lstinline|xs|} must not be a maximum.
-Otherwise, there exists no such a numeral that is \textit{greater than itself}.
+it reasonable to expect that {\lstinline|xs|} must not be a maximum.
+Otherwise, there would exist no such a numeral that is \textit{greater than itself}.
 
 Again, the indices are classified by {\lstinline|numView|} into four categories.
-The case {\lstinline|NoDigits|} and {\lstinline|AllZeros|} of are rather trivial.
+The case of {\lstinline|NoDigits|} and {\lstinline|AllZeros|} are rather trivial.
 We focus on the other two.
 
 \begin{lstlisting}
@@ -167,7 +167,7 @@ All numerals are mapped onto this single and continuous number line below.
 
 Finding the next numeral is as simple as incrementing the LSD.
 To make room for the increment, numerals that are mapped onto the rightmost
-number of the line are excluded because they also happen to be maxima.
+number of the line have to be excluded.
 
 \begin{center}
     \begin{tikzpicture}
@@ -194,104 +194,107 @@ number of the line are excluded because they also happen to be maxima.
     \end{tikzpicture}
 \end{center}
 
-\subsubsection{A View within another}
+\subsubsection{{\lstinline|next-number-NullBase|}}
 
-Although the system {\lstinline|Numeral 0 1 0|} is classified as {\lstinline|NullBase|}
-rather than {\lstinline|AllZeros|} by the view function {\lstinline|numView|}
-because of the order of pattern matching.
-{\lstinline|Numeral 0 1 0|} still retain characteristics of {\lstinline|AllZeros|},
-making it an outlier among other systms of {\lstinline|NullBase|}.
-
-To handle this, we further classify the indices of {\lstinline|NullBase|} into
-two subcategories with a view.
+Numerals with the greatest LSD are first ruled out because they also happen
+to be maxima. The rest of the numerals are then pattern matched to have their
+LSDs replaced with an incremented one.
 
 \begin{lstlisting}
-data NullBaseView : (d o : ℕ) → Set where
-    AllZeros : NullBaseView 0 0
-    Others   : ∀ {d o}
-             → (bound : d + o ≥ 1 ⊔ o)
-             → NullBaseView d o
-
-nullBaseView : ∀ d o → NullBaseView d o
-nullBaseView = ...
-\end{lstlisting}
-
-The sole purpose of this view is to isolate {\lstinline|Numeral 0 1 0|} from
-all the other systems of {\lstinline|NullBase|}.
-
-\subsubsection{The Function}
-
-
-Systems are first classified by {\lstinline|nullBaseView|} into {\lstinline|Numeral 0 1 0|}
-and the others.
-
-\begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
 next-number-NullBase : ∀ {d o}
     → (xs : Numeral 0 (suc d) o)
     → ¬ (Maximum xs)
     → Numeral 0 (suc d) o
-next-number-NullBase {d} {o} xs ¬max with nullBaseView d o
-\end{lstlisting}
-
-\paragraph{AllZeros}
-
-Every numeral of {\lstinline|Numeral 0 1 0|} is a maximum, which contradicts
-with the assumption that the given numeral is not a maximum.
-
-\begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
-next-number-NullBase xs       ¬max | AllZeros =
-    contradiction (Maximum-AllZeros xs) ¬max
-\end{lstlisting}
-
-\paragraph{Others}
-
-First, rule out the numerals with the greatest LSD hence the maxima.
-Next, increment rest of the numerals with {\lstinline|digit+1|}.
-
-\begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
-next-number-NullBase xs       ¬max | Others _ with Greatest? (lsd xs)
-next-number-NullBase xs       ¬max | Others _ | yes greatest =
+next-number-NullBase xs       ¬max with Greatest? (lsd xs)
+next-number-NullBase xs       ¬max | yes greatest =
     contradiction (Maximum-NullBase-Greatest xs greatest) ¬max
-next-number-NullBase (x ∙   ) ¬max | Others _ | no ¬greatest =
+next-number-NullBase (x ∙)    ¬max | no ¬greatest =
     digit+1 x ¬greatest ∙
-next-number-NullBase (x ∷ xs) ¬max | Others _ | no ¬greatest =
+next-number-NullBase (x ∷ xs) ¬max | no ¬greatest =
     digit+1 x ¬greatest ∷ xs
 \end{lstlisting}
 
-\subsubsection{next-number-is-greater-NullBase}
+\subsubsection{Lemma}
+
+Instead of proving that {\lstinline|next-number-NullBase|} does compute a numeral
+that is:
+\begin{enumerate}
+    \item greater than the given numeral
+    \item the least of all such numerals
+\end{enumerate}
+
+We prove a stronger proposition, that {\lstinline|next-number-NullBase|} would
+compute the \textit{successor} of the given number.
 
 \begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
+next-number-NullBase-lemma : ∀ {d o}
+    → (xs : Numeral 0 (suc d) o)
+    → (¬max : ¬ (Maximum xs))
+    → ⟦ next-number-NullBase xs ¬max ⟧ ≡ suc ⟦ xs ⟧
+next-number-NullBase-lemma {d} {o} xs    ¬max with Greatest? (lsd xs)
+next-number-NullBase-lemma {d} {o} xs    ¬max | yes greatest =
+    contradiction (Maximum-NullBase-Greatest xs greatest) ¬max
+next-number-NullBase-lemma {d} {o} (x ∙) ¬max | no ¬greatest =
+    begin
+        ⟦ digit+1 x ¬greatest ∙ ⟧
+    ≡⟨ refl ⟩
+        Digit-toℕ (digit+1 x ¬greatest) o
+    ≡⟨ digit+1-toℕ x ¬greatest ⟩
+        suc (Fin.toℕ x + o)
+    ≡⟨ refl ⟩
+        suc ⟦ x ∙ ⟧
+    ∎
+next-number-NullBase-lemma {d} {o} (x ∷ xs) ¬max | no ¬greatest =
+    begin
+        ⟦ digit+1 x ¬greatest ∷ xs ⟧
+    ≡⟨ refl ⟩
+        Digit-toℕ (digit+1 x ¬greatest) o + ⟦ xs ⟧ * zero
+    ≡⟨ cong (λ w → w + ⟦ xs ⟧ * zero) (digit+1-toℕ x ¬greatest) ⟩
+        suc (Fin.toℕ x + o + ⟦ xs ⟧ * zero)
+    ≡⟨ refl ⟩
+        suc ⟦ x ∷ xs ⟧
+    ∎
+\end{lstlisting}
+
+\subsubsection{{\lstinline|next-number-is-greater-NullBase|}}
+
+Recall that {\lstinline|x < y|} is essentially a synonym of {\lstinline|suc x ≤ y|}.
+We nail this with the lemma we have just proven.
+
+\begin{lstlisting}
 next-number-is-greater-NullBase : ∀ {d o}
     → (xs : Numeral 0 (suc d) o)
     → (¬max : ¬ (Maximum xs))
     → ⟦ next-number-NullBase xs ¬max ⟧ > ⟦ xs ⟧
-next-number-is-greater-NullBase {d} {o} xs ¬max with nullBaseView d o
-next-number-is-greater-NullBase xs ¬max | AllZeros =
-    contradiction (Maximum-AllZeros xs) ¬max
-next-number-is-greater-NullBase xs ¬max | Others _ with Greatest? (lsd xs)
-next-number-is-greater-NullBase xs ¬max | Others _ | yes greatest =
-    contradiction (Maximum-NullBase-Greatest xs greatest) ¬max
-next-number-is-greater-NullBase {d} {o} (x ∙) ¬max | Others _ | no ¬greatest =
+next-number-is-greater-NullBase xs ¬max =
     start
-        suc ⟦ x ∙ ⟧
-    ≈⟨ refl ⟩
-        suc (Digit-toℕ x o)
-    ≈⟨ sym (digit+1-toℕ x ¬greatest) ⟩
-        Digit-toℕ (digit+1 x ¬greatest) o
-    ≈⟨ refl ⟩
-        ⟦ digit+1 x ¬greatest ∙ ⟧
-    □
-next-number-is-greater-NullBase {d} {o} (x ∷ xs) ¬max | Others _ | no ¬greatest =
-    start
-        suc ⟦ x ∷ xs ⟧
-    ≈⟨ refl ⟩
-        suc (Digit-toℕ x o) + ⟦ xs ⟧ * 0
-    ≈⟨ cong (λ w → w + ⟦ xs ⟧ * 0) (sym (digit+1-toℕ x ¬greatest)) ⟩
-        Digit-toℕ (digit+1 x ¬greatest) o + ⟦ xs ⟧ * 0
-    ≈⟨ refl ⟩
-        ⟦ digit+1 x ¬greatest ∷ xs ⟧
+        suc ⟦ xs ⟧
+    ≈⟨ sym (next-number-NullBase-lemma xs ¬max) ⟩
+        ⟦ next-number-NullBase xs ¬max ⟧
     □
 \end{lstlisting}
+
+\subsubsection{{\lstinline|next-number-is-immediate-NullBase|}}
+
+Here, the argument {\lstinline|ys|} stands for \textit{any} numeral of {\lstinline|Numeral 0 (suc d) o|}.
+
+\begin{lstlisting}
+next-number-is-immediate-NullBase : ∀ {d o}
+    → (xs : Numeral 0 (suc d) o)
+    → (ys : Numeral 0 (suc d) o)
+    → (¬max : ¬ (Maximum xs))
+    → ⟦ ys ⟧ > ⟦ xs ⟧
+    → ⟦ ys ⟧ ≥ ⟦ next-number-NullBase xs ¬max ⟧
+next-number-is-immediate-NullBase xs ys ¬max prop =
+    start
+        ⟦ next-number-NullBase xs ¬max ⟧
+    ≈⟨ next-number-NullBase-lemma xs ¬max ⟩
+        suc ⟦ xs ⟧
+    ≤⟨ prop ⟩
+        ⟦ ys ⟧
+    □
+\end{lstlisting}
+
 
 \subsection{The Next Numeral of Proper}
 
