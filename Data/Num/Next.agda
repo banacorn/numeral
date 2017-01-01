@@ -29,19 +29,29 @@ open DecTotalOrder decTotalOrder using (reflexive) renaming (refl to ≤-refl)
 
 ------------------------------------------------------------------------
 
-data NullBaseView : ℕ → ℕ → Set where
-    AllZeros :                                     NullBaseView 0 0
-    Others   : ∀ {d o} → (bound : d + o ≥ 1 ⊔ o) → NullBaseView d o
-
-nullBaseView : ∀ d o → NullBaseView d o
-nullBaseView zero    zero     = AllZeros
-nullBaseView zero    (suc o)  = Others (s≤s ≤-refl)
-nullBaseView (suc d) zero     = Others (s≤s z≤n)
-nullBaseView (suc d) (suc o)  = Others (n≤m+n (suc d) (suc o))
+-- data NullBaseView : ℕ → ℕ → Set where
+--     AllZeros :                                     NullBaseView 0 0
+--     Others   : ∀ {d o} → (bound : d + o ≥ 1 ⊔ o) → NullBaseView d o
+--
+-- nullBaseView : ∀ d o → NullBaseView d o
+-- nullBaseView zero    zero     = AllZeros
+-- nullBaseView zero    (suc o)  = Others (s≤s ≤-refl)
+-- nullBaseView (suc d) zero     = Others (s≤s z≤n)
+-- nullBaseView (suc d) (suc o)  = Others (n≤m+n (suc d) (suc o))
 
 --------------------------------------------------------------------------------
 -- next-number
 --------------------------------------------------------------------------------
+
+next-number-NullBase : ∀ {d o}
+    → (xs : Numeral 0 (suc d) o)
+    → ¬ (Maximum xs)
+    → Numeral 0 (suc d) o
+next-number-NullBase xs       ¬max with Greatest? (lsd xs)
+next-number-NullBase xs       ¬max | yes greatest =
+    contradiction (Maximum-NullBase-Greatest xs greatest) ¬max
+next-number-NullBase (x ∙)    ¬max | no ¬greatest = digit+1 x ¬greatest ∙
+next-number-NullBase (x ∷ xs) ¬max | no ¬greatest = digit+1 x ¬greatest ∷ xs
 
 -- next-number-NullBase-test : ∀ {d o}
 --     → {A : Set}
@@ -60,17 +70,17 @@ nullBaseView (suc d) (suc o)  = Others (n≤m+n (suc d) (suc o))
 --     → ¬ (Maximum xs)
 --     → Numeral 0 (suc d) o
 -- a xs ¬max = next-number-NullBase-test xs ¬max ? (λ x → {!   !})
-
-next-number-NullBase : ∀ {d o}
-    → (xs : Numeral 0 (suc d) o)
-    → ¬ (Maximum xs)
-    → Numeral 0 (suc d) o
-next-number-NullBase {d} {o} xs ¬max with nullBaseView d o
-next-number-NullBase xs       ¬max | AllZeros = contradiction (Maximum-AllZeros xs) ¬max
-next-number-NullBase xs       ¬max | Others bound with Greatest? (lsd xs)
-next-number-NullBase xs       ¬max | Others bound | yes greatest = contradiction (Maximum-NullBase-Greatest xs greatest) ¬max
-next-number-NullBase (x ∙   ) ¬max | Others bound | no ¬greatest = digit+1 x ¬greatest ∙
-next-number-NullBase (x ∷ xs) ¬max | Others bound | no ¬greatest = digit+1 x ¬greatest ∷ xs
+--
+-- next-number-NullBase : ∀ {d o}
+--     → (xs : Numeral 0 (suc d) o)
+--     → ¬ (Maximum xs)
+--     → Numeral 0 (suc d) o
+-- next-number-NullBase {d} {o} xs ¬max with nullBaseView d o
+-- next-number-NullBase xs       ¬max | AllZeros = contradiction (Maximum-AllZeros xs) ¬max
+-- next-number-NullBase xs       ¬max | Others bound with Greatest? (lsd xs)
+-- next-number-NullBase xs       ¬max | Others bound | yes greatest = contradiction (Maximum-NullBase-Greatest xs greatest) ¬max
+-- next-number-NullBase (x ∙   ) ¬max | Others bound | no ¬greatest = digit+1 x ¬greatest ∙
+-- next-number-NullBase (x ∷ xs) ¬max | Others bound | no ¬greatest = digit+1 x ¬greatest ∷ xs
 
 
 mutual
@@ -409,17 +419,16 @@ next-number-is-greater-NullBase : ∀ {d o}
     → (xs : Numeral 0 (suc d) o)
     → (¬max : ¬ (Maximum xs))
     → ⟦ next-number-NullBase xs ¬max ⟧ > ⟦ xs ⟧
-next-number-is-greater-NullBase {d} {o} xs ¬max with nullBaseView d o
-next-number-is-greater-NullBase {0} {0} xs ¬max | AllZeros = contradiction (Maximum-AllZeros xs) ¬max
-next-number-is-greater-NullBase {d} {o} xs ¬max | Others bound with Greatest? (lsd xs)
-next-number-is-greater-NullBase {d} {o} xs ¬max | Others bound | yes greatest = contradiction (Maximum-NullBase-Greatest xs greatest) ¬max
-next-number-is-greater-NullBase {d} {o} (x ∙) ¬max | Others bound | no ¬greatest =
+next-number-is-greater-NullBase xs       ¬max with Greatest? (lsd xs)
+next-number-is-greater-NullBase xs       ¬max | yes greatest =
+    contradiction (Maximum-NullBase-Greatest xs greatest) ¬max
+next-number-is-greater-NullBase {d} {o} (x ∙) ¬max | no ¬greatest =
     start
         suc (Digit-toℕ x o)
     ≈⟨ sym (digit+1-toℕ x ¬greatest) ⟩
         Digit-toℕ (digit+1 x ¬greatest) o
     □
-next-number-is-greater-NullBase {d} {o}  (x ∷ xs) ¬max | Others bound | no ¬greatest =
+next-number-is-greater-NullBase {d} {o} (x ∷ xs) ¬max | no ¬greatest =
     start
         suc ⟦ x ∷ xs ⟧
     ≈⟨ refl ⟩
@@ -429,6 +438,7 @@ next-number-is-greater-NullBase {d} {o}  (x ∷ xs) ¬max | Others bound | no ¬
     ≈⟨ refl ⟩
         ⟦ digit+1 x ¬greatest ∷ xs ⟧
     □
+
 
 next-number-is-greater : ∀ {b d o}
     → (xs : Numeral b d o)
@@ -639,11 +649,10 @@ next-number-is-immediate-NullBase : ∀ {d o}
     → (¬max : ¬ (Maximum xs))
     → ⟦ ys ⟧ > ⟦ xs ⟧
     → ⟦ ys ⟧ ≥ ⟦ next-number-NullBase xs ¬max ⟧
-next-number-is-immediate-NullBase {d} {o} xs ys ¬max prop with nullBaseView d o
-next-number-is-immediate-NullBase {_} {_} xs ys ¬max prop | AllZeros = contradiction (Maximum-AllZeros xs) ¬max
-next-number-is-immediate-NullBase {d} {o} xs ys ¬max prop | Others bound with Greatest? (lsd xs)
-next-number-is-immediate-NullBase {d} {o} xs ys ¬max prop | Others bound | yes greatest = contradiction (Maximum-NullBase-Greatest xs greatest) ¬max
-next-number-is-immediate-NullBase {d} {o} (x ∙) ys ¬max prop | Others bound | no ¬greatest =
+next-number-is-immediate-NullBase xs ys       ¬max prop with Greatest? (lsd xs)
+next-number-is-immediate-NullBase xs ys       ¬max prop | yes greatest =
+    contradiction (Maximum-NullBase-Greatest xs greatest) ¬max
+next-number-is-immediate-NullBase {d} {o} (x ∙) ys ¬max prop | no ¬greatest =
     start
         Digit-toℕ (digit+1 x ¬greatest) o
     ≈⟨ digit+1-toℕ x ¬greatest ⟩
@@ -651,7 +660,7 @@ next-number-is-immediate-NullBase {d} {o} (x ∙) ys ¬max prop | Others bound |
     ≤⟨ prop ⟩
         ⟦ ys ⟧
     □
-next-number-is-immediate-NullBase {d} {o} (x ∷ xs) ys ¬max prop | Others bound | no ¬greatest =
+next-number-is-immediate-NullBase {d} {o} (x ∷ xs) ys ¬max prop | no ¬greatest =
     start
         ⟦ digit+1 x ¬greatest ∷ xs ⟧
     ≈⟨ cong (λ w → w + ⟦ xs ⟧ * 0) (digit+1-toℕ x ¬greatest) ⟩
@@ -659,7 +668,6 @@ next-number-is-immediate-NullBase {d} {o} (x ∷ xs) ys ¬max prop | Others boun
     ≤⟨ prop ⟩
         ⟦ ys ⟧
     □
-
 
 next-number-is-immediate-Proper : ∀ {b d o}
     → (xs : Numeral (suc b) (suc d) o)

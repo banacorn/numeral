@@ -49,17 +49,16 @@ next-number-NullBase-lemma : ∀ {d o}
     → (xs : Numeral 0 (suc d) o)
     → (¬max : ¬ (Maximum xs))
     → ⟦ next-number-NullBase xs ¬max ⟧ ≡ suc ⟦ xs ⟧
-next-number-NullBase-lemma {d} {o} xs ¬max with nullBaseView d o
-next-number-NullBase-lemma {_} {_} xs       ¬max | AllZeros = contradiction (Maximum-AllZeros xs) ¬max
-next-number-NullBase-lemma {d} {o} xs       ¬max | Others bound with Greatest? (lsd xs)
-next-number-NullBase-lemma {d} {o} xs       ¬max | Others bound | yes greatest = contradiction (Maximum-NullBase-Greatest xs greatest) ¬max
-next-number-NullBase-lemma {d} {o} (x ∙)    ¬max | Others bound | no ¬greatest =
+next-number-NullBase-lemma {d} {o} xs    ¬max with Greatest? (lsd xs)
+next-number-NullBase-lemma {d} {o} xs    ¬max | yes greatest =
+    contradiction (Maximum-NullBase-Greatest xs greatest) ¬max
+next-number-NullBase-lemma {d} {o} (x ∙) ¬max | no ¬greatest =
     begin
         Digit-toℕ (digit+1 x ¬greatest) o
     ≡⟨ digit+1-toℕ x ¬greatest ⟩
         suc (Fin.toℕ x + o)
     ∎
-next-number-NullBase-lemma {d} {o} (x ∷ xs) ¬max | Others bound | no ¬greatest =
+next-number-NullBase-lemma {d} {o} (x ∷ xs) ¬max | no ¬greatest =
     begin
         Digit-toℕ (digit+1 x ¬greatest) o + ⟦ xs ⟧ * zero
     ≡⟨ cong (λ w → w + ⟦ xs ⟧ * zero) (digit+1-toℕ x ¬greatest) ⟩
@@ -91,7 +90,7 @@ IsGapped⇒¬Incrementable {b} {d} {o} xs greatest proper gapped (incremented , 
             □
 
         ⟦next⟧≯⟦incremented⟧ : ⟦ next ⟧ ≯ ⟦ incremented ⟧
-        ⟦next⟧≯⟦incremented⟧ = ≤⇒≯ $ next-number-is-LUB-Proper xs incremented proper (m≡1+n⇒m>n claim)
+        ⟦next⟧≯⟦incremented⟧ = ≤⇒≯ $ next-number-is-immediate-Proper xs incremented proper (m≡1+n⇒m>n claim)
 
 
 
