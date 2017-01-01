@@ -26,39 +26,25 @@ The number ``6'', for example, has no correspondence on the numeral side.
     \begin{adjustbox}{max width=\textwidth}
         \begin{tikzpicture}
             % the frame
-            \path[clip] (0, -1) rectangle (50, 1);
+            \path[clip] (0, -2) rectangle (30, 3);
             % the spine
-            \draw[ultra thick] (0,0) -- (50,0);
-            % the body
-            \draw[thick] (1, 0.4) rectangle (9, 0.6);
-            % \draw[thick, fill=black] (1, -0.1) rectangle (9, +0.1);
+            \draw[ultra thick] (0,0) -- (30,0);
+
+            % % the body
+            \foreach \i in {0,...,2} {
+                \draw[thick, fill=black] ({\i * 10}, {\i * 0.6 + 0.4}) rectangle ({\i * 10 + 5}, {\i * 0.6 + 0.8});
+            };
 
             % ticks
-            \foreach \i in {1,...,9} {
-                \draw[ultra thick, draw=white] (\i,-0.3) -- (\i,0.3);
+            \foreach \i in {0,...,30} {
+                \draw[ultra thick, draw=white] (\i,-0.3) -- (\i,3);
             };
             %
-            % % labels
-            % \draw[->, ultra thick] (1.5,1) -- (1.5,0.5)
-            %     node at (1.5, 1.3) {\numexpr$o$};
-            % \draw[->, ultra thick] (8.5,1) -- (8.5,0.5)
-            %     node at (8.5, 1.3) {\numexpr$o+d$};
-        \end{tikzpicture}
-    \end{adjustbox}
-\end{center}
-
-\begin{center}
-    \begin{adjustbox}{max width=\textwidth}
-        \begin{tikzpicture}
-            % a straight line segment
-            \draw (0, 0) -- (10, 0);
-            % the ticks and their labels
-            \foreach \x  in {0,...,5}
-                \draw[xshift=\x*2 cm] (0pt,2pt) -- (0pt,-1pt) node[below,fill=white] {\scriptsize\the\numexpr\x*10\relax};
-            \foreach \x  in {0,...,4}
-                \draw[ultra thick, xshift=\x*2 cm, yshift=\x*0.3 cm] (0,0.3) -- (1,0.3);
             % labels
-            \node at (5, -1) {{\lstinline|Numeral 10 5 0|}};
+            \node[below, scale=2] at (0.5, 0) {$0$};
+            \node[below, scale=2] at (10.5, 0) {$10$};
+            \node[below, scale=2] at (20.5, 0) {$20$};
+            \node[scale=2] at (15, -1.5) {{\lstinline|Numeral 10 5 0|}};
         \end{tikzpicture}
     \end{adjustbox}
 \end{center}
@@ -70,19 +56,30 @@ onto the same number. We can see immediately that their evaluations are not
 \begin{center}
     \begin{adjustbox}{max width=\textwidth}
         \begin{tikzpicture}
-            % a straight line segment
-            \draw (0, 0) -- (10, 0);
-            % the ticks and their labels
-            \foreach \x  in {0,...,5}
-                \draw[xshift=\x*2 cm] (0pt,2pt) -- (0pt,-1pt) node[below,fill=white] {\scriptsize\the\numexpr\x*10\relax};
-            \foreach \x  in {0,...,3}
-                \draw[ultra thick, xshift=\x*2 cm, yshift=\x*0.3 cm] (0,0.3) -- (3,0.3);
-            \draw[ultra thick, xshift=8 cm, yshift=1.2 cm] (0,0.3) -- (2,0.3);
+            % the frame
+            \path[clip] (0, -2) rectangle (30, 3);
+            % the spine
+            \draw[ultra thick] (0,0) -- (30,0);
+
+            % % the body
+            \foreach \i in {0,...,2} {
+                \draw[thick, fill=black] ({\i * 10}, {\i * 0.6 + 0.4}) rectangle ({\i * 10 + 15}, {\i * 0.6 + 0.8});
+            };
+
+            % ticks
+            \foreach \i in {0,...,30} {
+                \draw[ultra thick, draw=white] (\i,-0.3) -- (\i,3);
+            };
+            %
             % labels
-            \node at (5, -1) {{\lstinline|Numeral 10 15 0|}};
+            \node[below, scale=2] at (0.5, 0) {$0$};
+            \node[below, scale=2] at (10.5, 0) {$10$};
+            \node[below, scale=2] at (20.5, 0) {$20$};
+            \node[scale=2] at (15, -1.5) {{\lstinline|Numeral 10 15 0|}};
         \end{tikzpicture}
     \end{adjustbox}
 \end{center}
+
 
 As we can see, numerals do not align with numbers perfectly.
 Finding ``the next number'' thus becomes a non-trivial problem.
@@ -181,21 +178,19 @@ All numerals are mapped onto this single and continuous number line below.
             % the frame
             \path[clip] (0, -1) rectangle (10, 2);
             % the spine
-            \draw[ultra thick] (0,0) -- (10,0);
+            \draw[ultra thick] (0,0) -- (1,0);
+            \draw[ultra thick] (9,0) -- (10,0);
             % the body
-            \draw[thick] (1, -0.2) rectangle (9, +0.2);
-            \draw[thick, fill=black] (1, -0.2) rectangle (9, +0.2);
 
-            % ticks
-            \foreach \i in {1,...,9} {
-                \draw[ultra thick, draw=white] (\i,-0.3) -- (\i,0.3);
+            \foreach \i in {1,...,8} {
+                \draw[ultra thick, fill=white] ({\i+0.05}, -0.2) rectangle ({\i+0.95}, +0.2);
             };
 
             % labels
             \draw[->, ultra thick] (1.5,1) -- (1.5,0.5)
-                node at (1.5, 1.3) {\numexpr$o$};
+                node at (1.5, 1.3) {$o$};
             \draw[->, ultra thick] (8.5,1) -- (8.5,0.5)
-                node at (8.5, 1.3) {\numexpr$o+d$};
+                node at (8.5, 1.3) {$o+d$};
         \end{tikzpicture}
     \end{adjustbox}
 \end{center}
@@ -210,22 +205,20 @@ number of the line have to be excluded.
             % the frame
             \path[clip] (0, -1) rectangle (10, 2);
             % the spine
-            \draw[ultra thick] (0,0) -- (10,0);
+            \draw[ultra thick] (0,0) -- (1,0);
+            \draw[ultra thick] (9,0) -- (10,0);
             % the body
-            \draw[thick] (1, -0.2) rectangle (9, +0.2);
-            \draw[thick, fill=black] (1, -0.2) rectangle (8, +0.2);
-            \draw[thick, fill=gray, draw=gray] (8, -0.2) rectangle (9, +0.2);
 
-            % ticks
-            \foreach \i in {1,...,9} {
-                \draw[ultra thick, draw=white] (\i,-0.3) -- (\i,0.3);
+            \foreach \i in {1,...,7} {
+                \draw[ultra thick, fill=black] ({\i+0.05}, -0.2) rectangle ({\i+0.95}, +0.2);
             };
+            \draw[ultra thick, fill=gray] (8.05, -0.2) rectangle (8.95, +0.2);
 
             % labels
             \draw[->, ultra thick] (1.5,1) -- (1.5,0.5)
-                node at (1.5, 1.3) {\numexpr$o$};
+                node at (1.5, 1.3) {$o$};
             \draw[->, ultra thick] (7.5,1) -- (7.5,0.5)
-                node at (7.5, 1.3) {\numexpr$o+d-1$};
+                node at (7.5, 1.3) {$o+d-1$};
 
             % arrows
             \foreach \i in {0,...,9} {
@@ -344,94 +337,134 @@ next-number-is-immediate-NullBase xs ys ¬max prop =
 
 Unlike in systems of {\lstinline|NullBase|} where every numeral gets mapped onto
 a single and continuous number line.
-Things are way more complicated in systems of {\lstinline|Proper|}.
+There are \textit{three different cases} where the given numeral might be located
+in systems of {\lstinline|Proper|}.
 
-% \subsubsection{Interior Numerals}
+\subsubsection{Intervals}
+
+This is the simplest case.
+To reach the next numeral, all we have to do is to increment the LSD.
+There is no need of performing carries or messing with other digits.
 
 \begin{center}
     \begin{adjustbox}{max width=\textwidth}
         \begin{tikzpicture}
-            \path[clip] (5.5, -0.5) rectangle (17.5, 2.5);
+            % the frame
+            \path[clip] (5.5, -1.5) rectangle (17.5, 1.5);
 
+            % the body
             \foreach \i in {0,...,2} {
-                \draw[xshift=\i*8 cm, yshift=\i*0.6 cm, ultra thick] (0, 0.4) rectangle (7, 0.8);
-                \draw[xshift=\i*8 cm, yshift=\i*0.6 cm, ultra thick, fill=black] (0, 0.4) rectangle (6, 0.8);
-                \draw[xshift=\i*8 cm, yshift=\i*0.6 cm, ultra thick, fill=gray] (6, 0.4) rectangle (7, 0.8);
+                \foreach \j in {0,...,5} {
+                    \draw[ultra thick, fill=black] ({\i*8+\j+0.05}, {\i*0.6-0.8}) rectangle ({\i*8+\j+0.95}, {\i*0.6-0.4});
+                };
+                \draw[ultra thick, fill=gray] ({\i*8+6.05}, {\i*0.6-0.8}) rectangle ({\i*8+6.95}, {\i*0.6-0.4});
             };
 
             \foreach \i in {5,...,6} {
-                \coordinate (\i) at ({\i + 0.5}, 0.3);
+                \coordinate (\i) at ({\i + 0.5}, -0.9);
             };
             \foreach \i in {8,...,15} {
-                \coordinate (\i) at ({\i + 0.5}, 0.9);
+                \coordinate (\i) at ({\i + 0.5}, -0.3);
             };
             \foreach \i in {16,...,17} {
-                \coordinate (\i) at ({\i + 0.5}, 1.5);
+                \coordinate (\i) at ({\i + 0.5}, 0.3);
             };
 
             \foreach \i in {5,...,5} {
                 \pgfmathsetmacro{\j}{\i + 1}
-                \path[->, ultra thick] ($ (\i) + (+0.1, 0) $) edge[bend right=60] node {} ($ (\j) + (-0.1, 0) $);
+                \path[->, ultra thick] (\i) edge[bend right=60] node {} ($ (\j) + (-0.1, 0) $);
             };
             \foreach \i in {8,...,13} {
                 \pgfmathsetmacro{\j}{\i + 1}
-                \path[->, ultra thick] ($ (\i) + (+0.1, 0) $) edge[bend right=60] node {} ($ (\j) + (-0.1, 0) $);
+                \path[->, ultra thick] (\i) edge[bend right=60] node {} ($ (\j) + (-0.1, 0) $);
             };
             \foreach \i in {16,...,16} {
                 \pgfmathsetmacro{\j}{\i + 1}
-                \path[->, ultra thick] ($ (\i) + (+0.1, 0) $) edge[bend right=60] node {} ($ (\j) + (-0.1, 0) $);
+                \path[->, ultra thick] (\i) edge[bend right=60] node {} ($ (\j) + (-0.1, 0) $);
             };
 
         \end{tikzpicture}
     \end{adjustbox}
 \end{center}
+
+\subsubsection{Gapped Endpoints}
+
+When the given numeral's LSD happens to be the greatest
+and there is a \textit{gap} before the next numeral.
+There are no other numerals in between that could bridge the gap.
+To reach the next numeral, the LSD has to be reset to the least digit;
+the rest of the numeral (digits of higher significance) are replaced with
+its \textit{next} numeral to compensate for the loss of the LSD.
 
 \begin{center}
     \begin{adjustbox}{max width=\textwidth}
         \begin{tikzpicture}
-            \path[clip] (5.5, -0.5) rectangle (17.5, 2.5);
+            % the frame
+            \path[clip] (5.5, -1.5) rectangle (17.5, 1.5);
 
+            % the body
             \foreach \i in {0,...,2} {
-                \draw[xshift=\i*8 cm, yshift=\i*0.6 cm, ultra thick] (0, 0.4) rectangle (7, 0.8);
-                \draw[xshift=\i*8 cm, yshift=\i*0.6 cm, ultra thick, fill=black] (6, 0.4) rectangle (7, 0.8);
-                \draw[xshift=\i*8 cm, yshift=\i*0.6 cm, ultra thick, fill=gray] (8, 1) rectangle (9, 1.4);
+                \draw[ultra thick, fill=gray] ({\i*8+0.05}, {\i*0.6-0.8}) rectangle ({\i*8+0.95}, {\i*0.6-0.4});
+                \foreach \j in {1,...,5} {
+                    \draw[ultra thick] ({\i*8+\j+0.05}, {\i*0.6-0.8}) rectangle ({\i*8+\j+0.95}, {\i*0.6-0.4});
+                };
+                \draw[ultra thick, fill=black] ({\i*8+6.05}, {\i*0.6-0.8}) rectangle ({\i*8+6.95}, {\i*0.6-0.4});
             };
 
-            \coordinate (A) at (7.1, 0.6);
-            \coordinate (11) at (8.5, 0.9);
-            \coordinate (1A) at (15.1, 1.2);
-            \coordinate (21) at (16.5, 1.5);
+            % arrows
+            \coordinate (A) at (7.1, -0.6);
+            \coordinate (B) at (8.5, -0.3);
+            \coordinate (C) at (15.1, 0);
+            \coordinate (D) at (16.5, 0.3);
 
-            \path[->, ultra thick] (A) edge[bend right=60] node {} (11);
-            \path[->, ultra thick] (1A) edge[bend right=60] node {} (21);
+            \path[->, ultra thick] (A) edge[bend right=60] node {} (B);
+            \path[->, ultra thick] (C) edge[bend right=60] node {} (D);
+            % \path[->, ultra thick] (\i) edge[bend right=60] node {} ($ (\j) + (-0.1, 0) $);
 
         \end{tikzpicture}
     \end{adjustbox}
 \end{center}
+
+\subsubsection{Ungapped Endpoints}
+
+When the given numeral's LSD happens to be the greatest
+but we can find a numeral right ahead of it.
+% Just like in the case of \textit{gapped endpoints}, the rest of the numeral are
+% replace with its next numeral.
+
+% To reach the next numeral, the LSD has to be reset to the least digit;
+% the rest of the numeral (digits of higher significance) are replaced with
+% its \texit{next} numeral to compensate for the loss of the LSD.
 
 \begin{center}
     \begin{adjustbox}{max width=\textwidth}
         \begin{tikzpicture}
-            \path[clip] (6.5, -0.5) rectangle (18.5, 2.5);
+            % the frame
+            \path[clip] (6.5, -1.5) rectangle (18.5, 1.5);
 
+            % the body
             \foreach \i in {0,...,2} {
-                \draw[xshift=\i*8 cm, yshift=\i*0.6 cm, ultra thick] (0, 0.4) rectangle (9, 0.8);
-                \draw[xshift=\i*8 cm, yshift=\i*0.6 cm, ultra thick, fill=black] (8, 0.4) rectangle (9, 0.8);
-                \draw[xshift=\i*8 cm, yshift=\i*0.6 cm, ultra thick, fill=gray] (9, 1) rectangle (10, 1.4);
+                \draw[ultra thick] ({\i*8+0.05}, {\i*0.6-0.8}) rectangle ({\i*8+0.95}, {\i*0.6-0.4});
+                \draw[ultra thick, fill=gray] ({\i*8+1.05}, {\i*0.6-0.8}) rectangle ({\i*8+1.95}, {\i*0.6-0.4});
+                \foreach \j in {2,...,7} {
+                    \draw[ultra thick] ({\i*8+\j+0.05}, {\i*0.6-0.8}) rectangle ({\i*8+\j+0.95}, {\i*0.6-0.4});
+                };
+                \draw[ultra thick, fill=black] ({\i*8+8.05}, {\i*0.6-0.8}) rectangle ({\i*8+8.95}, {\i*0.6-0.4});
             };
 
-            \coordinate (A) at (9.1, 0.6);
-            \coordinate (11) at (9.5, 0.9);
-            \coordinate (1A) at (17.1, 1.2);
-            \coordinate (21) at (17.5, 1.5);
+            % arrows
+            \coordinate (A) at (9.1, -0.6);
+            \coordinate (B) at (9.5, -0.3);
+            \coordinate (C) at (17.1, 0);
+            \coordinate (D) at (17.5, 0.3);
 
-            \path[->, ultra thick] (A) edge[bend right] node {} (11);
-            \path[->, ultra thick] (1A) edge[bend right] node {} (21);
+            \path[->, ultra thick] (A) edge[bend right] node {} (B);
+            \path[->, ultra thick] (C) edge[bend right] node {} (D);
+            % \path[->, ultra thick] (\i) edge[bend right=60] node {} ($ (\j) + (-0.1, 0) $);
 
         \end{tikzpicture}
     \end{adjustbox}
 \end{center}
-
 
 % There are three cases in {\lstinline|Proper|} we need to ha.
 

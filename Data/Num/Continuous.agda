@@ -44,11 +44,11 @@ Continuous-Proper-Gapped-counter-example : ∀ {b d o}
     → (gapped : Gapped#0 b d o)
     → ¬ (Incrementable {suc b} {_} {o} (greatest-digit d ∙))
 Continuous-Proper-Gapped-counter-example {b} {d} {o} proper gapped with nextView {b} (greatest-digit d ∙) proper
-Continuous-Proper-Gapped-counter-example proper gapped | NeedNoCarry b d o ¬greatest
+Continuous-Proper-Gapped-counter-example proper gapped | Interval b d o ¬greatest
     = contradiction (greatest-digit-is-the-Greatest d) ¬greatest
-Continuous-Proper-Gapped-counter-example proper gapped | IsGapped b d o greatest _
-    = IsGapped⇒¬Incrementable (greatest-digit d ∙) greatest proper gapped
-Continuous-Proper-Gapped-counter-example proper gapped  | NotGapped b d o greatest ¬gapped
+Continuous-Proper-Gapped-counter-example proper gapped | GappedEndpoint b d o greatest _
+    = GappedEndpoint⇒¬Incrementable (greatest-digit d ∙) greatest proper gapped
+Continuous-Proper-Gapped-counter-example proper gapped  | UngappedEndpoint b d o greatest ¬gapped
     = contradiction gapped ¬gapped
 
 Continuous-Proper-Gapped#0 : ∀ {b d o}
@@ -66,23 +66,23 @@ Continuous-Proper-¬Gapped#0 : ∀ {b d o}
     → (¬gapped : ¬ (Gapped#0 b d o))
     → Continuous (suc b) (suc d) o
 Continuous-Proper-¬Gapped#0 proper ¬gapped xs with nextView xs proper
-Continuous-Proper-¬Gapped#0 proper ¬gapped xs | NeedNoCarry b d o ¬greatest
+Continuous-Proper-¬Gapped#0 proper ¬gapped xs | Interval b d o ¬greatest
     = (next-number-Proper xs proper) , (begin
             ⟦ next-number-Proper xs proper ⟧
-        ≡⟨ cong ⟦_⟧ (next-number-Proper-refine xs proper (NeedNoCarry b d o ¬greatest)) ⟩
-            ⟦ next-number-Proper-NeedNoCarry xs ¬greatest proper ⟧
-        ≡⟨ next-number-Proper-NeedNoCarry-lemma xs ¬greatest proper ⟩
+        ≡⟨ cong ⟦_⟧ (next-number-Proper-refine xs proper (Interval b d o ¬greatest)) ⟩
+            ⟦ next-number-Proper-Interval xs ¬greatest proper ⟧
+        ≡⟨ next-number-Proper-Interval-lemma xs ¬greatest proper ⟩
             suc ⟦ xs ⟧
         ∎)
-Continuous-Proper-¬Gapped#0 proper ¬gapped (x ∙)    | IsGapped b d o greatest gapped = contradiction gapped ¬gapped
-Continuous-Proper-¬Gapped#0 proper ¬gapped (x ∷ xs) | IsGapped b d o greatest gapped
+Continuous-Proper-¬Gapped#0 proper ¬gapped (x ∙)    | GappedEndpoint b d o greatest gapped = contradiction gapped ¬gapped
+Continuous-Proper-¬Gapped#0 proper ¬gapped (x ∷ xs) | GappedEndpoint b d o greatest gapped
     = contradiction gapped (¬Gapped#0⇒¬Gapped#N xs proper ¬gapped)
-Continuous-Proper-¬Gapped#0 proper _ xs | NotGapped b d o greatest ¬gapped
+Continuous-Proper-¬Gapped#0 proper _ xs | UngappedEndpoint b d o greatest ¬gapped
     = (next-number-Proper xs proper) , (begin
         ⟦ next-number-Proper xs proper ⟧
-    ≡⟨ cong ⟦_⟧ (next-number-Proper-refine xs proper (NotGapped b d o greatest ¬gapped)) ⟩
-        ⟦ next-number-Proper-NotGapped xs greatest proper ¬gapped ⟧
-    ≡⟨ next-number-Proper-NotGapped-lemma xs greatest proper ¬gapped ⟩
+    ≡⟨ cong ⟦_⟧ (next-number-Proper-refine xs proper (UngappedEndpoint b d o greatest ¬gapped)) ⟩
+        ⟦ next-number-Proper-UngappedEndpoint xs greatest proper ¬gapped ⟧
+    ≡⟨ next-number-Proper-UngappedEndpoint-lemma xs greatest proper ¬gapped ⟩
         suc ⟦ xs ⟧
     ∎)
 
