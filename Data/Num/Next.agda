@@ -28,7 +28,7 @@ open ≤-Reasoning renaming (begin_ to start_; _∎ to _□; _≡⟨_⟩_ to _�
 open DecTotalOrder decTotalOrder using (reflexive) renaming (refl to ≤-refl)
 
 --------------------------------------------------------------------------------
--- next-number
+-- next-number: NullBase
 --------------------------------------------------------------------------------
 
 next-number-NullBase : ∀ {d o}
@@ -40,6 +40,61 @@ next-number-NullBase xs       ¬max | yes greatest =
     contradiction (Maximum-NullBase-Greatest xs greatest) ¬max
 next-number-NullBase (x ∙)    ¬max | no ¬greatest = digit+1 x ¬greatest ∙
 next-number-NullBase (x ∷ xs) ¬max | no ¬greatest = digit+1 x ¬greatest ∷ xs
+
+next-number-NullBase-lemma : ∀ {d o}
+    → (xs : Numeral 0 (suc d) o)
+    → (¬max : ¬ (Maximum xs))
+    → ⟦ next-number-NullBase xs ¬max ⟧ ≡ suc ⟦ xs ⟧
+next-number-NullBase-lemma {d} {o} xs    ¬max with Greatest? (lsd xs)
+next-number-NullBase-lemma {d} {o} xs    ¬max | yes greatest =
+    contradiction (Maximum-NullBase-Greatest xs greatest) ¬max
+next-number-NullBase-lemma {d} {o} (x ∙) ¬max | no ¬greatest =
+    begin
+        Digit-toℕ (digit+1 x ¬greatest) o
+    ≡⟨ digit+1-toℕ x ¬greatest ⟩
+        suc (Fin.toℕ x + o)
+    ∎
+next-number-NullBase-lemma {d} {o} (x ∷ xs) ¬max | no ¬greatest =
+    begin
+        ⟦ digit+1 x ¬greatest ∷ xs ⟧
+    ≡⟨ refl ⟩
+        Digit-toℕ (digit+1 x ¬greatest) o + ⟦ xs ⟧ * zero
+    ≡⟨ cong (λ w → w + ⟦ xs ⟧ * zero) (digit+1-toℕ x ¬greatest) ⟩
+        suc (Fin.toℕ x + o + ⟦ xs ⟧ * zero)
+    ≡⟨ refl ⟩
+        suc ⟦ x ∷ xs ⟧
+    ∎
+
+next-number-is-greater-NullBase : ∀ {d o}
+    → (xs : Numeral 0 (suc d) o)
+    → (¬max : ¬ (Maximum xs))
+    → ⟦ next-number-NullBase xs ¬max ⟧ > ⟦ xs ⟧
+next-number-is-greater-NullBase xs ¬max =
+    start
+        suc ⟦ xs ⟧
+    ≈⟨ sym (next-number-NullBase-lemma xs ¬max) ⟩
+        ⟦ next-number-NullBase xs ¬max ⟧
+    □
+
+next-number-is-immediate-NullBase : ∀ {d o}
+    → (xs : Numeral 0 (suc d) o)
+    → (ys : Numeral 0 (suc d) o)
+    → (¬max : ¬ (Maximum xs))
+    → ⟦ ys ⟧ > ⟦ xs ⟧
+    → ⟦ ys ⟧ ≥ ⟦ next-number-NullBase xs ¬max ⟧
+next-number-is-immediate-NullBase xs ys ¬max prop =
+    start
+        ⟦ next-number-NullBase xs ¬max ⟧
+    ≈⟨ next-number-NullBase-lemma xs ¬max ⟩
+        suc ⟦ xs ⟧
+    ≤⟨ prop ⟩
+        ⟦ ys ⟧
+    □
+
+--------------------------------------------------------------------------------
+-- next-number: Proper
+--------------------------------------------------------------------------------
+
 
 mutual
     Gapped#0 : ∀ b d o → Set
@@ -347,66 +402,6 @@ gap>0 {b} {d} {o} (x ∷ xs) proper =
     where
         next-xs : Numeral (suc b) (suc d) o
         next-xs = next-number-Proper xs proper
-
-next-number : ∀ {b d o}
-    → (xs : Numeral b d o)
-    → ¬ (Maximum xs)
-    → Numeral b d o
-next-number {b} {d} {o} xs ¬max with numView b d o
-next-number xs ¬max | NullBase d o = next-number-NullBase xs ¬max
-next-number xs ¬max | NoDigits b o = NoDigits-explode xs
-next-number xs ¬max | AllZeros b   = contradiction (Maximum-AllZeros xs) ¬max
-next-number xs ¬max | Proper b d o proper = next-number-Proper xs proper
-
---------------------------------------------------------------------------------
--- next-number-is-greater
---------------------------------------------------------------------------------
-
-next-number-NullBase-lemma : ∀ {d o}
-    → (xs : Numeral 0 (suc d) o)
-    → (¬max : ¬ (Maximum xs))
-    → ⟦ next-number-NullBase xs ¬max ⟧ ≡ suc ⟦ xs ⟧
-next-number-NullBase-lemma {d} {o} xs    ¬max with Greatest? (lsd xs)
-next-number-NullBase-lemma {d} {o} xs    ¬max | yes greatest =
-    contradiction (Maximum-NullBase-Greatest xs greatest) ¬max
-next-number-NullBase-lemma {d} {o} (x ∙) ¬max | no ¬greatest =
-    begin
-        Digit-toℕ (digit+1 x ¬greatest) o
-    ≡⟨ digit+1-toℕ x ¬greatest ⟩
-        suc (Fin.toℕ x + o)
-    ∎
-next-number-NullBase-lemma {d} {o} (x ∷ xs) ¬max | no ¬greatest =
-    begin
-        ⟦ digit+1 x ¬greatest ∷ xs ⟧
-    ≡⟨ refl ⟩
-        Digit-toℕ (digit+1 x ¬greatest) o + ⟦ xs ⟧ * zero
-    ≡⟨ cong (λ w → w + ⟦ xs ⟧ * zero) (digit+1-toℕ x ¬greatest) ⟩
-        suc (Fin.toℕ x + o + ⟦ xs ⟧ * zero)
-    ≡⟨ refl ⟩
-        suc ⟦ x ∷ xs ⟧
-    ∎
-
-next-number-is-greater-NullBase : ∀ {d o}
-    → (xs : Numeral 0 (suc d) o)
-    → (¬max : ¬ (Maximum xs))
-    → ⟦ next-number-NullBase xs ¬max ⟧ > ⟦ xs ⟧
-next-number-is-greater-NullBase xs ¬max =
-    start
-        suc ⟦ xs ⟧
-    ≈⟨ sym (next-number-NullBase-lemma xs ¬max) ⟩
-        ⟦ next-number-NullBase xs ¬max ⟧
-    □
-
-next-number-is-greater : ∀ {b d o}
-    → (xs : Numeral b d o)
-    → (¬max : ¬ (Maximum xs))
-    → ⟦ next-number xs ¬max ⟧ > ⟦ xs ⟧
-next-number-is-greater {b} {d} {o} xs ¬max with numView b d o
-next-number-is-greater xs ¬max | NullBase d o = next-number-is-greater-NullBase xs ¬max
-next-number-is-greater xs ¬max | NoDigits b o = NoDigits-explode xs
-next-number-is-greater xs ¬max | AllZeros b   = contradiction (Maximum-AllZeros xs) ¬max
-next-number-is-greater xs ¬max | Proper b d o proper = next-number-is-greater-Proper xs proper
-
 --------------------------------------------------------------------------------
 -- Properties of next-number on Proper Numbers
 --------------------------------------------------------------------------------
@@ -597,23 +592,8 @@ next-number-Proper-NotGapped-lemma {b} {d} {o} (x ∷ xs) greatest proper ¬gapp
             ∎
 
 --------------------------------------------------------------------------------
--- next-number-is-immediate
+-- next-number-is-immediate-Proper
 --------------------------------------------------------------------------------
-
-next-number-is-immediate-NullBase : ∀ {d o}
-    → (xs : Numeral 0 (suc d) o)
-    → (ys : Numeral 0 (suc d) o)
-    → (¬max : ¬ (Maximum xs))
-    → ⟦ ys ⟧ > ⟦ xs ⟧
-    → ⟦ ys ⟧ ≥ ⟦ next-number-NullBase xs ¬max ⟧
-next-number-is-immediate-NullBase xs ys ¬max prop =
-    start
-        ⟦ next-number-NullBase xs ¬max ⟧
-    ≈⟨ next-number-NullBase-lemma xs ¬max ⟩
-        suc ⟦ xs ⟧
-    ≤⟨ prop ⟩
-        ⟦ ys ⟧
-    □
 
 next-number-is-immediate-Proper : ∀ {b d o}
     → (xs : Numeral (suc b) (suc d) o)
@@ -701,6 +681,40 @@ next-number-is-immediate-Proper xs ys proper prop | NotGapped b d o greatest ¬g
     ≤⟨ prop ⟩
         ⟦ ys ⟧
     □
+
+--------------------------------------------------------------------------------
+-- next-number
+--------------------------------------------------------------------------------
+
+next-number : ∀ {b d o}
+    → (xs : Numeral b d o)
+    → ¬ (Maximum xs)
+    → Numeral b d o
+next-number {b} {d} {o} xs ¬max with numView b d o
+next-number xs ¬max | NullBase d o = next-number-NullBase xs ¬max
+next-number xs ¬max | NoDigits b o = NoDigits-explode xs
+next-number xs ¬max | AllZeros b   = contradiction (Maximum-AllZeros xs) ¬max
+next-number xs ¬max | Proper b d o proper = next-number-Proper xs proper
+
+
+--------------------------------------------------------------------------------
+-- next-number-is-greater
+--------------------------------------------------------------------------------
+
+
+next-number-is-greater : ∀ {b d o}
+    → (xs : Numeral b d o)
+    → (¬max : ¬ (Maximum xs))
+    → ⟦ next-number xs ¬max ⟧ > ⟦ xs ⟧
+next-number-is-greater {b} {d} {o} xs ¬max with numView b d o
+next-number-is-greater xs ¬max | NullBase d o = next-number-is-greater-NullBase xs ¬max
+next-number-is-greater xs ¬max | NoDigits b o = NoDigits-explode xs
+next-number-is-greater xs ¬max | AllZeros b   = contradiction (Maximum-AllZeros xs) ¬max
+next-number-is-greater xs ¬max | Proper b d o proper = next-number-is-greater-Proper xs proper
+
+--------------------------------------------------------------------------------
+-- next-number-is-immediate
+--------------------------------------------------------------------------------
 
 next-number-is-immediate : ∀ {b d o}
     → (xs : Numeral b d o)
