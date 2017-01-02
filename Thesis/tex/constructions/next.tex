@@ -604,7 +604,7 @@ There is an important theorem about the intriguing relation between
 {\lstinline|Gapped#0|} and {\lstinline|Gapped#N|} which will be proven and used
 in later chapters.
 
-\subsection{A View within Another}
+\subsection{A View within another}
 
 With the predicate {\lstinline|Gapped|} and its friends, we can further classify
 systems of {\lstinline|Proper|} into finer categories.
@@ -649,7 +649,7 @@ nextView {b} {d} {o} xs proper | no ¬greatest
 
 Finally, to compute the next numeral of systems of {\lstinline|Proper|},
 we categorize the given numeral with {\lstinline|NextView|}
-and delegate the task to helper functions.
+and delegate the task to corresponding helper functions.
 
 \begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
 next-numeral-Proper : ∀ {b d o}
@@ -851,4 +851,23 @@ next-numeral-Proper-UngappedEndpoint {b} {d} {o} (x ∷ xs) greatest proper gapp
                 (⟦ next-xs ⟧ ∸ ⟦ xs ⟧) * suc b
             □
 \end{lstlisting}
-\end{document}
+% 
+% \subsection{{\lstinline|next-numeral-is-greater-Proper|}}
+%
+% \paragraph{Remark} most of the reasonings are going to be skipped,
+% leaving only the types.
+%
+% \begin{lstlisting}
+% next-numeral-is-greater-Proper : ∀ {b d o}
+%     → (xs : Numeral (suc b) (suc d) o)
+%     → (proper : 2 ≤ suc (d + o))
+%     → ⟦ next-numeral-Proper xs proper ⟧ > ⟦ xs ⟧
+% next-numeral-is-greater-Proper xs proper with nextView xs proper
+% \end{lstlisting}
+%
+% \begin{lstlisting}
+% next-numeral-is-greater-Proper (x ∙) proper | Interval b d o ¬greatest
+%     = reflexive $ sym (digit+1-toℕ x ¬greatest)
+% next-numeral-is-greater-Proper (x ∷ xs) proper | Interval b d o ¬greatest
+%     = reflexive $ cong (λ w → w + ⟦ xs ⟧ * suc b) (sym (digit+1-toℕ x ¬greatest))\end{lstlisting}
+% \end{document}
