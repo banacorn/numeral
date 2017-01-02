@@ -340,7 +340,7 @@ a single and continuous number line.
 There are \textit{three different cases} where the given numeral might be located
 in systems of {\lstinline|Proper|}.
 
-\subsubsection{Intervals}
+\paragraph{Intervals}
 
 This is the simplest case like in {\lstinline|NullBase|}.
 To reach the next numeral, all we have to do is to increment the LSD.
@@ -387,7 +387,7 @@ There is no need of performing carries or messing with other digits.
     \end{adjustbox}
 \end{center}
 
-\subsubsection{Gapped Endpoints}
+\paragraph{Gapped Endpoints}
 
 When the given numeral's LSD happens to be the greatest
 and there is a \textit{gap} before the next numeral.
@@ -425,7 +425,7 @@ There are no other numerals in between that could bridge the gap.
     \end{adjustbox}
 \end{center}
 
-\subsubsection{Ungapped Endpoints}
+\paragraph{Ungapped Endpoints}
 
 When the given numeral's LSD happens to be the greatest
 but we can find another numeral right ahead of it.
@@ -472,71 +472,76 @@ but we can find another numeral right ahead of it.
 It is easy to tell if a given numeral is located in intervals or at endpoints
 just by looking at its LSD.
 However, to tell apart from \textit{gapped} and \textit{ungapped} endpoints
-is a completely different story.
+is an entirely different story.
 First things first, we need a proposition for expressing this matter.
 
-Given a numeral {\lstinline|_ ∷ xs|} and suppose that the next numeral of
-{\lstinline|xs|} is {\lstinline|xs'|}
+Given a numeral {\lstinline|x ∷ xs|} of {\lstinline|Numeral b d o|} and
+suppose that the next numeral of {\lstinline|xs|} is {\lstinline|xs'|}.
+The value of {\lstinline|x ∷ xs|} ranges from {\lstinline|⟦ xs ⟧ × b + o|} to
+{\lstinline|⟦ xs ⟧ × b + o + d - 1|}.
 
 \begin{center}
     \begin{adjustbox}{max width=\textwidth}
         \begin{tikzpicture}
             % the frame
-            \path[clip] (5.5, -1.5) rectangle (17.5, 2.5);
+            \path[clip] (4.5, -1.5) rectangle (18.5, 2.5);
+
+            % ticks and labels
+            \draw[ultra thick, dotted] (8.5,-1) -- (8.5,1)
+                node[above] {{\lstinline|⟦ xs ⟧ × b + o|}};
+
+            \draw[ultra thick, dotted] (16.5,-1) -- (16.5,1)
+                node[above] {{\lstinline|⟦ xs' ⟧ × b + o|}};
+
+            \draw[ultra thick, decoration={brace,mirror,raise=10},decorate]
+                (8,-0.2) -- node[below=0.5] {totally {\lstinline|d|} digits} (14,-0.2);
 
             % the body
             \foreach \i in {0,...,2} {
                 \foreach \j in {0,...,5} {
-                    \draw[ultra thick, draw=gray] ({\i*8+\j+0.05}, {\i*0.6-0.8}) rectangle ({\i*8+\j+0.95}, {\i*0.6-0.4});
+                    \draw[ultra thick, draw=gray, fill=white] ({\i*8+\j+0.05}, {\i*0.6-0.8}) rectangle ({\i*8+\j+0.95}, {\i*0.6-0.4});
                 };
             };
 
-            \draw[ultra thick, loosely dotted] (7.5,-1) -- (7.5,1)
-                node[above] {{\lstinline|⟦ xs ⟧ × b|}};
-
-            \draw[ultra thick, loosely dotted] (15.5,-1) -- (15.5,1)
-                node[above] {{\lstinline|⟦ xs' ⟧ × b|}};
-
-            \draw[ultra thick, decoration={brace,mirror,raise=10},decorate]
-                (8,-0.2) -- node[below=0.5] {{\lstinline|d|}} (14,-0.2);
         \end{tikzpicture}
     \end{adjustbox}
 \end{center}
 
 If we look closely, we can see that the gap comes from the difference between
-the number of digits {\lstinline|d|} and {\lstinline|⟦ xs' ⟧ × b - ⟦ xs ⟧ × b|}.
+{\lstinline|⟦ xs ⟧ × b + o + d|} and {\lstinline|⟦ xs' ⟧ × b + o|}.
 
 \begin{center}
     \begin{adjustbox}{max width=\textwidth}
         \begin{tikzpicture}
             % the frame
-            \path[clip] (25, -2.5) rectangle (35, 3);
+            \path[clip] (37.5, -3.5) rectangle (55.5, 4.5);
+
+
+            % ticks
+            \draw[ultra thick, loosely dotted] (43.5,-1.5) -- (43.5,3)
+                node[above, scale=1.5] {{\lstinline|⟦ xs ⟧ × b + o + d|}};
+
+            \draw[ultra thick, loosely dotted] (49.5,-1.5) -- (49.5,3)
+                node[above, scale=1.5] {{\lstinline|⟦ xs' ⟧ × b + o|}};
+
+            \draw[ultra thick, decoration={brace,mirror,raise=10},decorate]
+                (43.5,-1.5) -- node[below=0.5, scale=1.5] {{\lstinline|the gap|}} (49.5,-1.5);
 
             % the body
             \foreach \i in {0,...,2} {
                 \foreach \j in {0,...,5} {
-                    \draw[ultra thick, draw=gray] ({\i*16+\j*2+0.1}, {\i*1.2-1.6}) rectangle ({\i*16+\j*2+1.9}, {\i*1.2-0.8});
+                    \draw[ultra thick, draw=gray, fill=white] ({\i*24+\j*3+0.15}, {\i*1.8-2.4}) rectangle ({\i*24+\j*3+2.85}, {\i*1.8-1.2});
                 };
             };
-
-            \draw[ultra thick, loosely dotted] (31,-1) -- (31,2)
-                node[above] {{\lstinline|⟦ xs' ⟧ × b|}};
-
-            \draw[ultra thick, loosely dotted] (27,0.4) -- (27,2)
-                node[above] {{\lstinline|⟦ xs ⟧ × b + d|}};
-
-            \draw[ultra thick, loosely dotted] (27,-0.4) -- (27,-1);
-
-            \draw[ultra thick, decoration={brace,mirror,raise=10},decorate]
-                (27,-1) -- node[below=0.5] {{\lstinline|the gap|}} (31,-1);
-            % \draw[ultra thick, decoration={brace,mirror,raise=10},decorate]
-            %     (8,-0.2) -- node[below=0.5] {{\lstinline|Digit-toℕ x o|}} (15,-0.2);
         \end{tikzpicture}
     \end{adjustbox}
 \end{center}
 
-Then the predicate of the gap ahead of {\lstinline|x ∷ xs|} can then be expressed
-like this:
+If there are enough digits to bridge the gap between {\lstinline|⟦ xs ⟧ × b + o|}
+and {\lstinline|⟦ xs' ⟧ × b + o|} then there will be no gaps.
+Thus the predicate for determine if there is a gap ahead of {\lstinline|x ∷ xs|}
+can then be expressed as below. Notice that {\lstinline|next-numeral-Proper|}
+is used as part of the definition.
 
 \begin{lstlisting}
 Gapped : ∀ b d o
@@ -549,19 +554,20 @@ Gapped b d o xs proper = suc d < (⟦ next-xs ⟧ ∸ ⟦ xs ⟧) * suc b
         next-xs = next-numeral-Proper xs proper
 \end{lstlisting}
 
-However, the predicate above does not account for numerals like {\lstinline|x ∙|}.
-That is, when the numeral is composed solely of a digit and the gap ahead is
-\textit{the first gap} of the whole system.
-The predicate of the first gap is simple as this:
+However, the predicate above does not take numerals like {\lstinline|x ∙|} into
+account, i.e., numerals that are composed of only a single digit.
+In that case, the gap ahead will be \textit{the first gap} among the others.
+The predicate of the first gap is as simple as comparing the number of digits
+{\lstinline|d|} with {\lstinline|carry o × b|}, where {\lstinline|carry o = 1 ⊔ o|}
+computes the least (be greater than zero) digit of higher significance.
 
 \begin{lstlisting}
 Gapped : ∀ b d o → Set
 Gapped b d o = suc d < carry o * suc b
 \end{lstlisting}
 
-Where {\lstinline|carry o = 1 ⊔ o|} computes the carry digit of higher significance.
-Rename and then combine the two predicates above, we have devised a predicate
-for predicting the gap ahead of a numeral.
+Combining the two predicates above together, we devise a predicate for
+predicting the gap ahead of a numeral.
 
 \begin{lstlisting}
 Gapped#0 : ∀ b d o → Set
@@ -584,8 +590,22 @@ Gapped {b} {d} {o} (x ∙)    proper = Gapped#0 b d o
 Gapped {b} {d} {o} (x ∷ xs) proper = Gapped#N b d o xs proper
 \end{lstlisting}
 
-We will prove that there is an important and intriguing relation between
-{\lstinline|Gapped#0|} and {\lstinline|Gapped#N|} in later chapters.
+Along with decidable versions.
 
+\begin{lstlisting}
+Gapped#0? :  ∀ b d o → Dec (Gapped#0 b d o)
+Gapped#N? :  ∀ b d o
+    → (xs : Numeral (suc b) (suc d) o)
+    → (proper : 2 ≤ suc (d + o))
+    → Dec (Gapped#N b d o xs proper)
+Gapped? : ∀ {b d o}
+    → (xs : Numeral (suc b) (suc d) o)
+    → (proper : 2 ≤ suc (d + o))
+    → Dec (Gapped {b} {d} {o} xs proper)
+\end{lstlisting}
+
+There is an important theorem about the intriguing relation between
+{\lstinline|Gapped#0|} and {\lstinline|Gapped#N|} which will be proven and used
+in later chapters.
 
 \end{document}
