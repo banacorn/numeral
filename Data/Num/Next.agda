@@ -232,6 +232,51 @@ mutual
     next-numeral-Proper xs proper | UngappedEndpoint b d o greatest ¬gapped
         = next-numeral-Proper-UngappedEndpoint xs greatest proper ¬gapped
 
+    -- next-numeral-Proper : ∀ {b d o}
+    --     → (xs : Numeral (suc b) (suc d) o)
+    --     → (proper : 2 ≤ suc (d + o))
+    --     → Numeral (suc b) (suc d) o
+    -- next-numeral-Proper xs proper with nextView xs proper
+    -- next-numeral-Proper (x ∙)    proper | Interval b d o ¬greatest = digit+1 x ¬greatest ∙
+    -- next-numeral-Proper (x ∷ xs) proper | Interval b d o ¬greatest = digit+1 x ¬greatest ∷ xs
+    -- next-numeral-Proper (x ∙)    proper | GappedEndpoint b d o greatest gapped
+    --     = z ∷ carry-digit d o proper ∙
+    -- next-numeral-Proper (x ∷ xs) proper | GappedEndpoint b d o greatest gapped
+    --     = z ∷ next-numeral-Proper xs proper
+    -- next-numeral-Proper (x ∙)    proper | UngappedEndpoint b d o greatest ¬gapped
+    --     = digit+1-n x greatest (carry o * suc b) lower-bound ∷ carry-digit d o proper ∙
+    --     where
+    --         lower-bound : carry o * suc b > 0
+    --         lower-bound =
+    --             start
+    --                 1
+    --             ≤⟨ m≤m*1+n 1 b ⟩
+    --                 1 * suc b
+    --             ≤⟨ *n-mono (suc b) (m≤m⊔n 1 o) ⟩
+    --                 carry o * suc b
+    --             □
+    -- next-numeral-Proper (x ∷ xs) proper | UngappedEndpoint b d o greatest ¬gapped
+    --     = digit+1-n x greatest gap lower-bound ∷ next-xs
+    --     where
+    --         next-xs : Numeral (suc b) (suc d) o
+    --         next-xs = next-numeral-Proper xs proper
+    --
+    --         gap : ℕ
+    --         gap = (⟦ next-xs ⟧ ∸ ⟦ xs ⟧) * suc b
+    --
+    --         lower-bound : gap > 0
+    --         lower-bound =
+    --             start
+    --                 1
+    --             ≤⟨ m≤m*1+n 1 b ⟩
+    --                 1 * suc b
+    --             ≤⟨ *n-mono (suc b) (m≥n+o⇒m∸o≥n ⟦ next-xs ⟧ 1 ⟦ xs ⟧ (next-numeral-is-greater-Proper xs proper)) ⟩
+    --                 (⟦ next-xs ⟧ ∸ ⟦ xs ⟧) * suc b
+    --             □
+
+
+
+
     next-numeral-is-greater-Proper : ∀ {b d o}
         → (xs : Numeral (suc b) (suc d) o)
         → (proper : 2 ≤ suc (d + o))

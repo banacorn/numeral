@@ -244,12 +244,12 @@ next-numeral-NullBase : ∀ {d o}
     → ¬ (Maximum xs)
     → Numeral 0 (suc d) o
 next-numeral-NullBase xs       ¬max with Greatest? (lsd xs)
-next-numeral-NullBase xs       ¬max | yes greatest =
-    contradiction (Maximum-NullBase-Greatest xs greatest) ¬max
-next-numeral-NullBase (x ∙)    ¬max | no ¬greatest =
-    digit+1 x ¬greatest ∙
-next-numeral-NullBase (x ∷ xs) ¬max | no ¬greatest =
-    digit+1 x ¬greatest ∷ xs
+next-numeral-NullBase xs       ¬max | yes greatest
+    = contradiction (Maximum-NullBase-Greatest xs greatest) ¬max
+next-numeral-NullBase (x ∙)    ¬max | no ¬greatest
+    = digit+1 x ¬greatest ∙
+next-numeral-NullBase (x ∷ xs) ¬max | no ¬greatest
+    = digit+1 x ¬greatest ∷ xs
 \end{lstlisting}
 
 \subsubsection{Lemma}
@@ -343,8 +343,7 @@ in systems of {\lstinline|Proper|}.
 \paragraph{Intervals}
 
 This is the simplest case like in {\lstinline|NullBase|}.
-To reach the next numeral, all we have to do is to increment the LSD.
-There is no need of performing carries or messing with other digits.
+The given numeral's LSD is not located at the end of the number line.
 
 \begin{center}
     \begin{adjustbox}{max width=\textwidth}
@@ -392,9 +391,6 @@ There is no need of performing carries or messing with other digits.
 When the given numeral's LSD happens to be the greatest
 and there is a \textit{gap} before the next numeral.
 There are no other numerals in between that could bridge the gap.
-% To reach the next numeral, the LSD has to be reset to the least digit;
-% the rest of the numeral (digits of higher significance) are replaced with
-% its \textit{next} numeral to compensate for the loss of the LSD.
 
 \begin{center}
     \begin{adjustbox}{max width=\textwidth}
@@ -608,4 +604,251 @@ There is an important theorem about the intriguing relation between
 {\lstinline|Gapped#0|} and {\lstinline|Gapped#N|} which will be proven and used
 in later chapters.
 
+\subsection{A View within Another}
+
+With the predicate {\lstinline|Gapped|} and its friends, we can further classify
+systems of {\lstinline|Proper|} into finer categories.
+
+\begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
+data NextView : (b d o : ℕ) (xs : Numeral b d o) (proper : 2 ≤ d + o) → Set where
+    Interval : ∀ b d o
+        → {xs : Numeral (suc b) (suc d) o}
+        → {proper : 2 ≤ suc (d + o)}
+        → (¬greatest : ¬ (Greatest (lsd xs)))
+        → NextView (suc b) (suc d) o xs proper
+    GappedEndpoint : ∀ b d o
+        → {xs : Numeral (suc b) (suc d) o}
+        → {proper : 2 ≤ suc (d + o)}
+        → (greatest : Greatest (lsd xs))
+        → (gapped : Gapped xs proper)
+        → NextView (suc b) (suc d) o xs proper
+    UngappedEndpoint : ∀ b d o
+        → {xs : Numeral (suc b) (suc d) o}
+        → {proper : 2 ≤ suc (d + o)}
+        → (greatest : Greatest (lsd xs))
+        → (¬gapped : ¬ (Gapped xs proper))
+        → NextView (suc b) (suc d) o xs proper
+\end{lstlisting}
+
+\begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
+nextView : ∀ {b d o}
+    → (xs : Numeral (suc b) (suc d) o)
+    → (proper : 2 ≤ suc (d + o))
+    → NextView (suc b) (suc d) o xs proper
+nextView {b} {d} {o} xs proper with Greatest? (lsd xs)
+nextView {b} {d} {o} xs proper | yes greatest with Gapped? xs proper
+nextView {b} {d} {o} xs proper | yes greatest | yes gapped
+    = GappedEndpoint  b d o greatest gapped
+nextView {b} {d} {o} xs proper | yes greatest | no ¬gapped
+    = UngappedEndpoint b d o greatest ¬gapped
+nextView {b} {d} {o} xs proper | no ¬greatest
+    = Interval b d o ¬greatest
+\end{lstlisting}
+
+\subsection{{\lstinline|next-numeral-Proper|}}
+
+Finally, to compute the next numeral of systems of {\lstinline|Proper|},
+we categorize the given numeral with {\lstinline|NextView|}
+and delegate the task to helper functions.
+
+\begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
+next-numeral-Proper : ∀ {b d o}
+    → (xs : Numeral (suc b) (suc d) o)
+    → (proper : 2 ≤ suc (d + o))
+    → Numeral (suc b) (suc d) o
+next-numeral-Proper xs proper with nextView xs proper
+next-numeral-Proper xs proper | Interval b d o ¬greatest
+    = next-numeral-Proper-Interval xs ¬greatest proper
+next-numeral-Proper xs proper | GappedEndpoint b d o greatest gapped
+    = next-numeral-Proper-GappedEndpoint xs proper gapped
+next-numeral-Proper xs proper | UngappedEndpoint b d o greatest ¬gapped
+    = next-numeral-Proper-UngappedEndpoint xs greatest proper ¬gapped
+\end{lstlisting}
+
+\paragraph{Interval}
+
+\begin{center}
+    \begin{adjustbox}{max width=\textwidth}
+        \begin{tikzpicture}
+            % the frame
+            \path[clip] (5.5, -1.5) rectangle (17.5, 1.5);
+
+            % the body
+            \foreach \i in {0,...,2} {
+                \foreach \j in {0,...,5} {
+                    \draw[ultra thick, fill=black] ({\i*8+\j+0.05}, {\i*0.6-0.8}) rectangle ({\i*8+\j+0.95}, {\i*0.6-0.4});
+                };
+                \draw[ultra thick, fill=gray] ({\i*8+6.05}, {\i*0.6-0.8}) rectangle ({\i*8+6.95}, {\i*0.6-0.4});
+            };
+
+            \foreach \i in {5,...,6} {
+                \coordinate (\i) at ({\i + 0.5}, -0.9);
+            };
+            \foreach \i in {8,...,15} {
+                \coordinate (\i) at ({\i + 0.5}, -0.3);
+            };
+            \foreach \i in {16,...,17} {
+                \coordinate (\i) at ({\i + 0.5}, 0.3);
+            };
+
+            \foreach \i in {5,...,5} {
+                \pgfmathsetmacro{\j}{\i + 1}
+                \path[->, ultra thick] (\i) edge[bend right=60] node {} ($ (\j) + (-0.1, 0) $);
+            };
+            \foreach \i in {8,...,13} {
+                \pgfmathsetmacro{\j}{\i + 1}
+                \path[->, ultra thick] (\i) edge[bend right=60] node {} ($ (\j) + (-0.1, 0) $);
+            };
+            \foreach \i in {16,...,16} {
+                \pgfmathsetmacro{\j}{\i + 1}
+                \path[->, ultra thick] (\i) edge[bend right=60] node {} ($ (\j) + (-0.1, 0) $);
+            };
+
+        \end{tikzpicture}
+    \end{adjustbox}
+\end{center}
+
+To reach the next numeral, all we have to do is to increment the LSD.
+There is no need of performing carries or messing with other digits.
+
+\begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
+next-numeral-Proper-Interval : ∀ {b d o}
+    → (xs : Numeral (suc b) (suc d) o)
+    → (¬greatest : ¬ (Greatest (lsd xs)))
+    → (proper : 2 ≤ suc (d + o))
+    → Numeral (suc b) (suc d) o
+next-numeral-Proper-Interval (x ∙)    ¬greatest proper
+    = digit+1 x ¬greatest ∙
+next-numeral-Proper-Interval (x ∷ xs) ¬greatest proper
+    = digit+1 x ¬greatest ∷ xs
+\end{lstlisting}
+
+\paragraph{Gapped Endpoints}
+
+\begin{center}
+    \begin{adjustbox}{max width=\textwidth}
+        \begin{tikzpicture}
+            % the frame
+            \path[clip] (5.5, -1.5) rectangle (17.5, 1.5);
+
+            % the body
+            \foreach \i in {0,...,2} {
+                \draw[ultra thick, fill=gray] ({\i*8+0.05}, {\i*0.6-0.8}) rectangle ({\i*8+0.95}, {\i*0.6-0.4});
+                \foreach \j in {1,...,5} {
+                    \draw[ultra thick] ({\i*8+\j+0.05}, {\i*0.6-0.8}) rectangle ({\i*8+\j+0.95}, {\i*0.6-0.4});
+                };
+                \draw[ultra thick, fill=black] ({\i*8+6.05}, {\i*0.6-0.8}) rectangle ({\i*8+6.95}, {\i*0.6-0.4});
+            };
+
+            % arrows
+            \coordinate (A) at (7.1, -0.6);
+            \coordinate (B) at (8.5, -0.3);
+            \coordinate (C) at (15.1, 0);
+            \coordinate (D) at (16.5, 0.3);
+
+            \path[->, ultra thick] (A) edge[bend right=60] node {} (B);
+            \path[->, ultra thick] (C) edge[bend right=60] node {} (D);
+            % \path[->, ultra thick] (\i) edge[bend right=60] node {} ($ (\j) + (-0.1, 0) $);
+
+        \end{tikzpicture}
+    \end{adjustbox}
+\end{center}
+
+To reach the next numeral, the LSD is reset to the least digit;
+the rest of the numeral (digits of higher significance) are replaced accordingly
+compensate for the loss of the LSD.
+
+\begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
+next-numeral-Proper-GappedEndpoint : ∀ {b d o}
+    → (xs : Numeral (suc b) (suc d) o)
+    → (proper : 2 ≤ suc (d + o))
+    → (gapped : Gapped xs proper)
+    → Numeral (suc b) (suc d) o
+next-numeral-Proper-GappedEndpoint (x ∙)    proper gapped
+    = z ∷ carry-digit d o proper ∙
+next-numeral-Proper-GappedEndpoint (x ∷ xs) proper gapped
+    = z ∷ next-numeral-Proper xs proper
+\end{lstlisting}
+
+\paragraph{Ungapped Endpoints}
+
+\begin{center}
+    \begin{adjustbox}{max width=\textwidth}
+        \begin{tikzpicture}
+            % the frame
+            \path[clip] (6.5, -1.5) rectangle (18.5, 1.5);
+
+            % the body
+            \foreach \i in {0,...,2} {
+                \draw[ultra thick] ({\i*8+0.05}, {\i*0.6-0.8}) rectangle ({\i*8+0.95}, {\i*0.6-0.4});
+                \draw[ultra thick, fill=gray] ({\i*8+1.05}, {\i*0.6-0.8}) rectangle ({\i*8+1.95}, {\i*0.6-0.4});
+                \foreach \j in {2,...,7} {
+                    \draw[ultra thick] ({\i*8+\j+0.05}, {\i*0.6-0.8}) rectangle ({\i*8+\j+0.95}, {\i*0.6-0.4});
+                };
+                \draw[ultra thick, fill=black] ({\i*8+8.05}, {\i*0.6-0.8}) rectangle ({\i*8+8.95}, {\i*0.6-0.4});
+            };
+
+            % arrows
+            \coordinate (A) at (9.1, -0.6);
+            \coordinate (B) at (9.5, -0.3);
+            \coordinate (C) at (17.1, 0);
+            \coordinate (D) at (17.5, 0.3);
+
+            \path[->, ultra thick] (A) edge[bend right] node {} (B);
+            \path[->, ultra thick] (C) edge[bend right] node {} (D);
+            % \path[->, ultra thick] (\i) edge[bend right=60] node {} ($ (\j) + (-0.1, 0) $);
+
+        \end{tikzpicture}
+    \end{adjustbox}
+\end{center}
+
+Just like in the case of \textit{gapped endpoints}, the more significant part
+of the numeral is replaced with some thing greater (either a carry-digit or
+the next numeral).
+The LSD is incremented and then subtracted by \textit{the exact size of the coming gap}.
+To compute the size of the gap, it is necessary to compute {\lstinline|next-xs|},
+the next numeral of the more significant part, beforehand.
+Moreover, we also need to assure that {\lstinline|next-xs|} is greater than
+{\lstinline|xs|}.
+Hence these constructions have to be written as mutually recursive definitions.
+
+\begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
+next-numeral-Proper-UngappedEndpoint : ∀ {b d o}
+    → (xs : Numeral (suc b) (suc d) o)
+    → (greatest : Greatest (lsd xs))
+    → (proper : 2 ≤ suc (d + o))
+    → (¬gapped : ¬ (Gapped xs proper))
+    → Numeral (suc b) (suc d) o
+next-numeral-Proper-UngappedEndpoint {b} {d} {o} (x ∙) greatest proper gapped
+    = digit+1-n x greatest (carry o * suc b) lower-bound ∷ carry-digit d o proper ∙
+    where
+        lower-bound : carry o * suc b > 0
+        lower-bound =
+            start
+                1
+            ≤⟨ m≤m*1+n 1 b ⟩
+                1 * suc b
+            ≤⟨ *n-mono (suc b) (m≤m⊔n 1 o) ⟩
+                carry o * suc b
+            □
+next-numeral-Proper-UngappedEndpoint {b} {d} {o} (x ∷ xs) greatest proper gapped
+    = digit+1-n x greatest gap lower-bound ∷ next-xs
+    where
+        next-xs : Numeral (suc b) (suc d) o
+        next-xs = next-numeral-Proper xs proper
+
+        gap : ℕ
+        gap = (⟦ next-xs ⟧ ∸ ⟦ xs ⟧) * suc b
+
+        lower-bound : gap > 0
+        lower-bound =
+            start
+                1
+            ≤⟨ m≤m*1+n 1 b ⟩
+                1 * suc b
+            ≤⟨ *n-mono (suc b) (m≥n+o⇒m∸o≥n ⟦ next-xs ⟧ 1 ⟦ xs ⟧
+                    (next-numeral-is-greater-Proper xs proper)) ⟩
+                (⟦ next-xs ⟧ ∸ ⟦ xs ⟧) * suc b
+            □
+\end{lstlisting}
 \end{document}
