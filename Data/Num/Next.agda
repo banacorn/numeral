@@ -276,52 +276,133 @@ mutual
 
 
 
-
-    next-numeral-is-greater-Proper : ∀ {b d o}
+    next-numeral-Proper-Interval-lemma : ∀ {b d o}
         → (xs : Numeral (suc b) (suc d) o)
+        → (¬greatest : ¬ (Greatest (lsd xs)))
         → (proper : 2 ≤ suc (d + o))
-        → ⟦ next-numeral-Proper xs proper ⟧ > ⟦ xs ⟧
-    next-numeral-is-greater-Proper xs proper with nextView xs proper
-    next-numeral-is-greater-Proper (x ∙) proper | Interval b d o ¬greatest
-        = reflexive $ sym (digit+1-toℕ x ¬greatest)
-    next-numeral-is-greater-Proper (x ∷ xs) proper | Interval b d o ¬greatest
-        = reflexive $ cong (λ w → w + ⟦ xs ⟧ * suc b) (sym (digit+1-toℕ x ¬greatest))
-    next-numeral-is-greater-Proper (x ∙) proper | GappedEndpoint b d o greatest gapped =
-        start
+        → ⟦ next-numeral-Proper-Interval xs ¬greatest proper ⟧ ≡ suc ⟦ xs ⟧
+    next-numeral-Proper-Interval-lemma {b} {d} {o} (x ∙) ¬greatest proper =
+        -- ⟦ digit+1 x ¬greatest ∙ ⟧ ≡ suc ⟦ x ∙ ⟧
+        begin
+            Digit-toℕ (digit+1 x ¬greatest) o
+        ≡⟨ digit+1-toℕ x ¬greatest ⟩
             suc (Digit-toℕ x o)
-        ≤⟨ Digit-upper-bound o x ⟩
-            suc d + o
-        ≈⟨ +-comm (suc d) o ⟩
-            o + suc d
-        ≤⟨ n+-mono o (<⇒≤ gapped) ⟩
+        ∎
+    next-numeral-Proper-Interval-lemma {b} {d} {o} (x ∷ xs) ¬greatest proper =
+    -- ⟦ digit+1 x ¬greatest ∷ xs ⟧ ≡ suc ⟦ x ∷ xs ⟧
+        begin
+            Digit-toℕ (digit+1 x ¬greatest) o + ⟦ xs ⟧ * suc b
+        ≡⟨ cong (λ w → w + ⟦ xs ⟧ * suc b) (digit+1-toℕ x ¬greatest) ⟩
+            suc (Digit-toℕ x o) + ⟦ xs ⟧ * suc b
+        ∎
+
+    next-numeral-Proper-GappedEndpoint-lemma : ∀ {b d o}
+        → (xs : Numeral (suc b) (suc d) o)
+        → (greatest : Greatest (lsd xs))
+        → (proper : 2 ≤ suc (d + o))
+        → (gapped : Gapped xs proper)
+        → ⟦ next-numeral-Proper-GappedEndpoint xs proper gapped ⟧ > suc ⟦ xs ⟧
+    next-numeral-Proper-GappedEndpoint-lemma {b} {d} {o} (x ∙) greatest proper gapped =
+        -- ⟦ z ∷ carry-digit d o proper ∙ ⟧ > suc ⟦ x ∙ ⟧
+        start
+            suc (suc (Fin.toℕ x + o))
+        ≈⟨ cong (λ w → suc w + o) greatest ⟩
+            suc (suc d) + o
+        ≈⟨ +-comm (suc (suc d)) o ⟩
+            o + suc (suc d)
+        ≤⟨ n+-mono o gapped ⟩
             o + carry o * suc b
         ≈⟨ cong (λ w → o + w * suc b) (sym (carry-digit-toℕ d o proper)) ⟩
-            o + Digit-toℕ (carry-digit d o proper) o * suc b
+            o + (Digit-toℕ (carry-digit d o proper) o) * suc b
         □
-    next-numeral-is-greater-Proper (x ∷ xs) proper | GappedEndpoint b d o greatest gapped =
-        start
-            suc (Digit-toℕ x o) + ⟦ xs ⟧ * suc b
-        ≈⟨ cong (λ w → suc w + ⟦ xs ⟧ * suc b) (greatest-digit-toℕ x greatest) ⟩
-            suc d + o + ⟦ xs ⟧ * suc b
-        ≈⟨ +-assoc (suc d) o (⟦ xs ⟧ * suc b) ⟩
-            suc d + (o + ⟦ xs ⟧ * suc b)
-        ≈⟨ a+[b+c]≡b+[a+c] (suc d) o (⟦ xs ⟧ * suc b) ⟩
-            o + (suc d + ⟦ xs ⟧ * suc b)
-        ≤⟨ n+-mono o (+n-mono (⟦ xs ⟧ * suc b) (<⇒≤ gapped)) ⟩
-            o + ((⟦ next-xs ⟧ ∸ ⟦ xs ⟧) * suc b + ⟦ xs ⟧ * suc b)
-        ≈⟨ cong (λ w → o + w) (sym (distribʳ-*-+ (suc b) (⟦ next-xs ⟧ ∸ ⟦ xs ⟧) ⟦ xs ⟧)) ⟩
-            o + (⟦ next-xs ⟧ ∸ ⟦ xs ⟧ + ⟦ xs ⟧) * suc b
-        ≈⟨ cong (λ w → o + w * suc b) (m∸n+n≡m (<⇒≤ next-xs>xs)) ⟩
-            o + ⟦ next-xs ⟧ * suc b
-        ≈⟨ refl ⟩
-            ⟦ z ∷ next-xs ⟧
-        □
+    next-numeral-Proper-GappedEndpoint-lemma {b} {d} {o} (x ∷ xs) greatest proper gapped
+        = proof
         where
             next-xs : Numeral (suc b) (suc d) o
             next-xs = next-numeral-Proper xs proper
 
             next-xs>xs : ⟦ next-xs ⟧ > ⟦ xs ⟧
             next-xs>xs = next-numeral-is-greater-Proper xs proper
+
+            next : Numeral (suc b) (suc d) o
+            next = z ∷ next-xs
+
+            -- ⟦ z ∷ next-numeral-Proper xs (Maximum-Proper xs proper) proper ⟧ > suc ⟦ x ∷ xs ⟧
+            proof : ⟦ next ⟧ > suc ⟦ x ∷ xs ⟧
+            proof = start
+                    suc (suc (Digit-toℕ x o)) + ⟦ xs ⟧ * suc b
+                ≈⟨ cong (λ w → suc (suc w) + ⟦ xs ⟧ * suc b) (greatest-digit-toℕ x greatest) ⟩
+                    suc (suc d) + o + ⟦ xs ⟧ * suc b
+                ≈⟨ +-assoc (suc (suc d)) o (⟦ xs ⟧ * suc b) ⟩
+                    suc (suc d) + (o + ⟦ xs ⟧ * suc b)
+                ≈⟨ a+[b+c]≡b+[a+c] (suc (suc d)) o (⟦ xs ⟧ * suc b) ⟩
+                    o + (suc (suc d) + ⟦ xs ⟧ * suc b)
+                ≤⟨ n+-mono o (+n-mono (⟦ xs ⟧ * suc b) gapped) ⟩
+                    o + ((⟦ next-xs ⟧ ∸ ⟦ xs ⟧) * suc b + ⟦ xs ⟧ * suc b)
+                ≈⟨ cong (λ w → o + w) (sym (distribʳ-*-+ (suc b) (⟦ next-xs ⟧ ∸ ⟦ xs ⟧) ⟦ xs ⟧)) ⟩
+                    o + (⟦ next-xs ⟧ ∸ ⟦ xs ⟧ + ⟦ xs ⟧) * suc b
+                ≈⟨ cong (λ w → o + w * suc b) (m∸n+n≡m (<⇒≤ next-xs>xs)) ⟩
+                    o + ⟦ next-xs ⟧ * suc b
+                ≈⟨ refl ⟩
+                    ⟦ z ∷ next-xs ⟧
+                □
+
+
+    next-numeral-is-greater-Proper : ∀ {b d o}
+        → (xs : Numeral (suc b) (suc d) o)
+        → (proper : 2 ≤ suc (d + o))
+        → ⟦ next-numeral-Proper xs proper ⟧ > ⟦ xs ⟧
+    next-numeral-is-greater-Proper xs proper with nextView xs proper
+    next-numeral-is-greater-Proper xs proper | Interval b d o ¬greatest =
+        start
+            suc ⟦ xs ⟧
+        ≈⟨ sym (next-numeral-Proper-Interval-lemma xs ¬greatest proper) ⟩
+            ⟦ next-numeral-Proper-Interval xs ¬greatest proper ⟧
+        □
+    next-numeral-is-greater-Proper xs proper | GappedEndpoint b d o greatest gapped =
+        start
+            suc ⟦ xs ⟧
+        ≤⟨ n≤1+n (suc ⟦ xs ⟧) ⟩
+            suc (suc ⟦ xs ⟧)
+        ≤⟨ next-numeral-Proper-GappedEndpoint-lemma xs greatest proper gapped ⟩
+            ⟦ next-numeral-Proper-GappedEndpoint xs proper gapped ⟧
+        □
+    -- next-numeral-is-greater-Proper (x ∙) proper | GappedEndpoint b d o greatest gapped =
+    --     start
+    --         suc (Digit-toℕ x o)
+    --     ≤⟨ Digit-upper-bound o x ⟩
+    --         suc d + o
+    --     ≈⟨ +-comm (suc d) o ⟩
+    --         o + suc d
+    --     ≤⟨ n+-mono o (<⇒≤ gapped) ⟩
+    --         o + carry o * suc b
+    --     ≈⟨ cong (λ w → o + w * suc b) (sym (carry-digit-toℕ d o proper)) ⟩
+    --         o + Digit-toℕ (carry-digit d o proper) o * suc b
+    --     □
+    -- next-numeral-is-greater-Proper (x ∷ xs) proper | GappedEndpoint b d o greatest gapped =
+    --     start
+    --         suc (Digit-toℕ x o) + ⟦ xs ⟧ * suc b
+    --     ≈⟨ cong (λ w → suc w + ⟦ xs ⟧ * suc b) (greatest-digit-toℕ x greatest) ⟩
+    --         suc d + o + ⟦ xs ⟧ * suc b
+    --     ≈⟨ +-assoc (suc d) o (⟦ xs ⟧ * suc b) ⟩
+    --         suc d + (o + ⟦ xs ⟧ * suc b)
+    --     ≈⟨ a+[b+c]≡b+[a+c] (suc d) o (⟦ xs ⟧ * suc b) ⟩
+    --         o + (suc d + ⟦ xs ⟧ * suc b)
+    --     ≤⟨ n+-mono o (+n-mono (⟦ xs ⟧ * suc b) (<⇒≤ gapped)) ⟩
+    --         o + ((⟦ next-xs ⟧ ∸ ⟦ xs ⟧) * suc b + ⟦ xs ⟧ * suc b)
+    --     ≈⟨ cong (λ w → o + w) (sym (distribʳ-*-+ (suc b) (⟦ next-xs ⟧ ∸ ⟦ xs ⟧) ⟦ xs ⟧)) ⟩
+    --         o + (⟦ next-xs ⟧ ∸ ⟦ xs ⟧ + ⟦ xs ⟧) * suc b
+    --     ≈⟨ cong (λ w → o + w * suc b) (m∸n+n≡m (<⇒≤ next-xs>xs)) ⟩
+    --         o + ⟦ next-xs ⟧ * suc b
+    --     ≈⟨ refl ⟩
+    --         ⟦ z ∷ next-xs ⟧
+    --     □
+    --     where
+    --         next-xs : Numeral (suc b) (suc d) o
+    --         next-xs = next-numeral-Proper xs proper
+    --
+    --         next-xs>xs : ⟦ next-xs ⟧ > ⟦ xs ⟧
+    --         next-xs>xs = next-numeral-is-greater-Proper xs proper
 
     next-numeral-is-greater-Proper (x ∙) proper | UngappedEndpoint b d o greatest ¬gapped =
         start
@@ -451,103 +532,32 @@ gap>0 {b} {d} {o} (x ∷ xs) proper =
 -- Properties of next-numeral on Proper Numbers
 --------------------------------------------------------------------------------
 
-next-numeral-Proper-refine-target : ∀ {b d o}
-    → (xs : Numeral (suc b) (suc d) o)
-    → (proper : 2 ≤ suc (d + o))
-    → NextView (suc b) (suc d) o xs proper
-    → Set
-next-numeral-Proper-refine-target xs proper (Interval b d o ¬greatest) = next-numeral-Proper xs proper ≡ next-numeral-Proper-Interval xs ¬greatest proper
-next-numeral-Proper-refine-target xs proper (GappedEndpoint b d o greatest gapped) = next-numeral-Proper xs proper ≡ next-numeral-Proper-GappedEndpoint xs proper gapped
-next-numeral-Proper-refine-target xs proper (UngappedEndpoint b d o greatest ¬gapped) = next-numeral-Proper xs proper ≡ next-numeral-Proper-UngappedEndpoint xs greatest proper ¬gapped
-
-next-numeral-Proper-refine : ∀ {b d o}
-    → (xs : Numeral (suc b) (suc d) o)
-    → (proper : 2 ≤ suc (d + o))
-    → (view : NextView (suc b) (suc d) o xs proper)
-    → next-numeral-Proper-refine-target xs proper view
-next-numeral-Proper-refine xs proper (Interval b d o ¬greatest) with nextView xs proper
-next-numeral-Proper-refine xs proper (Interval b d o ¬greatest) | Interval _ _ _ _ = refl
-next-numeral-Proper-refine xs proper (Interval b d o ¬greatest) | GappedEndpoint _ _ _ greatest _ = contradiction greatest ¬greatest
-next-numeral-Proper-refine xs proper (Interval b d o ¬greatest) | UngappedEndpoint _ _ _ greatest _ = contradiction greatest ¬greatest
-next-numeral-Proper-refine xs proper (GappedEndpoint b d o greatest gapped) with nextView xs proper
-next-numeral-Proper-refine xs proper (GappedEndpoint b d o greatest gapped) | Interval _ _ _ ¬greatest = contradiction greatest ¬greatest
-next-numeral-Proper-refine xs proper (GappedEndpoint b d o greatest gapped) | GappedEndpoint _ _ _ _ _ = refl
-next-numeral-Proper-refine xs proper (GappedEndpoint b d o greatest gapped) | UngappedEndpoint _ _ _ _ ¬gapped = contradiction gapped ¬gapped
-next-numeral-Proper-refine xs proper (UngappedEndpoint b d o greatest ¬gapped) with nextView xs proper
-next-numeral-Proper-refine xs proper (UngappedEndpoint b d o greatest ¬gapped) | Interval _ _ _ ¬greatest = contradiction greatest ¬greatest
-next-numeral-Proper-refine xs proper (UngappedEndpoint b d o greatest ¬gapped) | GappedEndpoint _ _ _ _ gapped = contradiction gapped ¬gapped
-next-numeral-Proper-refine xs proper (UngappedEndpoint b d o greatest ¬gapped) | UngappedEndpoint _ _ _ _ _ = refl
-
-next-numeral-Proper-Interval-lemma : ∀ {b d o}
-    → (xs : Numeral (suc b) (suc d) o)
-    → (¬greatest : ¬ (Greatest (lsd xs)))
-    → (proper : 2 ≤ suc (d + o))
-    → ⟦ next-numeral-Proper-Interval xs ¬greatest proper ⟧ ≡ suc ⟦ xs ⟧
-next-numeral-Proper-Interval-lemma {b} {d} {o} (x ∙) ¬greatest proper =
-    -- ⟦ digit+1 x ¬greatest ∙ ⟧ ≡ suc ⟦ x ∙ ⟧
-    begin
-        Digit-toℕ (digit+1 x ¬greatest) o
-    ≡⟨ digit+1-toℕ x ¬greatest ⟩
-        suc (Digit-toℕ x o)
-    ∎
-next-numeral-Proper-Interval-lemma {b} {d} {o} (x ∷ xs) ¬greatest proper =
--- ⟦ digit+1 x ¬greatest ∷ xs ⟧ ≡ suc ⟦ x ∷ xs ⟧
-    begin
-        Digit-toℕ (digit+1 x ¬greatest) o + ⟦ xs ⟧ * suc b
-    ≡⟨ cong (λ w → w + ⟦ xs ⟧ * suc b) (digit+1-toℕ x ¬greatest) ⟩
-        suc (Digit-toℕ x o) + ⟦ xs ⟧ * suc b
-    ∎
-
-next-numeral-Proper-GappedEndpoint-lemma : ∀ {b d o}
-    → (xs : Numeral (suc b) (suc d) o)
-    → (greatest : Greatest (lsd xs))
-    → (proper : 2 ≤ suc (d + o))
-    → (gapped : Gapped xs proper)
-    → ⟦ next-numeral-Proper-GappedEndpoint xs proper gapped ⟧ > suc ⟦ xs ⟧
-next-numeral-Proper-GappedEndpoint-lemma {b} {d} {o} (x ∙) greatest proper gapped =
-    -- ⟦ z ∷ carry-digit d o proper ∙ ⟧ > suc ⟦ x ∙ ⟧
-    start
-        suc (suc (Fin.toℕ x + o))
-    ≈⟨ cong (λ w → suc w + o) greatest ⟩
-        suc (suc d) + o
-    ≈⟨ +-comm (suc (suc d)) o ⟩
-        o + suc (suc d)
-    ≤⟨ n+-mono o gapped ⟩
-        o + carry o * suc b
-    ≈⟨ cong (λ w → o + w * suc b) (sym (carry-digit-toℕ d o proper)) ⟩
-        o + (Digit-toℕ (carry-digit d o proper) o) * suc b
-    □
-next-numeral-Proper-GappedEndpoint-lemma {b} {d} {o} (x ∷ xs) greatest proper gapped
-    = proof
-    where
-        next-xs : Numeral (suc b) (suc d) o
-        next-xs = next-numeral-Proper xs proper
-
-        next-xs>xs : ⟦ next-xs ⟧ > ⟦ xs ⟧
-        next-xs>xs = next-numeral-is-greater-Proper xs proper
-
-        next : Numeral (suc b) (suc d) o
-        next = z ∷ next-xs
-
-        -- ⟦ z ∷ next-numeral-Proper xs (Maximum-Proper xs proper) proper ⟧ > suc ⟦ x ∷ xs ⟧
-        proof : ⟦ next ⟧ > suc ⟦ x ∷ xs ⟧
-        proof = start
-                suc (suc (Digit-toℕ x o)) + ⟦ xs ⟧ * suc b
-            ≈⟨ cong (λ w → suc (suc w) + ⟦ xs ⟧ * suc b) (greatest-digit-toℕ x greatest) ⟩
-                suc (suc d) + o + ⟦ xs ⟧ * suc b
-            ≈⟨ +-assoc (suc (suc d)) o (⟦ xs ⟧ * suc b) ⟩
-                suc (suc d) + (o + ⟦ xs ⟧ * suc b)
-            ≈⟨ a+[b+c]≡b+[a+c] (suc (suc d)) o (⟦ xs ⟧ * suc b) ⟩
-                o + (suc (suc d) + ⟦ xs ⟧ * suc b)
-            ≤⟨ n+-mono o (+n-mono (⟦ xs ⟧ * suc b) gapped) ⟩
-                o + ((⟦ next-xs ⟧ ∸ ⟦ xs ⟧) * suc b + ⟦ xs ⟧ * suc b)
-            ≈⟨ cong (λ w → o + w) (sym (distribʳ-*-+ (suc b) (⟦ next-xs ⟧ ∸ ⟦ xs ⟧) ⟦ xs ⟧)) ⟩
-                o + (⟦ next-xs ⟧ ∸ ⟦ xs ⟧ + ⟦ xs ⟧) * suc b
-            ≈⟨ cong (λ w → o + w * suc b) (m∸n+n≡m (<⇒≤ next-xs>xs)) ⟩
-                o + ⟦ next-xs ⟧ * suc b
-            ≈⟨ refl ⟩
-                ⟦ z ∷ next-xs ⟧
-            □
+-- next-numeral-Proper-refine-target : ∀ {b d o}
+--     → (xs : Numeral (suc b) (suc d) o)
+--     → (proper : 2 ≤ suc (d + o))
+--     → NextView (suc b) (suc d) o xs proper
+--     → Set
+-- next-numeral-Proper-refine-target xs proper (Interval b d o ¬greatest) = next-numeral-Proper xs proper ≡ next-numeral-Proper-Interval xs ¬greatest proper
+-- next-numeral-Proper-refine-target xs proper (GappedEndpoint b d o greatest gapped) = next-numeral-Proper xs proper ≡ next-numeral-Proper-GappedEndpoint xs proper gapped
+-- next-numeral-Proper-refine-target xs proper (UngappedEndpoint b d o greatest ¬gapped) = next-numeral-Proper xs proper ≡ next-numeral-Proper-UngappedEndpoint xs greatest proper ¬gapped
+--
+-- next-numeral-Proper-refine : ∀ {b d o}
+--     → (xs : Numeral (suc b) (suc d) o)
+--     → (proper : 2 ≤ suc (d + o))
+--     → (view : NextView (suc b) (suc d) o xs proper)
+--     → next-numeral-Proper-refine-target xs proper view
+-- next-numeral-Proper-refine xs proper (Interval b d o ¬greatest) with nextView xs proper
+-- next-numeral-Proper-refine xs proper (Interval b d o ¬greatest) | Interval _ _ _ _ = refl
+-- next-numeral-Proper-refine xs proper (Interval b d o ¬greatest) | GappedEndpoint _ _ _ greatest _ = contradiction greatest ¬greatest
+-- next-numeral-Proper-refine xs proper (Interval b d o ¬greatest) | UngappedEndpoint _ _ _ greatest _ = contradiction greatest ¬greatest
+-- next-numeral-Proper-refine xs proper (GappedEndpoint b d o greatest gapped) with nextView xs proper
+-- next-numeral-Proper-refine xs proper (GappedEndpoint b d o greatest gapped) | Interval _ _ _ ¬greatest = contradiction greatest ¬greatest
+-- next-numeral-Proper-refine xs proper (GappedEndpoint b d o greatest gapped) | GappedEndpoint _ _ _ _ _ = refl
+-- next-numeral-Proper-refine xs proper (GappedEndpoint b d o greatest gapped) | UngappedEndpoint _ _ _ _ ¬gapped = contradiction gapped ¬gapped
+-- next-numeral-Proper-refine xs proper (UngappedEndpoint b d o greatest ¬gapped) with nextView xs proper
+-- next-numeral-Proper-refine xs proper (UngappedEndpoint b d o greatest ¬gapped) | Interval _ _ _ ¬greatest = contradiction greatest ¬greatest
+-- next-numeral-Proper-refine xs proper (UngappedEndpoint b d o greatest ¬gapped) | GappedEndpoint _ _ _ _ gapped = contradiction gapped ¬gapped
+-- next-numeral-Proper-refine xs proper (UngappedEndpoint b d o greatest ¬gapped) | UngappedEndpoint _ _ _ _ _ = refl
 
 next-numeral-Proper-UngappedEndpoint-lemma : ∀ {b d o}
     → (xs : Numeral (suc b) (suc d) o)
