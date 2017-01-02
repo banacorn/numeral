@@ -96,21 +96,21 @@ The case of {\lstinline|NoDigits|} and {\lstinline|AllZeros|} are rather trivial
 We focus on the other two.
 
 \begin{lstlisting}
-next-number : ∀ {b d o}
+next-numeral : ∀ {b d o}
     → (xs : Numeral b d o)
     → ¬ (Maximum xs)
     → Numeral b d o
-next-number {b} {d} {o} xs ¬max with numView b d o
-next-number xs ¬max | NullBase d o = ?
-next-number xs ¬max | NoDigits b o = NoDigits-explode xs
-next-number xs ¬max | AllZeros b   =
+next-numeral {b} {d} {o} xs ¬max with numView b d o
+next-numeral xs ¬max | NullBase d o = ?
+next-numeral xs ¬max | NoDigits b o = NoDigits-explode xs
+next-numeral xs ¬max | AllZeros b   =
     contradiction (Maximum-AllZeros xs) ¬max
-next-number xs ¬max | Proper b d o proper = ?
+next-numeral xs ¬max | Proper b d o proper = ?
 \end{lstlisting}
 
 \subsection{Validating the Implementation}
 
-To validate the correctness of the implementation of {\lstinline|next-number|},
+To validate the correctness of the implementation of {\lstinline|next-numeral|},
 i.e., to make sure that the function does return a numeral that is:
 
 \begin{enumerate}
@@ -121,19 +121,19 @@ i.e., to make sure that the function does return a numeral that is:
 We need to prove these two propositions:
 
 \begin{lstlisting}
-next-number-is-greater : ∀ {b d o}
+next-numeral-is-greater : ∀ {b d o}
     → (xs : Numeral b d o)
     → (¬max : ¬ (Maximum xs))
-    → ⟦ next-number xs ¬max ⟧ > ⟦ xs ⟧
+    → ⟦ next-numeral xs ¬max ⟧ > ⟦ xs ⟧
 \end{lstlisting}
 
 \begin{lstlisting}
-next-number-is-immediate : ∀ {b d o}
+next-numeral-is-immediate : ∀ {b d o}
     → (xs : Numeral b d o)
     → (ys : Numeral b d o)
     → (¬max : ¬ (Maximum xs))
     → ⟦ ys ⟧ > ⟦ xs ⟧
-    → ⟦ ys ⟧ ≥ ⟦ next-number xs ¬max ⟧
+    → ⟦ ys ⟧ ≥ ⟦ next-numeral xs ¬max ⟧
 \end{lstlisting}
 
 We come up with the name ``immediate''
@@ -147,23 +147,23 @@ and {\lstinline|Proper|} respectively.
 \begin{itemize}
     \item {\lstinline|NullBase|}
         \begin{enumerate}
-            \item {\lstinline|next-number-NullBase|}
-            \item {\lstinline|next-number-is-greater-NullBase|}
-            \item {\lstinline|next-number-is-immediate-NullBase|}
+            \item {\lstinline|next-numeral-NullBase|}
+            \item {\lstinline|next-numeral-is-greater-NullBase|}
+            \item {\lstinline|next-numeral-is-immediate-NullBase|}
         \end{enumerate}
     \item {\lstinline|Proper|}
         \begin{itemize}
-            \item {\lstinline|next-number-Proper|}
-            \item {\lstinline|next-number-is-greater-Proper|}
-            \item {\lstinline|next-number-is-immediate-Proper|}
+            \item {\lstinline|next-numeral-Proper|}
+            \item {\lstinline|next-numeral-is-greater-Proper|}
+            \item {\lstinline|next-numeral-is-immediate-Proper|}
         \end{itemize}
 \end{itemize}
 
 However, programs and proofs of systems of {\lstinline|Proper|} will be defined
 \textit{simultaneously} with mutually recursive definitions.
-The reason why we need properties like {\lstinline|next-number-is-greater-Proper|}
-and {\lstinline|next-number-is-immediate-Proper|} in the first place is that
-they are neccessary for implementing {\lstinline|next-number-Proper|}.
+The reason why we need the property {\lstinline|next-numeral-is-greater-Proper|}
+in the first place is that they are neccessary for implementing
+{\lstinline|next-numeral-Proper|}.
 
 \subsection{The Next Numeral of NullBase}
 
@@ -232,47 +232,47 @@ number of the line have to be excluded.
     \end{adjustbox}
 \end{center}
 
-\subsubsection{{\lstinline|next-number-NullBase|}}
+\subsubsection{{\lstinline|next-numeral-NullBase|}}
 
 Numerals with the greatest LSD are first ruled out because they also happen
 to be maxima. The rest of the numerals are then pattern matched to have their
 LSDs replaced with an incremented one.
 
 \begin{lstlisting}
-next-number-NullBase : ∀ {d o}
+next-numeral-NullBase : ∀ {d o}
     → (xs : Numeral 0 (suc d) o)
     → ¬ (Maximum xs)
     → Numeral 0 (suc d) o
-next-number-NullBase xs       ¬max with Greatest? (lsd xs)
-next-number-NullBase xs       ¬max | yes greatest =
+next-numeral-NullBase xs       ¬max with Greatest? (lsd xs)
+next-numeral-NullBase xs       ¬max | yes greatest =
     contradiction (Maximum-NullBase-Greatest xs greatest) ¬max
-next-number-NullBase (x ∙)    ¬max | no ¬greatest =
+next-numeral-NullBase (x ∙)    ¬max | no ¬greatest =
     digit+1 x ¬greatest ∙
-next-number-NullBase (x ∷ xs) ¬max | no ¬greatest =
+next-numeral-NullBase (x ∷ xs) ¬max | no ¬greatest =
     digit+1 x ¬greatest ∷ xs
 \end{lstlisting}
 
 \subsubsection{Lemma}
 
-Instead of proving that {\lstinline|next-number-NullBase|} does compute a numeral
+Instead of proving that {\lstinline|next-numeral-NullBase|} does compute a numeral
 that is:
 \begin{enumerate}
     \item greater than the given numeral
     \item the least of all such numerals
 \end{enumerate}
 
-We prove a stronger proposition, that {\lstinline|next-number-NullBase|} would
+We prove a stronger proposition, that {\lstinline|next-numeral-NullBase|} would
 compute the \textit{successor} of the given number.
 
 \begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
-next-number-NullBase-lemma : ∀ {d o}
+next-numeral-NullBase-lemma : ∀ {d o}
     → (xs : Numeral 0 (suc d) o)
     → (¬max : ¬ (Maximum xs))
-    → ⟦ next-number-NullBase xs ¬max ⟧ ≡ suc ⟦ xs ⟧
-next-number-NullBase-lemma {d} {o} xs    ¬max with Greatest? (lsd xs)
-next-number-NullBase-lemma {d} {o} xs    ¬max | yes greatest =
+    → ⟦ next-numeral-NullBase xs ¬max ⟧ ≡ suc ⟦ xs ⟧
+next-numeral-NullBase-lemma {d} {o} xs    ¬max with Greatest? (lsd xs)
+next-numeral-NullBase-lemma {d} {o} xs    ¬max | yes greatest =
     contradiction (Maximum-NullBase-Greatest xs greatest) ¬max
-next-number-NullBase-lemma {d} {o} (x ∙) ¬max | no ¬greatest =
+next-numeral-NullBase-lemma {d} {o} (x ∙) ¬max | no ¬greatest =
     begin
         ⟦ digit+1 x ¬greatest ∙ ⟧
     ≡⟨ refl ⟩
@@ -282,7 +282,7 @@ next-number-NullBase-lemma {d} {o} (x ∙) ¬max | no ¬greatest =
     ≡⟨ refl ⟩
         suc ⟦ x ∙ ⟧
     ∎
-next-number-NullBase-lemma {d} {o} (x ∷ xs) ¬max | no ¬greatest =
+next-numeral-NullBase-lemma {d} {o} (x ∷ xs) ¬max | no ¬greatest =
     begin
         ⟦ digit+1 x ¬greatest ∷ xs ⟧
     ≡⟨ refl ⟩
@@ -294,39 +294,39 @@ next-number-NullBase-lemma {d} {o} (x ∷ xs) ¬max | no ¬greatest =
     ∎
 \end{lstlisting}
 
-\subsubsection{{\lstinline|next-number-is-greater-NullBase|}}
+\subsubsection{{\lstinline|next-numeral-is-greater-NullBase|}}
 
 Recall that {\lstinline|x < y|} is essentially a synonym of {\lstinline|suc x ≤ y|}.
 We nail this with the lemma we have just proven.
 
 \begin{lstlisting}
-next-number-is-greater-NullBase : ∀ {d o}
+next-numeral-is-greater-NullBase : ∀ {d o}
     → (xs : Numeral 0 (suc d) o)
     → (¬max : ¬ (Maximum xs))
-    → ⟦ next-number-NullBase xs ¬max ⟧ > ⟦ xs ⟧
-next-number-is-greater-NullBase xs ¬max =
+    → ⟦ next-numeral-NullBase xs ¬max ⟧ > ⟦ xs ⟧
+next-numeral-is-greater-NullBase xs ¬max =
     start
         suc ⟦ xs ⟧
-    ≈⟨ sym (next-number-NullBase-lemma xs ¬max) ⟩
-        ⟦ next-number-NullBase xs ¬max ⟧
+    ≈⟨ sym (next-numeral-NullBase-lemma xs ¬max) ⟩
+        ⟦ next-numeral-NullBase xs ¬max ⟧
     □
 \end{lstlisting}
 
-\subsubsection{{\lstinline|next-number-is-immediate-NullBase|}}
+\subsubsection{{\lstinline|next-numeral-is-immediate-NullBase|}}
 
 Here, the argument {\lstinline|ys|} stands for \textit{any} numeral of {\lstinline|Numeral 0 (suc d) o|}.
 
 \begin{lstlisting}
-next-number-is-immediate-NullBase : ∀ {d o}
+next-numeral-is-immediate-NullBase : ∀ {d o}
     → (xs : Numeral 0 (suc d) o)
     → (ys : Numeral 0 (suc d) o)
     → (¬max : ¬ (Maximum xs))
     → ⟦ ys ⟧ > ⟦ xs ⟧
-    → ⟦ ys ⟧ ≥ ⟦ next-number-NullBase xs ¬max ⟧
-next-number-is-immediate-NullBase xs ys ¬max prop =
+    → ⟦ ys ⟧ ≥ ⟦ next-numeral-NullBase xs ¬max ⟧
+next-numeral-is-immediate-NullBase xs ys ¬max prop =
     start
-        ⟦ next-number-NullBase xs ¬max ⟧
-    ≈⟨ next-number-NullBase-lemma xs ¬max ⟩
+        ⟦ next-numeral-NullBase xs ¬max ⟧
+    ≈⟨ next-numeral-NullBase-lemma xs ¬max ⟩
         suc ⟦ xs ⟧
     ≤⟨ prop ⟩
         ⟦ ys ⟧
@@ -342,7 +342,7 @@ in systems of {\lstinline|Proper|}.
 
 \subsubsection{Intervals}
 
-This is the simplest case.
+This is the simplest case like in {\lstinline|NullBase|}.
 To reach the next numeral, all we have to do is to increment the LSD.
 There is no need of performing carries or messing with other digits.
 
@@ -392,9 +392,9 @@ There is no need of performing carries or messing with other digits.
 When the given numeral's LSD happens to be the greatest
 and there is a \textit{gap} before the next numeral.
 There are no other numerals in between that could bridge the gap.
-To reach the next numeral, the LSD has to be reset to the least digit;
-the rest of the numeral (digits of higher significance) are replaced with
-its \textit{next} numeral to compensate for the loss of the LSD.
+% To reach the next numeral, the LSD has to be reset to the least digit;
+% the rest of the numeral (digits of higher significance) are replaced with
+% its \textit{next} numeral to compensate for the loss of the LSD.
 
 \begin{center}
     \begin{adjustbox}{max width=\textwidth}
@@ -428,7 +428,8 @@ its \textit{next} numeral to compensate for the loss of the LSD.
 \subsubsection{Ungapped Endpoints}
 
 When the given numeral's LSD happens to be the greatest
-but we can find a numeral right ahead of it.
+but we can find another numeral right ahead of it.
+
 % Just like in the case of \textit{gapped endpoints}, the rest of the numeral are
 % replace with its next numeral.
 
@@ -466,11 +467,125 @@ but we can find a numeral right ahead of it.
     \end{adjustbox}
 \end{center}
 
-% There are three cases in {\lstinline|Proper|} we need to ha.
+\subsubsection{Gaps}
 
-% Revisit the view function {\lstinline|numView|}.
-% First, it pattern matches on {\lstinline|d|}, excluding systems with no digits;
-% and then on {\lstinline|b|}, exluding systems with bases of $ 0 $.
-% There is an order of pattern matching on the three indices.
-%
+It is easy to tell if a given numeral is located in intervals or at endpoints
+just by looking at its LSD.
+However, to tell apart from \textit{gapped} and \textit{ungapped} endpoints
+is a completely different story.
+First things first, we need a proposition for expressing this matter.
+
+Given a numeral {\lstinline|_ ∷ xs|} and suppose that the next numeral of
+{\lstinline|xs|} is {\lstinline|xs'|}
+
+\begin{center}
+    \begin{adjustbox}{max width=\textwidth}
+        \begin{tikzpicture}
+            % the frame
+            \path[clip] (5.5, -1.5) rectangle (17.5, 2.5);
+
+            % the body
+            \foreach \i in {0,...,2} {
+                \foreach \j in {0,...,5} {
+                    \draw[ultra thick, draw=gray] ({\i*8+\j+0.05}, {\i*0.6-0.8}) rectangle ({\i*8+\j+0.95}, {\i*0.6-0.4});
+                };
+            };
+
+            \draw[ultra thick, loosely dotted] (7.5,-1) -- (7.5,1)
+                node[above] {{\lstinline|⟦ xs ⟧ × b|}};
+
+            \draw[ultra thick, loosely dotted] (15.5,-1) -- (15.5,1)
+                node[above] {{\lstinline|⟦ xs' ⟧ × b|}};
+
+            \draw[ultra thick, decoration={brace,mirror,raise=10},decorate]
+                (8,-0.2) -- node[below=0.5] {{\lstinline|d|}} (14,-0.2);
+        \end{tikzpicture}
+    \end{adjustbox}
+\end{center}
+
+If we look closely, we can see that the gap comes from the difference between
+the number of digits {\lstinline|d|} and {\lstinline|⟦ xs' ⟧ × b - ⟦ xs ⟧ × b|}.
+
+\begin{center}
+    \begin{adjustbox}{max width=\textwidth}
+        \begin{tikzpicture}
+            % the frame
+            \path[clip] (25, -2.5) rectangle (35, 3);
+
+            % the body
+            \foreach \i in {0,...,2} {
+                \foreach \j in {0,...,5} {
+                    \draw[ultra thick, draw=gray] ({\i*16+\j*2+0.1}, {\i*1.2-1.6}) rectangle ({\i*16+\j*2+1.9}, {\i*1.2-0.8});
+                };
+            };
+
+            \draw[ultra thick, loosely dotted] (31,-1) -- (31,2)
+                node[above] {{\lstinline|⟦ xs' ⟧ × b|}};
+
+            \draw[ultra thick, loosely dotted] (27,0.4) -- (27,2)
+                node[above] {{\lstinline|⟦ xs ⟧ × b + d|}};
+
+            \draw[ultra thick, loosely dotted] (27,-0.4) -- (27,-1);
+
+            \draw[ultra thick, decoration={brace,mirror,raise=10},decorate]
+                (27,-1) -- node[below=0.5] {{\lstinline|the gap|}} (31,-1);
+            % \draw[ultra thick, decoration={brace,mirror,raise=10},decorate]
+            %     (8,-0.2) -- node[below=0.5] {{\lstinline|Digit-toℕ x o|}} (15,-0.2);
+        \end{tikzpicture}
+    \end{adjustbox}
+\end{center}
+
+Then the predicate of the gap ahead of {\lstinline|x ∷ xs|} can then be expressed
+like this:
+
+\begin{lstlisting}
+Gapped : ∀ b d o
+    → (xs : Numeral (suc b) (suc d) o)
+    → (proper : 2 ≤ suc (d + o))
+    → Set
+Gapped b d o xs proper = suc d < (⟦ next-xs ⟧ ∸ ⟦ xs ⟧) * suc b
+    where
+        next-xs : Numeral (suc b) (suc d) o
+        next-xs = next-numeral-Proper xs proper
+\end{lstlisting}
+
+However, the predicate above does not account for numerals like {\lstinline|x ∙|}.
+That is, when the numeral is composed solely of a digit and the gap ahead is
+\textit{the first gap} of the whole system.
+The predicate of the first gap is simple as this:
+
+\begin{lstlisting}
+Gapped : ∀ b d o → Set
+Gapped b d o = suc d < carry o * suc b
+\end{lstlisting}
+
+Where {\lstinline|carry o = 1 ⊔ o|} computes the carry digit of higher significance.
+Rename and then combine the two predicates above, we have devised a predicate
+for predicting the gap ahead of a numeral.
+
+\begin{lstlisting}
+Gapped#0 : ∀ b d o → Set
+Gapped#0 b d o = suc d < carry o * suc b
+
+Gapped#N : ∀ b d o
+    → (xs : Numeral (suc b) (suc d) o)
+    → (proper : 2 ≤ suc (d + o))
+    → Set
+Gapped#N b d o xs proper = suc d < (⟦ next ⟧ ∸ ⟦ xs ⟧) * suc b
+    where
+        next : Numeral (suc b) (suc d) o
+        next = next-numeral-Proper xs proper
+
+Gapped : ∀ {b d o}
+    → (xs : Numeral (suc b) (suc d) o)
+    → (proper : 2 ≤ suc (d + o))
+    → Set
+Gapped {b} {d} {o} (x ∙)    proper = Gapped#0 b d o
+Gapped {b} {d} {o} (x ∷ xs) proper = Gapped#N b d o xs proper
+\end{lstlisting}
+
+We will prove that there is an important and intriguing relation between
+{\lstinline|Gapped#0|} and {\lstinline|Gapped#N|} in later chapters.
+
+
 \end{document}

@@ -55,7 +55,7 @@ GappedEndpoint⇒¬Incrementable {b} {d} {o} xs greatest proper gapped (incremen
     = contradiction ⟦next⟧>⟦incremented⟧ ⟦next⟧≯⟦incremented⟧
     where
         next : Numeral (suc b) (suc d) o
-        next = next-number-Proper xs proper
+        next = next-numeral-Proper xs proper
 
         ⟦next⟧>⟦incremented⟧ : ⟦ next ⟧ > ⟦ incremented ⟧
         ⟦next⟧>⟦incremented⟧ =
@@ -63,14 +63,14 @@ GappedEndpoint⇒¬Incrementable {b} {d} {o} xs greatest proper gapped (incremen
                 suc ⟦ incremented ⟧
             ≈⟨ cong suc claim ⟩
                 suc (suc ⟦ xs ⟧)
-            ≤⟨ next-number-Proper-GappedEndpoint-lemma xs greatest proper gapped ⟩
-                ⟦ next-number-Proper-GappedEndpoint xs proper gapped ⟧
-            ≈⟨ cong ⟦_⟧ (sym (next-number-Proper-refine xs proper (GappedEndpoint b d o greatest gapped))) ⟩
-                ⟦ next-number-Proper xs proper ⟧
+            ≤⟨ next-numeral-Proper-GappedEndpoint-lemma xs greatest proper gapped ⟩
+                ⟦ next-numeral-Proper-GappedEndpoint xs proper gapped ⟧
+            ≈⟨ cong ⟦_⟧ (sym (next-numeral-Proper-refine xs proper (GappedEndpoint b d o greatest gapped))) ⟩
+                ⟦ next-numeral-Proper xs proper ⟧
             □
 
         ⟦next⟧≯⟦incremented⟧ : ⟦ next ⟧ ≯ ⟦ incremented ⟧
-        ⟦next⟧≯⟦incremented⟧ = ≤⇒≯ $ next-number-is-immediate-Proper xs incremented proper (m≡1+n⇒m>n claim)
+        ⟦next⟧≯⟦incremented⟧ = ≤⇒≯ $ next-numeral-is-immediate-Proper xs incremented proper (m≡1+n⇒m>n claim)
 
 
 
@@ -81,21 +81,21 @@ Incrementable?-Proper : ∀ {b d o}
     → Dec (Incrementable xs)
 Incrementable?-Proper xs proper with nextView xs proper
 Incrementable?-Proper xs proper | Interval b d o ¬greatest
-    = yes ((next-number-Proper xs proper) , (begin
-            ⟦ next-number-Proper xs proper ⟧
-        ≡⟨ cong ⟦_⟧ (next-number-Proper-refine xs proper (Interval b d o ¬greatest)) ⟩
-            ⟦ next-number-Proper-Interval xs ¬greatest proper ⟧
-        ≡⟨ next-number-Proper-Interval-lemma xs ¬greatest proper ⟩
+    = yes ((next-numeral-Proper xs proper) , (begin
+            ⟦ next-numeral-Proper xs proper ⟧
+        ≡⟨ cong ⟦_⟧ (next-numeral-Proper-refine xs proper (Interval b d o ¬greatest)) ⟩
+            ⟦ next-numeral-Proper-Interval xs ¬greatest proper ⟧
+        ≡⟨ next-numeral-Proper-Interval-lemma xs ¬greatest proper ⟩
             suc ⟦ xs ⟧
         ∎))
 Incrementable?-Proper xs proper | GappedEndpoint b d o greatest gapped
     = no (GappedEndpoint⇒¬Incrementable xs greatest proper gapped)
 Incrementable?-Proper xs proper | UngappedEndpoint b d o greatest ¬gapped
-    = yes ((next-number-Proper xs proper) , (begin
-            ⟦ next-number-Proper xs proper ⟧
-        ≡⟨ cong ⟦_⟧ (next-number-Proper-refine xs proper (UngappedEndpoint b d o greatest ¬gapped)) ⟩
-            ⟦ next-number-Proper-UngappedEndpoint xs greatest proper ¬gapped ⟧
-        ≡⟨ next-number-Proper-UngappedEndpoint-lemma xs greatest proper ¬gapped ⟩
+    = yes ((next-numeral-Proper xs proper) , (begin
+            ⟦ next-numeral-Proper xs proper ⟧
+        ≡⟨ cong ⟦_⟧ (next-numeral-Proper-refine xs proper (UngappedEndpoint b d o greatest ¬gapped)) ⟩
+            ⟦ next-numeral-Proper-UngappedEndpoint xs greatest proper ¬gapped ⟧
+        ≡⟨ next-numeral-Proper-UngappedEndpoint-lemma xs greatest proper ¬gapped ⟩
             suc ⟦ xs ⟧
         ∎))
 
@@ -107,7 +107,7 @@ Incrementable? xs with Maximum? xs
 Incrementable? xs | yes max = no (Maximum⇒¬Incrementable xs max)
 Incrementable? {b} {d} {o} xs | no ¬max with numView b d o
 Incrementable? xs | no ¬max | NullBase d o
-    = yes ((next-number-NullBase xs ¬max) , (next-number-NullBase-lemma xs ¬max))
+    = yes ((next-numeral-NullBase xs ¬max) , (next-numeral-NullBase-lemma xs ¬max))
 Incrementable? xs | no ¬max | NoDigits b o
     = no (NoDigits-explode xs)
 Incrementable? xs | no ¬max | AllZeros b
@@ -121,88 +121,34 @@ increment : ∀ {b d o}
     → Numeral b d o
 increment xs incr = proj₁ $ toWitness incr
 
-increment-next-number-Proper : ∀ {b d o}
+increment-next-numeral-Proper : ∀ {b d o}
     → (xs : Numeral (suc b) (suc d) o)
     → (proper : 2 ≤ suc (d + o))
     → (incr : True (Incrementable?-Proper xs proper))
-    → proj₁ (toWitness incr) ≡ next-number-Proper xs proper
-increment-next-number-Proper xs proper incr with nextView xs proper
-increment-next-number-Proper xs proper incr | Interval b d o ¬greatest = begin
-        next-number-Proper xs proper
-    ≡⟨ next-number-Proper-refine xs proper (Interval b d o ¬greatest) ⟩
-        next-number-Proper-Interval xs ¬greatest proper
+    → proj₁ (toWitness incr) ≡ next-numeral-Proper xs proper
+increment-next-numeral-Proper xs proper incr with nextView xs proper
+increment-next-numeral-Proper xs proper incr | Interval b d o ¬greatest = begin
+        next-numeral-Proper xs proper
+    ≡⟨ next-numeral-Proper-refine xs proper (Interval b d o ¬greatest) ⟩
+        next-numeral-Proper-Interval xs ¬greatest proper
     ∎
-increment-next-number-Proper xs proper ()   | GappedEndpoint b d o greatest gapped
-increment-next-number-Proper xs proper incr | UngappedEndpoint b d o greatest ¬gapped = begin
-        next-number-Proper xs proper
-    ≡⟨ next-number-Proper-refine xs proper (UngappedEndpoint b d o greatest ¬gapped) ⟩
-        next-number-Proper-UngappedEndpoint xs greatest proper ¬gapped
+increment-next-numeral-Proper xs proper ()   | GappedEndpoint b d o greatest gapped
+increment-next-numeral-Proper xs proper incr | UngappedEndpoint b d o greatest ¬gapped = begin
+        next-numeral-Proper xs proper
+    ≡⟨ next-numeral-Proper-refine xs proper (UngappedEndpoint b d o greatest ¬gapped) ⟩
+        next-numeral-Proper-UngappedEndpoint xs greatest proper ¬gapped
     ∎
 
-increment-next-number : ∀ {b d o}
+increment-next-numeral : ∀ {b d o}
     → (xs : Numeral b d o)
     → (¬max : ¬ (Maximum xs))
     → (incr : True (Incrementable? xs))
-    → increment xs incr ≡ next-number xs ¬max
-increment-next-number xs ¬max incr with Maximum? xs
-increment-next-number xs ¬max () | yes max
-increment-next-number {b} {d} {o} xs ¬max incr | no _  with numView b d o
-increment-next-number xs _ incr | no ¬max | NullBase d o = refl
-increment-next-number xs _ ()   | no ¬max | NoDigits b o
-increment-next-number xs _ ()   | no ¬max | AllZeros b
-increment-next-number xs _ incr | no ¬max | Proper b d o proper
-    = increment-next-number-Proper xs proper incr
-
-
-
-Gapped#N⇒Gapped#0 : ∀ {b d o}
-    → (xs : Numeral (suc b) (suc d) o)
-    → (proper : 2 ≤ suc (d + o))
-    → Gapped#N b d o xs proper
-    → Gapped#0 b d o
-Gapped#N⇒Gapped#0 xs proper gapped#N with nextView xs proper
-Gapped#N⇒Gapped#0 xs proper gapped#N | Interval b d o ¬greatest =
-    start
-        suc (suc d)
-    ≤⟨ gapped#N ⟩
-        (⟦ next-number-Proper-Interval xs ¬greatest proper ⟧ ∸ ⟦ xs ⟧) * suc b
-    ≤⟨ *n-mono (suc b) $
-        start
-            ⟦ next-number-Proper-Interval xs ¬greatest proper ⟧ ∸ ⟦ xs ⟧
-        ≈⟨ cong (λ w → w ∸ ⟦ xs ⟧) (next-number-Proper-Interval-lemma xs ¬greatest proper) ⟩
-            suc ⟦ xs ⟧ ∸ ⟦ xs ⟧
-        ≈⟨ m+n∸n≡m (suc zero) ⟦ xs ⟧ ⟩
-            suc zero
-        ≤⟨ m≤m⊔n 1 o ⟩
-            suc zero ⊔ o
-        □
-     ⟩
-        (suc zero ⊔ o) * suc b
-    □
-Gapped#N⇒Gapped#0 (x ∙)    proper gapped#N | GappedEndpoint b d o greatest gapped#0 = gapped#0
-Gapped#N⇒Gapped#0 (x ∷ xs) proper _        | GappedEndpoint b d o greatest gapped#N = Gapped#N⇒Gapped#0 xs proper gapped#N
-Gapped#N⇒Gapped#0 xs proper gapped#N | UngappedEndpoint b d o greatest ¬gapped =
-        start
-            suc (suc d)
-        ≤⟨ gapped#N ⟩
-            (⟦ next-number-Proper-UngappedEndpoint xs greatest proper ¬gapped ⟧ ∸ ⟦ xs ⟧) * suc b
-        ≤⟨ *n-mono (suc b) $
-            start
-                ⟦ next-number-Proper-UngappedEndpoint xs greatest proper ¬gapped ⟧ ∸ ⟦ xs ⟧
-            ≈⟨ cong (λ w → w ∸ ⟦ xs ⟧) (next-number-Proper-UngappedEndpoint-lemma xs greatest proper ¬gapped) ⟩
-                suc ⟦ xs ⟧ ∸ ⟦ xs ⟧
-            ≈⟨ m+n∸n≡m (suc zero) ⟦ xs ⟧ ⟩
-                suc zero
-            ≤⟨ m≤m⊔n 1 o ⟩
-                suc zero ⊔ o
-            □
-         ⟩
-            (suc zero ⊔ o) * suc b
-        □
-
-¬Gapped#0⇒¬Gapped#N : ∀ {b d o}
-    → (xs : Numeral (suc b) (suc d) o)
-    → (proper : 2 ≤ suc (d + o))
-    → ¬ (Gapped#0 b d o)
-    → ¬ (Gapped#N b d o xs proper)
-¬Gapped#0⇒¬Gapped#N xs proper ¬Gapped#0 = contraposition (Gapped#N⇒Gapped#0 xs proper) ¬Gapped#0
+    → increment xs incr ≡ next-numeral xs ¬max
+increment-next-numeral xs ¬max incr with Maximum? xs
+increment-next-numeral xs ¬max () | yes max
+increment-next-numeral {b} {d} {o} xs ¬max incr | no _  with numView b d o
+increment-next-numeral xs _ incr | no ¬max | NullBase d o = refl
+increment-next-numeral xs _ ()   | no ¬max | NoDigits b o
+increment-next-numeral xs _ ()   | no ¬max | AllZeros b
+increment-next-numeral xs _ incr | no ¬max | Proper b d o proper
+    = increment-next-numeral-Proper xs proper incr
