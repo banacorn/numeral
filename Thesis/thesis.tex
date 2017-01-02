@@ -42,6 +42,7 @@
 
 \usepackage{color}
 \definecolor{light-gray}{gray}{0.9}
+\definecolor{airforceblue}{rgb}{0.36, 0.54, 0.66}
 
 \usepackage{listings}
 \lstset{ %
@@ -64,7 +65,8 @@
     urlcolor=black           % color of external links
 }
 
-\newcommand{\scm}[1]{{\color{DarkBlue}({\bf scm}: #1)}}
+\newcommand{\scm}[1]{{\color{airforceblue}({\bf scm}: #1)}}
+\newcommand{\scmsubst}[2]{{\color{red} #1 $\rightarrow$}{\color{airforceblue} #2}}
 
 \begin{document}
 

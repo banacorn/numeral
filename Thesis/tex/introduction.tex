@@ -77,7 +77,7 @@ its semantics can only be expressed through the process of \textit{converting} t
 Numeral systems are merely syntax.
 The same notation can represent different numbers in different context.
 
-Take the notation "11" for example; it could have several meanings.
+Take the notation \scm{``11''} for example; it could have several meanings.
 
 \begin{center}
     \begin{tabular}{ | l | r | }
@@ -157,6 +157,12 @@ The definition of digit assignments can be modified to allow unary digits to
 start counting from $ 1 $, but that would lead to inconsistency among systems
 of other bases.
 
+\scm{1. Start the paragraph label with captial letter (Problem). \\
+2. I still feel that ``lead to inconsistency'' is a bit vague and
+imprecise. Is it right to say something like ``we have to generalize our representation to
+allow this'' (and mention in which section you are going to do so)?
+}
+
 \begin{center}
     \begin{adjustbox}{max width=\textwidth}
     \begin{tabular}{ | l | l | *{16}{l} | }
@@ -174,6 +180,7 @@ of other bases.
 
 Moreover, theorems developed on natural numbers à la Peano cannot be migrated
 to numbers of other representations, although the proofs are mostly identical.
+\scm{Why not? A brief explanation?}
 
 \section{Binary Numerals in Digital Circults}
 
@@ -187,15 +194,17 @@ Recall how arithmetics such as long addition are performed by hand.
       & 1 & 5 & 7 \\
     \end{tabular}
 \end{center}
-
 The greater a number is, the longer its notation will be, which in terms
 determines the time it takes to perform operations.
 Since a system can only have \textbf{finitely many} digits, operations such as
-addition on these digits must be \textbf{constant time}.
+addition on these digits \scmsubst{must be}{can be implemented in}
+\textbf{constant time}.
 Consequently, the time complexity of operations such as long addition on a
 numeral would be $ O(lg n) $ at best.
 The choice of the base is immaterial as long as it is not unary
 (which would degenerate to $ O(n) $).
+\scm{It might be better if we swap the order of the first two sentences.
+(Since a system... However, the greater a number is...)}
 
 However, this is not the case for the binary numeral system implemented in
 arithmetic logic units (ALU). These digital circuits are designed to perform
