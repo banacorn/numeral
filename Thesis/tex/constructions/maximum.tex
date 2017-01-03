@@ -29,18 +29,27 @@ Maximum⇒Greatest-LSD : ∀ {b} {d} {o}
 \paragraph{NullBase}
 
 \begin{center}
-    \begin{tikzpicture}
-        % a straight line segment
-        \draw (0, 0) -- (10, 0);
-        % the ticks and their labels
-        \draw[xshift=0cm] (0pt,2pt) -- (0pt,-1pt) node[below,fill=white] {\the\numexpr0};
-        % the thicker segment
-        \draw[ultra thick] (1,0) -- (9,0);
-        % the labels
-        \node[fill=black,draw=black,circle,inner sep=2pt,label=above:{$o$}] at (1,0) {};
-        \node[fill=black,draw=black,circle,inner sep=2pt,label=above:{$d+o$}] at (9,0) {};
-        \node at (5, -0.5) {{\lstinline|ℕ|}};
-    \end{tikzpicture}
+    \begin{adjustbox}{max width=\textwidth}
+        \begin{tikzpicture}
+            % the frame
+            \path[clip] (-1, -1) rectangle (11, 2);
+            % the spine
+            \draw[ultra thick] (0,0) -- (1,0);
+            \draw[ultra thick] (9,0) -- (10,0);
+            % the body
+
+            \foreach \i in {1,...,7} {
+                \draw[ultra thick, fill=white] ({\i+0.05}, -0.2) rectangle ({\i+0.95}, +0.2);
+            };
+            \draw[ultra thick, fill=black] ({8.05}, -0.2) rectangle ({8.95}, +0.2);
+
+            % labels
+            \draw[->, ultra thick] (1.5,1) -- (1.5,0.5)
+                node at (1.5, 1.3) {$o$};
+            \draw[->, ultra thick] (8.5,1) -- (8.5,0.5)
+                node at (8.5, 1.3) {$o+d$};
+        \end{tikzpicture}
+    \end{adjustbox}
 \end{center}
 
 It is obvious that systems of {\lstinline|NullBase|} have maxima.
@@ -71,17 +80,20 @@ LSD. In case that the LSD is not the greatest, we could say no by contraposition
 \paragraph{AllZeros}
 
 \begin{center}
-    \begin{tikzpicture}
-        % a straight line segment
-        \draw (0, 0) -- (4, 0);
-        % the ticks and their labels
-        \draw[xshift=0cm] (0pt,2pt) -- (0pt,-1pt) node[below,fill=white] {\the\numexpr0};
-        % the thicker segment
-        \draw[ultra thick] (0,0) -- (0,0);
-        % the labels
-        \node[fill=white,draw=black,circle,inner sep=2pt,label=above:{$0$}] at (0,0) {};
-        \node at (2, -0.5) {{\lstinline|ℕ|}};
-    \end{tikzpicture}
+    \begin{adjustbox}{max width=\textwidth}
+        \begin{tikzpicture}
+            % the frame
+            \path[clip] (0, -1) rectangle (4, 2);
+            % the spine
+            \draw[ultra thick] (2,0) -- (4,0);
+            % the body
+            \draw[ultra thick, fill=black] ({1.1}, -0.4) rectangle ({2.9}, +0.4);
+
+            % labels
+            \draw[->, ultra thick] (2,1.5) -- (2,0.8)
+                node at (2, 1.8) {$0$};
+        \end{tikzpicture}
+    \end{adjustbox}
 \end{center}
 
 \textit{All} numerals of systems of {\lstinline|AllZeros|} are maxima
