@@ -8,12 +8,12 @@
 There are already plenty of tutorials and introductions of Agda
 \cite{norell2009dependently}\cite{FLOLAC16DTP}\cite{brutal}.
 We will nonetheless compile a simple and self-contained tutorial from the
-materials cited above, covering the part (and only the part) we need in this thesis.
+materials cited above, covering the \scmsubst{part}{parts} (and only the \scmsubst{part}{parts}) we need in this thesis.
 
 Some of the more advanced constructions (such as views and universes) will not
 be introduced in this chapter, but in other places where we need them.
 
-We assume that readers have some basic understanding of Haskell, and those
+We assume that readers have some basic understanding of Haskell\scmsubst{, and those}{. Readers}
 who are familiar with Agda and dependently typed programming may skip this chapter.
 
 \section{Some basics}
@@ -23,7 +23,7 @@ Agda is a \textit{dependently typed functional programming language} and also an
 \textit{interactive proof assistant}. This language can serve both purposes because
 it is based on \textit{Martin-Löf type theory}\cite{martin1984intuitionistic},
 hence the Curry-Howard correspondence\cite{sorensen2006lectures},
-which states that: "propositions are types" and "proofs are programs."
+which states that: \scm{``propositions are types''} and \scm{``proofs are programs.''}
 In other words, proving theorems and writing programs are essentially the same.
 In Agda we are free to interchange between these two interpretations.
 The current version (Agda2) is a completely rewrite by Ulf Norell during his
@@ -34,7 +34,7 @@ conversations between the programmer and the type checker.
 Moreover, it is often difficult, if not impossible, to develop and prove a theorem at one stroke.
 Just like programming, the process is incremental.
 So Agda allows us to leave some ``holes'' in a program, refine them gradually, and
-complete the proofs "hole by hole".
+complete the proofs \scm{``hole by hole''}.
 
 Take this half-finished function definition for example.
 
@@ -44,7 +44,7 @@ is-zero x = ?
 \end{lstlisting}
 
 We can leave out the right-hand side and ask:
-"what's the type of the goal?", "what's the context of this case?", etc.
+\scm{``what's the type of the goal?''}, \scm{``what's the context of this case?''}, etc.
 Agda would reply us with:
 
 \begin{lstlisting}
@@ -83,9 +83,10 @@ is similar to that in Haskell.
 \paragraph{Datatypes}
 
 
-Unlike in other programming languages, there are no "built-in"
+Unlike in other programming languages, there are no \scm{``built-in''}
 datatypes such as \textit{Int}, \textit{String}, or \textit{Bool}.
-The reason is that they can all be created out of thin air, so why bother?
+The reason is that they can all be created out of thin air, so why
+bother \scm{having them predefined}?
 
 Datatypes are introduced with {\lstinline|data|} declarations.
 Here is a classical example, the type of booleans.
@@ -140,7 +141,7 @@ data ℕ : Set where
     suc : ℕ → ℕ
 \end{lstlisting}
 
-The decimal number "4" is represented as {\lstinline|suc (suc (suc (suc zero)))|}.
+The decimal number \scm{``4''} is represented as {\lstinline|suc (suc (suc (suc zero)))|}.
 Agda also accepts decimal literals if the datatype {\lstinline|ℕ|} complies with
 certain language pragma.
 
@@ -189,7 +190,7 @@ A → B
 
 Where {\lstinline|A|} is the type of domain and {\lstinline|B|} is the type of
 codomain. To let {\lstinline|B|} depends on the value of {\lstinline|A|}, the
-value has to \textit{named}, in Agda we write:
+value has to \textit{named}\scmsubst{, in}{. In} Agda we write:
 
 \begin{lstlisting}
 (x : A) → B x
@@ -198,7 +199,7 @@ value has to \textit{named}, in Agda we write:
 The value of {\lstinline|A|} is named {\lstinline|x|} and then fed to {\lstinline|B|}.
 As a matter of fact, {\lstinline|A → B|} is just a syntax sugar for {\lstinline|(_ : A) → B|}
 with the name of the value being irrelevant. The underline {\lstinline|_|} here
-means "I don't bother naming it".
+means \scm{``I don't bother naming it''}.
 
 Back to our identity function, if {\lstinline|A|} happens to be {\lstinline|Set|},
 the type of all small types, and the result type happens to be solely {\lstinline|x|}:
@@ -215,7 +216,7 @@ id A x = x
 \end{lstlisting}
 
 {\lstinline|id|} now takes an extra argument, the type of the second argument.
-{\lstinline|id Bool true|} evaluates to {\lstinline|true|}
+{\lstinline|id Bool true|} evaluates to {\lstinline|true|}\scm{.}
 
 \paragraph{Implicit arguments}
 
@@ -338,7 +339,7 @@ and is \textit{indexed} by values of {\lstinline|ℕ|}.
 We distinguish indices from parameters. However, it is not obvious how they are
 different by looking at the declaration.
 
-Parameters are \textit{parametric}, in the sense that, they have no effect on the "shape" of a datatype.
+Parameters are \textit{parametric}, in the sense that, they have no effect on the \scm{``shape''} of a datatype.
 The choice of parameters only effects which kind of values are placed there.
 Pattern matching on parameters does not reveal any insights into their whereabouts.
 Because they are \textit{uniform} across all constructors, one can always replace
@@ -572,7 +573,7 @@ It is a convention to suffix a decidable function's name with {\lstinline|?|}.
 
 \paragraph{Propositional equality}
 
-Saying that two things are "equal" is a notoriously intricate topic in type theory.
+Saying that two things are \scm{``equal''} is a notoriously intricate topic in type theory.
 There are many different notions of equality \cite{equality}.
 We will not go into each kind of equalities in depth but only skim through those exist in Agda.
 
@@ -659,7 +660,7 @@ It would be inconvenient if we have to construct everything we need from scratch
 Luckily, the community has maintained a standard library that comes with many useful
 and common constructions.
 
-The standard library is not "chartered" by the compiler or the type checker,
+The standard library is not \scm{``chartered''} by the compiler or the type checker,
 there's simply nothing special about it. We may as well as roll our own library.
 \footnote{Some primitives that require special treatments, such as IO, are taken
 care of by language pragmas provided by Agda.}

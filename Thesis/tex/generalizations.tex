@@ -152,9 +152,13 @@ Incrementing a decimal numeral such as $ 999999 $ takes much more time than
 $ 999998 $ because carries or borrows can cascade.
 Redundancy provides ``buffer'' against operations these carries and borrows.
 
+\scm{hmm.. is \textit{Int32} a good example for explaining this?
+I don't think the redundancy in \textit{Int32} provides any buffer, does it?}
+
 Numerical representations modeled after redundant numeral systems also enjoy
 similar properties. When designed properly, redundancy can improve the performance
 of operations of data structures.
+
 
 \section{Relations with Natural Numbers}
 
