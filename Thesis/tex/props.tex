@@ -56,7 +56,7 @@ the proof by recursively calling itself with a \textit{smaller} argument.
 
 This is an essential lemma for proving more advanced theorems.
 The proof also follows a similar pattern as that of {\lstinline|+-right-identity|}.
-\footnote{In fact, all of these proofs (hence programs) can be generalized \scmsubst{with}{to}
+\footnote{In fact, all of these proofs (hence programs) can be generalized to
 a \textit{fold}, but that is not the point here.}
 
 \begin{lstlisting}
@@ -86,7 +86,7 @@ The symmetry of equality {\lstinline|sym|} enables us to swap both sides of an e
 \end{lstlisting}
 
 However, it is not obvious how to solve {\lstinline|?1|} straight out.
-The proof has to be \scmsubst{break}{``broken'', or ``split''} into two steps:
+The proof has to be ``broken'', or ``split'' into two steps:
 
 \begin{enumerate}
     \item Apply {\lstinline|+-suc|} with {\lstinline|sym|} to the right-hand side
@@ -136,8 +136,8 @@ This is best illustrated by an example:
     ∎
 \end{lstlisting}
 
-With equational reasoning, we can see how an expression equates \scmsubst{with}{to} another,
-step by step, justified \scmsubst{with}{by} theorems. The first and the last \scmsubst{step corresponds}{steps correspond} to
+With equational reasoning, we can see how an expression equates to another,
+step by step, justified by theorems. The first and the last steps correspond to
 two sides of the equation of a proposition. {\lstinline|begin_|} marks the beginning
 of a reasoning; {\lstinline|_≡⟨_⟩_|} chains two expressions with the justification
 placed in between; {\lstinline|_∎|} marks the end of a reasoning (\textit{QED}).
@@ -183,9 +183,9 @@ A typical equational reasoning can often be broken down into \textbf{three} part
 
 \paragraph{arranging expressions}
 
-To arrange an expression into the shape that we desire as in part \ref{eq-part1} and
-part \ref{eq-part3}, while remaining equal \scm{this sentence has no verb}.
-We need properties such as commutativity or associativity of some operator,
+To arrange an expression into the shape that we desire as in part \ref{eq-part1}
+and part \ref{eq-part3}, while remaining equal,
+we need properties such as commutativity or associativity of some operator,
 or distributive properties when there is more than one operator.
 
 The operators we will be dealing with often comes with these properties.
@@ -198,16 +198,14 @@ As what we have seen in \ref{eq-part2}, sometimes there is only a part of an
 expression needs to be substituted.
 Say, we have a proof {\lstinline|eq : X ≡ Y|}, and we want to substitute {\lstinline|X|}
 for {\lstinline|Y|} in a more complex expression {\lstinline|a b (c X) d|}.
-We could ask {\lstinline|cong|} to \scm{``target''} the part to substitute by supplying a
+We could ask {\lstinline|cong|} to ``target'' the part to substitute by supplying a
 function like this:
-
+%
 \begin{lstlisting}
 λ w → a b (c w) d
 \end{lstlisting}
-
-Which abstracts the part we want to substitute away, such that:
-\scm{ideally this line should start with ``which'', with no
-identation.}
+%
+which abstracts the part we want to substitute away, such that:
 
 \begin{lstlisting}
 cong (λ w → a b (c w) d) eq : a b (c X) d ≡ a b (c Y) d
@@ -237,20 +235,18 @@ answer n with n ≟ 42
 answer n | yes p = true
 answer n | no ¬p = false
 \end{lstlisting}
-
-Where {\lstinline|p : n ≡ 42|} and  {\lstinline|¬p : n ≢ 42|}.
+%
+where {\lstinline|p : n ≡ 42|} and  {\lstinline|¬p : n ≢ 42|}.
 
 \section{Preorder}
 
-Aside from stating that two expressions are equal, a proposition can also state
+Aside from stating that two expressions are equal, a proposition can also assert
 that one expression is ``less than or equal to'' than another, given a preorder.
 
 A preorder is a binary relation that is \textit{reflexive} and \textit{transitive}.
-Often denoted as {\lstinline|_≤_|}, such a binary relation on natural numbers is
-defined as:
-\scm{Awkward: {\lstinline|_≤_|} (less-than-or-equal-to) is an
-instance of a preorder, but here it sounds like it represents all
-preorders.}
+One of the instances of preorder on natural numbers is the binary relation
+{\lstinline|_≤_|} (less than or equal to.)
+
 \begin{lstlisting}
 data _≤_ : ℕ → ℕ → Set where
     z≤n : ∀ {n}                 → zero  ≤ n
@@ -267,7 +263,7 @@ The following is a proof of $ 3 \leq 5 $:
 To prove $ 3 \leq 5 $, we need a proof of $ 2 \leq 4 $ for {\lstinline|s≤s|},
 and so on, until it reaches zero where it ends with a {\lstinline|z≤n|}.
 
-Here are some other binary relations \scmsubst{than}{that} can be defined with {\lstinline|_≤_|}.
+Here are some other binary relations that can be defined with {\lstinline|_≤_|}.
 
 \begin{lstlisting}
 _<_ : Rel ℕ Level.zero
@@ -301,8 +297,8 @@ m≤n+m m n =
         n + m
     □
 \end{lstlisting}
-
-Where {\lstinline|_≤⟨_⟩_|} and {\lstinline|_≈⟨_⟩_|} are respectively transitive
+%
+where {\lstinline|_≤⟨_⟩_|} and {\lstinline|_≈⟨_⟩_|} are respectively transitive
 and reflexive combinators.\footnote{Combinators for preorder reasoning are
 renamed to prevent conflictions with equational reasoning.}
 Step by step, starting from the left-hand side of the relation, expressions get
@@ -327,8 +323,12 @@ f _ = 1
 {\lstinline|f|} returns $ 1 $ on all inputs except for $ 1 $.
 {\lstinline|0 ≤ 1|} holds, but it does not imply that {\lstinline|f 0 ≤ f 1|} also holds.
 As a result, a generic mechanism like {\lstinline|cong|} does not exist in preorder reasoning.
-We can only substitute part of an expression when the function is \textit{monotonic}. \scm{what about ``Given \lstinline|x ≤ y|, we can substitute
+Given \lstinline|x ≤ y|, we can substitute \lstinline|f x| by \lstinline|f y|
+using a proof that \lstinline|f| is monotonic.
+\footnote{Such a proof or theorem often goes by the name of \lstinline|f-mono|}.
+\scm{what about ``Given \lstinline|x ≤ y|, we can substitute
 \lstinline|f x| by \lstinline|f y| using a proof that \lstinline|f| is monotonic.''}
+\banacorn{That's a lot better!}
 
 \section{Decidable Preorder on Natural Numbers}
 
@@ -352,8 +352,8 @@ threshold n with n ≤? 87
 threshold n | yes p = n
 threshold n | no ¬p = 87
 \end{lstlisting}
-
-Where {\lstinline|p : n ≤ 42|} and {\lstinline|¬p : n ≰ 42|}.
+%
+where {\lstinline|p : n ≤ 42|} and {\lstinline|¬p : n ≰ 42|}.
 
 % Suppose we want to prove that {\lstinline|_+_|} is monotonic in both arguments.
 %

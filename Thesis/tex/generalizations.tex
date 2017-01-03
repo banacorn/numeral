@@ -13,8 +13,8 @@ $$
     =
     \bar{d_0}\times base^0 + \bar{d_1}\times base^1 + \bar{d_2}\times base^2 + ... + \bar{d_n}\times base^n
 $$
-
-Where $ \bar{d_n} $ ranges from $ 0 $ to $ base - 1 $ for all $ n $.
+%
+where $ \bar{d_n} $ ranges from $ 0 $ to $ base - 1 $ for all $ n $.
 
 As we can see the base of numeral systems has already been generalized.
 But nonetheless, it is a good start and we will continue to abstract more things
@@ -34,13 +34,13 @@ $$
 The evaluation of numerals remains the same but the assignment of digits has changed from
 
 $$
-    { 0, 1, ..., \textit{offset - 1} }
+    { 0, 1, ..., \mathit{offset} - 1 }
 $$
 
 to
 
 $$
-    { \textit{offset}, \textit{offset + 1}, ..., \textit{offset + base - 1} }
+    { \mathit{offset}, \mathit{offset} + 1, ..., \mathit{offset} + \mathit{base} - 1 }
 $$
 
 The codomain of the digit assignment function is \textit{shifted} by \textit{offset}.
@@ -49,13 +49,14 @@ and systems of other bases would have offsets of $ 0 $.
 
 \scm{The spacing between $\mathit{offset}$ and $(+)$ or $(-)$ appear awkward,
 perhaps due to the use of {\tt textit}?}
+\banacorn{I just wanted to make the word "offset" intact, but ... http://i1.kym-cdn.com/photos/images/facebook/000/234/739/fa5.jpg}
 
 \paragraph{1-2 binary system}
 Recall \textit{1-2 random access lists} from the previous chapter,
 which is the numerical representation of a binary numeral system with an offset
 of $ 1 $.
 Let us see how to count to ten in the 1-2 binary system.
-\footnote{As a reminder, the order of digits \scm{of non-decimal numerals} are reversed.}
+\footnote{As a reminder, the order of non-decimal numerals are reversed.}
 
 \begin{center}
     \begin{adjustbox}{max width=\textwidth}
@@ -106,15 +107,13 @@ the evaluation function is bijective. The 1-2 binary system is one such numerati
 
 \paragraph{zeroless representations}
 A numeral system is said to be \textit{zeroless} if no digits are assigned $ 0 $,
-i.e., $ \text{offset} \textgreater 0 $.
+i.e., $ \mathit{offset} \textgreater 0 $.
 Data structures modeled after zeroless systems are called \textit{zeroless representations}.
-These containers are preferable to their \scmsubst{"zeroful"}{``zeroful''} counterparts.
-Because a digit of value $ 0 $ corresponds to a building block with $ 0 $ elements,
-and a building block that contains no element is not only useless,
+These containers are preferable to their ``zeroful'' counterparts.
+The reason is that a digit of value $ 0 $ corresponds to a building block with
+$ 0 $ elements, and a building block that contains no element is not only useless,
 but also hinders traversal as it takes time to skip over these empty nodes,
 as we have seen in random access lists from the previous chapter.
-
-\scm{The ``Because'' is dangling. Say something like ``The reason is that...''}
 
 \section{Number of Digits}
 
@@ -131,14 +130,14 @@ Formerly in our representation,
 there are exactly \textit{base} number of digits and their assignments range from:
 
 $$
-    \text{offset}  ...  \text{offset} + \text{base} - 1
+    \mathit{offset}  ...  \mathit{offset} + \mathit{base} - 1
 $$
 
 By introducing a new index \textit{\#digit} to generalize the number of digits,
 their assignments range from:
 
 $$
-    \text{offset}  ...  \text{offset} + \text{\#digit} - 1
+    \mathit{offset}  ...  \mathit{offset} + \mathit{\#digit} - 1
 $$
 
 \paragraph{Redundancy}
@@ -149,11 +148,15 @@ In fact, systems that admit $ 0 $ as one of the digits must be redundant,
 since we can always take a numeral and add leading zeros without changing it's value.
 
 Incrementing a decimal numeral such as $ 999999 $ takes much more time than
-$ 999998 $ because carries or borrows can cascade.
+$ 999998 $ because carries or borrows can propagate.
 Redundancy provides ``buffer'' against operations these carries and borrows.
+In this case, incrementing $ 999999 $ and $ 999998 $ of \textit{Int32} both
+results in a cost of constant time.
 
 \scm{hmm.. is \textit{Int32} a good example for explaining this?
 I don't think the redundancy in \textit{Int32} provides any buffer, does it?}
+\banacorn{\textit{Int32} provides a buffer of size of $ 2^{32} $, I know this
+does not sound impressive at all XD}
 
 Numerical representations modeled after redundant numeral systems also enjoy
 similar properties. When designed properly, redundancy can improve the performance
@@ -190,7 +193,7 @@ indices, there are also some unexpected inhabitants included in this representat
 There is always a trade-off between expressiveness and properties.
 
 We will explore the various types of numeral systems and define operations on
-them in \scmsubst{the chapter}{Chapter}~\ref{constructions}.
+them in the chapter~\ref{constructions}.
 
 % \subsection{Surjectiveness}
 % \subsection{Injectiveness}

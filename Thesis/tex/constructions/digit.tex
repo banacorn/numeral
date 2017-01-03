@@ -202,8 +202,8 @@ digit+1 : ∀ {d}
 digit+1 x ¬greatest =
     fromℕ≤ {suc (toℕ x)} (≤∧≢⇒< (bounded x) ¬greatest)
 \end{lstlisting}
-
-Where {\lstinline|≤∧≢⇒< (bounded x) ¬greatest : suc (toℕ x) < d|}.
+%
+where {\lstinline|≤∧≢⇒< (bounded x) ¬greatest : suc (toℕ x) < d|}.
 
 \paragraph{properties}
 
