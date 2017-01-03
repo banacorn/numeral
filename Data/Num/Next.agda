@@ -524,9 +524,6 @@ next-numeral-is-immediate-Proper xs (y ∙) proper prop | GappedEndpoint b d o g
             suc ⟦ xs ⟧
         □
 next-numeral-is-immediate-Proper (x ∙) (y ∷ ys) proper prop | GappedEndpoint b d o greatest gapped =
-    let
-        ⟦ys⟧>0 = tail-mono-strict-Null x y ys greatest prop
-    in
     start
         o + (Digit-toℕ (carry-digit d o proper) o) * suc b
     ≈⟨ cong (λ w → o + w * suc b) (carry-digit-toℕ d o proper) ⟩
@@ -565,9 +562,6 @@ next-numeral-is-immediate-Proper (x ∷ xs) (y ∷ ys) proper prop | GappedEndpo
         Digit-toℕ y o + ⟦ ys ⟧ * suc b
     □
     where
-        ¬max-xs : ¬ (Maximum xs)
-        ¬max-xs = Maximum-Proper xs proper
-
         next-xs : Numeral (suc b) (suc d) o
         next-xs = next-numeral-Proper xs proper
 

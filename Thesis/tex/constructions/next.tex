@@ -544,10 +544,8 @@ Gapped : ∀ b d o
     → (xs : Numeral (suc b) (suc d) o)
     → (proper : 2 ≤ suc (d + o))
     → Set
-Gapped b d o xs proper = suc d < (⟦ next-xs ⟧ ∸ ⟦ xs ⟧) * suc b
-    where
-        next-xs : Numeral (suc b) (suc d) o
-        next-xs = next-numeral-Proper xs proper
+Gapped b d o xs proper
+    = suc d < (⟦ next-numeral-Proper xs proper ⟧ ∸ ⟦ xs ⟧) * suc b
 \end{lstlisting}
 
 However, the predicate above does not take numerals like {\lstinline|x ∙|} into
@@ -573,10 +571,8 @@ Gapped#N : ∀ b d o
     → (xs : Numeral (suc b) (suc d) o)
     → (proper : 2 ≤ suc (d + o))
     → Set
-Gapped#N b d o xs proper = suc d < (⟦ next ⟧ ∸ ⟦ xs ⟧) * suc b
-    where
-        next : Numeral (suc b) (suc d) o
-        next = next-numeral-Proper xs proper
+Gapped#N b d o xs proper
+    = suc d < (⟦ next-numeral-Proper xs proper ⟧ ∸ ⟦ xs ⟧) * suc b
 
 Gapped : ∀ {b d o}
     → (xs : Numeral (suc b) (suc d) o)
@@ -604,7 +600,7 @@ There is an important theorem about the intriguing relation between
 {\lstinline|Gapped#0|} and {\lstinline|Gapped#N|} which will be proven and used
 in later chapters.
 
-\subsection{A View within another}
+\subsubsection{A View within another}
 
 With the predicate {\lstinline|Gapped|} and its friends, we can further classify
 systems of {\lstinline|Proper|} into finer categories.
@@ -645,7 +641,7 @@ nextView {b} {d} {o} xs proper | no ¬greatest
     = Interval b d o ¬greatest
 \end{lstlisting}
 
-\subsection{{\lstinline|next-numeral-Proper|}}
+\subsubsection{{\lstinline|next-numeral-Proper|}}
 
 Finally, to compute the next numeral of systems of {\lstinline|Proper|},
 we categorize the given numeral with {\lstinline|NextView|}
@@ -820,54 +816,219 @@ next-numeral-Proper-UngappedEndpoint : ∀ {b d o}
     → (¬gapped : ¬ (Gapped xs proper))
     → Numeral (suc b) (suc d) o
 next-numeral-Proper-UngappedEndpoint {b} {d} {o} (x ∙) greatest proper gapped
-    = digit+1-n x greatest (carry o * suc b) lower-bound ∷ carry-digit d o proper ∙
+    = digit+1-n x greatest gap lower-bound ∷ carry-digit d o proper ∙
     where
-        lower-bound : carry o * suc b > 0
-        lower-bound =
-            start
-                1
-            ≤⟨ m≤m*1+n 1 b ⟩
-                1 * suc b
-            ≤⟨ *n-mono (suc b) (m≤m⊔n 1 o) ⟩
-                carry o * suc b
-            □
+        gap : ℕ
+        gap = carry o * suc b
+
+        lower-bound : gap > 0
+        lower-bound = ...
 next-numeral-Proper-UngappedEndpoint {b} {d} {o} (x ∷ xs) greatest proper gapped
     = digit+1-n x greatest gap lower-bound ∷ next-xs
     where
-        next-xs : Numeral (suc b) (suc d) o
-        next-xs = next-numeral-Proper xs proper
-
         gap : ℕ
-        gap = (⟦ next-xs ⟧ ∸ ⟦ xs ⟧) * suc b
+        gap = (⟦ next-numeral-Proper xs proper ⟧ ∸ ⟦ xs ⟧) * suc b
 
         lower-bound : gap > 0
-        lower-bound =
-            start
-                1
-            ≤⟨ m≤m*1+n 1 b ⟩
-                1 * suc b
-            ≤⟨ *n-mono (suc b) (m≥n+o⇒m∸o≥n ⟦ next-xs ⟧ 1 ⟦ xs ⟧
-                    (next-numeral-is-greater-Proper xs proper)) ⟩
-                (⟦ next-xs ⟧ ∸ ⟦ xs ⟧) * suc b
-            □
+        lower-bound =  ... next-numeral-is-greater-Proper xs proper ...
 \end{lstlisting}
-% 
-% \subsection{{\lstinline|next-numeral-is-greater-Proper|}}
-%
-% \paragraph{Remark} most of the reasonings are going to be skipped,
-% leaving only the types.
-%
-% \begin{lstlisting}
-% next-numeral-is-greater-Proper : ∀ {b d o}
-%     → (xs : Numeral (suc b) (suc d) o)
-%     → (proper : 2 ≤ suc (d + o))
-%     → ⟦ next-numeral-Proper xs proper ⟧ > ⟦ xs ⟧
-% next-numeral-is-greater-Proper xs proper with nextView xs proper
-% \end{lstlisting}
-%
-% \begin{lstlisting}
-% next-numeral-is-greater-Proper (x ∙) proper | Interval b d o ¬greatest
-%     = reflexive $ sym (digit+1-toℕ x ¬greatest)
-% next-numeral-is-greater-Proper (x ∷ xs) proper | Interval b d o ¬greatest
-%     = reflexive $ cong (λ w → w + ⟦ xs ⟧ * suc b) (sym (digit+1-toℕ x ¬greatest))\end{lstlisting}
-% \end{document}
+
+\subsubsection{Lemmata}
+
+These lemmata desctibe the relations between a given numeral and its next of
+each category.
+
+\paragraph{Remark} Here we show only the propositions because their proofs contain
+some whopping ~200 lines of equational and preorder reasoning.
+
+\begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
+next-numeral-Proper-Interval-lemma : ∀ {b d o}
+    → (xs : Numeral (suc b) (suc d) o)
+    → (¬greatest : ¬ (Greatest (lsd xs)))
+    → (proper : 2 ≤ suc (d + o))
+    → ⟦ next-numeral-Proper-Interval xs ¬greatest proper ⟧ ≡ suc ⟦ xs ⟧
+\end{lstlisting}
+
+\begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
+next-numeral-Proper-GappedEndpoint-lemma : ∀ {b d o}
+    → (xs : Numeral (suc b) (suc d) o)
+    → (greatest : Greatest (lsd xs))
+    → (proper : 2 ≤ suc (d + o))
+    → (gapped : Gapped xs proper)
+    → ⟦ next-numeral-Proper-GappedEndpoint xs proper gapped ⟧ > suc ⟦ xs ⟧
+\end{lstlisting}
+
+\begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
+next-numeral-Proper-UngappedEndpoint-lemma : ∀ {b d o}
+    → (xs : Numeral (suc b) (suc d) o)
+    → (greatest : Greatest (lsd xs))
+    → (proper : 2 ≤ suc (d + o))
+    → (¬gapped : ¬ (Gapped xs proper))
+    → ⟦ next-numeral-Proper-UngappedEndpoint xs greatest proper ¬gapped ⟧
+        ≡ suc ⟦ xs ⟧
+\end{lstlisting}
+
+\subsubsection{{\lstinline|next-numeral-is-greater-Proper|}}
+
+With lemmata above, proving {\lstinline|next-numeral-is-greater-Proper|} becomes
+an easy task.
+
+\begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
+next-numeral-is-greater-Proper : ∀ {b d o}
+    → (xs : Numeral (suc b) (suc d) o)
+    → (proper : 2 ≤ suc (d + o))
+    → ⟦ next-numeral-Proper xs proper ⟧ > ⟦ xs ⟧
+next-numeral-is-greater-Proper xs proper with nextView xs proper
+next-numeral-is-greater-Proper xs proper | Interval b d o ¬greatest =
+    start
+        suc ⟦ xs ⟧
+    ≈⟨ sym (next-numeral-Proper-Interval-lemma xs ¬greatest proper) ⟩
+        ⟦ next-numeral-Proper-Interval xs ¬greatest proper ⟧
+    □
+next-numeral-is-greater-Proper xs proper | GappedEndpoint b d o greatest gapped =
+    start
+        suc ⟦ xs ⟧
+    ≤⟨ n≤1+n (suc ⟦ xs ⟧) ⟩
+        suc (suc ⟦ xs ⟧)
+    ≤⟨ next-numeral-Proper-GappedEndpoint-lemma xs greatest proper gapped ⟩
+        ⟦ next-numeral-Proper-GappedEndpoint xs proper gapped ⟧
+    □
+next-numeral-is-greater-Proper xs proper | UngappedEndpoint b d o greatest ¬gapped =
+    start
+        suc ⟦ xs ⟧
+    ≈⟨ sym (next-numeral-Proper-UngappedEndpoint-lemma xs greatest proper ¬gapped) ⟩
+        ⟦ next-numeral-Proper-UngappedEndpoint xs greatest proper ¬gapped ⟧
+    □
+\end{lstlisting}
+
+\subsubsection{{\lstinline|next-numeral-is-immediate-Proper|}}
+
+This proof also follows the same pattern, except that the case of
+{\lstinline|GappedEndpoint|} becomes more complicated as its corresponding lemma
+establishes only a preorder relation.
+
+\begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
+next-numeral-is-immediate-Proper : ∀ {b d o}
+    → (xs : Numeral (suc b) (suc d) o)
+    → (ys : Numeral (suc b) (suc d) o)
+    → (proper : 2 ≤ suc (d + o))
+    → ⟦ ys ⟧ > ⟦ xs ⟧
+    → ⟦ ys ⟧ ≥ ⟦ next-numeral-Proper xs proper ⟧
+next-numeral-is-immediate-Proper xs ys proper prop with nextView xs proper
+next-numeral-is-immediate-Proper xs ys proper prop | Interval b d o ¬greatest =
+    start
+        ⟦ next-numeral-Proper-Interval xs ¬greatest proper ⟧
+    ≈⟨ next-numeral-Proper-Interval-lemma xs ¬greatest proper ⟩
+        suc ⟦ xs ⟧
+    ≤⟨ prop ⟩
+        ⟦ ys ⟧
+    □
+next-numeral-is-immediate-Proper xs (y ∙) proper prop
+    | GappedEndpoint b d o greatest gapped
+    = contradiction prop $ >⇒≰ $
+        start
+            suc ⟦ y ∙ ⟧
+        ≤⟨ s≤s (greatest-of-all o (lsd xs) y greatest) ⟩
+            suc (Digit-toℕ (lsd xs) o)
+        ≤⟨ s≤s (lsd-toℕ xs) ⟩
+            suc ⟦ xs ⟧
+        □
+next-numeral-is-immediate-Proper (x ∙) (y ∷ ys) proper prop
+    | GappedEndpoint b d o greatest gapped =
+    start
+        ⟦ z ∷ carry-digit d o proper ∙ ⟧
+    ≤⟨ ... ⟩
+        o + carry o * suc b
+    ≤⟨ n+-mono o (*n-mono (suc b) ys-lower-bound) ⟩
+        o + ⟦ ys ⟧ * suc b
+    ≤⟨ ... ⟩
+        ⟦ y ∷ ys ⟧
+    □
+    where
+        ys-lower-bound : ⟦ ys ⟧ ≥ carry o
+        ys-lower-bound = ...
+next-numeral-is-immediate-Proper (x ∷ xs) (y ∷ ys) proper prop
+    | GappedEndpoint b d o greatest gapped =
+    start
+        ⟦ z ∷ next-numeral-Proper xs proper ⟧
+    ≤⟨ ... ⟩
+        o + ⟦ next-numeral-Proper xs proper ⟧ * suc b
+    ≤⟨ n+-mono o (*n-mono (suc b) ⟦next-xs⟧≤⟦ys⟧) ⟩
+        o + ⟦ ys ⟧ * suc b
+    ≤⟨ ... ⟩
+        ⟦ y ∷ ys ⟧
+    □
+    where
+        ⟦xs⟧<⟦ys⟧ : ⟦ xs ⟧ < ⟦ ys ⟧
+        ⟦xs⟧<⟦ys⟧ = ...
+        ⟦next-xs⟧≤⟦ys⟧ : ⟦ next-numeral-Proper xs proper ⟧ ≤ ⟦ ys ⟧
+        ⟦next-xs⟧≤⟦ys⟧ = next-numeral-is-immediate-Proper xs ys proper ⟦xs⟧<⟦ys⟧
+
+next-numeral-is-immediate-Proper xs ys proper prop
+    | UngappedEndpoint b d o greatest ¬gapped =
+    start
+        ⟦ next-numeral-Proper-UngappedEndpoint xs greatest proper ¬gapped ⟧
+    ≈⟨ next-numeral-Proper-UngappedEndpoint-lemma xs greatest proper ¬gapped ⟩
+        suc ⟦ xs ⟧
+    ≤⟨ prop ⟩
+        ⟦ ys ⟧
+    □
+\end{lstlisting}
+
+\subsection{Putting Everything Together}
+
+Finally, we can assemble everything we have constructed and
+complete these functions and proofs.
+
+\subsubsection{{\lstinline|next-numeral|}}
+\begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
+next-numeral : ∀ {b d o}
+    → (xs : Numeral b d o)
+    → ¬ (Maximum xs)
+    → Numeral b d o
+next-numeral {b} {d} {o} xs ¬max with numView b d o
+next-numeral xs ¬max | NullBase d o = next-numeral-NullBase xs ¬max
+next-numeral xs ¬max | NoDigits b o = NoDigits-explode xs
+next-numeral xs ¬max | AllZeros b   = contradiction (Maximum-AllZeros xs) ¬max
+next-numeral xs ¬max | Proper b d o proper = next-numeral-Proper xs proper
+
+\end{lstlisting}
+
+\subsubsection{{\lstinline|next-numeral-is-greater|}}
+\begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
+next-numeral-is-greater : ∀ {b d o}
+    → (xs : Numeral b d o)
+    → (¬max : ¬ (Maximum xs))
+    → ⟦ next-numeral xs ¬max ⟧ > ⟦ xs ⟧
+next-numeral-is-greater {b} {d} {o} xs ¬max with numView b d o
+next-numeral-is-greater xs ¬max | NullBase d o
+    = next-numeral-is-greater-NullBase xs ¬max
+next-numeral-is-greater xs ¬max | NoDigits b o
+    = NoDigits-explode xs
+next-numeral-is-greater xs ¬max | AllZeros b
+    = contradiction (Maximum-AllZeros xs) ¬max
+next-numeral-is-greater xs ¬max | Proper b d o proper
+    = next-numeral-is-greater-Proper xs proper
+\end{lstlisting}
+
+\subsubsection{{\lstinline|next-numeral-is-immediate|}}
+\begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
+next-numeral-is-immediate : ∀ {b d o}
+    → (xs : Numeral b d o)
+    → (ys : Numeral b d o)
+    → (¬max : ¬ (Maximum xs))
+    → ⟦ ys ⟧ > ⟦ xs ⟧
+    → ⟦ ys ⟧ ≥ ⟦ next-numeral xs ¬max ⟧
+next-numeral-is-immediate {b} {d} {o} xs ys ¬max prop with numView b d o
+next-numeral-is-immediate xs ys ¬max prop | NullBase d o
+    = next-numeral-is-immediate-NullBase xs ys ¬max prop
+next-numeral-is-immediate xs ys ¬max prop | NoDigits b o
+    = NoDigits-explode xs
+next-numeral-is-immediate xs ys ¬max prop | AllZeros b
+    = contradiction (Maximum-AllZeros xs) ¬max
+next-numeral-is-immediate xs ys ¬max prop | Proper b d o proper
+    = next-numeral-is-immediate-Proper xs ys proper prop
+\end{lstlisting}
+
+
+\end{document}
