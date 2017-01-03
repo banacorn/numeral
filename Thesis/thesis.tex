@@ -65,8 +65,13 @@
     urlcolor=black           % color of external links
 }
 
-\newcommand{\scm}[1]{{\color{airforceblue}({\bf scm}: #1)}}
-\newcommand{\scmsubst}[2]{{\color{red} #1 $\rightarrow$}{\color{airforceblue} #2}}
+\newcommand{\scm}[1]{{\color{airforceblue}\{#1\}}}
+\newcommand{\scmsubst}[2]{{\color{red}\{#1\}$\rightarrow$}{\color{airforceblue}\{#2\}}}
+
+%%SCM: for mac. Comment them out before commiting.
+%\setCJKmainfont[BoldFont=STHeiti,ItalicFont=STKaiti]{STSong}
+%\setCJKsansfont[BoldFont=STHeiti]{STXihei}
+%\setCJKmonofont{STFangsong}
 
 \begin{document}
 
