@@ -109,7 +109,7 @@ Incrementable? {b} {d} {o} xs | no ¬max with numView b d o
 Incrementable? xs | no ¬max | NullBase d o
     = yes ((next-numeral-NullBase xs ¬max) , (next-numeral-NullBase-lemma xs ¬max))
 Incrementable? xs | no ¬max | NoDigits b o
-    = no (NoDigits-explode xs)
+    = yes (NoDigits-explode xs)
 Incrementable? xs | no ¬max | AllZeros b
     = no (contradiction (Maximum-AllZeros xs) ¬max)
 Incrementable? xs | no ¬max | Proper b d o proper
@@ -148,7 +148,7 @@ increment-next-numeral xs ¬max incr with Maximum? xs
 increment-next-numeral xs ¬max () | yes max
 increment-next-numeral {b} {d} {o} xs ¬max incr | no _  with numView b d o
 increment-next-numeral xs _ incr | no ¬max | NullBase d o = refl
-increment-next-numeral xs _ ()   | no ¬max | NoDigits b o
+increment-next-numeral xs _ incr | no ¬max | NoDigits b o = NoDigits-explode xs
 increment-next-numeral xs _ ()   | no ¬max | AllZeros b
 increment-next-numeral xs _ incr | no ¬max | Proper b d o proper
     = increment-next-numeral-Proper xs proper incr
