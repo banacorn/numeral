@@ -68,12 +68,12 @@ For those numerals that are eligible for increment,
 we can simply compute them with \lstinline|next-numeral|;
 and for those that are not eligible, we need a predicate for discriminating them.
 
-\subsubsection{\lstinline|Incrementable|}
+\subsection{\lstinline|Incrementable|}
 
 Similar to the definition of \lstinline|Bounded|, we define the predicate
 \lstinline|Incrementable| as an existential proposition.
 To prove that a numeral \lstinline|xs| is \lstinline|Incrementable|,
-one is oblidged to present the successor \textit{and} a proof to justify it.
+one is obliged to present the successor \textit{and} a proof to justify it.
 
 \begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
 Incrementable : ∀ {b d o} → (xs : Numeral b d o) → Set
@@ -148,7 +148,7 @@ As a side note, \lstinline|next-numeral-Proper| delegates tasks to other helper
 functions. \lstinline|next-numeral-Proper-refine| is here to narrow the term
 computed by \lstinline|next-numeral-Proper| down to
 \lstinline|next-numeral-Proper-GappedEndpoint|
-by giving evidences that it is delegated that way.
+by providing evidence that the computation is delegated that way.
 
 \begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
 ⟦next⟧>⟦incremented⟧ : ⟦ next-numeral-Proper xs proper ⟧ > ⟦ incremented ⟧
@@ -175,7 +175,7 @@ However, the next numeral should only be greater than the given numeral
     xs incremented proper (m≡1+n⇒m>n claim))
 \end{lstlisting}
 
-\subsubsection{Deciding Incrementable Numerals}
+\subsection{Deciding Incrementable Numerals}
 
 Together with lemmata about other kinds of numerals:
 
@@ -216,17 +216,6 @@ Incrementable?-Proper xs proper | UngappedEndpoint b d o greatest ¬gapped
         ∎))
 \end{lstlisting}
 
-\paragraph{Summary of numerals of \lstinline|Proper|}
-
-\begin{center}
-    \begin{adjustbox}{max width=\textwidth}
-    \begin{tabular}{ | l | c | c | c | }
-    \textbf{Property} & \textbf{Interval} & \textbf{GappedEndpoint} & \textbf{UngappedEndpoint} \\
-    \hline
-    is incrementable     & yes & no & yes  \\
-    \end{tabular}
-    \end{adjustbox}
-\end{center}
 
 Putting everything together, we can also determine numerals of other categories.
 
@@ -241,50 +230,103 @@ Incrementable? xs | no ¬max | NullBase d o
     = yes ((next-numeral-NullBase xs ¬max) ,
         (next-numeral-NullBase-lemma xs ¬max))
 Incrementable? xs | no ¬max | NoDigits b o
-    = no (NoDigits-explode xs)
+    = yes (NoDigits-explode xs)
 Incrementable? xs | no ¬max | AllZeros b
     = no (contradiction (Maximum-AllZeros xs) ¬max)
 Incrementable? xs | no ¬max | Proper b d o proper
     = Incrementable?-Proper xs proper
 \end{lstlisting}
 
-\paragraph{Summary}
+The table below sums up whether a non-maximum numeral can be incremented in
+systems of each category.
 
 \begin{center}
     \begin{adjustbox}{max width=\textwidth}
-    \begin{tabular}{|l|c|c|c|c|c|c|}
+    \begin{tabular}{|c|c|c|c|c|c|}
         \hline
-        \multirow{2}{*}{\textbf{Properties}} &
         \multirow{2}{*}{\textbf{NullBase}} &
         \multirow{2}{*}{\textbf{NoDigits}} &
         \multirow{2}{*}{\textbf{AllZeros}} &
         \multicolumn{3}{c|}{\textbf{Proper}} \\
-        \cline{5 - 7}
-        & & & & \textbf{Inteval} & \textbf{Gapped} & \textbf{Ungapped} \\
+        \cline{4 - 6}
+        & & & \textbf{Inteval} & \textbf{Gapped} & \textbf{Ungapped} \\
         \hline
-        has an maximum     & yes & no & yes & no & no & no \\
-        has an upper bound & yes & no & yes & no & no & no \\
-        can be incremented
-        \footnote{In case that the given numeral is not a maximum.}
-         & yes & no & no  & yes & no & yes \\
+        yes & yes & no & yes & no & yes \\
         \hline
     \end{tabular}
-
-    %
-    % \begin{tabular}{ | l | c | c | c | c | c | c |}
-    % \hline
-    % \multirow{2}{*}{\textbf{Properties}} &
-    % \multirow{2}{*}{\textbf{NullBase}} &
-    % \multirow{2}{*}{\textbf{NoDigits}} &
-    % \multirow{2}{*}{\textbf{AllZeros}} &
-    % \multicolumn{3}{c|}{\textbf{Proper}} \\
-    % % %
-    % % \cline{5-7} & \textbf{Interval} & \textbf{GappedEndpoint} & \textbf{UngappedEndpoint} & fuck \\
-    % % \hline
-    % % is incrementable     & yes & no & yes & yes & no & yes \\
-    % \end{tabular}
     \end{adjustbox}
 \end{center}
 
+Note that the decision of making numerals of \lstinline{NoDigits} incrementable
+is completely arbitrary as it will always hold vacuously.
 
+\subsection{\lstinline|increment|}
+
+We can actually do without the previous section about \lstinline|Incrementable?|
+and still be able to define a function that increments numerals.
+All we have to do is to ask the user to prove that the numeral he or she has
+given is incrementable.
+By doing so, the user is obliged to provide the actual successor,
+and then we can steal it and pretend that we have found the successor.
+How outrageous!
+
+\begin{lstlisting}
+increment : ∀ {b d o}
+    → (xs : Numeral b d o)
+    → (incr : Incrementable xs)
+    → Numeral b d o
+increment xs incr = proj₁ incr
+\end{lstlisting}
+
+Obviously this is not the desired implementation of \lstinline|increment|.
+The reason why we construct \lstinline|Incrementable?| is that it not only
+does the real work of computing successors for us (the credit also goes to \lstinline|next-numeral|)
+but also explains why a numeral is incrementable (or not).
+
+The decidability of \lstinline|Incrementable?| enables us to embed it in types.
+To filter out numerals that are not eligible for increment, we use the same trick
+as when implementing safe \lstinline|head| on lists.
+
+\begin{lstlisting}
+True : {P : Set} → Dec P → Set
+True (yes _) = ⊤
+True (no _) = ⊥
+\end{lstlisting}
+
+\lstinline|True| translates positive results of a decidable predicate to
+\lstinline|⊤| and negative results to \lstinline|⊥|,
+where as \lstinline|toWitness| reclaims the proof of the given proposition for us.
+
+\begin{lstlisting}
+toWitness : {P : Set} {Q : Dec P} → True Q → P
+toWitness {Q = yes p} _  = p
+toWitness {Q = no  _} ()
+\end{lstlisting}
+
+Finally, the true implementation of \lstinline|increment| is as follows:
+
+\begin{lstlisting}
+increment : ∀ {b d o}
+    → (xs : Numeral b d o)
+    → (incr : True (Incrementable? xs))
+    → Numeral b d o
+increment xs incr = proj₁ (toWitness incr)
+\end{lstlisting}
+
+\subsection{Properties of \lstinline|increment|}
+
+\begin{lstlisting}
+increment-next-numeral : ∀ {b d o}
+    → (xs : Numeral b d o)
+    → (¬max : ¬ (Maximum xs))
+    → (incr : True (Incrementable? xs))
+    → increment xs incr ≡ next-numeral xs ¬max
+\end{lstlisting}
+
+This property relates \lstinline|increment| with \lstinline|next-numeral|.
+It may look trivial, however, the underlying implementation of \lstinline|increment|
+does not actually involve \lstinline|next-numeral|, but helper functions like
+\lstinline|next-numeral-Proper| and \lstinline|next-numeral-NullBase|.
+We dispense with the proof of this property as it is comprised mostly of pattern
+matching and seemly meaningless \lstinline|refl|s.
 \end{document}
