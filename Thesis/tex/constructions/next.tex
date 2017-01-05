@@ -4,22 +4,24 @@
 
 \section{The Next Numeral}\label{next}
 
-Paul Benacerraf once argued\cite{benacerraf1965numbers} that, there are two kinds
-of \textit{counting} which correspond to \textbf{transitive} and \textbf{intransitive}
-uses of the verb ``to count.'' Transitive counting, in his sense, is to assign one
-of the numbers to the cardinality of a set, by establishing a one-to-one correspondence
-between the numbers and the objects one is counting, all the way from none to
-all. Intransitive counting, on the other hand, is to generate a sequence of
-notation, that could go as far as we need. And it seems that one can only learn
-how to count intransitively first, before knowning how to count transitively,
-but not vice versa. So it is important to know how to generate the next numeral
-we need.
+Paul Benacerraf once argued\cite{benacerraf1965numbers} that,
+there are two kinds of \textit{counting} which correspond to \textbf{transitive}
+and \textbf{intransitive} uses of the verb ``to count.''
+Transitive counting, in his sense, is to assign one of the numbers to the
+cardinality of a set,
+by establishing a one-to-one correspondence between the numbers and the objects
+one is counting, all the way from none to all.
+Intransitive counting, on the other hand, is to generate a sequence of notation,
+that could go as far as we need.
+And it seems that one can only learn how to count intransitively first,
+before knowing how to count transitively, but not vice versa.
+So it is important to know how to generate the next numeral we need.
 
 \subsection{What does it mean by ``The Next''?}
 
-When mapping some systems such as {\lstinline|Numeral 10 5 0|} onto
-the natural numbers, their number lines appear to be ``gapped'' because their
-evaluations are not \textit{surjective}.
+When mapping some systems such as {\lstinline|Numeral 10 5 0|} onto the natural
+numbers, their number lines appear to be ``gapped'' because the evaluation is
+not \textit{surjective}.
 The number ``6'', for example, has no correspondence on the numeral side.
 
 \begin{center}
@@ -32,7 +34,8 @@ The number ``6'', for example, has no correspondence on the numeral side.
 
             % % the body
             \foreach \i in {0,...,2} {
-                \draw[thick, fill=black] ({\i * 10}, {\i * 0.6 + 0.4}) rectangle ({\i * 10 + 5}, {\i * 0.6 + 0.8});
+                \draw[thick, fill=black] ({\i * 10}, {\i * 0.6 + 0.4})
+                    rectangle ({\i * 10 + 5}, {\i * 0.6 + 0.8});
             };
 
             % ticks
@@ -49,9 +52,9 @@ The number ``6'', for example, has no correspondence on the numeral side.
     \end{adjustbox}
 \end{center}
 
-Whilst systems such as {\lstinline|Numeral 10 15 0|} map more than one numeral
-onto the same number. We can see immediately that their evaluations are not
-\textit{injective} as those number lines ``overlap'' with each other.
+While systems such as {\lstinline|Numeral 10 15 0|} map more than one numeral
+onto the same number, we can see immediately that the evaluation is not
+\textit{injective} because those number lines ``overlap'' with each other.
 
 \begin{center}
     \begin{adjustbox}{max width=\textwidth}
@@ -63,7 +66,8 @@ onto the same number. We can see immediately that their evaluations are not
 
             % % the body
             \foreach \i in {0,...,2} {
-                \draw[thick, fill=black] ({\i * 10}, {\i * 0.6 + 0.4}) rectangle ({\i * 10 + 15}, {\i * 0.6 + 0.8});
+                \draw[thick, fill=black] ({\i * 10}, {\i * 0.6 + 0.4})
+                    rectangle ({\i * 10 + 15}, {\i * 0.6 + 0.8});
             };
 
             % ticks
@@ -80,10 +84,10 @@ onto the same number. We can see immediately that their evaluations are not
     \end{adjustbox}
 \end{center}
 
-
-As we can see, numerals do not align with numbers perfectly.
+Apparently numerals do not align with numbers perfectly.
 Finding ``the next number'' thus becomes a non-trivial problem.
-Therefore, we define the next numeral as \textbf{the least numeral that is greater than itself}.
+Therefore, we define the next numeral as
+\textbf{the least numeral that is greater than itself}.
 
 \subsection{Implementation}
 
@@ -162,7 +166,7 @@ and {\lstinline|Proper|} respectively.
 However, programs and proofs of systems of {\lstinline|Proper|} will be defined
 \textit{simultaneously} with mutually recursive definitions.
 The reason why we need the property {\lstinline|next-numeral-is-greater-Proper|}
-in the first place is that they are neccessary for implementing
+in the first place is that they are necessary for implementing
 {\lstinline|next-numeral-Proper|}.
 
 \subsection{The Next Numeral of NullBase}
@@ -170,7 +174,7 @@ in the first place is that they are neccessary for implementing
 To find the next numeral of systems of {\lstinline|NullBase|},
 all we have to do is to manipulate the LSD.
 Since only the value of the LSD has effect on the evaluation.
-All numerals are mapped onto this single and continuous number line below.
+All numerals are mapped onto a single and continuous number line as shown below.
 
 \begin{center}
     \begin{adjustbox}{max width=\textwidth}
@@ -254,15 +258,16 @@ next-numeral-NullBase (x ∷ xs) ¬max | no ¬greatest
 
 \subsubsection{Lemma}
 
-Instead of proving that {\lstinline|next-numeral-NullBase|} does compute a numeral
-that is:
+Instead of proving that {\lstinline|next-numeral-NullBase|} does compute a
+numeral that is:
 \begin{enumerate}
     \item greater than the given numeral
     \item the least of all such numerals
 \end{enumerate}
 
-We prove a stronger proposition, that {\lstinline|next-numeral-NullBase|} would
-compute the \textit{successor} of the given number.
+We justify a stronger proposition;
+that {\lstinline|next-numeral-NullBase|} would compute the \textit{successor} of
+the given number.
 
 \begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
 next-numeral-NullBase-lemma : ∀ {d o}
@@ -297,7 +302,7 @@ next-numeral-NullBase-lemma {d} {o} (x ∷ xs) ¬max | no ¬greatest =
 \subsubsection{{\lstinline|next-numeral-is-greater-NullBase|}}
 
 Recall that {\lstinline|x < y|} is essentially a synonym of {\lstinline|suc x ≤ y|}.
-We nail this with the lemma we have just proven.
+We complete this proof by applying the lemma we have proven.
 
 \begin{lstlisting}
 next-numeral-is-greater-NullBase : ∀ {d o}
@@ -314,7 +319,8 @@ next-numeral-is-greater-NullBase xs ¬max =
 
 \subsubsection{{\lstinline|next-numeral-is-immediate-NullBase|}}
 
-Here, the argument {\lstinline|ys|} stands for \textit{any} numeral of {\lstinline|Numeral 0 (suc d) o|}.
+Here, the argument {\lstinline|ys|} stands for \textit{any} numeral of
+{\lstinline|Numeral 0 (suc d) o|}.
 
 \begin{lstlisting}
 next-numeral-is-immediate-NullBase : ∀ {d o}
@@ -337,8 +343,8 @@ next-numeral-is-immediate-NullBase xs ys ¬max prop =
 
 Unlike in systems of {\lstinline|NullBase|} where every numeral gets mapped onto
 a single and continuous number line.
-There are \textit{three different cases} where the given numeral might be located
-in systems of {\lstinline|Proper|}.
+There are \textit{three different cases} where the given numeral might be
+located in systems of {\lstinline|Proper|}.
 
 \paragraph{Intervals}
 
@@ -425,13 +431,6 @@ There are no other numerals in between that could bridge the gap.
 
 When the given numeral's LSD happens to be the greatest
 but we can find another numeral right ahead of it.
-
-% Just like in the case of \textit{gapped endpoints}, the rest of the numeral are
-% replace with its next numeral.
-
-% To reach the next numeral, the LSD has to be reset to the least digit;
-% the rest of the numeral (digits of higher significance) are replaced with
-% its \texit{next} numeral to compensate for the loss of the LSD.
 
 \begin{center}
     \begin{adjustbox}{max width=\textwidth}
@@ -534,9 +533,9 @@ If we look closely, we can see that the gap comes from the difference between
 \end{center}
 
 If there are enough digits to bridge the gap between {\lstinline|⟦ xs ⟧ × b + o|}
-and {\lstinline|⟦ xs' ⟧ × b + o|} then there will be no gaps.
-Thus the predicate for determine if there is a gap ahead of {\lstinline|x ∷ xs|}
-can then be expressed as below. Notice that {\lstinline|next-numeral-Proper|}
+and {\lstinline|⟦ xs' ⟧ × b + o|}, then there will be no gaps.
+Thus the predicate for telling if there is a gap ahead of {\lstinline|x ∷ xs|}
+can then be expressed as follows. Notice that {\lstinline|next-numeral-Proper|}
 is used as part of the definition.
 
 \begin{lstlisting}
@@ -560,8 +559,8 @@ Gapped : ∀ b d o → Set
 Gapped b d o = suc d < carry o * suc b
 \end{lstlisting}
 
-Combining the two predicates above together, we devise a predicate for
-predicting the gap ahead of a numeral.
+Combining the two predicates above, we devise a predicate for predicting the gap
+ahead of a numeral.
 
 \begin{lstlisting}
 Gapped#0 : ∀ b d o → Set
@@ -581,8 +580,8 @@ Gapped : ∀ {b d o}
 Gapped {b} {d} {o} (x ∙)    proper = Gapped#0 b d o
 Gapped {b} {d} {o} (x ∷ xs) proper = Gapped#N b d o xs proper
 \end{lstlisting}
-
-Along with decidable versions.
+%
+along with decidable versions.
 
 \begin{lstlisting}
 Gapped#0? :  ∀ b d o → Dec (Gapped#0 b d o)
@@ -752,7 +751,7 @@ next-numeral-Proper-Interval (x ∷ xs) ¬greatest proper
 
 To reach the next numeral, the LSD is reset to the least digit;
 the rest of the numeral (digits of higher significance) are replaced accordingly
-compensate for the loss of the LSD.
+to compensate for the loss of the LSD.
 
 \begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
 next-numeral-Proper-GappedEndpoint : ∀ {b d o}
@@ -801,9 +800,9 @@ next-numeral-Proper-GappedEndpoint (x ∷ xs) proper gapped
 Just like in the case of \textit{gapped endpoints}, the more significant part
 of the numeral is replaced with something greater (either a carry-digit or
 the next numeral).
-The LSD is incremented and then subtracted by \textit{the exact size of the coming gap}.
+The LSD is incremented and then subtracted from \textit{the exact size of the coming gap}.
 To compute the size of the gap, it is necessary to compute {\lstinline|next-xs|},
-the next numeral of the more significant part, beforehand.
+the next numeral of the more significant part beforehand.
 Moreover, we also need to assure that {\lstinline|next-xs|} is greater than
 {\lstinline|xs|}.
 Hence these constructions have to be written as mutually recursive definitions.
@@ -835,11 +834,11 @@ next-numeral-Proper-UngappedEndpoint {b} {d} {o} (x ∷ xs) greatest proper gapp
 
 \subsubsection{Lemmata}
 
-These lemmata desctibe the relations between a given numeral and its next of
+These lemmata describe the relations between a given numeral and its next of
 each category.
 
-\paragraph{Remark} Here we show only the propositions because their proofs contain
-some whopping ~200 lines of equational and preorder reasoning.
+\paragraph{Remark} Here we show only the propositions because their proofs
+contain some whopping \textasciitilde200 lines of equational and preorder reasoning.
 
 \begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
 next-numeral-Proper-Interval-lemma : ∀ {b d o}
@@ -978,7 +977,7 @@ next-numeral-is-immediate-Proper xs ys proper prop
 \subsection{Putting Everything Together}
 
 Finally, we can assemble everything we have constructed and
-complete these functions and proofs.
+finish these functions and proofs.
 
 \subsubsection{{\lstinline|next-numeral|}}
 \begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
