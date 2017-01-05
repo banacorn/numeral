@@ -3,14 +3,13 @@
 \begin{document}
 
 \section{Digit: the basic building block}\label{digit}
-% [draft]
 
-As the basic building block of numerals, we will demonstrate how to choose a
-suitable representation for digits in this section.
+As the fundamental building block of numerals, we will devise a suitable
+representation for digits in this section.
 
 \subsection{Fin}
 
-To represent a digit, we use a datatype that is conventionally called \textit{Fin}
+To represent a digit, we use a datatype conventionally called \textit{Fin}
 which can be indexed to have some exact number of inhabitants.
 
 \begin{lstlisting}
@@ -25,7 +24,7 @@ with every {\lstinline|suc|}, and there can only be at most {\lstinline|n|} of
 them before reaching {\lstinline|Fin (suc n)|}. In other words, {\lstinline|Fin n|}
 would have exactly \textit{n} inhabitants.
 
-\subsection{Definition}
+\subsection{Definition of \lstinline|Digit|}
 
 {\lstinline|Digit|} is simply just a synonym for {\lstinline|Fin|}, indexed by
 the number of digits {\lstinline|d|} of a system.
@@ -79,8 +78,8 @@ Binary = Digit 2
     \end{adjustbox}
 \end{center}
 
-Digits are assigned to {\lstinline|ℕ|} together with the offset {\lstinline|o|} of a system,
-ranging from $ o $ to $ d + o $.
+Digits are assigned to {\lstinline|ℕ|} together with the offset {\lstinline|o|}
+of a system, ranging from $ o $ to $ d + o $.
 
 \begin{lstlisting}
 Digit-toℕ : ∀ {d} → Digit d → ℕ → ℕ
@@ -90,7 +89,6 @@ Digit-toℕ x o = toℕ x + o
     {\lstinline|toℕ : ∀ {n} → Fin n → ℕ|}
     \newline\hspace*{4em} converts from {\lstinline|Fin n|} to {\lstinline|ℕ|}.
 }
-
 
 However, not all natural numbers can be converted to digits.
 The value has to be in a certain range, between $ o $ and $ d + o $.
@@ -120,7 +118,7 @@ Digit-fromℕ {d} n o upper-bound | no ¬p = contradiction p ¬p
 }
 
 
-\paragraph{properties}
+\subsubsection{Properties of \lstinline|Digit|}
 
 \begin{center}
     \begin{tikzpicture}
@@ -174,7 +172,7 @@ Digit-fromℕ-toℕ {d} {o} n lb ub | no ¬q = contradiction q ¬q
     \newline\hspace*{4em} states that a number should remain the same after converting back and forth.
 }
 
-Digits have a upper-bound and a lower-bound after evaluation.
+Digits have a upper-bound and a lower-bound after evaluated to \lstinline|ℕ|.
 
 \begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
 Digit-upper-bound : ∀ {d} → (o : ℕ) → (x : Digit d) → Digit-toℕ x o < d + o
@@ -188,7 +186,7 @@ Digit-lower-bound {d} o x = m≤n+m o (toℕ x)
     \newline\hspace*{4em} a property about the upper-bound of a {\lstinline|Fin n|}.
 }
 
-\subsection{Operations}
+\subsection{Functions on \lstinline|Digit|}
 
 \subsubsection{Increment}
 
@@ -204,8 +202,6 @@ digit+1 x ¬greatest =
 \end{lstlisting}
 %
 where {\lstinline|≤∧≢⇒< (bounded x) ¬greatest : suc (toℕ x) < d|}.
-
-\paragraph{properties}
 
 \begin{center}
     \begin{tikzpicture}
@@ -241,12 +237,12 @@ digit+1-toℕ {d} {o} x ¬greatest =
     ∎
 \end{lstlisting}
 
-\subsubsection{Increase then Subtract}
+\subsubsection{Increase and then Subtract}
 
 Increases a digit and then subtract it by $ n $.
 This function is useful for implementing \textit{carrying}.
-When the digit to increase is already the greatest, we have to subtract it by
-an amount (usually the base) after the increment.
+When the digit to increase is already the greatest,
+it has to be subtracted from an amount (usually the base) after the increment.
 
 \begin{lstlisting}
 digit+1-n : ∀ {d}
@@ -258,8 +254,6 @@ digit+1-n : ∀ {d}
 digit+1-n x greatest n n>0 =
     fromℕ≤ (digit+1-n-lemma x greatest n n>0)
 \end{lstlisting}
-
-\paragraph{properties}
 
 \begin{center}
     \begin{tikzpicture}
@@ -319,10 +313,8 @@ digit+1-n-toℕ {suc d} {o} x greatest n n>0  n≤d =
 
 \subsubsection{The Greatest Digit}
 
-\paragraph{constructions}
-
-The greatest digit of a system is constructed by converting the index {\lstinline|d|}
-to {\lstinline|Fin|}.
+The greatest digit of a system is constructed by converting the index
+{\lstinline|d|} to {\lstinline|Fin|}.
 
 \begin{lstlisting}
 greatest-digit : ∀ d → Digit (suc d)
@@ -330,12 +322,13 @@ greatest-digit d = fromℕ d
 \end{lstlisting}
 \footnote{
     {\lstinline|fromℕ : ∀ {n} → Fin n → ℕ|}
-    \newline\hspace*{4em} construct the greatest possible {\lstinline|Fin n|} when given an index {\lstinline|n|}.
+    \newline\hspace*{4em} construct the greatest possible {\lstinline|Fin n|}
+    when given an index {\lstinline|n|}.
 }
 
 \paragraph{predicates}
 
-Judging whether a digit is the greatest by converting it to {\lstinline|ℕ|}.
+We can see whether a digit is the greatest by converting it to {\lstinline|ℕ|}.
 This predicate also comes with a decidable version.
 
 \begin{lstlisting}
@@ -348,7 +341,8 @@ Greatest? {d} x = suc (toℕ x) ≟ d
 
 \paragraph{properties}
 
-Converting from the greatest digit to {\lstinline|ℕ|} should result in {\lstinline|d + o|}.
+Converting from the greatest digit to {\lstinline|ℕ|} should result in
+{\lstinline|d + o|}.
 
 \begin{lstlisting}
 greatest-digit-toℕ : ∀ {d o}
@@ -385,8 +379,6 @@ greatest-of-all o (suc x) (suc y)  greatest
 A carry is a digit that is transferred to a more significant digit to compensate
 the ``loss'' of the original digit.
 
-\paragraph{constructions}
-
 The carry is defined as the greater of these two values:
 
 \begin{itemize}
@@ -394,16 +386,17 @@ The carry is defined as the greater of these two values:
     \item the digit that is assigned to $ 1 $
 \end{itemize}
 
-In case that that the least digit is assigned to $ 0 $, rendering the carry useless.
-Since the least digit is determined by the offset $ o $, the value of the carry
-is defined as follows.
+We define the carry as the greater number of $ 1 $ and $ o $.
+In case that the least digit (which is determined by $o$) is assigned to $ 0 $,
+rendering the carry useless.
 
 \begin{lstlisting}
 carry : ℕ → ℕ
 carry o = 1 ⊔ o
 \end{lstlisting}
 
-And then we construct the carry by converting {\lstinline|carry o|} to {\lstinline|Digit|}:
+The corresponding numeral of the carry is constructed by converting
+{\lstinline|carry o|} to {\lstinline|Digit|}.
 
 \begin{lstlisting}
 carry-digit : ∀ d o → 2 ≤ suc d + o → Digit (suc d)
@@ -416,7 +409,7 @@ carry-digit d o proper =
 
 \paragraph{properties}
 
-The value of the carry should remain the same after converting back and forth.
+The value of the carry should remain the same after convertions.
 
 \begin{lstlisting}
 carry-digit-toℕ : ∀ d o
@@ -429,7 +422,8 @@ carry-digit-toℕ d o proper
         (carry-upper-bound {d} proper)
 \end{lstlisting}
 
-The carry also have an upper-bound and a lower-bound, similar to that of {\lstinline|Digit|}.
+The carry also have an upper-bound and a lower-bound,
+similar to that of {\lstinline|Digit|}.
 
 \begin{lstlisting}
 carry-lower-bound : ∀ {o} → carry o ≥ o

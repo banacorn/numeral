@@ -4,8 +4,8 @@
 
 \section{The Maximum Numeral}\label{maximum}
 
-A number is said to be the \textit{maximum} if there are no other numbers greater
-than itself.
+A number is said to be the \textit{maximum} if there are no other numbers
+greater than itself.
 
 \begin{lstlisting}
 Maximum : ∀ {b d o} → (xs : Numeral b d o) → Set
@@ -13,9 +13,8 @@ Maximum {b} {d} {o} xs = (ys : Numeral b d o) → ⟦ xs ⟧ ≥ ⟦ ys ⟧
 \end{lstlisting}
 
 If a numeral is a maximum
-\footnote{More precisely, ``If a \text{value} of a numeral is a maximum ...''}
- then its least significant digit (LSD) must be the
-greatest.
+\footnote{More precisely, ``If a \text{value} of a numeral is a maximum ...''},
+then its least significant digit (LSD) must be the greatest.
 
 \begin{lstlisting}
 Maximum⇒Greatest-LSD : ∀ {b} {d} {o}
@@ -64,7 +63,8 @@ Maximum-NullBase-Greatest : ∀ {d} {o}
 \end{lstlisting}
 
 With this lemma, we can tell whether a numeral is a maximum by looking at its
-LSD. In case that the LSD is not the greatest, we could say no by contraposition.
+LSD. In case that the LSD is not the greatest, we could disprove the proposition
+by contraposition.
 
 \begin{lstlisting}
     Maximum-NullBase : ∀ {d} {o}
@@ -96,8 +96,8 @@ LSD. In case that the LSD is not the greatest, we could say no by contraposition
     \end{adjustbox}
 \end{center}
 
-\textit{All} numerals of systems of {\lstinline|AllZeros|} are maxima
-since they are all mapped to $ 0 $.
+\textit{All} numerals of systems of {\lstinline|AllZeros|} are maxima since they
+are all mapped to $ 0 $.
 
 \begin{lstlisting}
 Maximum-AllZeros : ∀ {b}
@@ -117,12 +117,12 @@ Maximum-AllZeros xs ys = reflexive (
 
 On the contrary, there are no maxima in the systems of {\lstinline|Proper|}.
 In fact, that is the reason why they are categorized as \textit{proper} in the
-first place. This theorem is proven by contradicting two propositions:
+first place. The theorem below is proven by contradicting two propositions:
 
 \begin{itemize}
     \item Given {\lstinline|claim : Maximum xs|}, we claim that {\lstinline|xs|}
-        is greater than or equal to {\lstinline|greatest-digit d ∷ xs|}, a numeral
-        we composed by prefixing it with the greatest digit.
+        is greater than or equal to {\lstinline|greatest-digit d ∷ xs|},
+        a numeral we composed by prefixing it with the greatest digit.
     \item On the other hand, we prove that {\lstinline|xs|} is less than
         {\lstinline|greatest-digit d ∷ xs|}.
 \end{itemize}
@@ -182,64 +182,5 @@ Maximum? xs | Proper b d o proper = no (Maximum-Proper xs proper)
     \end{tabular}
     \end{adjustbox}
 \end{center}
-
-
-% This theorem is proven by examine whether the LSD is the greatest.
-% If it is the greatest, then we are done.
-%
-% \begin{lstlisting}
-% Maximum⇒Greatest-LSD xs max with Greatest? (lsd xs)
-% Maximum⇒Greatest-LSD xs max | yes greatest = greatest
-% \end{lstlisting}
-%
-% If the LSD is not the greatest, we examine the index $ d $.
-% If $ d $ is zero then we apply the principle of explosion to eliminate this case.
-%
-% \begin{lstlisting}
-% Maximum⇒Greatest-LSD {b} {zero}      xs       max | no ¬greatest = NoDigits-explode xs
-% \end{lstlisting}
-%
-%
-%
-% \begin{lstlisting}
-% Maximum⇒Greatest-LSD {b} {suc d} {o} (x ∙)    max | no ¬greatest
-%     = contradiction p ¬p
-%     where
-%         ys : Numeral b (suc d) o
-%         ys = greatest-digit d ∙
-%
-%         p : Digit-toℕ x o ≥ ⟦ ys ⟧
-%         p = max ys
-%
-%         ¬p : Digit-toℕ x o ≱ ⟦ ys ⟧
-%         ¬p = <⇒≱ (
-%             start
-%                 suc (Digit-toℕ x o)
-%             ≤⟨ +n-mono o (≤-pred (≤∧≢⇒< (bounded x) ¬greatest)) ⟩
-%                 d + o
-%             ≈⟨ sym (greatest-digit-toℕ (Fin.fromℕ d) (greatest-digit-is-the-Greatest d)) ⟩
-%                 Digit-toℕ (greatest-digit d) o
-%             ≈⟨ refl ⟩
-%                 ⟦ ys ⟧
-%             □)
-% Maximum⇒Greatest-LSD {b} {suc d} {o} (x ∷ xs) max | no ¬greatest
-%     = contradiction p ¬p
-%     where
-%         ys : Numeral b (suc d) o
-%         ys = greatest-digit d ∷ xs
-%
-%         p : ⟦ x ∷ xs ⟧ ≥ ⟦ ys ⟧
-%         p = max ys
-%
-%         ¬p : ⟦ x ∷ xs ⟧ ≱ ⟦ ys ⟧
-%         ¬p = <⇒≱ (+n-mono (⟦ xs ⟧ * b) (
-%             start
-%                 suc (Digit-toℕ x o)
-%             ≤⟨ +n-mono o (≤-pred (≤∧≢⇒< (bounded x) ¬greatest)) ⟩
-%                 d + o
-%             ≈⟨ sym (greatest-digit-toℕ (Fin.fromℕ d) (greatest-digit-is-the-Greatest d)) ⟩
-%                 (Digit-toℕ (greatest-digit d) o)
-%             □))
-% \end{lstlisting}
 
 \end{document}

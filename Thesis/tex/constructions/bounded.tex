@@ -5,7 +5,7 @@
 \section{Systems with an Upper Bound}\label{bounded}
 
 We say that a system is \textit{bounded} if there \textit{exists} a maximum in
-such system. In Agda, an existential proposition is expressed with
+such system. In Agda, an existential proposition like this is expressed with
 a \textit{dependent sum type}, which is essentially a \textit{pair} where the
 type of the second term is dependent on the first.
 
@@ -18,14 +18,14 @@ proj₂ : ∀ {A B} → (pair : Σ A B) → B (proj₁ pair)
 \end{lstlisting}
 
 For example, to prove that there exists a right identity for addition on natural numbers;
-simply place the ``evidence'' on the left and its justification on the right.
+we place the ``evidence'' on the left and its justification on the right.
 
 \begin{lstlisting}
 prop : ∀ n → Σ ℕ (λ e → n + e ≡ n)
 prop n = 0 , +-right-identity n
 \end{lstlisting}
 
-With a little syntax sugar,  we can rewrite the proposition as
+With a little syntax sugar, we can rewrite the proposition as
 {\lstinline|Σ[ x ∈ A ] B|} instead of {\lstinline|Σ A (λ x → B)|}.
 
 \begin{lstlisting}
@@ -33,11 +33,11 @@ Bounded : ∀ b d o → Set
 Bounded b d o = Σ[ xs ∈ Numeral b d o ] Maximum xs
 \end{lstlisting}
 
-The proposition can be read as follows:
-\textit{There exists a numeral {\lstinline|xs|} of type {\lstinline|Numeral b d o|}
-such that {\lstinline|Maximum xs|} holds.}
+The proposition above can be read as follows:
+\textit{There exists a numeral {\lstinline|xs|} of type
+{\lstinline|Numeral b d o|} such that {\lstinline|Maximum xs|} holds.}
 To prove that a system is bounded, we have to place the numeral that we consider
-to be a maximum on the left of the pair, and a proof to prove that on the right.
+to be a maximum on the left of the pair, and a proof to justify it on the right.
 
 \subsection{Properties of each Category}
 
@@ -59,7 +59,8 @@ Bounded-NullBase d o =
 Since {\lstinline|¬ (Bounded b 0 o)|} reduces to {\lstinline|Bounded b 0 o → ⊥|},
 we are given an addition argument, which is a proof claiming that the system is
 bounded.
-Pattern match on this argument yields a pair with a numeral of {\lstinline|Numeral b 0 o|} on the left.
+Pattern match on this argument yields a pair with a numeral of
+{\lstinline|Numeral b 0 o|} on the left.
 At this point, we do not actually care whether the numeral is a maximum
 because it should not have existed in the first place.
 Hand the numeral to {\lstinline|NoDigits-explode|} and we are done.
@@ -92,7 +93,8 @@ Bounded-Proper b d o proper (xs , claim) =
 
 \subsection{The Decidable Predicate}
 
-Putting everything together, we can determine whether a system is bounded.
+We can determine whether a system is bounded by delegating the job to the
+helper functions we have defined above.
 
 \begin{lstlisting}
 Bounded? : ∀ b d o → Dec (Bounded b d o)
