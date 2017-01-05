@@ -2,7 +2,7 @@
 \documentclass[\main/thesis.tex]{subfiles}
 \begin{document}
 
-\subsection{Continuous Systems}\label{continuous}
+\section{Continuous Systems}\label{continuous}
 
 We say a numeral system is \textit{continuous} if there are no gaps in the number
 line and we can always find a successor after each numeral.
@@ -24,73 +24,98 @@ Bounded⇒¬Continuous (xs , max) claim
     = contradiction (claim xs) (Maximum⇒¬Incrementable xs max)
 \end{lstlisting}
 
+Since systems of \lstinline|NullBase| and \lstinline|AllZeros| are all bounded,
+they cannot be continuous. We will only be concerning ourselves with systems of
+\lstinline|Proper| in the rest of the section.
+
 It is also obvious that systems possessing numerals of \lstinline|GappedEndpoint|
 must be incontinuous because their number lines are literally gapped.
+But the problem is, how do we know if a system is gapped?
 
+% \subsection{Observations}
+%
+% \lstinline|Numeral 4 3 0| is a quaternary (base-4) system with only 3 digits:
+% $0, 1, 2$.
+% Suppose we plot all values of numerals of \lstinline|Numeral 4 3 0| onto a number
+% line, it would have a series of gaps that are ever widening as shown in the figure below.
+%
+% \begin{center}
+%     \begin{adjustbox}{max width=\textwidth}
+%         \begin{tikzpicture}[spy using outlines]
+%
+%             \foreach \j in {0,...,2} {
+%                 \foreach \i in {0,...,2} {
+%                     \draw[fill=black] ({\j*4 + \i}, 0.5) rectangle ({\j*4 + \i + 0.75}, 0.75);
+%                 };
+%             };
+%
+%             \draw[ultra thick] (0, 0) -- (16, 0);
+%
+%             % ticks
+%             \foreach \i in {0, ..., 64} {
+%                 \draw[thick] ({\i*0.25},0) -- ({\i*0.25},-0.2);
+%             };
+%             \foreach \i in {0, ..., 16} {
+%                 \pgfmathsetmacro{\j}{int(\i * 4)}
+%                 \draw[thick] (\i,0) -- (\i,-0.3)
+%                     node[below, scale=0.8] {\j};
+%             };
+%
+%             % spies
+%             \spy[rectangle,lens={scale=8}, size=5cm, connect spies]
+%                 on (0.875,0.75) in node [left] at (5.25,5);
+%             \spy[rectangle,lens={scale=2}, size=5cm, connect spies]
+%                 on (3.375,0.75) in node [left] at (10.5,5);
+%
+%             % gaps
+%             \draw[ultra thick, loosely dotted] (1.75,5) -- (1.75,6);
+%             \draw[ultra thick, loosely dotted] (3.75,5) -- (3.75,6);
+%             \draw[ultra thick, decoration={brace,mirror},decorate]
+%                 (3.75, 6) -- (1.75, 6);
+%             \node at (2.75, 6.5) {$1$};
+%             \draw[ultra thick, loosely dotted] (6.75,5) -- (6.75,6);
+%             \draw[ultra thick, loosely dotted] (9.25,5) -- (9.25,6);
+%             \draw[ultra thick, decoration={brace,mirror},decorate]
+%                 (9.25, 6) -- (6.75,6);
+%             \node at (8, 6.5) {$5$};
+%             \draw[ultra thick, loosely dotted] (10.75, 0.5) -- (10.75,6);
+%             \draw[ultra thick, loosely dotted] (16,0.5) -- (16,6);
+%             \draw[ultra thick, decoration={brace,mirror},decorate]
+%                 (16, 6) -- (10.75,6);
+%             \node at (13.375, 6.5) {$21$};
+%
+%         \end{tikzpicture}
+%     \end{adjustbox}
+% \end{center}
+%
+% \subsection{The Relation between Gaps}
+%
+% In the section~\ref{next}, we have propositions for describing these gaps.
+%
+% \begin{lstlisting}
+% Gapped#0 : ∀ b d o → Set
+% Gapped#0 b d o = suc d < carry o * suc b
+%
+% Gapped#N : ∀ b d o
+%     → (xs : Numeral (suc b) (suc d) o)
+%     → (proper : 2 ≤ suc (d + o))
+%     → Set
+% Gapped#N b d o xs proper
+%     = suc d < (⟦ next-numeral-Proper xs proper ⟧ ∸ ⟦ xs ⟧) * suc b
+%
+% Gapped : ∀ {b d o}
+%     → (xs : Numeral (suc b) (suc d) o)
+%     → (proper : 2 ≤ suc (d + o))
+%     → Set
+% Gapped {b} {d} {o} (x ∙)    proper = Gapped#0 b d o
+% Gapped {b} {d} {o} (x ∷ xs) proper = Gapped#N b d o xs proper
+% \end{lstlisting}
+%
+% \lstinline|Gapped#0| only describes the first gap of a system, whereas the rest
+% of the gaps are covered by \lstinline|Gapped#N|.
+% Compared to \lstinline|Gapped#N|, the definition of \lstinline|Gapped#0| is much
+% less demanding because it only depends on the three indices, making it really
+% easy to be determined.
 
-
-
-
-
-But the problem is, how do we know which system is gapped?
-
-\subsubsection{Observations}
-
-\lstinline|Numeral 4 3 0| is a quaternary (base-4) system with only 3 digits:
-$0, 1, 2$.
-Suppose we plot all values of numerals of \lstinline|Numeral 4 3 0| onto a number
-line, it would have a series of gaps that are ever widening.
-
-\begin{center}
-    \begin{adjustbox}{max width=\textwidth}
-        \begin{tikzpicture}[spy using outlines]
-
-            \foreach \j in {0,...,2} {
-                \foreach \i in {0,...,2} {
-                    \draw[fill=black] ({\j*4 + \i}, 0.5) rectangle ({\j*4 + \i + 0.75}, 0.75);
-                };
-            };
-
-            \draw[ultra thick] (0, 0) -- (16, 0);
-
-            % ticks
-            \foreach \i in {0, ..., 64} {
-                \draw[thick] ({\i*0.25},0) -- ({\i*0.25},-0.2);
-            };
-            \foreach \i in {0, ..., 16} {
-                \pgfmathsetmacro{\j}{int(\i * 4)}
-                \draw[thick] (\i,0) -- (\i,-0.3)
-                    node[below, scale=0.8] {\j};
-            };
-
-            % spies
-            \spy[rectangle,lens={scale=8}, size=5cm, connect spies]
-                on (0.875,0.75) in node [left] at (5.25,-5);
-            \spy[rectangle,lens={scale=2}, size=5cm, connect spies]
-                on (3.375,0.75) in node [left] at (10.5,-5);
-            % \spy[rectangle,lens={scale=0.5}, size=5cm, connect spies]
-            %     on (13.375,0.75) in node [left] at (15.75,-5);
-
-
-            % gaps
-            \draw[ultra thick, loosely dotted] (1.75,-5) -- (1.75,-4);
-            \draw[ultra thick, loosely dotted] (3.75,-5) -- (3.75,-4);
-            \draw[ultra thick, decoration={brace,mirror},decorate]
-                (3.75, -4) -- (1.75,-4);
-            \node at (2.75, -3.5) {$1$};
-            \draw[ultra thick, loosely dotted] (6.75,-5) -- (6.75,-4);
-            \draw[ultra thick, loosely dotted] (9.25,-5) -- (9.25,-4);
-            \draw[ultra thick, decoration={brace,mirror},decorate]
-                (9.25, -4) -- (6.75,-4);
-            \node at (8, -3.5) {$5$};
-            \draw[ultra thick, loosely dotted] (10.75, 0.5) -- (10.75,-3);
-            \draw[ultra thick, loosely dotted] (16,0.5) -- (16,-3);
-            \draw[ultra thick, decoration={brace,mirror},decorate]
-                (10.75, -3) -- (16,-3);
-            \node at (13.375, -3.5) {$21$};
-
-        \end{tikzpicture}
-    \end{adjustbox}
-\end{center}
 
 \end{document}
