@@ -42,16 +42,16 @@ Bounded⇒¬Continuous (xs , max) claim = contradiction (claim xs) (Maximum⇒¬
 first-endpoint : ∀ b d o → Numeral (suc b) (suc d) o
 first-endpoint b d o = greatest-digit d ∙
 
-Continuous-Proper-Gapped-counter-example : ∀ {b d o}
+first-endpoint-¬Incrementable : ∀ {b d o}
     → (proper : 2 ≤ suc (d + o))
     → (gapped : Gapped#0 b d o)
     → ¬ (Incrementable (first-endpoint b d o))
-Continuous-Proper-Gapped-counter-example {b} {d} {o} proper gapped with nextView (first-endpoint b d o) proper
-Continuous-Proper-Gapped-counter-example proper gapped | Interval b d o ¬greatest
+first-endpoint-¬Incrementable {b} {d} {o} proper gapped with nextView (first-endpoint b d o) proper
+first-endpoint-¬Incrementable proper gapped | Interval b d o ¬greatest
     = contradiction (greatest-digit-is-the-Greatest d) ¬greatest
-Continuous-Proper-Gapped-counter-example proper gapped | GappedEndpoint b d o greatest _
+first-endpoint-¬Incrementable proper gapped | GappedEndpoint b d o greatest _
     = GappedEndpoint⇒¬Incrementable (first-endpoint b d o) greatest proper gapped
-Continuous-Proper-Gapped-counter-example proper gapped | UngappedEndpoint b d o greatest ¬gapped
+first-endpoint-¬Incrementable proper gapped | UngappedEndpoint b d o greatest ¬gapped
     = contradiction gapped ¬gapped
 
 Gapped#0⇒¬Continuous : ∀ {b d o}
@@ -61,7 +61,7 @@ Gapped#0⇒¬Continuous : ∀ {b d o}
 Gapped#0⇒¬Continuous {b} {d} {o} proper gapped cont
     = contradiction
         (cont (first-endpoint b d o))
-        (Continuous-Proper-Gapped-counter-example proper gapped)
+        (first-endpoint-¬Incrementable proper gapped)
 
 ¬Gapped#0⇒Continuous : ∀ {b d o}
     → (proper : 2 ≤ suc (d + o))
