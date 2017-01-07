@@ -6,7 +6,7 @@
 
 \lstinline|Numeral| is a family of types, so as functions that are defined on
 \lstinline|Numeral|.
-It would be important to regard functions such as \lstinline|⟦_⟧| as a collective;
+It is important to regard functions such as \lstinline|⟦_⟧| as a collective;
 each has a different configuration of indices.
 
 Here, we name the fuction that converts natural numbers to corresponding
@@ -29,9 +29,8 @@ numerals \lstinline|fromℕ|.
     \end{tikzpicture}
 \end{center}
 
-Because \lstinline|fromℕ| should act as an inverse function of \lstinline|⟦_⟧|,
+Because \lstinline|fromℕ| should behave like an inverse function of \lstinline|⟦_⟧|,
 the codomain of \lstinline|⟦_⟧| should be the domain of \lstinline|fromℕ|.
-
 For \lstinline|fromℕ| to be well-defined, its corresponding \lstinline|⟦_⟧|
 must be surjective.
 However, not all instances of \lstinline|⟦_⟧| are surjective.
@@ -75,8 +74,97 @@ is not surjective.
 
 \subsection{Domains of \lstinline|fromℕ|}
 
+We can define \lstinline|fromℕ| only on a subset of \lstinline|Numeral| that
+possess surjective evaluation functions.
+
+\begin{lstlisting}
+fromℕ : ∀ {b d} → ℕ → Numeral b (suc d) 0
+\end{lstlisting}
+
+For a system to be surjective, its numerals would have to be able to cover every
+natural number, including ``0''.
+Which means that the index $o$ can only be $0$ because that is where the least
+numeral starts counting from.
+
+\begin{center}
+    \begin{adjustbox}{max width=\textwidth}
+        \begin{tikzpicture}
+
+            % the frame
+            \path[clip] (-3, -3) rectangle (18, 1.5);
+
+            % the body
+            \foreach \i in {0,...,15} {
+                \draw[ultra thick, fill=black] ({\i+0.05}, -0.2) rectangle ({\i+0.95}, 0.2);
+                \path[->, ultra thick] ({\i + 0.5}, -1.8) edge node {} ({\i+ 0.5}, -0.3);
+            };
+
+            % nat
+            \foreach \i in {0,...,15} {
+                \draw[ultra thick, fill=black] ({\i+0.05}, -2) rectangle ({\i+0.95}, -1.9);
+            }
+
+            % label
+            \node[below, scale=1.2] at (0.5, -2) {$0$};
+        \end{tikzpicture}
+    \end{adjustbox}
+\end{center}
+
+
+It would be a shame if only a few of \lstinline|Numeral| can be converted from
+natural numbers, and all that effort we have put into generalizing $ o $ will be
+gone to waste.
+
+However, if we consider converting natural numbers that starts from somewhere
+other than $0$, then much more numeral systems will be applicable for \lstinline|fromℕ|.
+Besides, functions and predicates that we have constructed such as \lstinline|increment|
+and \lstinline|Continuous| will be useful
+
+
+% Besides, we do not go all the way constructing things such as \lstinline|next-numeral| or
+% \lstinline|increment| for nothing.
+
+\begin{center}
+    \begin{adjustbox}{max width=\textwidth}
+        \begin{tikzpicture}
+
+            % the frame
+            \path[clip] (-3, -3) rectangle (18, 1.5);
+
+            % the body
+            \foreach \i in {3,...,15} {
+                \draw[ultra thick, fill=black] ({\i+0.05}, -0.2) rectangle ({\i+0.95}, 0.2);
+                \path[->, ultra thick] ({\i + 0.5}, -1.8) edge node {} ({\i+ 0.5}, -0.3);
+            };
+
+            % nat
+            \foreach \i in {0,...,15} {
+                \draw[ultra thick, fill=black] ({\i+0.05}, -2) rectangle ({\i+0.95}, -1.9);
+            }
+
+            % label
+            \node[below, scale=1.2] at (3.5, -2) {$o$};
+
+        \end{tikzpicture}
+    \end{adjustbox}
+\end{center}
+
+
+% However, if we allow natural numbers to start from numbers other than $0$,
+
+
+
+
+
+%
+% It would be a shame
+
+
 % It is straightforward to define \lstinline|fromℕ| only on the systems with
 % a surjective \lstinline|⟦_⟧|.
+
+
+
 %
 % \begin{lstlisting}
 % fromℕ : ∀ {b d}

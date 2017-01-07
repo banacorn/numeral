@@ -80,9 +80,9 @@ Incrementable : ∀ {b d o} → (xs : Numeral b d o) → Set
 Incrementable {b} {d} {o} xs = Σ[ xs' ∈ Numeral b d o ] ⟦ xs' ⟧ ≡ suc ⟦ xs ⟧
 \end{lstlisting}
 
-We can then develop theorems about \lstinline|Incrementable|.
+We can then develop lemmata and theorems about \lstinline|Incrementable|.
 
-\subsubsection{Excluding Maximum Numerals}
+\subsubsection{Maximum Numerals}
 
 If a numeral is a maximum, then there is no such a thing as the next numeral,
 much less a successor.
@@ -107,10 +107,76 @@ This is proven by contradicting these two propositions:
     \item \lstinline|>⇒≰ (m≡1+n⇒m>n claim) : ⟦ xs ⟧ ≰ ⟦ incremented ⟧|
 \end{itemize}
 
-\subsubsection{Excluding Numerals at Gapped Endpoints}
+\subsubsection{Numerals in Intervals}
 
-The next kind of numerals to be excluded is the ones that are located at gapped
-endpoints.
+Numerals that are located in intervals of digit lines have successors.
+
+\begin{center}
+    \begin{adjustbox}{max width=\textwidth}
+        \begin{tikzpicture}
+            % the frame
+            \path[clip] (5.5, -1.5) rectangle (17.5, 1.5);
+
+            % the body
+            \foreach \i in {0,...,2} {
+                \foreach \j in {0,...,5} {
+                    \draw[ultra thick, fill=black] ({\i*8+\j+0.05}, {\i*0.6-0.8}) rectangle ({\i*8+\j+0.95}, {\i*0.6-0.4});
+                };
+                \draw[ultra thick, fill=gray] ({\i*8+6.05}, {\i*0.6-0.8}) rectangle ({\i*8+6.95}, {\i*0.6-0.4});
+            };
+
+            \foreach \i in {5,...,6} {
+                \coordinate (\i) at ({\i + 0.5}, -0.9);
+            };
+            \foreach \i in {8,...,15} {
+                \coordinate (\i) at ({\i + 0.5}, -0.3);
+            };
+            \foreach \i in {16,...,17} {
+                \coordinate (\i) at ({\i + 0.5}, 0.3);
+            };
+
+            \foreach \i in {5,...,5} {
+                \pgfmathsetmacro{\j}{\i + 1}
+                \path[->, ultra thick] (\i) edge[bend right=60] node {} ($ (\j) + (-0.1, 0) $);
+            };
+            \foreach \i in {8,...,13} {
+                \pgfmathsetmacro{\j}{\i + 1}
+                \path[->, ultra thick] (\i) edge[bend right=60] node {} ($ (\j) + (-0.1, 0) $);
+            };
+            \foreach \i in {16,...,16} {
+                \pgfmathsetmacro{\j}{\i + 1}
+                \path[->, ultra thick] (\i) edge[bend right=60] node {} ($ (\j) + (-0.1, 0) $);
+            };
+
+        \end{tikzpicture}
+    \end{adjustbox}
+\end{center}
+
+We invoke \lstinline|next-numeral-Proper-Interval-lemma| to establish the
+successor relation between the given numeral and the next numeral.
+
+
+\begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
+Interval⇒Incrementable : ∀ {b d o}
+    → (xs : Numeral (suc b) (suc d) o)
+    → (¬greatest : ¬ (Greatest (lsd xs)))
+    → (proper : 2 ≤ suc (d + o))
+    → Incrementable xs
+Interval⇒Incrementable {b} {d} {o} xs ¬greatest proper
+    = (next-numeral-Proper xs proper) , (begin
+            ⟦ next-numeral-Proper xs proper ⟧
+        ≡⟨ cong ⟦_⟧ (next-numeral-Proper-refine xs proper
+            (Interval b d o ¬greatest))
+        ⟩
+            ⟦ next-numeral-Proper-Interval xs ¬greatest proper ⟧
+        ≡⟨ next-numeral-Proper-Interval-lemma xs ¬greatest proper ⟩
+            suc ⟦ xs ⟧
+        ∎)
+\end{lstlisting}
+
+\subsubsection{Numerals at Gapped Endpoints}
+
+Numerals that are located at gapped endpoints do not have successors.
 
 \begin{center}
     \begin{adjustbox}{max width=\textwidth}
@@ -175,16 +241,62 @@ However, the next numeral should only be greater than the given numeral
     xs incremented proper (m≡1+n⇒m>n claim))
 \end{lstlisting}
 
+\subsubsection{Numerals at Ungapped Endpoints}
+
+Numerals that are located at ungapped endpoints also possess successors.
+
+\begin{center}
+    \begin{adjustbox}{max width=\textwidth}
+        \begin{tikzpicture}
+            % the frame
+            \path[clip] (6.5, -1.5) rectangle (18.5, 1.5);
+
+            % the body
+            \foreach \i in {0,...,2} {
+                \draw[ultra thick] ({\i*8+0.05}, {\i*0.6-0.8}) rectangle ({\i*8+0.95}, {\i*0.6-0.4});
+                \draw[ultra thick, fill=gray] ({\i*8+1.05}, {\i*0.6-0.8}) rectangle ({\i*8+1.95}, {\i*0.6-0.4});
+                \foreach \j in {2,...,7} {
+                    \draw[ultra thick] ({\i*8+\j+0.05}, {\i*0.6-0.8}) rectangle ({\i*8+\j+0.95}, {\i*0.6-0.4});
+                };
+                \draw[ultra thick, fill=black] ({\i*8+8.05}, {\i*0.6-0.8}) rectangle ({\i*8+8.95}, {\i*0.6-0.4});
+            };
+            % arrows
+            \coordinate (A) at (9.1, -0.6);
+            \coordinate (B) at (9.5, -0.3);
+            \coordinate (C) at (17.1, 0);
+            \coordinate (D) at (17.5, 0.3);
+
+            \path[->, ultra thick] (A) edge[bend right] node {} (B);
+            \path[->, ultra thick] (C) edge[bend right] node {} (D);
+        \end{tikzpicture}
+    \end{adjustbox}
+\end{center}
+
+Similar to the case of \lstinline|Interval|, the key to the proof lies in the
+help of \lstinline|next-numeral-Proper-UngappedEndpoint-lemma|.
+
+\begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
+UngappedEndpoint⇒Incrementable : ∀ {b d o}
+    → (xs : Numeral (suc b) (suc d) o)
+    → (greatest : Greatest (lsd xs))
+    → (proper : 2 ≤ suc (d + o))
+    → (¬gapped : ¬ (Gapped xs proper))
+    → Incrementable xs
+UngappedEndpoint⇒Incrementable {b} {d} {o} xs greatest proper ¬gapped
+    = (next-numeral-Proper xs proper) , (begin
+          ⟦ next-numeral-Proper xs proper ⟧
+      ≡⟨ cong ⟦_⟧ (next-numeral-Proper-refine xs proper
+          (UngappedEndpoint b d o greatest ¬gapped)) ⟩
+          ⟦ next-numeral-Proper-UngappedEndpoint xs greatest proper ¬gapped ⟧
+      ≡⟨ next-numeral-Proper-UngappedEndpoint-lemma xs greatest proper ¬gapped ⟩
+          suc ⟦ xs ⟧
+      ∎)
+\end{lstlisting}
+
 \subsection{Deciding Incrementable Numerals}
 
-Together with lemmata about other kinds of numerals:
-
-\begin{itemize}
-    \item \lstinline|next-numeral-Proper-Interval-lemma|
-    \item \lstinline|next-numeral-Proper-UngappedEndpoint-lemma|
-\end{itemize}
-
-We can decide if a numeral of \lstinline|Proper| is incrementable.
+With all of the lemmata above, we can finish the most difficult part
+of the decider.
 
 \begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
 Incrementable?-Proper : ∀ {b d o}
@@ -193,31 +305,14 @@ Incrementable?-Proper : ∀ {b d o}
     → Dec (Incrementable xs)
 Incrementable?-Proper xs proper with nextView xs proper
 Incrementable?-Proper xs proper | Interval b d o ¬greatest
-    = yes ((next-numeral-Proper xs proper) , (begin
-            ⟦ next-numeral-Proper xs proper ⟧
-        ≡⟨ cong ⟦_⟧ (next-numeral-Proper-refine xs proper
-            (Interval b d o ¬greatest))
-        ⟩
-            ⟦ next-numeral-Proper-Interval xs ¬greatest proper ⟧
-        ≡⟨ next-numeral-Proper-Interval-lemma xs ¬greatest proper ⟩
-            suc ⟦ xs ⟧
-        ∎))
+    = yes (Interval⇒Incrementable xs ¬greatest proper)
 Incrementable?-Proper xs proper | GappedEndpoint b d o greatest gapped
     = no (GappedEndpoint⇒¬Incrementable xs greatest proper gapped)
 Incrementable?-Proper xs proper | UngappedEndpoint b d o greatest ¬gapped
-    = yes ((next-numeral-Proper xs proper) , (begin
-            ⟦ next-numeral-Proper xs proper ⟧
-        ≡⟨ cong ⟦_⟧ (next-numeral-Proper-refine xs proper
-            (UngappedEndpoint b d o greatest ¬gapped))
-        ⟩
-            ⟦ next-numeral-Proper-UngappedEndpoint xs greatest proper ¬gapped ⟧
-        ≡⟨ next-numeral-Proper-UngappedEndpoint-lemma xs greatest proper ¬gapped ⟩
-            suc ⟦ xs ⟧
-        ∎))
+    = yes (UngappedEndpoint⇒Incrementable xs greatest proper ¬gapped)
 \end{lstlisting}
 
-
-Putting everything together, we can also determine numerals of other categories.
+We can also determine if numerals of other categories are incrementable.
 
 \begin{lstlisting}
 Incrementable? : ∀ {b d o}

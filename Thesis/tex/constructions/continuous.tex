@@ -198,36 +198,34 @@ Gapped#N⇒Gapped#0 xs proper gapped#N | UngappedEndpoint b d o greatest ¬gappe
     □)
 \end{lstlisting}
 
-Here is the contrapositive version of the theorem above.
+We can prove that, if the first gap is closed, then so do the rest of the gaps,
+by contraposition.
 
 \begin{lstlisting}
-¬Gapped#0⇒¬Gapped#N : ∀ {b d o}
+¬Gapped#0⇒¬Gapped : ∀ {b d o}
     → (xs : Numeral (suc b) (suc d) o)
     → (proper : 2 ≤ suc (d + o))
     → ¬ (Gapped#0 b d o)
-    → ¬ (Gapped#N b d o xs proper)
-¬Gapped#0⇒¬Gapped#N xs proper ¬Gapped#0
-    = contraposition (Gapped#N⇒Gapped#0 xs proper) ¬Gapped#0
+    → ¬ (Gapped xs proper)
+¬Gapped#0⇒¬Gapped (x ∙)    proper ¬Gapped#0 = ¬Gapped#0
+¬Gapped#0⇒¬Gapped (x ∷ xs) proper ¬Gapped#0 = contraposition
+    (Gapped#N⇒Gapped#0 xs proper)
+    ¬Gapped#0
 \end{lstlisting}
 
-We can conclude that if the first gap is closed,
-then so do the rest of the gaps,
-hence the system is continuous.
+We can conclude that, if all gaps are closed,
+then all numerals should be incrementable, therefore the system is continuous.
 
 \begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
 ¬Gapped#0⇒Continuous : ∀ {b d o}
     → (proper : 2 ≤ suc (d + o))
     → (¬gapped : ¬ (Gapped#0 b d o))
     → Continuous (suc b) (suc d) o
-¬Gapped#0⇒Continuous proper ¬gapped xs with nextView xs proper
-¬Gapped#0⇒Continuous proper ¬gapped xs | Interval _ _ _ _
-    = (next-numeral-Proper xs proper) , ...
-¬Gapped#0⇒Continuous proper ¬gapped (x ∙) | GappedEndpoint _ _ _ _ gapped
-    = contradiction gapped ¬gapped
-¬Gapped#0⇒Continuous proper ¬gapped (x ∷ xs) | GappedEndpoint _ _ _ _ gapped
-    = contradiction gapped (¬Gapped#0⇒¬Gapped#N xs proper ¬gapped)
-¬Gapped#0⇒Continuous proper _ xs | UngappedEndpoint _ _ _ _ ¬gapped
-    = (next-numeral-Proper xs proper) , ...
+¬Gapped#0⇒Continuous proper ¬gapped#0 xs with Incrementable? xs
+¬Gapped#0⇒Continuous proper ¬gapped#0 xs | yes incr = incr
+¬Gapped#0⇒Continuous proper ¬gapped#0 xs | no ¬incr = contradiction
+    (¬Gapped⇒Incrementable xs proper (¬Gapped#0⇒¬Gapped xs proper ¬gapped#0))
+    ¬incr
 \end{lstlisting}
 
 \subsection{Determining Continuity}

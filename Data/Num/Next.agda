@@ -676,9 +676,19 @@ Gapped#N⇒Gapped#0 xs proper gapped#N | UngappedEndpoint b d o greatest ¬gappe
             (suc zero ⊔ o) * suc b
         □
 
-¬Gapped#0⇒¬Gapped#N : ∀ {b d o}
+-- ¬Gapped#0⇒¬Gapped#N : ∀ {b d o}
+--     → (xs : Numeral (suc b) (suc d) o)
+--     → (proper : 2 ≤ suc (d + o))
+--     → ¬ (Gapped#0 b d o)
+--     → ¬ (Gapped#N b d o xs proper)
+-- ¬Gapped#0⇒¬Gapped#N xs proper ¬Gapped#0 = contraposition (Gapped#N⇒Gapped#0 xs proper) ¬Gapped#0
+
+¬Gapped#0⇒¬Gapped : ∀ {b d o}
     → (xs : Numeral (suc b) (suc d) o)
     → (proper : 2 ≤ suc (d + o))
     → ¬ (Gapped#0 b d o)
-    → ¬ (Gapped#N b d o xs proper)
-¬Gapped#0⇒¬Gapped#N xs proper ¬Gapped#0 = contraposition (Gapped#N⇒Gapped#0 xs proper) ¬Gapped#0
+    → ¬ (Gapped xs proper)
+¬Gapped#0⇒¬Gapped (x ∙)    proper ¬Gapped#0 = ¬Gapped#0
+¬Gapped#0⇒¬Gapped (x ∷ xs) proper ¬Gapped#0 = contraposition
+    (Gapped#N⇒Gapped#0 xs proper)
+    ¬Gapped#0

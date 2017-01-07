@@ -58,36 +58,20 @@ Gapped#0⇒¬Continuous : ∀ {b d o}
     → (proper : 2 ≤ suc (d + o))
     → (gapped : Gapped#0 b d o)
     → ¬ (Continuous (suc b) (suc d) o)
-Gapped#0⇒¬Continuous {b} {d} {o} proper gapped cont
+Gapped#0⇒¬Continuous {b} {d} {o} proper gapped#0 cont
     = contradiction
         (cont (first-endpoint b d o))
-        (first-endpoint-¬Incrementable proper gapped)
+        (first-endpoint-¬Incrementable proper gapped#0)
 
 ¬Gapped#0⇒Continuous : ∀ {b d o}
     → (proper : 2 ≤ suc (d + o))
     → (¬gapped : ¬ (Gapped#0 b d o))
     → Continuous (suc b) (suc d) o
-¬Gapped#0⇒Continuous proper ¬gapped xs with nextView xs proper
-¬Gapped#0⇒Continuous proper ¬gapped xs | Interval b d o ¬greatest
-    = (next-numeral-Proper xs proper) , (begin
-            ⟦ next-numeral-Proper xs proper ⟧
-        ≡⟨ cong ⟦_⟧ (next-numeral-Proper-refine xs proper (Interval b d o ¬greatest)) ⟩
-            ⟦ next-numeral-Proper-Interval xs ¬greatest proper ⟧
-        ≡⟨ next-numeral-Proper-Interval-lemma xs ¬greatest proper ⟩
-            suc ⟦ xs ⟧
-        ∎)
-¬Gapped#0⇒Continuous proper ¬gapped (x ∙)    | GappedEndpoint b d o greatest gapped
-    = contradiction gapped ¬gapped
-¬Gapped#0⇒Continuous proper ¬gapped (x ∷ xs) | GappedEndpoint b d o greatest gapped
-    = contradiction gapped (¬Gapped#0⇒¬Gapped#N xs proper ¬gapped)
-¬Gapped#0⇒Continuous proper _ xs | UngappedEndpoint b d o greatest ¬gapped
-    = (next-numeral-Proper xs proper) , (begin
-        ⟦ next-numeral-Proper xs proper ⟧
-    ≡⟨ cong ⟦_⟧ (next-numeral-Proper-refine xs proper (UngappedEndpoint b d o greatest ¬gapped)) ⟩
-        ⟦ next-numeral-Proper-UngappedEndpoint xs greatest proper ¬gapped ⟧
-    ≡⟨ next-numeral-Proper-UngappedEndpoint-lemma xs greatest proper ¬gapped ⟩
-        suc ⟦ xs ⟧
-    ∎)
+¬Gapped#0⇒Continuous proper ¬gapped#0 xs with Incrementable? xs
+¬Gapped#0⇒Continuous proper ¬gapped#0 xs | yes incr = incr
+¬Gapped#0⇒Continuous proper ¬gapped#0 xs | no ¬incr = contradiction
+    (¬Gapped⇒Incrementable xs proper (¬Gapped#0⇒¬Gapped xs proper ¬gapped#0))
+    ¬incr
 
 Continuous-Proper : ∀ b d o
     → (proper : 2 ≤ suc (d + o))
@@ -103,11 +87,11 @@ Continuous? _ _ _ | NoDigits b o = yes (λ xs → NoDigits-explode xs)
 Continuous? _ _ _ | AllZeros b = no (Bounded⇒¬Continuous (Bounded-AllZeros b))
 Continuous? _ _ _ | Proper b d o proper = Continuous-Proper b d o proper
 
-Continuous⇒¬Gapped#0 : ∀ {b d o}
-    → (cont : True (Continuous? (suc b) (suc d) o))
-    → (proper : suc d + o ≥ 2)
-    → ¬ (Gapped#0 b d o)
-Continuous⇒¬Gapped#0 cont proper gapped#0 = contradiction (toWitness cont) (Gapped#0⇒¬Continuous proper gapped#0)
+-- Continuous⇒¬Gapped#0 : ∀ {b d o}
+--     → (cont : True (Continuous? (suc b) (suc d) o))
+--     → (proper : suc d + o ≥ 2)
+--     → ¬ (Gapped#0 b d o)
+-- Continuous⇒¬Gapped#0 cont proper gapped#0 = contradiction (toWitness cont) (Gapped#0⇒¬Continuous proper gapped#0)
 
 -- -- a partial function that only maps ℕ to Continuous Nums
 -- fromℕ : ∀ {b d o}
