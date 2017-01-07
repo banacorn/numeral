@@ -44,18 +44,6 @@ _≋_ : ∀ {b d o}
     → Set
 xs ≋ ys = ⟦ xs ⟧ ≡ ⟦ ys ⟧
 
-1+ : ∀ {b d o}
-    → {cont : True (Continuous? b d o)}
-    → (xs : Numeral b d o)
-    → Numeral b d o
-1+ {cont = cont} xs = proj₁ (toWitness cont xs)
-
-1+-toℕ : ∀ {b d o}
-    → {cont : True (Continuous? b d o)}
-    → (xs : Numeral b d o)
-    → ⟦ 1+ {cont = cont} xs ⟧ ≡ suc ⟦ xs ⟧
-1+-toℕ {cont = cont} xs = proj₂ (toWitness cont xs)
-
 
 fromℕ : ∀ {b d o}
     → {cont : True (Continuous? b (suc d) o)}

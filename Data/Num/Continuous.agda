@@ -124,3 +124,15 @@ Continuous⇒¬Gapped#0 cont proper gapped#0 = contradiction (toWitness cont) (G
 --     where
 --         o<n : o < n
 --         o<n = ≤∧≢⇒< (≤-pred (toWitness o≤n)) o≢n
+
+1+ : ∀ {b d o}
+    → {cont : True (Continuous? b d o)}
+    → (xs : Numeral b d o)
+    → Numeral b d o
+1+ {cont = cont} xs = proj₁ (toWitness cont xs)
+
+1+-toℕ : ∀ {b d o}
+    → {cont : True (Continuous? b d o)}
+    → (xs : Numeral b d o)
+    → ⟦ 1+ {cont = cont} xs ⟧ ≡ suc ⟦ xs ⟧
+1+-toℕ {cont = cont} xs = proj₂ (toWitness cont xs)
