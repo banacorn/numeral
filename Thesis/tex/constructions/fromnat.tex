@@ -50,7 +50,7 @@ is not surjective.
             % the body
             \foreach \i in {0,...,1} {
                 \foreach \j in {0,...,4} {
-                    \draw[ultra thick, fill=black] ({\i*10+\j+0.05}, -0.2) rectangle ({\i*10+\j+0.95}, 0.2);
+                    \draw[ultra thick, fill=white] ({\i*10+\j+0.05}, -0.2) rectangle ({\i*10+\j+0.95}, 0.2);
                     \path[->, ultra thick] ({\i*10+\j + 0.5}, -1.8) edge node {} ({\i*10+\j + 0.5}, -0.3);
                 };
             }
@@ -88,7 +88,7 @@ would also have to be able to cover every natural number, including ``0''.
 
             % the body
             \foreach \i in {0,...,15} {
-                \draw[ultra thick, fill=black] ({\i+0.05}, -0.2) rectangle ({\i+0.95}, 0.2);
+                \draw[ultra thick, fill=white] ({\i+0.05}, -0.2) rectangle ({\i+0.95}, 0.2);
                 \path[->, ultra thick] ({\i + 0.5}, -1.8) edge node {} ({\i+ 0.5}, -0.3);
             };
 
@@ -104,9 +104,9 @@ would also have to be able to cover every natural number, including ``0''.
 \end{center}
 
 Therefore, the index $o$ can only be $0$ because that is where the least
-numeral starts counting from.
-We pattern match on the given number, and replace the successor of \lstinline|ℕ|
-with \lstinline|1+|.
+numeral starts counting from. We can convert all natural numbers to such systems
+by induction and recursively replacing the successor of \lstinline|ℕ| with
+\lstinline|1+|.
 
 \begin{lstlisting}
 fromℕ : ∀ {b d}
@@ -121,8 +121,9 @@ However, it would be a shame if only a few of \lstinline|Numeral| can be
 converted from natural numbers, and all that effort we have put into
 generalizing $ o $ will be gone to waste.
 
-If we consider converting natural numbers that starts from somewhere other than
-$0$, then much more numeral systems will be applicable for \lstinline|fromℕ|.
+If we make \lstinline|fromℕ| a partial function, allowing it to convert only
+a subset of natural numbers that are greater than $ o $ instead of $ 0 $,
+then much more numeral systems will be applicable for \lstinline|fromℕ|.
 
 \begin{center}
     \begin{adjustbox}{max width=\textwidth}
@@ -133,7 +134,7 @@ $0$, then much more numeral systems will be applicable for \lstinline|fromℕ|.
 
             % the body
             \foreach \i in {3,...,15} {
-                \draw[ultra thick, fill=black] ({\i+0.05}, -0.2) rectangle ({\i+0.95}, 0.2);
+                \draw[ultra thick, fill=white] ({\i+0.05}, -0.2) rectangle ({\i+0.95}, 0.2);
                 \path[->, ultra thick] ({\i + 0.5}, -1.8) edge node {} ({\i+ 0.5}, -0.3);
             };
 
@@ -149,90 +150,142 @@ $0$, then much more numeral systems will be applicable for \lstinline|fromℕ|.
     \end{adjustbox}
 \end{center}
 
-Besides, functions and predicates that we have constructed such as \lstinline|+1|
-and \lstinline|Continuous| will be more useful, 
+Besides, functions and predicates such as \lstinline|+1| and
+\lstinline|Continuous| will still be useful;
+we did not work our head off constructing these things for nothing.
 
+We generalize the previous definition of \lstinline|fromℕ| and make $ o $ the
+lower bound of the given \lstinline|ℕ|.
+If the given number $ n $ happens to be equal to $ o $ then we return the least
+numeral \lstinline|z ∙|, else we replace the successor with \lstinline|+1|
+recursively by induction on $ n $.
 
-% Besides, we do not go all the way constructing things such as \lstinline|next-numeral| or
-% \lstinline|increment| for nothing.
+\begin{lstlisting}
+fromℕ : ∀ {b d o}
+    → {cont : True (Continuous? b (suc d) o)}
+    → (n : ℕ)
+    → n ≥ o
+    → Numeral b (suc d) o
+fromℕ {o = o}       n       p   with o ≟ n
+fromℕ               n       n≥o | yes eq = z ∙
+fromℕ {o = o}       zero    n≥o | no ¬eq
+    = contradiction (≤0⇒≡0 o n≥o) ¬eq
+fromℕ {cont = cont} (suc n) n≥o | no ¬eq
+    = 1+
+        {cont = cont}
+        (fromℕ {cont = cont} n (≤-pred (≤∧≢⇒< n≥o ¬eq)))
+\end{lstlisting}
 
-% However, if we allow natural numbers to start from numbers other than $0$,
+The domain we have chosen for \lstinline|fromℕ| seems reasonable.
+However, there are other possible choices of the domain.
 
+\subsection{Other options of the domain of \lstinline|fromℕ|}
 
+Consider \lstinline|Numeral 1 1 2|, a unary system with only one digit
+that is ``2''.
 
+\begin{center}
+    \begin{adjustbox}{max width=\textwidth}
+        \begin{tikzpicture}
 
+            % the frame
+            \path[clip] (-3, -3) rectangle (18, 1.5);
 
-%
-% It would be a shame
+            % the body
+            \foreach \i in {1,...,7} {
+                \pgfmathsetmacro{\j}{int(\i * 2)}
+                \draw[ultra thick, fill=white] ({\i*2+0.05}, -0.2) rectangle ({\i*2+0.95}, 0.2);
+                \path[->, ultra thick] ({\i*2 + 0.5}, -1.8) edge node {} ({\i*2+ 0.5}, -0.3);
+                \node[below, scale=1.2] at ({\i*2+0.5}, -2) {\j};
+            };
 
+            % nat
+            \foreach \i in {0,...,15} {
+                \draw[ultra thick, fill=black] ({\i+0.05}, -2) rectangle ({\i+0.95}, -1.9);
+            }
+        \end{tikzpicture}
+    \end{adjustbox}
+\end{center}
 
-% It is straightforward to define \lstinline|fromℕ| only on the systems with
-% a surjective \lstinline|⟦_⟧|.
+Such a numeral system can represent all even numbers except for zero.
+To convert natural numbers to \lstinline|Numeral 1 1 2|, we can devise a
+predicate like \lstinline|Even-but-not-zero| such that only these numbers fit.
 
+\begin{lstlisting}
+fromℕ : ∀ {b d o}
+    → (n : ℕ)
+    → (Even-but-not-zero n)
+    → Numeral b (suc d) o
+\end{lstlisting}
 
+In fact, we can even generalize from \lstinline|Numeral 1 1 1|
+(odinary unary numurals) and \lstinline|Numeral 1 1 2| to \lstinline|Numeral 1 1 n|
+to describe all cyclic groups of order $ n $.
 
-%
-% \begin{lstlisting}
-% fromℕ : ∀ {b d}
-%     → (n : ℕ)
-%     → Numeral b (suc d) 0
-% fromℕ zero = z ∙
-% fromℕ (suc n) = z ∙
-%
-% {o = o}       n       p   with o ≟ n
-% fromℕ               n       n≥o | yes eq = z ∙
-% fromℕ {o = o}       zero    n≥o | no ¬eq = contradiction (≤0⇒≡0 o n≥o) ¬eq
-% fromℕ {cont = cont} (suc n) n≥o | no ¬eq = 1+ {cont = cont} (fromℕ {cont = cont} n (≤-pred $ ≤∧≢⇒< n≥o ¬eq))
-% \end{lstlisting}
+What about other kind of predicates? Can we choose any subset of natural numbers
+to convert from as long as it fits the targeting numeral system?
+The point is, the reason why we choose a subset of natural numbers as the domain
+of \lstinline|fromℕ| is \textbf{arbitrary} and \textbf{empirical}.
 
+Nonetheless, we settled for this specific kind of \lstinline|fromℕ| because we
+think that it can best describe the numerals that are closed under the successor
+function and even the addition function, which may be suitable for indexing
+numerical representations that supports operations such as insertion and merge.
 
-% However, doing so would exclude systems with $ o \textgreater 0 $
+\begin{lstlisting}
+fromℕ : ∀ {b d o}
+    → {cont : True (Continuous? b (suc d) o)}
+    → (n : ℕ)
+    → n ≥ o
+    → Numeral b (suc d) o
+\end{lstlisting}
 
+\subsection{Properties of \lstinline|fromℕ|}
 
+The property below states that \lstinline|fromℕ| is a \textit{right inverse} of
+\lstinline|⟦_⟧|. Having a right inverse means that \lstinline|⟦_⟧| is
+\textit{surjective}.
 
-% As we have seen, some instances of the evaluation function \lstinline|⟦_⟧|
-% for systems like \lstinline|Numeral 10 5 0|, may not be surjective,
-% and thus do not have an inverse function.
-%
-% For \lstinline|fromℕ|, an inverse function of \lstinline|⟦_⟧|, to be well-defined,
-% its corresponding \lstinline|⟦_⟧| have to be surjective.
+\begin{lstlisting}
+fromℕ-toℕ : ∀ {b d o}
+    → (cont : True (Continuous? b (suc d) o))
+    → (n : ℕ)
+    → (n≥o : n ≥ o)
+    → ⟦ fromℕ {cont = cont} n n≥o ⟧ ≡ n
+fromℕ-toℕ {o = o} cont n       n≥o with o ≟ n
+fromℕ-toℕ         cont n       n≥o | yes eq = eq
+fromℕ-toℕ {o = o} cont zero    n≥o | no ¬eq
+    = contradiction (≤0⇒≡0 o n≥o) ¬eq
+fromℕ-toℕ         cont (suc n) n≥o | no ¬eq =
+    let
+        n≥o' = ≤-pred (≤∧≢⇒< n≥o ¬eq)
+    in
+    begin
+        ⟦ 1+ {cont = cont} (fromℕ {cont = cont} n n≥o') ⟧
+    ≡⟨ 1+-toℕ {cont = cont} (fromℕ {cont = cont} n n≥o') ⟩
+        suc ⟦ fromℕ {cont = cont} n n≥o' ⟧
+    ≡⟨ cong suc (fromℕ-toℕ cont n n≥o') ⟩
+        suc n
+    ∎
+\end{lstlisting}
 
+Conversely, we might attempt to prove the existence of a \textit{left inverse}
+of \lstinline|⟦_⟧|.
+% However, we would be held back by \textit{redundant} systems and fail miserably
+% because \lstinline|⟦_⟧| is not injective.
 
-%
-% % the intance of
+% Systems such as the ordinary decimal numerals are redundant because there are
+% more than one way to represent a number.
 
- % to be well-defined,
+The best we can do is to establish such a proposition on the
+\textit{equivalence classes} of \lstinline|Numeral|. Two numerals are consider
+\textit{equivalent} if (and only if) they belong to the same equivalence class.
 
-% As we have seen, the evaluation function \lstinline|⟦_⟧| for some of the systems
-% like \lstinline|Numeral 10 5 0|, may not be surjective.
-
-% However, as an inverse function of \lstinline|⟦_⟧|, \lstinline|fromℕ| can only
-% be well-defined when a certain instances of \lstinline|⟦_⟧| is
-
-% the evaluation function \lstinline|⟦_⟧| for systems like
-% \lstinline|Numeral 10 5 0| are not surjective, therefore it does not have an
-% inverse function.
-%
-% For \lstinline|fromℕ| to be well-defined,
-
-
-
-
-
-
-
-% Systems like \lstinline|Numeral 10 5 0| are not surjective, therefore the inverse
-
-
-
-% We can allow only the numeral systems with surjective evaluation functions to be
-% converted from natural numbers, but systems with $ o \textgreater 0 $ will not
-% be qualified
-
-
-
-
-
-
+\begin{lstlisting}
+_≋_ : ∀ {b d o}
+    → (xs ys : Numeral b d o)
+    → Set
+xs ≋ ys = ⟦ xs ⟧ ≡ ⟦ ys ⟧
+\end{lstlisting}
 
 \end{document}
