@@ -1,0 +1,48 @@
+\providecommand{\main}{../..}
+\documentclass[\main/thesis.tex]{subfiles}
+\begin{document}
+
+\section{Implementing Addition with Generalized Successors}\label{addition}
+
+\begin{lstlisting}
+data ℕ : Set where
+    zero : ℕ
+    suc : ℕ → ℕ
+\end{lstlisting}
+
+\lstinline|ℕ| has an constructor \lstinline|suc| called ``the successor''
+that increments a given number when being applied.
+Addition on \lstinline|ℕ| can consequently be defined by recursively ``moving''
+\lstinline|suc| from one number to the another.
+
+\begin{lstlisting}
+_+_ : ℕ → ℕ → ℕ
+zero  + y = y
+suc x + y = suc (x + y)
+\end{lstlisting}
+
+%
+% \begin{lstlisting}
+% _+_ : ℕ → ℕ → ℕ
+% zero  + y = y
+% suc x + y = suc (x + y)
+% \end{lstlisting}
+
+
+
+
+
+% \begin{lstlisting}
+% data Numeral : (b d o : ℕ) → Set where
+%     _∙  : ∀ {b d o} → Digit d → Numeral b d o
+%     _∷_ : ∀ {b d o} → Digit d → Numeral b d o → Numeral b d o
+% \end{lstlisting}
+%
+% The corresponding constructor of \lstinline|suc| on \lstinline|Numeral|
+% would be \lstinline|_∷_| since it also increases a given numeral with a digit.
+%
+%
+%  on ``increments'' a number of .
+
+
+\end{document}
