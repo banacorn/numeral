@@ -76,15 +76,8 @@ is not surjective.
 
 We can define \lstinline|fromℕ| only on a subset of \lstinline|Numeral| that
 possess surjective evaluation functions.
-
-\begin{lstlisting}
-fromℕ : ∀ {b d} → ℕ → Numeral b (suc d) 0
-\end{lstlisting}
-
-For a system to be surjective, its numerals would have to be able to cover every
-natural number, including ``0''.
-Which means that the index $o$ can only be $0$ because that is where the least
-numeral starts counting from.
+For a system to be surjective, in addition of being continuous, its numerals
+would also have to be able to cover every natural number, including ``0''.
 
 \begin{center}
     \begin{adjustbox}{max width=\textwidth}
@@ -110,19 +103,26 @@ numeral starts counting from.
     \end{adjustbox}
 \end{center}
 
+Therefore, the index $o$ can only be $0$ because that is where the least
+numeral starts counting from.
+We pattern match on the given number, and replace the successor of \lstinline|ℕ|
+with \lstinline|1+|.
 
-It would be a shame if only a few of \lstinline|Numeral| can be converted from
-natural numbers, and all that effort we have put into generalizing $ o $ will be
-gone to waste.
+\begin{lstlisting}
+fromℕ : ∀ {b d}
+    → {cont : True (Continuous? b (suc d) 0)}
+    → ℕ
+    → Numeral b (suc d) 0
+fromℕ zero                  = z ∙
+fromℕ {cont = cont} (suc n) = 1+ {cont = cont} (fromℕ n)
+\end{lstlisting}
 
-However, if we consider converting natural numbers that starts from somewhere
-other than $0$, then much more numeral systems will be applicable for \lstinline|fromℕ|.
-Besides, functions and predicates that we have constructed such as \lstinline|increment|
-and \lstinline|Continuous| will be useful
+However, it would be a shame if only a few of \lstinline|Numeral| can be
+converted from natural numbers, and all that effort we have put into
+generalizing $ o $ will be gone to waste.
 
-
-% Besides, we do not go all the way constructing things such as \lstinline|next-numeral| or
-% \lstinline|increment| for nothing.
+If we consider converting natural numbers that starts from somewhere other than
+$0$, then much more numeral systems will be applicable for \lstinline|fromℕ|.
 
 \begin{center}
     \begin{adjustbox}{max width=\textwidth}
@@ -149,6 +149,12 @@ and \lstinline|Continuous| will be useful
     \end{adjustbox}
 \end{center}
 
+Besides, functions and predicates that we have constructed such as \lstinline|+1|
+and \lstinline|Continuous| will be more useful, 
+
+
+% Besides, we do not go all the way constructing things such as \lstinline|next-numeral| or
+% \lstinline|increment| for nothing.
 
 % However, if we allow natural numbers to start from numbers other than $0$,
 
