@@ -250,6 +250,50 @@ Continuous? _ _ _ | AllZeros b = no (Bounded⇒¬Continuous (Bounded-AllZeros b)
 Continuous? _ _ _ | Proper b d o proper = Continuous-Proper b d o proper
 \end{lstlisting}
 
+\subsection{Successor Function}
+
+Since the proof of \lstinline|Continuous| is essentially a successor function,
+we can use it to increment a numeral.
+
+\begin{lstlisting}
+1+ : ∀ {b d o}
+    → {cont : True (Continuous? b d o)}
+    → (xs : Numeral b d o)
+    → Numeral b d o
+1+ {cont = cont} xs = proj₁ (toWitness cont xs)
+\end{lstlisting}
+
+A numeral taking these two routes should result in the same {{\lstinline|ℕ|}}.
+
+\begin{center}
+    \begin{tikzpicture}
+        \matrix (m) [matrix of nodes,row sep=6em,column sep=8em,minimum width=4em]
+            {
+                {\lstinline|Numeral b d o|} & {\lstinline|Numeral b d o|} \\
+                {\lstinline|ℕ|} & {\lstinline|ℕ|} \\
+            };
+      \path[-stealth]
+            (m-1-1)
+                edge node [left] {{\lstinline|⟦_⟧|}} (m-2-1)
+                edge node [above] {{\lstinline|+1|}} (m-1-2)
+            (m-2-1.east|-m-2-2)
+                edge node [below] {{\lstinline|suc|}} (m-2-2)
+            (m-1-2)
+                edge node [right] {{\lstinline|⟦_⟧|}} (m-2-2);
+    \end{tikzpicture}
+\end{center}
+
+The proof also comes for free from \lstinline|Continuous| as part of its
+definition.
+
+\begin{lstlisting}
+1+-toℕ : ∀ {b d o}
+    → {cont : True (Continuous? b d o)}
+    → (xs : Numeral b d o)
+    → ⟦ 1+ {cont = cont} xs ⟧ ≡ suc ⟦ xs ⟧
+1+-toℕ {cont = cont} xs = proj₂ (toWitness cont xs)
+\end{lstlisting}
+
 % \subsection{Observations}
 %
 % \lstinline|Numeral 4 3 0| is a quaternary (base-4) system with only 3 digits:

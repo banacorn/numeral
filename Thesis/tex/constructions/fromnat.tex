@@ -110,19 +110,16 @@ numeral starts counting from.
     \end{adjustbox}
 \end{center}
 
-
 It would be a shame if only a few of \lstinline|Numeral| can be converted from
 natural numbers, and all that effort we have put into generalizing $ o $ will be
 gone to waste.
 
-However, if we consider converting natural numbers that starts from somewhere
-other than $0$, then much more numeral systems will be applicable for \lstinline|fromℕ|.
-Besides, functions and predicates that we have constructed such as \lstinline|increment|
-and \lstinline|Continuous| will be useful
-
-
-% Besides, we do not go all the way constructing things such as \lstinline|next-numeral| or
-% \lstinline|increment| for nothing.
+However, if we allow \lstinline|fromℕ| to convert only the natural numbers
+that is greater than $o$ instead of $0$, making it a partial function,
+then much more numeral systems will be applicable for \lstinline|fromℕ|.
+Besides, functions and predicates such as \lstinline|+1| and
+\lstinline|Continuous| will be useful; we did not work our head off constructing
+these things for nothing.
 
 \begin{center}
     \begin{adjustbox}{max width=\textwidth}
