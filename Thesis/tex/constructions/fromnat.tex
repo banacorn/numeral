@@ -2,7 +2,7 @@
 \documentclass[\main/thesis.tex]{subfiles}
 \begin{document}
 
-\section{Converting from Natural Numbers [work in process]}\label{fromnat}
+\section{Converting from Natural Numbers}\label{fromnat}
 
 \lstinline|Numeral| is a family of types, so as functions that are defined on
 \lstinline|Numeral|.
@@ -269,23 +269,21 @@ fromℕ-toℕ         cont (suc n) n≥o | no ¬eq =
     ∎
 \end{lstlisting}
 
-Conversely, we might attempt to prove the existence of a \textit{left inverse}
+Conversely, we may attempt to prove the existence of a \textit{left inverse}
 of \lstinline|⟦_⟧|.
-% However, we would be held back by \textit{redundant} systems and fail miserably
-% because \lstinline|⟦_⟧| is not injective.
-
-% Systems such as the ordinary decimal numerals are redundant because there are
-% more than one way to represent a number.
-
-The best we can do is to establish such a proposition on the
-\textit{equivalence classes} of \lstinline|Numeral|. Two numerals are consider
-\textit{equivalent} if (and only if) they belong to the same equivalence class.
 
 \begin{lstlisting}
-_≋_ : ∀ {b d o}
-    → (xs ys : Numeral b d o)
-    → Set
-xs ≋ ys = ⟦ xs ⟧ ≡ ⟦ ys ⟧
+toℕ-fromℕ : ∀ {b d o}
+    → (cont : True (Continuous? b (suc d) o))
+    → (xs : Numeral b (suc d) o)
+    → fromℕ {cont = cont} ⟦ xs ⟧ (Num-lower-bound xs) ≡ xs
+toℕ-fromℕ = ?
 \end{lstlisting}
+
+However, we can never prove this, because it is necessary for a function to be
+\textit{injective} to have a left inverse.
+Systems such as the ordinary decimal numerals are non-injective (and thus redundant)
+as their evaluation functions \lstinline|⟦_⟧| map more than one numeral onto the
+same number.
 
 \end{document}

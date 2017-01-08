@@ -75,11 +75,11 @@ fromℕ-toℕ cont (suc n) n≥o | no ¬eq =
         suc n
     ∎
 
-toℕ-fromℕ : ∀ {b d o}
-    → (cont : True (Continuous? b (suc d) o))
-    → (xs : Numeral b (suc d) o)
-    → fromℕ {cont = cont} ⟦ xs ⟧ (Num-lower-bound xs) ≋ xs
-toℕ-fromℕ cont xs = fromℕ-toℕ cont ⟦ xs ⟧ (Num-lower-bound xs)
+-- toℕ-fromℕ : ∀ {b d o}
+--     → (cont : True (Continuous? b (suc d) o))
+--     → (xs : Numeral b (suc d) o)
+--     → fromℕ {cont = cont} ⟦ xs ⟧ (Num-lower-bound xs) ≋ xs
+-- toℕ-fromℕ cont xs = fromℕ-toℕ cont ⟦ xs ⟧ (Num-lower-bound xs)
 
 sum : ∀ {d}
     → (o : ℕ)
