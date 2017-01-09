@@ -115,15 +115,15 @@ sum-upper-bound {d} o x y =
 
 
 data Sum : (b d o : ℕ) (x y : Digit (suc d)) → Set where
-    Below : ∀ {b d o x y}
+    NoCarry : ∀ {b d o x y}
         → (leftover : Digit (suc d))
         → (property : Digit-toℕ leftover o ≡ sum o x y)
         → Sum b d o x y
-    Within : ∀ {b d o x y}
+    Fixed : ∀ {b d o x y}
         → (leftover carry : Digit (suc d))
         → (property : Digit-toℕ leftover o + (Digit-toℕ carry o) * suc b ≡ sum o x y)
         → Sum b d o x y
-    Above : ∀ {b d o x y}
+    Floating : ∀ {b d o x y}
         → (leftover carry : Digit (suc d))
         → (property : Digit-toℕ leftover o + (Digit-toℕ carry o) * suc b ≡ sum o x y)
         → Sum b d o x y
@@ -137,7 +137,7 @@ sumView : ∀ b d o
     → Sum b d o x y
 sumView b d o ¬gapped proper x y with (sum o x y) ≤? d + o
 sumView b d o ¬gapped proper x y | yes below
-    = Below
+    = NoCarry
         (Digit-fromℕ leftover o leftover-upper-bound)
         property
     where
@@ -158,7 +158,7 @@ sumView b d o ¬gapped proper x y | yes below
             ∎
 sumView b d o ¬gapped proper x y | no ¬below with (sum o x y) ≤? d + o + (1 ⊔ o) * (suc b)
 sumView b d o ¬gapped proper x y | no ¬below | yes within
-    = Within
+    = Fixed
         (Digit-fromℕ leftover o leftover-upper-bound)
         (Digit-fromℕ carry    o carry-upper-bound)
         property
@@ -241,7 +241,7 @@ sumView b d o ¬gapped proper x y | no ¬below | yes within
 
 sumView b d o ¬gapped proper x y | no ¬below | no ¬within with (sum o x y ∸ ((d + o) + (1 ⊔ o) * (suc b))) divMod (suc b)
 sumView b d o ¬gapped proper x y | no ¬below | no ¬within | result quotient remainder divModProp _ _
-    = Above
+    = Floating
         (Digit-fromℕ leftover o leftover-upper-bound)
         (Digit-fromℕ carry    o carry-upper-bound)
         property
@@ -452,12 +452,12 @@ n+-Proper : ∀ {b d o}
     → (xs : Numeral (suc b) (suc d) o)
     → Numeral (suc b) (suc d) o
 n+-Proper {b} {d} {o} ¬gapped proper x xs with sumView b d o ¬gapped proper x (lsd xs)
-n+-Proper ¬gapped proper x (_ ∙)    | Below leftover property = leftover ∙
-n+-Proper ¬gapped proper x (_ ∷ xs) | Below leftover property = leftover ∷ xs
-n+-Proper ¬gapped proper x (_ ∙)    | Within leftover carry property = leftover ∷ carry ∙
-n+-Proper ¬gapped proper x (_ ∷ xs) | Within leftover carry property = leftover ∷ n+-Proper ¬gapped proper carry xs
-n+-Proper ¬gapped proper x (_ ∙)    | Above leftover carry property = leftover ∷ carry ∙
-n+-Proper ¬gapped proper x (_ ∷ xs) | Above leftover carry property = leftover ∷ n+-Proper ¬gapped proper carry xs
+n+-Proper ¬gapped proper x (_ ∙)    | NoCarry leftover property = leftover ∙
+n+-Proper ¬gapped proper x (_ ∷ xs) | NoCarry leftover property = leftover ∷ xs
+n+-Proper ¬gapped proper x (_ ∙)    | Fixed leftover carry property = leftover ∷ carry ∙
+n+-Proper ¬gapped proper x (_ ∷ xs) | Fixed leftover carry property = leftover ∷ n+-Proper ¬gapped proper carry xs
+n+-Proper ¬gapped proper x (_ ∙)    | Floating leftover carry property = leftover ∷ carry ∙
+n+-Proper ¬gapped proper x (_ ∷ xs) | Floating leftover carry property = leftover ∷ n+-Proper ¬gapped proper carry xs
 
 n+-Proper-toℕ : ∀ {b d o}
     → (¬gapped : (1 ⊔ o) * suc b ≤ suc d)
@@ -466,8 +466,8 @@ n+-Proper-toℕ : ∀ {b d o}
     → (xs : Numeral (suc b) (suc d) o)
     → ⟦ n+-Proper ¬gapped proper x xs ⟧ ≡ Digit-toℕ x o + ⟦ xs ⟧
 n+-Proper-toℕ {b} {d} {o} ¬gapped proper x xs with sumView b d o ¬gapped proper x (lsd xs)
-n+-Proper-toℕ {b} {d} {o} ¬gapped proper x (_ ∙)    | Below leftover property = property
-n+-Proper-toℕ {b} {d} {o} ¬gapped proper x (x' ∷ xs) | Below leftover property =
+n+-Proper-toℕ {b} {d} {o} ¬gapped proper x (_ ∙)    | NoCarry leftover property = property
+n+-Proper-toℕ {b} {d} {o} ¬gapped proper x (x' ∷ xs) | NoCarry leftover property =
     begin
         ⟦ leftover ∷ xs ⟧
     ≡⟨ refl ⟩
@@ -477,8 +477,8 @@ n+-Proper-toℕ {b} {d} {o} ¬gapped proper x (x' ∷ xs) | Below leftover prope
     ≡⟨ +-assoc (Digit-toℕ x o) (Digit-toℕ x' o) (⟦ xs ⟧ * suc b) ⟩
         Digit-toℕ x o + ⟦ x' ∷ xs ⟧
     ∎
-n+-Proper-toℕ {b} {d} {o} ¬gapped proper x (_ ∙)    | Within leftover carry property = property
-n+-Proper-toℕ {b} {d} {o} ¬gapped proper x (x' ∷ xs) | Within leftover carry property =
+n+-Proper-toℕ {b} {d} {o} ¬gapped proper x (_ ∙)    | Fixed leftover carry property = property
+n+-Proper-toℕ {b} {d} {o} ¬gapped proper x (x' ∷ xs) | Fixed leftover carry property =
     begin
         ⟦ leftover ∷ n+-Proper ¬gapped proper carry xs ⟧
     ≡⟨ refl ⟩
@@ -494,8 +494,8 @@ n+-Proper-toℕ {b} {d} {o} ¬gapped proper x (x' ∷ xs) | Within leftover carr
     ≡⟨ +-assoc (Digit-toℕ x o) (Digit-toℕ x' o) (⟦ xs ⟧ * suc b) ⟩
         Digit-toℕ x o + (Digit-toℕ x' o + ⟦ xs ⟧ * suc b)
     ∎
-n+-Proper-toℕ {b} {d} {o} ¬gapped proper x (_ ∙)    | Above leftover carry property = property
-n+-Proper-toℕ {b} {d} {o} ¬gapped proper x (x' ∷ xs) | Above leftover carry property =
+n+-Proper-toℕ {b} {d} {o} ¬gapped proper x (_ ∙)    | Floating leftover carry property = property
+n+-Proper-toℕ {b} {d} {o} ¬gapped proper x (x' ∷ xs) | Floating leftover carry property =
     begin
         ⟦ leftover ∷ n+-Proper ¬gapped proper carry xs ⟧
     ≡⟨ refl ⟩
@@ -533,7 +533,6 @@ n+-Proper-toℕ {b} {d} {o} ¬gapped proper x (x' ∷ xs) | Above leftover carry
 --         Fin.toℕ n + o + ⟦ xs ⟧
 --     ∎
 
-
 n+ : ∀ {b d o}
     → {cont : True (Continuous? b d o)}
     → (n : Digit d)
@@ -568,9 +567,9 @@ n+-toℕ {_} {_} {_}      n xs | Proper b d o proper | no ¬gapped#0 = n+-Proper
 ⊹-Proper ¬gapped proper (x ∙)    ys       = n+-Proper ¬gapped proper x ys
 ⊹-Proper ¬gapped proper (x ∷ xs) (y ∙)    = n+-Proper ¬gapped proper y (x ∷ xs)
 ⊹-Proper {b} {d} {o} ¬gapped proper (x ∷ xs) (y ∷ ys) with sumView b d o ¬gapped proper x y
-⊹-Proper ¬gapped proper (x ∷ xs) (y ∷ ys) | Below leftover property = leftover ∷ ⊹-Proper ¬gapped proper xs ys
-⊹-Proper ¬gapped proper (x ∷ xs) (y ∷ ys) | Within leftover carry property = leftover ∷ n+-Proper ¬gapped proper carry (⊹-Proper ¬gapped proper xs ys)
-⊹-Proper ¬gapped proper (x ∷ xs) (y ∷ ys) | Above leftover carry property = leftover ∷ n+-Proper ¬gapped proper carry (⊹-Proper ¬gapped proper xs ys)
+⊹-Proper ¬gapped proper (x ∷ xs) (y ∷ ys) | NoCarry leftover property = leftover ∷ ⊹-Proper ¬gapped proper xs ys
+⊹-Proper ¬gapped proper (x ∷ xs) (y ∷ ys) | Fixed leftover carry property = leftover ∷ n+-Proper ¬gapped proper carry (⊹-Proper ¬gapped proper xs ys)
+⊹-Proper ¬gapped proper (x ∷ xs) (y ∷ ys) | Floating leftover carry property = leftover ∷ n+-Proper ¬gapped proper carry (⊹-Proper ¬gapped proper xs ys)
 
 _⊹_ : ∀ {b d o}
     → {cont : True (Continuous? b d o)}
