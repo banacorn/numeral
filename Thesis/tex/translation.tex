@@ -1,0 +1,59 @@
+\providecommand{\main}{..}
+\documentclass[\main/thesis.tex]{subfiles}
+\begin{document}
+\chapter{Translating Propositions and Proofs}\label{translation}
+
+
+
+\begin{lstlisting}
+data Term : ℕ → Set where
+    var : ∀ {n} → Fin n → Term n
+    add : ∀ {n} → Term n → Term n → Term n
+\end{lstlisting}
+
+\begin{lstlisting}
+data Predicate : ℕ → Set where
+    _≋P_ : ∀ {n} → (t₁ : Term n) → (t₂ : Term n) → Predicate n
+    _→P_ : ∀ {n} → (p₁ : Predicate n) → (p₂ : Predicate n) → Predicate n
+    ∀P : ∀ {n} → (p : Predicate (suc n)) → Predicate n
+\end{lstlisting}
+
+\begin{lstlisting}
+record Signature : Set₁ where
+    constructor sig
+    field
+        carrier : Set
+        _⊕_ : carrier → carrier → carrier
+        _≈_ : carrier → carrier → Set
+\end{lstlisting}
+
+
+\begin{lstlisting}
+ℕ-sig : Signature
+ℕ-sig = sig ℕ _+_ _≡_
+
+Numeral-sig : (b d : ℕ) → True (Continuous? b d 0) → Signature
+Numeral-sig b d cont = sig (Numeral b d 0) (_⊹_ {cont = cont}) _≋_
+\end{lstlisting}
+
+
+
+\begin{lstlisting}
+Env : Set → ℕ → Set
+Env = Vec
+\end{lstlisting}
+
+\begin{lstlisting}
+⟦_⟧T : ∀ {n}
+    → Term n
+    → (sig : Signature)
+    → Vec (carrier sig) n
+    → carrier sig
+⟦ var i         ⟧T _                env = lookup i env
+⟦ term₁ ∔ term₂ ⟧T (sig A _⊕_ _≈_) env = ⟦ term₁ ⟧T (sig A _⊕_ _≈_) env ⊕ ⟦ term₂ ⟧T (sig A _⊕_ _≈_) env
+\end{lstlisting}
+
+\begin{lstlisting}
+\end{lstlisting}
+
+\end{document}

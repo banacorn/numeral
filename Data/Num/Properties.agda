@@ -74,7 +74,7 @@ open DecTotalOrder decTotalOrder using (reflexive) renaming (refl to ≤-refl)
 --     ∎
 
 toℕ-⊹-Proper-homo : ∀ {b d o}
-    → (¬gapped : (1 ⊔ o) * suc b ≤ suc d)
+    → (¬gapped : ¬ (Gapped#0 b d o))
     → (proper : suc d + o ≥ 2)
     → (xs ys : Numeral (suc b) (suc d) o)
     →  ⟦ ⊹-Proper ¬gapped proper xs ys ⟧ ≡ ⟦ xs ⟧ + ⟦ ys ⟧
@@ -88,7 +88,7 @@ toℕ-⊹-Proper-homo {b} {d} {o} ¬gapped proper (x ∷ xs) (y ∙) =
         Digit-toℕ x o + ⟦ xs ⟧ * suc b + Digit-toℕ y o
     ∎
 toℕ-⊹-Proper-homo {b} {d} {o} ¬gapped proper (x ∷ xs) (y ∷ ys) with sumView b d o ¬gapped proper x y
-toℕ-⊹-Proper-homo {b} {d} {o} ¬gapped proper (x ∷ xs) (y ∷ ys) | Below leftover property =
+toℕ-⊹-Proper-homo {b} {d} {o} ¬gapped proper (x ∷ xs) (y ∷ ys) | NoCarry leftover property =
     begin
         Digit-toℕ leftover o + ⟦ ⊹-Proper ¬gapped proper xs ys ⟧ * suc b
     ≡⟨ cong (λ w → Digit-toℕ leftover o + w * suc b) (toℕ-⊹-Proper-homo ¬gapped proper xs ys) ⟩
@@ -104,7 +104,7 @@ toℕ-⊹-Proper-homo {b} {d} {o} ¬gapped proper (x ∷ xs) (y ∷ ys) | Below 
     ≡⟨ sym (+-assoc (Digit-toℕ x o) (⟦ xs ⟧ * suc b) (Digit-toℕ y o + ⟦ ys ⟧ * suc b)) ⟩
         Digit-toℕ x o + ⟦ xs ⟧ * suc b + (Digit-toℕ y o + ⟦ ys ⟧ * suc b)
     ∎
-toℕ-⊹-Proper-homo {b} {d} {o} ¬gapped proper (x ∷ xs) (y ∷ ys) | Within leftover carry property =
+toℕ-⊹-Proper-homo {b} {d} {o} ¬gapped proper (x ∷ xs) (y ∷ ys) | Fixed leftover carry property =
     begin
         Digit-toℕ leftover o + ⟦ n+-Proper ¬gapped proper carry (⊹-Proper ¬gapped proper xs ys) ⟧ * suc b
     ≡⟨ cong (λ w → Digit-toℕ leftover o + w * suc b) (n+-Proper-toℕ ¬gapped proper carry (⊹-Proper ¬gapped proper xs ys))   ⟩
@@ -126,7 +126,7 @@ toℕ-⊹-Proper-homo {b} {d} {o} ¬gapped proper (x ∷ xs) (y ∷ ys) | Within
     ≡⟨ sym (+-assoc (Digit-toℕ x o) (⟦ xs ⟧ * suc b) (Digit-toℕ y o + ⟦ ys ⟧ * suc b)) ⟩
         Digit-toℕ x o + ⟦ xs ⟧ * suc b + (Digit-toℕ y o + ⟦ ys ⟧ * suc b)
     ∎
-toℕ-⊹-Proper-homo {b} {d} {o} ¬gapped proper (x ∷ xs) (y ∷ ys) | Above leftover carry property =
+toℕ-⊹-Proper-homo {b} {d} {o} ¬gapped proper (x ∷ xs) (y ∷ ys) | Floating leftover carry property =
     begin
         Digit-toℕ leftover o + ⟦ n+-Proper ¬gapped proper carry (⊹-Proper ¬gapped proper xs ys) ⟧ * suc b
     ≡⟨ cong (λ w → Digit-toℕ leftover o + w * suc b) (n+-Proper-toℕ ¬gapped proper carry (⊹-Proper ¬gapped proper xs ys))   ⟩
@@ -173,7 +173,7 @@ toℕ-⊹-homo cont xs ys | NoDigits b o = NoDigits-explode xs
 toℕ-⊹-homo ()   xs ys | AllZeros b
 toℕ-⊹-homo cont xs ys | Proper b d o proper with Gapped#0? b d o
 toℕ-⊹-homo ()   xs ys | Proper b d o proper | yes gapped#0
-toℕ-⊹-homo cont xs ys | Proper b d o proper | no ¬gapped#0 = toℕ-⊹-Proper-homo (≤-pred (≰⇒> ¬gapped#0)) proper xs ys
+toℕ-⊹-homo cont xs ys | Proper b d o proper | no ¬gapped#0 = toℕ-⊹-Proper-homo ¬gapped#0 proper xs ys
 
 -- toℕ-≋-ℕ⇒Num-lemma-1 : ∀ m n → m * suc n ≡ 0 → m ≡ 0
 -- toℕ-≋-ℕ⇒Num-lemma-1 zero n p = refl

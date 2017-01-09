@@ -7,6 +7,7 @@ open import Data.Num.Continuous
 -- open import Data.Num.Bijection
 
 open import Data.Nat
+open import Data.Nat.Properties.Simple
 open import Data.Nat.Properties.Extra
 open import Data.Fin using (Fin; suc; zero; #_)
 open import Data.Vec
@@ -21,6 +22,7 @@ open ≡-Reasoning
 open ≤-Reasoning renaming (begin_ to start_; _∎ to _□; _≡⟨_⟩_ to _≈⟨_⟩_)
 open DecTotalOrder decTotalOrder using (reflexive) renaming (refl to ≤-refl)
 
+-- infixl 6 _∔_
 infixl 6 _∔_
 
 data Term : ℕ → Set where
@@ -90,6 +92,8 @@ module Example-1 where
 
     ≋-trans-Numeral : (b d : ℕ) → True (Continuous? b d 0) → Set
     ≋-trans-Numeral b d prop = ⟦ ≋-trans ⟧P (Numeral-sig b d prop) []
+
+
 
 -- lemma for env
 lookup-map : ∀ {i j} → {A : Set i} {B : Set j}
@@ -168,7 +172,21 @@ mutual
     toℕ-pred-Numeral⇒ℕ {b} {d} cont (∀P pred) env sem-Num n | no ¬eq
         = contradiction (sym (fromℕ-toℕ cont n _)) ¬eq
 
+module Example-2 where
 
+    +-comm-P : Predicate 2
+    +-comm-P = ∀P (∀P ((var (# 1) ∔ var (# 0)) ≋P (var (# 0) ∔ var (# 1))))
+
+    +-comm-ℕ : ∀ a b → a + b ≡ b + a
+    +-comm-ℕ = +-comm
+
+    +-comm-Num : ∀ {b d}
+        → {cont : True (Continuous? b (suc d) 0)}
+        → (xs ys : Numeral b (suc d) 0)
+        → (_⊹_ {cont = cont} xs ys) ≋ (_⊹_ {cont = cont} ys xs)
+        -- → ⟦ +-comm-P ⟧P (Numeral-sig b (suc d) cont) (xs ∷ ys ∷ [])
+        -- → (_⊹_ {cont = cont} xs ys) ≋ (_⊹_ {cont = cont} ys xs)
+    +-comm-Num {cont = cont} = toℕ-pred-ℕ⇒Numeral {n = 2} cont +-comm-P ((zero ∙) ∷ ((zero ∙) ∷ [])) +-comm-ℕ
 --
 -- mutual
 --     toℕ-pred-ℕ⇒Bij : ∀ {b n}
