@@ -3,6 +3,39 @@
 \begin{document}
 \chapter{Translating Propositions and Proofs}\label{translation}
 
+In this chapter, we demonstrate how to translate propositions and proofs between
+\lstinline|ℕ| and a subset of \lstinline|Numeral|.
+
+People have put a lot of effort into proving theorems and properties on
+\lstinline|ℕ| and the results are widely available.
+Although \lstinline|ℕ| and \lstinline|Numeral| both share the same purpose of
+representing natural numbers, all these propositions and proofs of \lstinline|ℕ|
+are useless for \lstinline|Numeral|.
+We cannot simply apply a property of \lstinline|ℕ|, say,
+the commutative property of addition, on instances of \lstinline|Numeral|.
+
+The reason behind this misery comes from the difference between so-called
+\textbf{object languages} and \textbf{metalanguages}.
+The relation and similarities between \lstinline|ℕ| and \lstinline|Numeral|
+we have observed are expressed using a \textit{metalanguage}, English, in our case;
+while the propositions and proofs we want to reuse are formalized with Agda,
+the \textit{object language} we have been dwelling on.
+
+% To reuse 
+
+
+% Because the relation and similarities between these two representations we have
+% observed and described are uttered with a \textit{metalanguage} (English, in
+% this case), while those proofs are often written in some \textit{object language}.
+% We will demonstrate how to \textit{encode} propositions expressed in the
+% metalanguage to an object language that we have constructed and how to manipulate
+% them
+
+\section{Universe Constructions}
+
+
+
+\section{Terms, Predicates and Signatures}
 
 
 \begin{lstlisting}
@@ -17,6 +50,8 @@ data Predicate : ℕ → Set where
     _→P_ : ∀ {n} → (p₁ : Predicate n) → (p₂ : Predicate n) → Predicate n
     ∀P : ∀ {n} → (p : Predicate (suc n)) → Predicate n
 \end{lstlisting}
+
+\section{}
 
 \begin{lstlisting}
 record Signature : Set₁ where
@@ -37,6 +72,7 @@ Numeral-sig b d cont = sig (Numeral b d 0) (_⊹_ {cont = cont}) _≋_
 \end{lstlisting}
 
 
+\section{Terms, Predicates and Signatures}
 
 \begin{lstlisting}
 Env : Set → ℕ → Set

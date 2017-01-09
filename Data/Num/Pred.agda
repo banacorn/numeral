@@ -174,7 +174,7 @@ mutual
 
 module Example-2 where
 
-    +-comm-P : Predicate 2
+    +-comm-P : Predicate 0
     +-comm-P = ∀P (∀P ((var (# 1) ∔ var (# 0)) ≋P (var (# 0) ∔ var (# 1))))
 
     +-comm-ℕ : ∀ a b → a + b ≡ b + a
@@ -184,9 +184,7 @@ module Example-2 where
         → {cont : True (Continuous? b (suc d) 0)}
         → (xs ys : Numeral b (suc d) 0)
         → (_⊹_ {cont = cont} xs ys) ≋ (_⊹_ {cont = cont} ys xs)
-        -- → ⟦ +-comm-P ⟧P (Numeral-sig b (suc d) cont) (xs ∷ ys ∷ [])
-        -- → (_⊹_ {cont = cont} xs ys) ≋ (_⊹_ {cont = cont} ys xs)
-    +-comm-Num {cont = cont} = toℕ-pred-ℕ⇒Numeral {n = 2} cont +-comm-P ((zero ∙) ∷ ((zero ∙) ∷ [])) +-comm-ℕ
+    +-comm-Num {cont = cont} = toℕ-pred-ℕ⇒Numeral cont +-comm-P [] +-comm-ℕ
 --
 -- mutual
 --     toℕ-pred-ℕ⇒Bij : ∀ {b n}
