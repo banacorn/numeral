@@ -4,12 +4,12 @@
 
 \section{Converting from Natural Numbers}\label{fromnat}
 
-\lstinline|Numeral| is a family of types, so as functions that are defined on
+\lstinline|Numeral| is a family of types, so are functions that are defined on
 \lstinline|Numeral|.
 It is important to regard functions such as \lstinline|⟦_⟧| as a collective;
 each has a different configuration of indices.
 
-Here, we name the fuction that converts natural numbers to corresponding
+Here, we name the function that converts natural numbers to corresponding
 numerals \lstinline|fromℕ|.
 
 \begin{center}
@@ -219,10 +219,10 @@ fromℕ : ∀ {b d o}
 \end{lstlisting}
 
 In fact, we can even generalize from \lstinline|Numeral 1 1 1|
-(odinary unary numurals) and \lstinline|Numeral 1 1 2| to \lstinline|Numeral 1 1 n|
+(ordinary unary numerals) and \lstinline|Numeral 1 1 2| to \lstinline|Numeral 1 1 n|
 to describe all cyclic groups of order $ n $.
 
-What about other kind of predicates? Can we choose any subset of natural numbers
+What about other kinds of predicates? Can we choose any subset of natural numbers
 to convert from as long as it fits the targeting numeral system?
 The point is, the reason why we choose a subset of natural numbers as the domain
 of \lstinline|fromℕ| is \textbf{arbitrary} and \textbf{empirical}.
@@ -269,21 +269,10 @@ fromℕ-toℕ         cont (suc n) n≥o | no ¬eq =
     ∎
 \end{lstlisting}
 
-Conversely, we may attempt to prove the existence of a \textit{left inverse}
-of \lstinline|⟦_⟧|.
-
-\begin{lstlisting}
-toℕ-fromℕ : ∀ {b d o}
-    → (cont : True (Continuous? b (suc d) o))
-    → (xs : Numeral b (suc d) o)
-    → fromℕ {cont = cont} ⟦ xs ⟧ (Num-lower-bound xs) ≡ xs
-toℕ-fromℕ = ?
-\end{lstlisting}
-
-However, we can never prove this, because it is necessary for a function to be
-\textit{injective} to have a left inverse.
-Systems such as the ordinary decimal numerals are non-injective (and thus redundant)
-as their evaluation functions \lstinline|⟦_⟧| map more than one numeral onto the
-same number.
+Conversely, \lstinline|⟦_⟧| would also have a \textit{left inverse} if it is
+injective.
+However, \lstinline|⟦_⟧| would never be injective because some numeral systems
+such as the decimals are \textit{redundant} as they map more than one numeral
+onto the same number.
 
 \end{document}

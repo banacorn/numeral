@@ -131,7 +131,7 @@ data Sum : (b d o : ℕ) (x y : Digit (suc d)) → Set where
 
 
 sumView : ∀ b d o
-    → (¬gapped : (1 ⊔ o) * suc b ≤ suc d)
+    → (¬gapped : ¬ (Gapped#0 b d o))
     → (proper : 2 ≤ suc d + o)
     → (x y : Digit (suc d))
     → Sum b d o x y
@@ -176,7 +176,7 @@ sumView b d o ¬gapped proper x y | no ¬below | yes within
                 carry * base
             ≤⟨ m≤m+n (carry * base) o ⟩
                 carry * base + o
-            ≤⟨ +n-mono o ¬gapped ⟩
+            ≤⟨ +n-mono o (≤-pred (≰⇒> ¬gapped)) ⟩
                 suc (d + o)
             ≤⟨ ≰⇒> ¬below ⟩
                 sum o x y
@@ -194,7 +194,7 @@ sumView b d o ¬gapped proper x y | no ¬below | yes within
                 o + carry * base ∸ carry * base
             ≈⟨ cong (λ w → w ∸ carry * base) (+-comm o (carry * base)) ⟩
                 carry * base + o ∸ carry * base
-            ≤⟨ ∸n-mono (carry * base) (+n-mono o ¬gapped) ⟩
+            ≤⟨ ∸n-mono (carry * base) (+n-mono o (≤-pred (≰⇒> ¬gapped))) ⟩
                 suc d + o ∸ carry * base
             ≤⟨ ∸n-mono (carry * base) (≰⇒> ¬below) ⟩
                 leftover
@@ -302,7 +302,7 @@ sumView b d o ¬gapped proper x y | no ¬below | no ¬within | result quotient r
                 1 * base + (o + (Fin.toℕ r + quotient * base + (1 ⊔ o) * base))
             ≤⟨ +n-mono (o + (Fin.toℕ r + quotient * base + (1 ⊔ o) * base)) (*n-mono base (m≤m⊔n 1 o)) ⟩
                 (1 ⊔ o) * base + (o + (Fin.toℕ r + quotient * base + (1 ⊔ o) * base))
-            ≤⟨ +n-mono (o + ((Fin.toℕ r) + quotient * base + (1 ⊔ o) * base)) ¬gapped ⟩
+            ≤⟨ +n-mono (o + ((Fin.toℕ r) + quotient * base + (1 ⊔ o) * base)) (≤-pred (≰⇒> ¬gapped)) ⟩
                 suc d + (o + ((Fin.toℕ r) + quotient * base + (1 ⊔ o) * base))
             ≈⟨ cong suc (sym (+-assoc d o ((Fin.toℕ r) + quotient * base + (1 ⊔ o) * base))) ⟩
                 suc (d + o + ((Fin.toℕ r) + quotient * base + (1 ⊔ o) * base))
@@ -446,7 +446,7 @@ sumView b d o ¬gapped proper x y | no ¬below | no ¬within | result quotient r
             ∎
 
 n+-Proper : ∀ {b d o}
-    → (¬gapped : (1 ⊔ o) * suc b ≤ suc d)
+    → (¬gapped : ¬ (Gapped#0 b d o))
     → (proper : suc d + o ≥ 2)
     → (x : Digit (suc d))
     → (xs : Numeral (suc b) (suc d) o)
@@ -460,7 +460,7 @@ n+-Proper ¬gapped proper x (_ ∙)    | Floating leftover carry property = left
 n+-Proper ¬gapped proper x (_ ∷ xs) | Floating leftover carry property = leftover ∷ n+-Proper ¬gapped proper carry xs
 
 n+-Proper-toℕ : ∀ {b d o}
-    → (¬gapped : (1 ⊔ o) * suc b ≤ suc d)
+    → (¬gapped : ¬ (Gapped#0 b d o))
     → (proper : suc d + o ≥ 2)
     → (x : Digit (suc d))
     → (xs : Numeral (suc b) (suc d) o)
@@ -512,27 +512,27 @@ n+-Proper-toℕ {b} {d} {o} ¬gapped proper x (x' ∷ xs) | Floating leftover ca
         Digit-toℕ x o + (Digit-toℕ x' o + ⟦ xs ⟧ * suc b)
     ∎
 
--- data N+Closed : (b d o : ℕ) → Set where
---     IsContinuous : ∀ {b d o} → (cont : True (Continuous? b d o)) → N+Closed b d o
---     ℤₙ : ∀ {o} → N+Closed 1 1 o
+-- -- data N+Closed : (b d o : ℕ) → Set where
+-- --     IsContinuous : ∀ {b d o} → (cont : True (Continuous? b d o)) → N+Closed b d o
+-- --     ℤₙ : ∀ {o} → N+Closed 1 1 o
+-- --
+-- -- n+-ℤₙ : ∀ {o}
+-- --     → (n : Digit 1)
+-- --     → (xs : Numeral 1 1 (o))
+-- --     → Numeral 1 1 o
+-- -- n+-ℤₙ n xs = n ∷ xs
+-- --
+-- -- n+-ℤₙ-toℕ : ∀ {o}
+-- --     → (n : Digit 1)
+-- --     → (xs : Numeral 1 1 o)
+-- --     → ⟦ n+-ℤₙ n xs ⟧ ≡ Digit-toℕ n o + ⟦ xs ⟧
+-- -- n+-ℤₙ-toℕ {o} n xs =
+-- --     begin
+-- --         Fin.toℕ n + o + ⟦ xs ⟧ * suc zero
+-- --     ≡⟨ cong (λ w → Fin.toℕ n + o + w) (*-right-identity ⟦ xs ⟧) ⟩
+-- --         Fin.toℕ n + o + ⟦ xs ⟧
+-- --     ∎
 --
--- n+-ℤₙ : ∀ {o}
---     → (n : Digit 1)
---     → (xs : Numeral 1 1 (o))
---     → Numeral 1 1 o
--- n+-ℤₙ n xs = n ∷ xs
---
--- n+-ℤₙ-toℕ : ∀ {o}
---     → (n : Digit 1)
---     → (xs : Numeral 1 1 o)
---     → ⟦ n+-ℤₙ n xs ⟧ ≡ Digit-toℕ n o + ⟦ xs ⟧
--- n+-ℤₙ-toℕ {o} n xs =
---     begin
---         Fin.toℕ n + o + ⟦ xs ⟧ * suc zero
---     ≡⟨ cong (λ w → Fin.toℕ n + o + w) (*-right-identity ⟦ xs ⟧) ⟩
---         Fin.toℕ n + o + ⟦ xs ⟧
---     ∎
-
 n+ : ∀ {b d o}
     → {cont : True (Continuous? b d o)}
     → (n : Digit d)
@@ -544,7 +544,7 @@ n+ {_} {_} {_}      n xs | NoDigits b o = NoDigits-explode xs
 n+ {_} {_} {_} {()} n xs | AllZeros b
 n+ {_} {_} {_}      n xs | Proper b d o proper with Gapped#0? b d o
 n+ {_} {_} {_} {()} n xs | Proper b d o proper | yes gapped#0
-n+ {_} {_} {_}      n xs | Proper b d o proper | no ¬gapped#0 = n+-Proper (≤-pred (≰⇒> ¬gapped#0)) proper n xs
+n+ {_} {_} {_}      n xs | Proper b d o proper | no ¬gapped#0 = n+-Proper ¬gapped#0 proper n xs
 
 n+-toℕ : ∀ {b d o}
     → {cont : True (Continuous? b d o)}
@@ -557,10 +557,10 @@ n+-toℕ {_} {_} {_}      n xs | NoDigits b o = NoDigits-explode xs
 n+-toℕ {_} {_} {_} {()} n xs | AllZeros b
 n+-toℕ {_} {_} {_}      n xs | Proper b d o proper with Gapped#0? b d o
 n+-toℕ {_} {_} {_} {()} n xs | Proper b d o proper | yes gapped#0
-n+-toℕ {_} {_} {_}      n xs | Proper b d o proper | no ¬gapped#0 = n+-Proper-toℕ (≤-pred (≰⇒> ¬gapped#0)) proper n xs
+n+-toℕ {_} {_} {_}      n xs | Proper b d o proper | no ¬gapped#0 = n+-Proper-toℕ ¬gapped#0 proper n xs
 
 ⊹-Proper : ∀ {b d o}
-    → (¬gapped : (1 ⊔ o) * suc b ≤ suc d)
+    → (¬gapped : ¬ (Gapped#0 b d o))
     → (proper : suc d + o ≥ 2)
     → (xs ys : Numeral (suc b) (suc d) o)
     → Numeral (suc b) (suc d) o
@@ -581,4 +581,4 @@ _⊹_ {cont = cont} xs ys | NoDigits b o = NoDigits-explode xs
 _⊹_ {cont = ()}   xs ys | AllZeros b
 _⊹_ {cont = cont} xs ys | Proper b d o proper with Gapped#0? b d o
 _⊹_ {cont = ()}   xs ys | Proper b d o proper | yes ¬gapped#0
-_⊹_ {cont = cont} xs ys | Proper b d o proper | no ¬gapped#0 = ⊹-Proper (≤-pred (≰⇒> ¬gapped#0)) proper xs ys
+_⊹_ {cont = cont} xs ys | Proper b d o proper | no ¬gapped#0 = ⊹-Proper ¬gapped#0 proper xs ys
