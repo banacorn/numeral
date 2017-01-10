@@ -59,8 +59,9 @@ When we are proving propositions of \lstinline|Numeral| base on the ones that
 already existed on \lstinline|ℕ|, we are actually translating propositions via
 some metalanguage in our mind.
 
-To free ourselves from these brainworks, we can encode the underlying representation
-of propositions in Agda, so that we can manipulate and translate them with the
+To free ourselves from these brainworks, we can encode the
+underlying representation of propositions in Agda,
+so that we can manipulate and translate them with the
 help of constructions such as functions available from the object language.
 
 \begin{center}
@@ -68,7 +69,7 @@ help of constructions such as functions available from the object language.
         \begin{tikzpicture}
 
             % the frame
-            \path[clip] (0, -3) rectangle (12, 5);
+            \path[clip] (0, -4) rectangle (12, 5);
 
             % UR
             \draw[ultra thick] (1, 1) rectangle (11,3);
@@ -162,34 +163,141 @@ and finally, realize them to \lstinline|⊤| or \lstinline|⊥| with \lstinline|
 
 \subsection{Summary}
 
+Below is a table that sums up the correspondences of universe construction.
+
 \begin{center}
     \begin{adjustbox}{max width=\textwidth}
-    \begin{tabular}{ l l l }
-    universe & corresponds to & surface representation \\
-    codes & corresponds to & underlying representation \\
-    decoder & corresponds to & realization \\
+    \begin{tabular}{ l l l l l }
+    universe & corresponds to & surface representation & corresponds to & semantics \\
+    codes & corresponds to & underlying representation & corresponds to & syntax \\
+    decoder & corresponds to & realization & corresponds to & interpretation \\
     \end{tabular}
     \end{adjustbox}
 \end{center}
 
-% \section{Terms, Predicates and Signatures}
+\section{First-order Logic on the Representations of Natural Numbers}
+
+\paragraph{Remark}
+What we meant by ``proposition'' in this chapter has a broader sense than that in
+\textit{propositional logic}. It also includes ``predicates'' that have
+quantifiers ranging over.
+
+To translate propositions (and predicates) from \lstinline|ℕ| to
+\lstinline|Numeral| (or vice versa),
+we need an underlying syntax for expressing these propositions.
+For that matter, we will demonstrate how to build a minimalistic first-order logic
+with universe constructions.
+
+\subsection{Overview}
+
+There are many kinds of propositions we can make on natural numbers.
+However, we will target only at the propositions that can be expressed in both
+\lstinline|ℕ| and \lstinline|Numeral|.
+Therefore the terms will only consist of variables ranging over
+the \textit{domain of discourse}, i.e., \lstinline|ℕ| or \lstinline|Numeral|,
+and the addition function on that domain. Here is an example of a term
+with three variables and two addition:
+
+\begin{lstlisting}
+x + (y + z)
+\end{lstlisting}
+
+Glueing two terms with equality connectives gives us a predicate:
+
+\begin{lstlisting}
+(x + y) + z ≈ x + (y + z)
+\end{lstlisting}
+
+Glueing two predicates with implication connectives also gives us a predicate:
+
+\begin{lstlisting}
+x ≈ y → y ≈ y
+\end{lstlisting}
+
+We can also make a new predicate by quantifying over one of its
+free variables.
+
+\begin{lstlisting}
+∀ x . x ≈ y → y ≈ y
+\end{lstlisting}
+
+
+\subsection{Syntax}
+
+Syntax and semantics are two key parts of first-order logic.
+The syntax corresponds to the codes in a universe construction.
+
+\subsubsection{Terms}
+
+\begin{lstlisting}
+data Term : ℕ → Set where
+    var : ∀ {n} → Fin n → Term n
+    add : ∀ {n} → Term n → Term n → Term n
+\end{lstlisting}
+
+The code for terms is indexed by a \lstinline|ℕ| which denotes the number
+of \textit{free variables} that may occur in a predicate.
+The \lstinline|Fin n| that \lstinline|var| takes designates the quantifier it is
+binded to.
+
+\subsubsection{Predicates}
+
+\begin{lstlisting}
+data Predicate : ℕ → Set where
+    _≋P_ : ∀ {n} → (t₁ : Term n) → (t₂ : Term n) → Predicate n
+    _→P_ : ∀ {n} → (p₁ : Predicate n) → (p₂ : Predicate n)
+         → Predicate n
+    ∀P   : ∀ {n} → (p : Predicate (suc n)) → Predicate n
+\end{lstlisting}
+
+The code for predicates is also indexed by the number of \textit{free variables}.
+\lstinline|_≋P_| and \lstinline|_→P_| correspond to equality and  implication
+connectives respectively.
+It is worth nothing that \lstinline|∀P| returns a predicate with a smaller index
+because one of the free variable of the given predicate has been bound.
+
+\subsection{Semantics}
+
+% The semantics corresponds to the types of a universe construction.
+
+\subsubsection{Signatures}
+\subsubsection{Environment of Variables}
+\subsubsection{Terms}
+\subsubsection{Predicates}
+
+
+% \subsection{Predicates}
 %
-% % To translate propositions and proofs from one place to another.
-% % We need to identify the surface types of propositions that we want to encode.
-%
-% \begin{lstlisting}
-% data Term : ℕ → Set where
-%     var : ∀ {n} → Fin n → Term n
-%     add : ∀ {n} → Term n → Term n → Term n
-% \end{lstlisting}
-%
-% \begin{lstlisting}
-% data Predicate : ℕ → Set where
-%     _≋P_ : ∀ {n} → (t₁ : Term n) → (t₂ : Term n) → Predicate n
-%     _→P_ : ∀ {n} → (p₁ : Predicate n) → (p₂ : Predicate n) → Predicate n
-%     ∀P : ∀ {n} → (p : Predicate (suc n)) → Predicate n
-% \end{lstlisting}
-%
+% There are two kinds of connectives: \textit{implication} and \textit{equality},
+% that can glue predicates together. We can also make a new predicate out of an
+% old one with free variables with an \textit{universal quantifier}.
+
+
+
+% There are two parts of this first-order logic: syntax and semantics.
+
+
+
+
+% There are two parts of propositions.
+% The syntax (the codes, the underlying representation) and the semantics (the types
+% of the universe, the surface representation).
+
+
+
+% Suppose we are going to describe propositions about the things that we have
+% constructed: \lstinline|Numeral| and the addition function on \lstinline|Numeral|.
+
+
+% There are many kinds of propositions we can assert on natural numbers,
+% We are going to
+
+
+% talk about the things that has been constructed
+
+% Suppose
+
+
 % \begin{lstlisting}
 % record Signature : Set₁ where
 %     constructor sig
