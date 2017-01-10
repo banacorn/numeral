@@ -9,87 +9,224 @@ In this chapter, we demonstrate how to translate propositions and proofs between
 People have put a lot of effort into proving theorems and properties on
 \lstinline|ℕ| and the results are widely available.
 Although \lstinline|ℕ| and \lstinline|Numeral| both share the same purpose of
-representing natural numbers, all these propositions and proofs of \lstinline|ℕ|
-are useless for \lstinline|Numeral|.
+representing natural numbers, all these propositions and proofs that have been
+constructed of \lstinline|ℕ| are useless to \lstinline|Numeral|.
 We cannot simply apply a property of \lstinline|ℕ|, say,
 the commutative property of addition, on instances of \lstinline|Numeral|.
 
 The reason behind this misery comes from the difference between so-called
 \textbf{object languages} and \textbf{metalanguages}.
 The relation and similarities between \lstinline|ℕ| and \lstinline|Numeral|
-we have observed are expressed using a \textit{metalanguage}, English, in our case;
+we have observed are expressed using some \textit{metalanguage} in our mind;
 while the propositions and proofs we want to reuse are formalized with Agda,
 the \textit{object language} we have been dwelling on.
 
-% To reuse 
+\begin{center}
+    \begin{adjustbox}{max width=\textwidth}
+        \begin{tikzpicture}
+
+            % the frame
+            \path[clip] (0, -3) rectangle (12, 3);
+
+            % UR
+            \draw[ultra thick] (1, 1) rectangle (11,3);
+            \node at (6, 2) {underlying representation of propositions};
+
+            % SR
+            \draw[ultra thick] (1, -1) rectangle (5,-3);
+            \node[text width=5cm, scale=0.8, align=center] at (3, -2)
+                {surface representation of propositions of \lstinline|ℕ|};
+
+            % SR
+            \draw[ultra thick] (7, -1) rectangle (11,-3);
+            \node[text width=5cm, scale=0.8, align=center] at (9, -2)
+                {surface representation of propositions of \lstinline|Numeral|};
 
 
-% Because the relation and similarities between these two representations we have
-% observed and described are uttered with a \textit{metalanguage} (English, in
-% this case), while those proofs are often written in some \textit{object language}.
-% We will demonstrate how to \textit{encode} propositions expressed in the
-% metalanguage to an object language that we have constructed and how to manipulate
-% them
+            % the border line
+            \node[right] at (0, 0.5) {in our mind};
+            \draw[dotted, ultra thick] (0,0) -- (12,0);
+            \node[right] at (0, -0.5) {in Agda};
+
+            \draw[->, ultra thick] (3, -0.9) -- (3, 0.9);
+            \draw[->, ultra thick] (9, 0.9) -- (9, -0.9);
+
+        \end{tikzpicture}
+    \end{adjustbox}
+\end{center}
+
+When we are proving propositions of \lstinline|Numeral| base on the ones that
+already existed on \lstinline|ℕ|, we are actually translating propositions via
+some metalanguage in our mind.
+
+To free ourselves from these brainworks, we can encode the underlying representation
+of propositions in Agda, so that we can manipulate and translate them with the
+help of constructions such as functions available from the object language.
+
+\begin{center}
+    \begin{adjustbox}{max width=\textwidth}
+        \begin{tikzpicture}
+
+            % the frame
+            \path[clip] (0, -3) rectangle (12, 5);
+
+            % UR
+            \draw[ultra thick] (1, 1) rectangle (11,3);
+            \node at (6, 2) {underlying representation of propositions};
+
+            % SR
+            \draw[ultra thick] (1, -1) rectangle (5,-3);
+            \node[text width=5cm, scale=0.8, align=center] at (3, -2)
+                {surface representation of propositions of \lstinline|ℕ|};
+
+            % SR
+            \draw[ultra thick] (7, -1) rectangle (11,-3);
+            \node[text width=5cm, scale=0.8, align=center] at (9, -2)
+                {surface representation of propositions of \lstinline|Numeral|};
+
+            % the border line
+            \draw[dotted, ultra thick] (0,4) -- (12,4);
+            \node[right] at (0, 3.5) {in Agda};
+
+            \draw[->, ultra thick] (3, -0.9) -- (3, 0.9);
+            \draw[->, ultra thick] (9, 0.9) -- (9, -0.9);
+
+        \end{tikzpicture}
+    \end{adjustbox}
+\end{center}
+
+The underlying representation of propositions can be encoded in Agda
+using a generic programming technique called \textit{universe construction}
+\cite{norell2009dependently}.
 
 \section{Universe Constructions}
 
+A universe is a set of types;
+a universe construction is consists of:
 
+\begin{itemize}
+    \item A universe
+    \item A datatype of ``codes''
+    \item A decoding function mapping ``codes'' to the types in the universe
+\end{itemize}
 
-\section{Terms, Predicates and Signatures}
+\subsection{A Simple Universe}
 
+There is an universe construction we are familiar with: the universe
+of \lstinline|⊤| and \lstinline|⊥|.
 
-\begin{lstlisting}
-data Term : ℕ → Set where
-    var : ∀ {n} → Fin n → Term n
-    add : ∀ {n} → Term n → Term n → Term n
-\end{lstlisting}
-
-\begin{lstlisting}
-data Predicate : ℕ → Set where
-    _≋P_ : ∀ {n} → (t₁ : Term n) → (t₂ : Term n) → Predicate n
-    _→P_ : ∀ {n} → (p₁ : Predicate n) → (p₂ : Predicate n) → Predicate n
-    ∀P : ∀ {n} → (p : Predicate (suc n)) → Predicate n
-\end{lstlisting}
-
-\section{}
+\subsubsection{Types}
 
 \begin{lstlisting}
-record Signature : Set₁ where
-    constructor sig
-    field
-        carrier : Set
-        _⊕_ : carrier → carrier → carrier
-        _≈_ : carrier → carrier → Set
+data ⊤ : Set where
+    tt : ⊤
+data ⊥ : Set where
 \end{lstlisting}
 
+\subsubsection{Codes}
 
 \begin{lstlisting}
-ℕ-sig : Signature
-ℕ-sig = sig ℕ _+_ _≡_
-
-Numeral-sig : (b d : ℕ) → True (Continuous? b d 0) → Signature
-Numeral-sig b d cont = sig (Numeral b d 0) (_⊹_ {cont = cont}) _≋_
+data Bool : Set where
+    true  : Bool
+    false : Bool
 \end{lstlisting}
 
-
-\section{Terms, Predicates and Signatures}
+\subsubsection{Decoder}
 
 \begin{lstlisting}
-Env : Set → ℕ → Set
-Env = Vec
+isTrue : Bool → Set
+isTrue true  = ⊤
+isTrue false = ⊥
 \end{lstlisting}
 
-\begin{lstlisting}
-⟦_⟧T : ∀ {n}
-    → Term n
-    → (sig : Signature)
-    → Vec (carrier sig) n
-    → carrier sig
-⟦ var i         ⟧T _                env = lookup i env
-⟦ term₁ ∔ term₂ ⟧T (sig A _⊕_ _≈_) env = ⟦ term₁ ⟧T (sig A _⊕_ _≈_) env ⊕ ⟦ term₂ ⟧T (sig A _⊕_ _≈_) env
-\end{lstlisting}
+As we have shown, we can use this universe to implement, for instance, a safe
+\lstinline|head| function that cannot be type-checked on empty inputs.
 
 \begin{lstlisting}
+null : ∀ {A} → (xs : List A) → Bool
+null []       = true
+null (x ∷ xs) = false
+
+not : Bool → Bool
+not true  = false
+not false = true
+
+head : ∀ {A} → (xs : List A) → isTrue (not (null xs)) → A
+head []       ()
+head (x ∷ xs) proof = x
 \end{lstlisting}
+
+We can generate the codes from \lstinline|null|,
+manipulate the code with \lstinline|not|,
+and finally, realize them to \lstinline|⊤| or \lstinline|⊥| with \lstinline|isTrue|.
+
+\subsection{Summary}
+
+\begin{center}
+    \begin{adjustbox}{max width=\textwidth}
+    \begin{tabular}{ l l l }
+    universe & corresponds to & surface representation \\
+    codes & corresponds to & underlying representation \\
+    decoder & corresponds to & realization \\
+    \end{tabular}
+    \end{adjustbox}
+\end{center}
+
+% \section{Terms, Predicates and Signatures}
+%
+% % To translate propositions and proofs from one place to another.
+% % We need to identify the surface types of propositions that we want to encode.
+%
+% \begin{lstlisting}
+% data Term : ℕ → Set where
+%     var : ∀ {n} → Fin n → Term n
+%     add : ∀ {n} → Term n → Term n → Term n
+% \end{lstlisting}
+%
+% \begin{lstlisting}
+% data Predicate : ℕ → Set where
+%     _≋P_ : ∀ {n} → (t₁ : Term n) → (t₂ : Term n) → Predicate n
+%     _→P_ : ∀ {n} → (p₁ : Predicate n) → (p₂ : Predicate n) → Predicate n
+%     ∀P : ∀ {n} → (p : Predicate (suc n)) → Predicate n
+% \end{lstlisting}
+%
+% \begin{lstlisting}
+% record Signature : Set₁ where
+%     constructor sig
+%     field
+%         carrier : Set
+%         _⊕_ : carrier → carrier → carrier
+%         _≈_ : carrier → carrier → Set
+% \end{lstlisting}
+%
+%
+% \begin{lstlisting}
+% ℕ-sig : Signature
+% ℕ-sig = sig ℕ _+_ _≡_
+%
+% Numeral-sig : (b d : ℕ) → True (Continuous? b d 0) → Signature
+% Numeral-sig b d cont = sig (Numeral b d 0) (_⊹_ {cont = cont}) _≋_
+% \end{lstlisting}
+%
+%
+% \section{Terms, Predicates and Signatures}
+%
+% \begin{lstlisting}
+% Env : Set → ℕ → Set
+% Env = Vec
+% \end{lstlisting}
+%
+% \begin{lstlisting}
+% ⟦_⟧T : ∀ {n}
+%     → Term n
+%     → (sig : Signature)
+%     → Vec (carrier sig) n
+%     → carrier sig
+% ⟦ var i         ⟧T _                env = lookup i env
+% ⟦ term₁ ∔ term₂ ⟧T (sig A _⊕_ _≈_) env = ⟦ term₁ ⟧T (sig A _⊕_ _≈_) env ⊕ ⟦ term₂ ⟧T (sig A _⊕_ _≈_) env
+% \end{lstlisting}
+%
+% \begin{lstlisting}
+% \end{lstlisting}
 
 \end{document}
