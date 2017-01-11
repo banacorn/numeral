@@ -226,6 +226,8 @@ free variables.
 
 Syntax and semantics are two key parts of first-order logic.
 The syntax corresponds to the codes in a universe construction.
+There are two datatypes for codes, one for \textit{terms} and the another for
+\textit{predicates}.
 
 \subsubsection{Terms}
 
@@ -253,17 +255,147 @@ data Predicate : ℕ → Set where
 The code for predicates is also indexed by the number of \textit{free variables}.
 \lstinline|_≋P_| and \lstinline|_→P_| correspond to equality and  implication
 connectives respectively.
-It is worth nothing that \lstinline|∀P| returns a predicate with a smaller index
+It is worth noting that \lstinline|∀P| returns a predicate with a smaller index
 because one of the free variable of the given predicate has been bound.
 
 \subsection{Semantics}
 
-% The semantics corresponds to the types of a universe construction.
+The semantics determine meanings behind these propositions, and by meanings
+we mean the selection of types of the universe we are constructing.
 
 \subsubsection{Signatures}
-\subsubsection{Environment of Variables}
-\subsubsection{Terms}
-\subsubsection{Predicates}
+
+A syntax can be interpreted as many different semantics.
+Each semantics has its own choice of interpreting a piece of syntax,
+we call these choices a \textit{signature}.
+That is to say, each semantics has its own signature.
+
+The datatype of signature can defined as follows:
+
+\begin{lstlisting}
+record Signature : Set₁ where
+    constructor sig
+    field
+        carrier : Set
+        _⊕_ : carrier → carrier → carrier
+        _≈_ : carrier → carrier → Set
+\end{lstlisting}
+
+Different semantics have different signatures.
+
+\begin{lstlisting}
+ℕ-sig : Signature
+ℕ-sig = sig ℕ _+_ _≡_
+
+Numeral-sig : (b d : ℕ) → True (Continuous? b d 0) → Signature
+Numeral-sig b d cont = sig (Numeral b d 0) (_+_ {cont = cont}) _≋_
+\end{lstlisting}
+
+% The index $ o $ is fixed to $ 0 $ because the systems would have to be surjective
+% with respect to \lstinline|ℕ|
+% \lstinline|Numeral-sig| is a function that returns signatures when given the
+
+Note that \lstinline|ℕ-sig| and \lstinline|Numeral-sig| are equipped with
+different equality connectives.
+The one equipped by \lstinline|Numeral-sig| is defined as follows:
+
+\begin{lstlisting}
+_≋_ : ∀ {b d o}
+    → (xs ys : Numeral b d o)
+    → Set
+xs ≋ ys = ⟦ xs ⟧ ≡ ⟦ ys ⟧
+\end{lstlisting}
+
+We need a different type for equality because systems of \lstinline|Numeral|
+may be redundant, that is, two numerals may look different to \lstinline|_≡_|
+even if they both evaluates to the same number.
+
+Also, the index $ o $ of \lstinline|Numeral| is fixed to $ 0 $.
+We will explain why the domain of discourse is limited that way in the
+later section.
+
+\subsubsection{Meaning of Variables}
+
+Terms and predicates can have free variables, but variables are given
+meanings only when they are substituted.
+
+\begin{lstlisting}
+var : ∀ {n} → (i : Fin n) → Term n
+\end{lstlisting}
+
+\lstinline|var| have to choose a number $ i $ of \lstinline|Fin n| as its name,
+because values of all variables are stored in a \lstinline|Vec n| (a list of length $ n $.)
+Upon substitution, we choose the $ i $th element of the list as its value.
+
+\subsubsection{Interpreting Terms}
+
+The interpreter of the syntax for terms is defined as follows:
+
+\begin{lstlisting}
+⟦_⟧T : ∀ {n}
+    → Term n
+    → (sig : Signature)
+    → Vec (carrier sig) n
+    → carrier sig
+\end{lstlisting}
+
+\lstinline|carrier sig| evaluates to the carrier of the signature, the domain
+of discours. For example, \lstinline|carrier ℕ-sig| evaluates to \lstinline|ℕ|.
+In addition to the term, \lstinline|⟦_⟧T| also takes a signature, meanings of
+all variables, and returns an element of the carrier.
+
+\begin{lstlisting}
+⟦ var i ⟧T _ env = lookup i env
+\end{lstlisting}
+
+In the case of \lstinline|var|,
+\lstinline|lookup| retrieves the $i$th value for the variable from \lstinline|env|.
+This is where the variable substitution happens.
+
+\begin{lstlisting}
+⟦ add term₁ term₂ ⟧T sig env
+    = ⟦ term₁ ⟧T sig env ⊕ ⟦ term₂ ⟧T sig env
+\end{lstlisting}
+
+In the case of \lstinline|add|,
+the semantics of both terms are interpreted recursively,
+and then computed with \lstinline|_⊕_|,
+the addition function supplied by the signature.
+
+\subsubsection{Interpreting Predicates}
+
+The interpreter of the syntax for predicates is defined as follows:
+
+\begin{lstlisting}
+⟦_⟧P : ∀ {n}
+    → Predicate n
+    → (sig : Signature)
+    → Env (carrier sig) n
+    → Set
+\end{lstlisting}
+
+Similar to interpreting terms, except that \lstinline|⟦_⟧P| returns a \textit{type}.
+
+\begin{lstlisting}
+⟦ t₁ ≋P t₂ ⟧P sig env
+    = ⟦ t₁ ⟧T sig env ≈ ⟦ t₂ ⟧T sig env
+\end{lstlisting}
+
+In the case of \lstinline|_≋P_|,
+the semantics of both terms are interpreted using \lstinline|⟦_⟧T|.
+\lstinline|_≈_| is the equality connective supplied by the signature.
+
+
+\begin{lstlisting}
+⟦ p →P q   ⟧P signature env = ⟦ p ⟧P signature env → ⟦ q ⟧P signature env
+\end{lstlisting}
+
+In the case of \lstinline|_→P_|,
+the semantics of both predicates are interpreted recursively.
+
+\begin{lstlisting}
+⟦ ∀P pred  ⟧P signature env = ∀ x → ⟦ pred ⟧P signature (x ∷ env)
+\end{lstlisting}
 
 
 % \subsection{Predicates}
@@ -297,16 +429,6 @@ because one of the free variable of the given predicate has been bound.
 
 % Suppose
 
-
-% \begin{lstlisting}
-% record Signature : Set₁ where
-%     constructor sig
-%     field
-%         carrier : Set
-%         _⊕_ : carrier → carrier → carrier
-%         _≈_ : carrier → carrier → Set
-% \end{lstlisting}
-%
 %
 % \begin{lstlisting}
 % ℕ-sig : Signature
@@ -323,17 +445,6 @@ because one of the free variable of the given predicate has been bound.
 % Env : Set → ℕ → Set
 % Env = Vec
 % \end{lstlisting}
-%
-% \begin{lstlisting}
-% ⟦_⟧T : ∀ {n}
-%     → Term n
-%     → (sig : Signature)
-%     → Vec (carrier sig) n
-%     → carrier sig
-% ⟦ var i         ⟧T _                env = lookup i env
-% ⟦ term₁ ∔ term₂ ⟧T (sig A _⊕_ _≈_) env = ⟦ term₁ ⟧T (sig A _⊕_ _≈_) env ⊕ ⟦ term₂ ⟧T (sig A _⊕_ _≈_) env
-% \end{lstlisting}
-%
 % \begin{lstlisting}
 % \end{lstlisting}
 

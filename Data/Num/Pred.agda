@@ -65,7 +65,7 @@ Env = Vec
 ⟦_⟧T : ∀ {n}
     → Term n
     → (sig : Signature)
-    → Vec (carrier sig) n
+    → Env (carrier sig) n
     → carrier sig
 ⟦ var i         ⟧T _                env = lookup i env
 ⟦ term₁ ∔ term₂ ⟧T (sig A _⊕_ _≈_) env = ⟦ term₁ ⟧T (sig A _⊕_ _≈_) env ⊕ ⟦ term₂ ⟧T (sig A _⊕_ _≈_) env
