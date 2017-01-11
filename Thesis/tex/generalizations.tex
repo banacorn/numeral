@@ -47,10 +47,6 @@ The codomain of the digit assignment function is \textit{shifted} by \textit{off
 Now that unary numerals would have an offset of $ 1 $
 and systems of other bases would have offsets of $ 0 $.
 
-\scm{The spacing between $\mathit{offset}$ and $(+)$ or $(-)$ appear awkward,
-perhaps due to the use of {\tt textit}?}
-\banacorn{I just wanted to make the word "offset" intact, but ... http://i1.kym-cdn.com/photos/images/facebook/000/234/739/fa5.jpg}
-
 \paragraph{1-2 binary system}
 Recall \textit{1-2 random access lists} from the previous chapter,
 which is the numerical representation of a binary numeral system with an offset
@@ -152,11 +148,6 @@ $ 999998 $ because carries or borrows can propagate.
 Redundancy provides ``buffer'' against operations these carries and borrows.
 In this case, incrementing $ 999999 $ and $ 999998 $ of \textit{Int32} both
 results in a cost of constant time.
-
-\scm{hmm.. is \textit{Int32} a good example for explaining this?
-I don't think the redundancy in \textit{Int32} provides any buffer, does it?}
-\banacorn{\textit{Int32} provides a buffer of size of $ 2^{32} $, I know this
-does not sound impressive at all XD}
 
 Numerical representations modeled after redundant numeral systems also enjoy
 similar properties. When designed properly, redundancy can improve the performance

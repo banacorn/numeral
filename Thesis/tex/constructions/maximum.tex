@@ -4,13 +4,9 @@
 
 \section{The Maximum Numeral}\label{maximum}
 
-A number is said to be the \textit{maximum} if there are no other numbers
-greater than itself.
-\scm{Hmm... I think the usual convention is that $m$ is {\em maximum} in
-$S$ if $(\forall x \in S: x \leq m)$, and it is {\em maximal}
-if $\neg (\exists x \in S: m \leq x)$. They differ when $(\leq)$ is not
-a total order. I think you do mean maximum here, but the description
-needs fixing?}
+A number is said to be the \textit{maximum} if there it is greater than or equal
+to all the other numbers.
+
 \begin{lstlisting}
 Maximum : ∀ {b d o} → (xs : Numeral b d o) → Set
 Maximum {b} {d} {o} xs = (ys : Numeral b d o) → ⟦ xs ⟧ ≥ ⟦ ys ⟧
@@ -57,7 +53,7 @@ Maximum⇒Greatest-LSD : ∀ {b} {d} {o}
     \end{adjustbox}
 \end{center}
 
-It is obvious that systems of {\lstinline|NullBase|} have \scmsubst{maxima}{maximum?}.
+It is obvious that systems of {\lstinline|NullBase|} have maximum.
 If a numeral's LSD happens to be the greatest,
 then the numeral must be the maximum.
 

@@ -10,7 +10,7 @@ representation for digits in this section.
 \subsection{Fin}
 
 To represent a digit, we use a datatype conventionally called \textit{Fin}
-which can be indexed to have \scmsubst{some}{an} exact number of inhabitants.
+which can be indexed to have an exact number of inhabitants.
 
 \begin{lstlisting}
 data Fin : ℕ → Set where
@@ -22,7 +22,7 @@ The definition of {\lstinline|Fin|} looks the same as {\lstinline|ℕ|} on the t
 level, but different on the type level. The index of a {\lstinline|Fin|} increases
 with every {\lstinline|suc|}, and there can only be at most {\lstinline|n|} of
 them before reaching {\lstinline|Fin (suc n)|}. In other words, {\lstinline|Fin n|}
-\scmsubst{would have}{has} exactly \textit{n} inhabitants.
+has exactly \textit{n} inhabitants.
 
 \subsection{Definition of \lstinline|Digit|}
 
@@ -196,13 +196,12 @@ To increment a digit, the digit must not be \textit{the greatest}.
 digit+1 : ∀ {d}
     → (x : Digit d)
     → (¬greatest : ¬ (Greatest x))
-    → Fin d
+    → Digit d
 digit+1 x ¬greatest =
     fromℕ≤ {suc (toℕ x)} (≤∧≢⇒< (bounded x) ¬greatest)
 \end{lstlisting}
 %
 where {\lstinline|≤∧≢⇒< (bounded x) ¬greatest : suc (toℕ x) < d|}.
-\scm{Change \lstinline|Fin| to \lstinline|Digit| in the type of \lstinline|digit+1|?}
 
 \begin{center}
     \begin{tikzpicture}

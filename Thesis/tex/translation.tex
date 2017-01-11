@@ -103,7 +103,7 @@ using a generic programming technique called \textit{universe construction}
 \section{Universe Constructions}
 
 A universe is a set of types;
-a universe construction \scmsubst{is consists}{consists} of:
+a universe construction consists of:
 
 \begin{itemize}
     \item A universe
@@ -157,7 +157,7 @@ head []       ()
 head (x ∷ xs) proof = x
 \end{lstlisting}
 
-We can generate \scmsubst{the codes}{code} from \lstinline|null|,
+We can generate code from \lstinline|null|,
 manipulate the code with \lstinline|not|,
 and finally, realize them to \lstinline|⊤| or \lstinline|⊥| with \lstinline|isTrue|.
 
@@ -207,7 +207,7 @@ Therefore, the set of terms will be inductively defined by only two rules:
         domain is also a term.
 \end{itemize}
 
-We will only have terms that \scmsubst{looks}{look} like this:
+We will only have terms that look like this:
 
 \begin{lstlisting}
 x + (y + z)
@@ -235,7 +235,7 @@ With these connectives and quantifiers, we can make predicates such as:
 \subsection{Codes for Syntax}
 
 To describe the syntax, we have two datatypes for codes,
-one for \textit{terms} and \scmsubst{the another}{another} for \textit{predicates}.
+one for \textit{terms} and another for \textit{predicates}.
 
 \subsubsection{Terms}
 
@@ -321,8 +321,25 @@ _≋_ : ∀ {b d o}
 xs ≋ ys = ⟦ xs ⟧ ≡ ⟦ ys ⟧
 \end{lstlisting}
 
-We need a different type for equality because systems of \lstinline|Numeral|
-may be redundant, that is, two numerals may look different to the identity
+% Two numerals considered equal by \lstinline|_≋_| whenever they evaluate to the
+% same value.
+% On the other hand, two numerals are considered equal by \lstinline|_≡_| only
+% when they are
+
+% Contrast to \lstinline|_≡_|
+
+
+
+We choose \lstinline|_≋_| instead of \lstinline|_≡_| as the equality connective
+for \lstinline|Numeral| because systems of \lstinline|Numeral| may be redundant,
+that is, two numerals may look different to the identity
+type \lstinline|_≡_| even if they both evaluates to the same number.
+
+
+% We need a
+
+We need a extensional type for equality because systems of \lstinline|Numeral|
+may be redundant, as a result, two numerals may look different to the identity
 type \lstinline|_≡_| even if they both evaluates to the same number.
 \scm{By ``a different type for equality'' do you mean the type of
 \lstinline|_≋_|? From what is it different? Might be worth to be clear here.}
@@ -348,15 +365,15 @@ Upon substitution, we pick the $ i $th element of the list as its value.
 
 The interpreter of the syntax for terms is defined as follows:
 
-\begin{lstlisting}
+\begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
 ⟦_⟧T : ∀ {n}
     → Term n
     → (sig : Signature)
     → Vec (carrier sig) n
     → carrier sig
 ⟦ var i ⟧T _ env = lookup i env
-⟦ add term₁ term₂ ⟧T sig env
-    = ⟦ term₁ ⟧T sig env ⊕ ⟦ term₂ ⟧T sig env
+⟦ add term₁ term₂ ⟧T (sig A _⊕_ _≈_) env
+    = ⟦ term₁ ⟧T (sig A _⊕_ _≈_) env ⊕ ⟦ term₂ ⟧T (sig A _⊕_ _≈_) env
 \end{lstlisting}
 
 \lstinline|carrier sig| evaluates to the carrier of the signature, the domain
@@ -372,7 +389,6 @@ In the case of \lstinline|add|,
 the semantics of both terms are interpreted recursively,
 and then computed with \lstinline|_⊕_|,
 the addition function supplied by the signature.
-\scm{Is \lstinline|sig| opened (so that we have access to \lstinline|_⊕_|)?}
 
 \subsubsection{Interpreting Predicates}
 
@@ -384,7 +400,8 @@ The interpreter of the syntax for predicates is defined as follows:
     → (sig : Signature)
     → Env (carrier sig) n
     → Set
-⟦ t₁ ≋P t₂ ⟧P sig env       = ⟦ t₁ ⟧T sig env ≈ ⟦ t₂ ⟧T sig env
+⟦ t₁ ≋P t₂ ⟧P (sig carrier _⊕_ _≈_) env
+    = ⟦ t₁ ⟧T (sig carrier _⊕_ _≈_) env ≈ ⟦ t₂ ⟧T (sig carrier _⊕_ _≈_) env
 ⟦ p →P q   ⟧P signature env = ⟦ p ⟧P signature env → ⟦ q ⟧P signature env
 ⟦ ∀P pred  ⟧P signature env = ∀ x → ⟦ pred ⟧P signature (x ∷ env)
 \end{lstlisting}
