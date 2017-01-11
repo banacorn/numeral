@@ -103,7 +103,7 @@ using a generic programming technique called \textit{universe construction}
 \section{Universe Constructions}
 
 A universe is a set of types;
-a universe construction is consists of:
+a universe construction \scmsubst{is consists}{consists} of:
 
 \begin{itemize}
     \item A universe
@@ -157,7 +157,7 @@ head []       ()
 head (x ∷ xs) proof = x
 \end{lstlisting}
 
-We can generate the codes from \lstinline|null|,
+We can generate \scmsubst{the codes}{code} from \lstinline|null|,
 manipulate the code with \lstinline|not|,
 and finally, realize them to \lstinline|⊤| or \lstinline|⊥| with \lstinline|isTrue|.
 
@@ -207,7 +207,7 @@ Therefore, the set of terms will be inductively defined by only two rules:
         domain is also a term.
 \end{itemize}
 
-We will only have terms that looks like this:
+We will only have terms that \scmsubst{looks}{look} like this:
 
 \begin{lstlisting}
 x + (y + z)
@@ -235,7 +235,7 @@ With these connectives and quantifiers, we can make predicates such as:
 \subsection{Codes for Syntax}
 
 To describe the syntax, we have two datatypes for codes,
-one for \textit{terms} and the another for \textit{predicates}.
+one for \textit{terms} and \scmsubst{the another}{another} for \textit{predicates}.
 
 \subsubsection{Terms}
 
@@ -324,6 +324,8 @@ xs ≋ ys = ⟦ xs ⟧ ≡ ⟦ ys ⟧
 We need a different type for equality because systems of \lstinline|Numeral|
 may be redundant, that is, two numerals may look different to the identity
 type \lstinline|_≡_| even if they both evaluates to the same number.
+\scm{By ``a different type for equality'' do you mean the type of
+\lstinline|_≋_|? From what is it different? Might be worth to be clear here.}
 
 Also, the index $ o $ of \lstinline|Numeral| is fixed to $ 0 $.
 We will explain why the domain of discourse is limited that way in the
@@ -370,6 +372,7 @@ In the case of \lstinline|add|,
 the semantics of both terms are interpreted recursively,
 and then computed with \lstinline|_⊕_|,
 the addition function supplied by the signature.
+\scm{Is \lstinline|sig| opened (so that we have access to \lstinline|_⊕_|)?}
 
 \subsubsection{Interpreting Predicates}
 
@@ -414,6 +417,8 @@ signatures.
 ≋-trans-Numeral b d prop
     = ⟦ ≋-trans ⟧P (Numeral-sig b d prop) []
 \end{lstlisting}
+
+\scm{Say what they respecitvely expand to?}
 
 \section{Converting between Semantics of \lstinline|ℕ| and \lstinline|Numeral|}
 
