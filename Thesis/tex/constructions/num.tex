@@ -33,9 +33,9 @@ MMXVI = # 6 ∷ # 1 ∷ # 0 ∷ (# 2) ∙
 \end{lstlisting}
 %
 where {\lstinline|#_ : ∀ m {n} {m<n : True (suc m ≤? n)} → Fin n|} converts from
-{\lstinline|ℕ|} to {\lstinline|Fin n|} given the number is small enough.
+{\lstinline|ℕ|} to {\lstinline|Fin n|} \scmsubst{given}{provided that} the number is small enough.
 
-\lstinline|lsd| extract the least significant digit of a numeral.
+\lstinline|lsd| \scmsubst{extract}{extracts} the least significant digit of a numeral.
 
 \begin{lstlisting}
 lsd : ∀ {b d o} → (xs : Numeral b d o) → Digit d
@@ -67,7 +67,7 @@ these systems. Although they seem useless, these systems have plenty of properti
 Since there are not digits at all, any property that is related to digits would
 hold vacuously.
 
-\paragraph{Systems with the base of $ 0 $}
+\paragraph{Systems with \scmsubst{the base of $ 0 $}{base $0$}}
 
 If {\lstinline|b|}, the base of a system, happens to be $ 0 $,
 then only the least significant digit would have effects on the evaluation,
