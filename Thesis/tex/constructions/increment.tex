@@ -206,7 +206,7 @@ GappedEndpoint⇒¬Incrementable xs greatest proper gapped (incremented , claim)
     = contradiction ⟦next⟧>⟦incremented⟧ ⟦next⟧≯⟦incremented⟧
 \end{lstlisting}
 
-This is also proven by contradicting two propositions.
+This is proven by contradicting two propositions as well.
 
 First, we show that the next numeral is greater than the claimed successor
 by rephrasing the lemma \lstinline|next-numeral-Proper-GappedEndpoint-lemma|.
@@ -312,7 +312,7 @@ Incrementable?-Proper xs proper | UngappedEndpoint b d o greatest ¬gapped
     = yes (UngappedEndpoint⇒Incrementable xs greatest proper ¬gapped)
 \end{lstlisting}
 
-We can also determine if numerals of other categories are incrementable.
+We can determine if numerals of other categories are incrementable as well.
 
 \begin{lstlisting}
 Incrementable? : ∀ {b d o}

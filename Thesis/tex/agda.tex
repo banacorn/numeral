@@ -524,7 +524,7 @@ but way more powerful, because it also explains (with a proof) why a proposition
 holds or why it does not.
 
 Suppose we want to know if a natural number is even or odd. We know that {\lstinline|zero|}
-is an even number, and if a number is even then its successor's successor is also even.
+is an even number, and if a number is even then its successor's successor is even as well.
 
 \begin{lstlisting}
     data Even : ℕ → Set where
@@ -532,7 +532,7 @@ is an even number, and if a number is even then its successor's successor is als
         step : ∀ {n} → Even n → Even (suc (suc n))
 \end{lstlisting}
 
-We also need the opposite of {\lstinline|step|} as a lemma.
+We need the opposite of {\lstinline|step|} as a lemma as well.
 
 \begin{lstlisting}
     2-steps-back : ∀ {n} → ¬ (Even n) → ¬ (Even (suc (suc n)))

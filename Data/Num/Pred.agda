@@ -139,9 +139,9 @@ mutual
         ≡⟨ toℕ-term-homo cont t₂ env ⟩
             ⟦ ⟦ t₂ ⟧T (Numeral-sig b (suc d) cont) env ⟧
         ∎
-    toℕ-pred-ℕ⇒Numeral cont (p →P q) env sem-ℕ ⟦p⟧P =
+    toℕ-pred-ℕ⇒Numeral cont (p →P q) env sem-ℕ ⟦p⟧P-Numeral =
         toℕ-pred-ℕ⇒Numeral cont q env
-            (sem-ℕ (toℕ-pred-Numeral⇒ℕ cont p env ⟦p⟧P))
+            (sem-ℕ (toℕ-pred-Numeral⇒ℕ cont p env ⟦p⟧P-Numeral))
     toℕ-pred-ℕ⇒Numeral cont (∀P pred) env sem-ℕ x =
         toℕ-pred-ℕ⇒Numeral cont pred (x ∷ env) (sem-ℕ ⟦ x ⟧)
 
@@ -174,8 +174,8 @@ mutual
 
 module Example-2 where
 
-    +-comm-P : Predicate 0
-    +-comm-P = ∀P (∀P ((var (# 1) ∔ var (# 0)) ≋P (var (# 0) ∔ var (# 1))))
+    +-comm-Predicate : Predicate 0
+    +-comm-Predicate = ∀P (∀P ((var (# 1) ∔ var (# 0)) ≋P (var (# 0) ∔ var (# 1))))
 
     +-comm-ℕ : ∀ a b → a + b ≡ b + a
     +-comm-ℕ = +-comm
@@ -184,7 +184,7 @@ module Example-2 where
         → {cont : True (Continuous? b (suc d) 0)}
         → (xs ys : Numeral b (suc d) 0)
         → (_⊹_ {cont = cont} xs ys) ≋ (_⊹_ {cont = cont} ys xs)
-    +-comm-Num {cont = cont} = toℕ-pred-ℕ⇒Numeral cont +-comm-P [] +-comm-ℕ
+    +-comm-Num {cont = cont} = toℕ-pred-ℕ⇒Numeral cont +-comm-Predicate [] +-comm-ℕ
 --
 -- mutual
 --     toℕ-pred-ℕ⇒Bij : ∀ {b n}

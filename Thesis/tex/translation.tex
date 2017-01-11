@@ -203,8 +203,8 @@ Therefore, the set of terms will be inductively defined by only two rules:
 \begin{itemize}
     \item \textbf{Variable}: Any variable of the \textit{domain of discourse} (\lstinline|ℕ| or
         \lstinline|Numeral|) is a term.
-    \item \textbf{Addition}: Any two terms put together with the addition function of that
-        domain is also a term.
+    \item \textbf{Addition}: Any two terms put together with the addition function
+        of that domain is term as well.
 \end{itemize}
 
 We will only have terms that look like this:
@@ -242,7 +242,7 @@ one for \textit{terms} and another for \textit{predicates}.
 \begin{lstlisting}
 data Term : ℕ → Set where
     var : ∀ {n} → Fin n → Term n
-    add : ∀ {n} → Term n → Term n → Term n
+    _+T_ : ∀ {n} → Term n → Term n → Term n
 \end{lstlisting}
 
 The code for terms is indexed by a \lstinline|ℕ| which denotes the number
@@ -258,7 +258,7 @@ data Predicate : ℕ → Set where
     ∀P   : ∀ {n} → (p : Predicate (suc n)) → Predicate n
 \end{lstlisting}
 
-The code for predicates is also indexed by the number of \textit{free variables}.
+The code for predicates indexed by the number of \textit{free variables} as well.
 \lstinline|_≋P_| and \lstinline|_→P_| correspond to equality and implication
 connectives respectively.
 It is worth noting that \lstinline|∀P| returns a predicate with a smaller index
@@ -279,7 +279,7 @@ as follows:
 
 \subsection{Semantics}
 
-The semantics determine meanings behind these propositions, and by meanings
+The semantics determine meanings behind these propositions, and by meanings,
 we mean the selection of types of the universe we are constructing.
 
 \subsubsection{Signatures}
@@ -321,28 +321,14 @@ _≋_ : ∀ {b d o}
 xs ≋ ys = ⟦ xs ⟧ ≡ ⟦ ys ⟧
 \end{lstlisting}
 
-% Two numerals considered equal by \lstinline|_≋_| whenever they evaluate to the
-% same value.
-% On the other hand, two numerals are considered equal by \lstinline|_≡_| only
-% when they are
-
-% Contrast to \lstinline|_≡_|
-
-
-
-We choose \lstinline|_≋_| instead of \lstinline|_≡_| as the equality connective
-for \lstinline|Numeral| because systems of \lstinline|Numeral| may be redundant,
-that is, two numerals may look different to the identity
-type \lstinline|_≡_| even if they both evaluates to the same number.
-
-
-% We need a
-
-We need a extensional type for equality because systems of \lstinline|Numeral|
-may be redundant, as a result, two numerals may look different to the identity
-type \lstinline|_≡_| even if they both evaluates to the same number.
-\scm{By ``a different type for equality'' do you mean the type of
-\lstinline|_≋_|? From what is it different? Might be worth to be clear here.}
+Two numerals considered equal by \lstinline|_≋_| whenever they evaluate to the
+same value.
+On the other hand, two numerals are considered equal by \lstinline|_≡_| only
+when they are in the same \textit{canonical form}.
+However, unlike \lstinline|ℕ|, canonical forms for representing numbers may not
+exist for systems of \lstinline|Numeral| that are \textit{redundant}.
+In other words, \lstinline|_≋_| is extensional while \lstinline|_≡_| is
+intensional.
 
 Also, the index $ o $ of \lstinline|Numeral| is fixed to $ 0 $.
 We will explain why the domain of discourse is limited that way in the
@@ -372,7 +358,7 @@ The interpreter of the syntax for terms is defined as follows:
     → Vec (carrier sig) n
     → carrier sig
 ⟦ var i ⟧T _ env = lookup i env
-⟦ add term₁ term₂ ⟧T (sig A _⊕_ _≈_) env
+⟦ term₁ +T term₂ ⟧T (sig A _⊕_ _≈_) env
     = ⟦ term₁ ⟧T (sig A _⊕_ _≈_) env ⊕ ⟦ term₂ ⟧T (sig A _⊕_ _≈_) env
 \end{lstlisting}
 
@@ -381,12 +367,12 @@ of discours. For example, \lstinline|carrier ℕ-sig| evaluates to \lstinline|�
 In addition to the term, \lstinline|⟦_⟧T| also takes a signature, meanings of
 all variables, and returns an element of the carrier.
 
-In the case of \lstinline|var|,
+\paragraph{\lstinline|var|}
 \lstinline|lookup| retrieves the $i$th value for the variable from \lstinline|env|.
 This is where the variable substitution happens.
 
-In the case of \lstinline|add|,
-the semantics of both terms are interpreted recursively,
+\paragraph{\lstinline|+T|}
+The semantics of both terms are interpreted recursively,
 and then computed with \lstinline|_⊕_|,
 the addition function supplied by the signature.
 
@@ -409,21 +395,21 @@ The interpreter of the syntax for predicates is defined as follows:
 Similar to that of interpreting terms, except that \lstinline|⟦_⟧P| returns a
 \textit{type}.
 
-In the case of \lstinline|_≋P_|,
-the semantics of both terms are interpreted using \lstinline|⟦_⟧T|,
-\lstinline|_≈_| is the equality connective supplied by the signature.
+\paragraph{\lstinline|_≋P_|}
+The semantics of both terms are interpreted using \lstinline|⟦_⟧T|
+whereas \lstinline|_≈_| is the equality connective supplied by the signature.
 
-In the case of \lstinline|_→P_|,
-the semantics of both predicates are interpreted recursively
+\paragraph{\lstinline|_→P_|}
+The semantics of both predicates are interpreted recursively
 and connected with the native implication \lstinline|_→_| provided by Agda.
 
-Finally, when it comes to \lstinline|∀P|,
-a new variable is introduced and then added to the list of meanings of variables
+\paragraph{\lstinline|∀P|}
+A new variable is introduced and then added to the list of meanings of variables
 for the interpreted predicate to consume.
 
 \subsubsection{Examples}
 
-We can have two both semantics of \lstinline|≋-trans| by supplying different
+We can have both semantics of \lstinline|≋-trans| by supplying different
 signatures.
 
 \begin{lstlisting}
@@ -435,7 +421,19 @@ signatures.
     = ⟦ ≋-trans ⟧P (Numeral-sig b d prop) []
 \end{lstlisting}
 
-\scm{Say what they respecitvely expand to?}
+\lstinline|≋-trans-ℕ| evaluates to:
+
+\begin{lstlisting}
+(x y z : ℕ) → (z ≡ y → y ≡ x) → z ≡ x
+\end{lstlisting}
+
+\lstinline|≋-trans-Numeral 10 10 _| evaluates to:
+
+\begin{lstlisting}
+(x y z : Numeral 10 10 0)
+    → (⟦ z ≡ ⟦ y ⟧ → ⟦ y ⟧ ≡ ⟦ x ⟧)
+    → ⟦ z ⟧ ≡ ⟦ x ⟧
+\end{lstlisting}
 
 \section{Converting between Semantics of \lstinline|ℕ| and \lstinline|Numeral|}
 
@@ -450,8 +448,8 @@ toℕ-term-homo : ∀ {b d n}
     → (t : Term n)
     → (env : Vec (Numeral b d 0) n)
     → ⟦ t ⟧T ℕ-sig (map ⟦_⟧ env) ≡ ⟦ ⟦ t ⟧T (Numeral-sig b d cont) env ⟧
-toℕ-term-homo     cont (var i)   env = lookup-map ⟦_⟧ env i
-toℕ-term-homo {b} {d} cont (t₁ + t₂) env
+toℕ-term-homo         cont (var i)   env = lookup-map ⟦_⟧ env i
+toℕ-term-homo {b} {d} cont (t₁ +T t₂) env
     rewrite toℕ-term-homo cont t₁ env
           | toℕ-term-homo cont t₂ env
     = sym (toℕ-+-homo cont
@@ -459,15 +457,188 @@ toℕ-term-homo {b} {d} cont (t₁ + t₂) env
         (⟦ t₂ ⟧T (Numeral-sig b d cont) env))
 \end{lstlisting}
 
+We can see how \lstinline|⟦_⟧| \textit{preserves} the interpretation of syntax.
+\lstinline|lookup-map| is a lemma which states that:
+
+\begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
+lookup-map ⟦_⟧ env i : lookup i (map ⟦_⟧ xs) ≡ ⟦ lookup i xs ⟧
+\end{lstlisting}
+
+The \lstinline|rewrite| construction takes a proof of type \lstinline|lhs ≡ rhs|
+and pattern match on the proof so that \lstinline|lhs| and \lstinline|rhs| may
+be unified as one.
+If \lstinline|⟦_⟧| preserves addition functions of both semantics
+then it will preserve the interpretation of \lstinline|+T|, too.
+
 \subsection{Predicates}
 
-% Our final goal is to translate semantics of predicates from \lstinline|ℕ|
-% to \lstinline|Numeral|.
+Our wish is to translate semantics of predicates from \lstinline|ℕ| to
+\lstinline|Numeral|.
+However, because of the contravariant nature of the input type of function types
+\lstinline|_→_| that are introduced when interpreting implication connectives,
+we also need to know how to translate semantics the other way around,
+from \lstinline|Numeral| to \lstinline|ℕ|.
 
-% The reason why the index $ o $ of \lstinline|Numeral| is fixed to $ 0 $ is that
-% all numeral systems are required to be surjective with respect to \lstinline|ℕ|.
-%
-% % Otherwise, we will face some problems when converting them to \lstinline|Numeral|
+These two interpreters are defined simultaneously with the \lstinline|mutual|
+construction.
 
+\subsubsection{From \lstinline|ℕ| to \lstinline|Numeral|}
+
+\begin{lstlisting}
+toℕ-pred-ℕ⇒Numeral : ∀ {b d n}
+    → (cont : True (Continuous? b (suc d) 0))
+    → (pred : Predicate n)
+    → (env : Vec (Numeral b (suc d) 0) n)
+    → ⟦ pred ⟧P ℕ-sig (map ⟦_⟧ env)
+    → ⟦ pred ⟧P (Numeral-sig b (suc d) cont) env
+toℕ-pred-ℕ⇒Numeral {b} {d} cont (t₁ ≋P t₂) env sem-ℕ =
+    begin
+        ⟦ ⟦ t₁ ⟧T (Numeral-sig b (suc d) cont) env ⟧
+    ≡⟨ sym (toℕ-term-homo cont t₁ env) ⟩
+        ⟦ t₁ ⟧T ℕ-sig (map ⟦_⟧ env)
+    ≡⟨ sem-ℕ ⟩
+        ⟦ t₂ ⟧T ℕ-sig (map ⟦_⟧ env)
+    ≡⟨ toℕ-term-homo cont t₂ env ⟩
+        ⟦ ⟦ t₂ ⟧T (Numeral-sig b (suc d) cont) env ⟧
+    ∎
+toℕ-pred-ℕ⇒Numeral cont (p →P q) env sem-ℕ ⟦p⟧P-Numeral =
+    toℕ-pred-ℕ⇒Numeral cont q env
+        (sem-ℕ (toℕ-pred-Numeral⇒ℕ cont p env ⟦p⟧P-Numeral))
+toℕ-pred-ℕ⇒Numeral cont (∀P pred) env sem-ℕ x =
+    toℕ-pred-ℕ⇒Numeral cont pred (x ∷ env) (sem-ℕ ⟦ x ⟧)
+\end{lstlisting}
+
+\paragraph{\lstinline|_≋P_|}
+The reasoning can be replaced with the \lstinline|rewrite| construction.
+However, we are keeping it for conciseness.
+\lstinline|sem-ℕ| is the original semantics of \lstinline|ℕ| stating that
+the semantics of \lstinline|t₁| and \lstinline|t₂| are equal.
+
+\paragraph{\lstinline|_→P_|}
+Since \lstinline|_→P_| is interpreted as an implication (hence a function type)
+\lstinline|_→_| on \lstinline|Numeral|, we are given \lstinline|⟦p⟧P-Numeral|
+as the antecedent of the implication.
+However, what we have is \lstinline|sem-ℕ|, an implication on the
+semantics of \lstinline|ℕ|.
+This where we need the result of translation from the opposite direction.
+
+\begin{center}
+    \begin{adjustbox}{max width=\textwidth}
+        \begin{tikzpicture}
+            \matrix (m) [matrix of nodes,row sep=4em,column sep=10em,minimum width=2em]
+                {
+                    {\lstinline|Numeral|} & {\lstinline|ℕ|} \\
+                    {\lstinline|Numeral|} & {\lstinline|ℕ|} \\
+                };
+          \path[-stealth]
+                (m-1-1)
+                    edge node [above] {{\lstinline|toℕ-pred-Numeral⇒ℕ|}} (m-1-2)
+                (m-1-2)
+                    edge node [right] {{\lstinline|sem-ℕ|}} (m-2-2)
+                (m-2-2)
+                    edge node [below] {{\lstinline|toℕ-pred-ℕ⇒Numeral|}} (m-2-1);
+        \end{tikzpicture}
+    \end{adjustbox}
+\end{center}
+
+\paragraph{\lstinline|∀P|}
+\lstinline|∀P| is interpreted as a function with an argument \lstinline|x|
+of type \lstinline|Numeral|.
+We can get a semantics of \lstinline|Numeral| by recursively calling itself
+with the list of meanings of variables extended by the value of \lstinline|x|.
+
+\begin{center}
+    \begin{adjustbox}{max width=\textwidth}
+        \begin{tikzpicture}
+            \matrix (m) [matrix of nodes,row sep=4em,column sep=10em,minimum width=2em]
+                {
+                    {\lstinline|Numeral|} & {\lstinline|ℕ|} \\
+                    {\lstinline|Numeral|} & {\lstinline|ℕ|} \\
+                };
+          \path[-stealth]
+                (m-1-1)
+                    edge node [above] {{\lstinline|⟦_⟧|}} (m-1-2)
+                (m-1-2)
+                    edge node [right] {{\lstinline|sem-ℕ|}} (m-2-2)
+                (m-2-2)
+                    edge node [below] {{\lstinline|toℕ-pred-ℕ⇒Numeral|}} (m-2-1);
+        \end{tikzpicture}
+    \end{adjustbox}
+\end{center}
+
+\subsubsection{From \lstinline|Numeral| to \lstinline|ℕ|}
+
+\begin{lstlisting}
+toℕ-pred-Numeral⇒ℕ : ∀ {b d n}
+    → (cont : True (Continuous? b (suc d) 0))
+    → (pred : Predicate n)
+    → (env : Vec (Numeral b (suc d) 0) n)
+    → ⟦ pred ⟧P (Numeral-sig b (suc d) cont) env
+    → ⟦ pred ⟧P ℕ-sig (map ⟦_⟧ env)
+toℕ-pred-Numeral⇒ℕ {b} {d} cont (t₁ ≋P t₂) env sem-Num =
+    begin
+        ⟦ t₁ ⟧T ℕ-sig (map ⟦_⟧ env)
+    ≡⟨ toℕ-term-homo cont t₁ env ⟩
+        ⟦ ⟦ t₁ ⟧T (Numeral-sig b (suc d) cont) env ⟧
+    ≡⟨ sem-Num ⟩
+        ⟦ ⟦ t₂ ⟧T (Numeral-sig b (suc d) cont) env ⟧
+    ≡⟨ sym (toℕ-term-homo cont t₂ env) ⟩
+        ⟦ t₂ ⟧T ℕ-sig (map ⟦_⟧ env)
+    ∎
+toℕ-pred-Numeral⇒ℕ cont (p →P q) env sem-Num ⟦p⟧P
+    = toℕ-pred-Numeral⇒ℕ cont q env
+        (sem-Num
+            (toℕ-pred-ℕ⇒Numeral cont p env ⟦p⟧P))
+toℕ-pred-Numeral⇒ℕ {b} {d} cont (∀P pred) env sem-Num n
+    with n ≟ ⟦ fromℕ {cont = cont} n z≤n ⟧
+toℕ-pred-Numeral⇒ℕ {b} {d} cont (∀P pred) env sem-Num n
+    | yes eq
+    rewrite eq
+    = toℕ-pred-Numeral⇒ℕ
+        cont pred
+        (fromℕ {cont = cont} n _ ∷ env)
+        (sem-Num (fromℕ {cont = cont} n _))
+toℕ-pred-Numeral⇒ℕ {b} {d} cont (∀P pred) env sem-Num n
+    | no ¬eq
+    = contradiction (sym (fromℕ-toℕ cont n _)) ¬eq
+\end{lstlisting}
+
+The translation of semantics from \lstinline|Numeral| to \lstinline|ℕ| is mostly
+the same as in \lstinline|toℕ-pred-ℕ⇒Numeral|,
+except for the case of \lstinline|∀P|.
+
+\paragraph{\lstinline|∀P|}
+Suppose there exists a numeral \lstinline|xs| such that \lstinline|n ≡ ⟦ xs ⟧|.
+Because \lstinline|⟦_⟧| may not be injective, we do not have a left inverse of
+\lstinline|⟦_⟧|.
+Therefore we cannot assert that \lstinline|xs ≡ fromℕ ⟦ xs ⟧ _|.
+However, since we do not care about the canonical forms of numerals,
+we can convince Agda that \lstinline|xs ≋ fromℕ ⟦ xs ⟧ _| is good enough.
+To do this, we force evaluate the decidable equality between
+\lstinline|fromℕ {cont = cont} n z≤n| and \lstinline|n| and unify them using the
+\lstinline|rewrite| construction.
+
+
+\subsubsection{Examples}
+
+Suppose we already have a proof for the commutative property of addition
+on \lstinline|ℕ|: \lstinline|+-comm-ℕ : ∀ a b → a + b ≡ b + a|.
+To convert \lstinline|+-comm-ℕ| to a proof that works on \lstinline|Numeral| as
+well, the first step is to describe the predicate with our syntax.
+
+\begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
++-comm-Predicate : Predicate 0
++-comm-Predicate = ∀P (∀P ((var (# 1) +T var (# 0)) ≋P (var (# 0) +T var (# 1))))
+\end{lstlisting}
+
+Hand it to \lstinline|toℕ-pred-ℕ⇒Numeral| and we are done.
+
+\begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
++-comm-Num : ∀ {b d}
+    → {cont : True (Continuous? b (suc d) 0)}
+    → (xs ys : Numeral b (suc d) 0)
+    → (_+_ {cont = cont} xs ys) ≋ (_+_ {cont = cont} ys xs)
++-comm-Num {cont = cont} = toℕ-pred-ℕ⇒Numeral cont +-comm-P [] +-comm-ℕ
+\end{lstlisting}
 
 \end{document}
