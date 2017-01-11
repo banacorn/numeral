@@ -7,10 +7,10 @@ In this chapter, we demonstrate how to translate propositions and proofs between
 \lstinline|ℕ| and a subset of \lstinline|Numeral|.
 
 People have put a lot of effort into proving theorems and properties on
-\lstinline|ℕ| and the results are widely available.
-Although \lstinline|ℕ| and \lstinline|Numeral| both share the same purpose of
-representing natural numbers, all these propositions and proofs that have been
-constructed of \lstinline|ℕ| are useless to \lstinline|Numeral|.
+\lstinline|ℕ|.
+However, all these results are unusable for \lstinline|Numeral|,
+although \lstinline|ℕ| and \lstinline|Numeral| both have a similar structure and
+share the same purpose of representing natural numbers.
 We cannot simply apply a property of \lstinline|ℕ|, say,
 the commutative property of addition, on instances of \lstinline|Numeral|.
 
@@ -108,7 +108,7 @@ a universe construction is consists of:
 \begin{itemize}
     \item A universe
     \item A datatype of ``codes''
-    \item A decoding function mapping ``codes'' to the types in the universe
+    \item A decoding function that maps ``codes'' to the types in the universe
 \end{itemize}
 
 \subsection{A Simple Universe}
@@ -177,57 +177,65 @@ Below is a table that sums up the correspondences of universe construction.
 
 \section{First-order Logic on the Representations of Natural Numbers}
 
-\paragraph{Remark}
-What we meant by ``proposition'' in this chapter has a broader sense than that in
-\textit{propositional logic}. It also includes ``predicates'' that have
-quantifiers ranging over.
+% \paragraph{Remark}
+% What we meant by ``proposition'' in this chapter has a broader sense than that in
+% \textit{propositional logic}. It also includes ``predicates'' that have
+% quantifiers ranging over. These two words will be used interchangeably.
 
 To translate propositions (and predicates) from \lstinline|ℕ| to
 \lstinline|Numeral| (or vice versa),
 we need an underlying syntax for expressing these propositions.
-For that matter, we will demonstrate how to build a minimalistic first-order logic
-with universe constructions.
+For that matter, we will demonstrate how to build a minimalistic first-order
+logic with universe constructions.
 
-\subsection{Overview}
+\subsection{Syntax}
+Syntax and semantics are two key parts of first-order logic.
 
-There are many kinds of propositions we can make on natural numbers.
-However, we will target only at the propositions that can be expressed in both
+What we called ``proposition'' are actually \textit{predicates} that have
+quantifiers ranging over. Predicates are composed of smaller predicates or
+basic units that we called \textit{terms}.
+
+There are many kinds of predicates we can make on natural numbers.
+However, we will target only at the predicates that can be expressed in both
 \lstinline|ℕ| and \lstinline|Numeral|.
-Therefore the terms will only consist of variables ranging over
-the \textit{domain of discourse}, i.e., \lstinline|ℕ| or \lstinline|Numeral|,
-and the addition function on that domain. Here is an example of a term
-with three variables and two addition:
+
+Therefore, the set of terms will be inductively defined by only two rules:
+\begin{itemize}
+    \item \textbf{Variable}: Any variable of the \textit{domain of discourse} (\lstinline|ℕ| or
+        \lstinline|Numeral|) is a term.
+    \item \textbf{Addition}: Any two terms put together with the addition function of that
+        domain is also a term.
+\end{itemize}
+
+We will only have terms that looks like this:
 
 \begin{lstlisting}
 x + (y + z)
 \end{lstlisting}
 
-Glueing two terms with equality connectives gives us a predicate:
+The set of predicates is inductively defined by three rules:
+
+\begin{itemize}
+    \item \textbf{Equality}: If $\phi$ and $\psi$ are two terms, then
+        $ \phi \equiv \psi $ is a predicate.
+    \item \textbf{Implication}: If $\phi$ and $\psi$ are two predicates, then
+        $ \phi \implies \psi $ is also a predicate.
+    \item \textbf{Universal Quantification}: If $\phi$ is predicate that may
+        contain $ 1 + n $ free variables, then $ \forall \phi $ is a predicate that
+        may only contain $ n $ free variables.
+\end{itemize}
+
+With these connectives and quantifiers, we can make predicates such as:
 
 \begin{lstlisting}
 (x + y) + z ≈ x + (y + z)
-\end{lstlisting}
-
-Glueing two predicates with implication connectives also gives us a predicate:
-
-\begin{lstlisting}
-x ≈ y → y ≈ y
-\end{lstlisting}
-
-We can also make a new predicate by quantifying over one of its
-free variables.
-
-\begin{lstlisting}
 ∀ x . x ≈ y → y ≈ y
 \end{lstlisting}
 
+\subsection{Codes for Syntax}
 
-\subsection{Syntax}
-
-Syntax and semantics are two key parts of first-order logic.
-The syntax corresponds to the codes in a universe construction.
-There are two datatypes for codes, one for \textit{terms} and the another for
-\textit{predicates}.
+To describe the syntax, we have two datatypes for codes,
+one for \textit{terms} and the another for \textit{predicates}.
 
 \subsubsection{Terms}
 
@@ -239,9 +247,7 @@ data Term : ℕ → Set where
 
 The code for terms is indexed by a \lstinline|ℕ| which denotes the number
 of \textit{free variables} that may occur in a predicate.
-The \lstinline|Fin n| that \lstinline|var| takes designates the quantifier it is
-binded to.
-
+The \lstinline|Fin n| that \lstinline|var| takes designates its binder.
 \subsubsection{Predicates}
 
 \begin{lstlisting}
@@ -253,10 +259,23 @@ data Predicate : ℕ → Set where
 \end{lstlisting}
 
 The code for predicates is also indexed by the number of \textit{free variables}.
-\lstinline|_≋P_| and \lstinline|_→P_| correspond to equality and  implication
+\lstinline|_≋P_| and \lstinline|_→P_| correspond to equality and implication
 connectives respectively.
 It is worth noting that \lstinline|∀P| returns a predicate with a smaller index
 because one of the free variable of the given predicate has been bound.
+
+\subsubsection{Examples}
+
+The transitivity of identity of the equality connective can be described
+as follows:
+
+\begin{lstlisting}
+≋-trans : Predicate zero
+≋-trans = let   x = var (# 0)
+                y = var (# 1)
+                z = var (# 2)
+    in ∀P (∀P (∀P (((x ≋P y) →P (y ≋P z)) →P (x ≋P z))))
+\end{lstlisting}
 
 \subsection{Semantics}
 
@@ -268,7 +287,7 @@ we mean the selection of types of the universe we are constructing.
 A syntax can be interpreted as many different semantics.
 Each semantics has its own choice of interpreting a piece of syntax,
 we call these choices a \textit{signature}.
-That is to say, each semantics has its own signature.
+Therefore each semantics has its own signature.
 
 The datatype of signature can defined as follows:
 
@@ -291,10 +310,6 @@ Numeral-sig : (b d : ℕ) → True (Continuous? b d 0) → Signature
 Numeral-sig b d cont = sig (Numeral b d 0) (_+_ {cont = cont}) _≋_
 \end{lstlisting}
 
-% The index $ o $ is fixed to $ 0 $ because the systems would have to be surjective
-% with respect to \lstinline|ℕ|
-% \lstinline|Numeral-sig| is a function that returns signatures when given the
-
 Note that \lstinline|ℕ-sig| and \lstinline|Numeral-sig| are equipped with
 different equality connectives.
 The one equipped by \lstinline|Numeral-sig| is defined as follows:
@@ -307,8 +322,8 @@ xs ≋ ys = ⟦ xs ⟧ ≡ ⟦ ys ⟧
 \end{lstlisting}
 
 We need a different type for equality because systems of \lstinline|Numeral|
-may be redundant, that is, two numerals may look different to \lstinline|_≡_|
-even if they both evaluates to the same number.
+may be redundant, that is, two numerals may look different to the identity
+type \lstinline|_≡_| even if they both evaluates to the same number.
 
 Also, the index $ o $ of \lstinline|Numeral| is fixed to $ 0 $.
 We will explain why the domain of discourse is limited that way in the
@@ -323,9 +338,9 @@ meanings only when they are substituted.
 var : ∀ {n} → (i : Fin n) → Term n
 \end{lstlisting}
 
-\lstinline|var| have to choose a number $ i $ of \lstinline|Fin n| as its name,
+\lstinline|var| have to pick a number $ i $ of \lstinline|Fin n| as its name,
 because values of all variables are stored in a \lstinline|Vec n| (a list of length $ n $.)
-Upon substitution, we choose the $ i $th element of the list as its value.
+Upon substitution, we pick the $ i $th element of the list as its value.
 
 \subsubsection{Interpreting Terms}
 
@@ -337,6 +352,9 @@ The interpreter of the syntax for terms is defined as follows:
     → (sig : Signature)
     → Vec (carrier sig) n
     → carrier sig
+⟦ var i ⟧T _ env = lookup i env
+⟦ add term₁ term₂ ⟧T sig env
+    = ⟦ term₁ ⟧T sig env ⊕ ⟦ term₂ ⟧T sig env
 \end{lstlisting}
 
 \lstinline|carrier sig| evaluates to the carrier of the signature, the domain
@@ -344,18 +362,9 @@ of discours. For example, \lstinline|carrier ℕ-sig| evaluates to \lstinline|�
 In addition to the term, \lstinline|⟦_⟧T| also takes a signature, meanings of
 all variables, and returns an element of the carrier.
 
-\begin{lstlisting}
-⟦ var i ⟧T _ env = lookup i env
-\end{lstlisting}
-
 In the case of \lstinline|var|,
 \lstinline|lookup| retrieves the $i$th value for the variable from \lstinline|env|.
 This is where the variable substitution happens.
-
-\begin{lstlisting}
-⟦ add term₁ term₂ ⟧T sig env
-    = ⟦ term₁ ⟧T sig env ⊕ ⟦ term₂ ⟧T sig env
-\end{lstlisting}
 
 In the case of \lstinline|add|,
 the semantics of both terms are interpreted recursively,
@@ -366,86 +375,77 @@ the addition function supplied by the signature.
 
 The interpreter of the syntax for predicates is defined as follows:
 
-\begin{lstlisting}
+\begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
 ⟦_⟧P : ∀ {n}
     → Predicate n
     → (sig : Signature)
     → Env (carrier sig) n
     → Set
-\end{lstlisting}
-
-Similar to interpreting terms, except that \lstinline|⟦_⟧P| returns a \textit{type}.
-
-\begin{lstlisting}
-⟦ t₁ ≋P t₂ ⟧P sig env
-    = ⟦ t₁ ⟧T sig env ≈ ⟦ t₂ ⟧T sig env
-\end{lstlisting}
-
-In the case of \lstinline|_≋P_|,
-the semantics of both terms are interpreted using \lstinline|⟦_⟧T|.
-\lstinline|_≈_| is the equality connective supplied by the signature.
-
-
-\begin{lstlisting}
+⟦ t₁ ≋P t₂ ⟧P sig env       = ⟦ t₁ ⟧T sig env ≈ ⟦ t₂ ⟧T sig env
 ⟦ p →P q   ⟧P signature env = ⟦ p ⟧P signature env → ⟦ q ⟧P signature env
-\end{lstlisting}
-
-In the case of \lstinline|_→P_|,
-the semantics of both predicates are interpreted recursively.
-
-\begin{lstlisting}
 ⟦ ∀P pred  ⟧P signature env = ∀ x → ⟦ pred ⟧P signature (x ∷ env)
 \end{lstlisting}
 
+Similar to that of interpreting terms, except that \lstinline|⟦_⟧P| returns a
+\textit{type}.
 
-% \subsection{Predicates}
+In the case of \lstinline|_≋P_|,
+the semantics of both terms are interpreted using \lstinline|⟦_⟧T|,
+\lstinline|_≈_| is the equality connective supplied by the signature.
+
+In the case of \lstinline|_→P_|,
+the semantics of both predicates are interpreted recursively
+and connected with the native implication \lstinline|_→_| provided by Agda.
+
+Finally, when it comes to \lstinline|∀P|,
+a new variable is introduced and then added to the list of meanings of variables
+for the interpreted predicate to consume.
+
+\subsubsection{Examples}
+
+We can have two both semantics of \lstinline|≋-trans| by supplying different
+signatures.
+
+\begin{lstlisting}
+≋-trans-ℕ : Set
+≋-trans-ℕ = ⟦ ≋-trans ⟧P ℕ-sig []
+
+≋-trans-Numeral : (b d : ℕ) → True (Continuous? b d 0) → Set
+≋-trans-Numeral b d prop
+    = ⟦ ≋-trans ⟧P (Numeral-sig b d prop) []
+\end{lstlisting}
+
+\section{Converting between Semantics of \lstinline|ℕ| and \lstinline|Numeral|}
+
+
+\subsection{Terms}
+
+We start from proving that both semantics of terms are equal after evaluation.
+
+\begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
+toℕ-term-homo : ∀ {b d n}
+    → (cont : True (Continuous? b d 0))
+    → (t : Term n)
+    → (env : Vec (Numeral b d 0) n)
+    → ⟦ t ⟧T ℕ-sig (map ⟦_⟧ env) ≡ ⟦ ⟦ t ⟧T (Numeral-sig b d cont) env ⟧
+toℕ-term-homo     cont (var i)   env = lookup-map ⟦_⟧ env i
+toℕ-term-homo {b} {d} cont (t₁ + t₂) env
+    rewrite toℕ-term-homo cont t₁ env
+          | toℕ-term-homo cont t₂ env
+    = sym (toℕ-+-homo cont
+        (⟦ t₁ ⟧T (Numeral-sig b d cont) env)
+        (⟦ t₂ ⟧T (Numeral-sig b d cont) env))
+\end{lstlisting}
+
+\subsection{Predicates}
+
+% Our final goal is to translate semantics of predicates from \lstinline|ℕ|
+% to \lstinline|Numeral|.
+
+% The reason why the index $ o $ of \lstinline|Numeral| is fixed to $ 0 $ is that
+% all numeral systems are required to be surjective with respect to \lstinline|ℕ|.
 %
-% There are two kinds of connectives: \textit{implication} and \textit{equality},
-% that can glue predicates together. We can also make a new predicate out of an
-% old one with free variables with an \textit{universal quantifier}.
+% % Otherwise, we will face some problems when converting them to \lstinline|Numeral|
 
-
-
-% There are two parts of this first-order logic: syntax and semantics.
-
-
-
-
-% There are two parts of propositions.
-% The syntax (the codes, the underlying representation) and the semantics (the types
-% of the universe, the surface representation).
-
-
-
-% Suppose we are going to describe propositions about the things that we have
-% constructed: \lstinline|Numeral| and the addition function on \lstinline|Numeral|.
-
-
-% There are many kinds of propositions we can assert on natural numbers,
-% We are going to
-
-
-% talk about the things that has been constructed
-
-% Suppose
-
-%
-% \begin{lstlisting}
-% ℕ-sig : Signature
-% ℕ-sig = sig ℕ _+_ _≡_
-%
-% Numeral-sig : (b d : ℕ) → True (Continuous? b d 0) → Signature
-% Numeral-sig b d cont = sig (Numeral b d 0) (_⊹_ {cont = cont}) _≋_
-% \end{lstlisting}
-%
-%
-% \section{Terms, Predicates and Signatures}
-%
-% \begin{lstlisting}
-% Env : Set → ℕ → Set
-% Env = Vec
-% \end{lstlisting}
-% \begin{lstlisting}
-% \end{lstlisting}
 
 \end{document}

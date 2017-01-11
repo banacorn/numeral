@@ -244,4 +244,20 @@ _+_ {cont = cont} xs ys | Proper b d o proper | no ¬gapped#0
     = +-Proper ¬gapped#0 proper xs ys
 \end{lstlisting}
 
+\subsubsection{Properties of the Addition Function}
+
+We can prove that the evaluation function \lstinline|⟦_⟧| is a homomorphism
+between \lstinline|Numeral| and \lstinline|ℕ| that preserves their addition
+functions.
+
+\begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
+toℕ-+-homo : ∀ {b d o}
+    → (cont : True (Continuous? b d o))
+    → (xs ys : Numeral b d o)
+    → ⟦ _+_ {cont = cont} xs ys ⟧ ≡ ⟦ xs ⟧ + ⟦ ys ⟧
+\end{lstlisting}
+
+The proofs are skipped for brevity.
+\footnote{about 100 lines of code and reasoning.}
+
 \end{document}

@@ -65,7 +65,7 @@ Env = Vec
 ⟦_⟧T : ∀ {n}
     → Term n
     → (sig : Signature)
-    → Env (carrier sig) n
+    → Vec (carrier sig) n
     → carrier sig
 ⟦ var i         ⟧T _                env = lookup i env
 ⟦ term₁ ∔ term₂ ⟧T (sig A _⊕_ _≈_) env = ⟦ term₁ ⟧T (sig A _⊕_ _≈_) env ⊕ ⟦ term₂ ⟧T (sig A _⊕_ _≈_) env
@@ -82,9 +82,9 @@ Env = Vec
 
 module Example-1 where
     ≋-trans : Predicate zero
-    ≋-trans = let   x = var zero
-                    y = var (suc zero)
-                    z = var (suc (suc zero))
+    ≋-trans = let   x = var (# 0)
+                    y = var (# 1)
+                    z = var (# 2)
         in ∀P (∀P (∀P (((x ≋P y) →P (y ≋P z)) →P (x ≋P z))))
 
     ≋-trans-ℕ : Set
