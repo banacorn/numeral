@@ -12,17 +12,17 @@ while others believe that they start from $ 0 $.
 Both factions have good reasons to justify their choice.
 
 The same goes for the definition of natural numbers.
-Plato, Frege, Russel, and many others all gave their account of the definition
-of natural numbers.
-Nevertheless, we take the stance of what Benacerraf, an important figure of
-\textit{Structuralism}, believes\cite{benacerraf1965numbers}.
+\textit{Plato, Frege, Russel}, and many others all gave their account of the
+definition of natural numbers.
+Nevertheless, we take the stance of what \textit{Benacerraf},
+an important figure of \textit{Structuralism}, believes\cite{benacerraf1965numbers}.
 It is the abstract structures that numbers represent that is important,
 rather than their ``internal'' definitions.
 
 \section{Nil of \lstinline|Numeral|}
 
-The definition of \lstinline|Numeral| started out as a special replica of
-\lstinline|List|. That is where we stole the symbol of \lstinline|_∷_|.
+The definition of \lstinline|Numeral| mimics that of \lstinline|List|,
+which is where the symbol of \lstinline|_∷_| is stolen from.
 
 \begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
 data Numeral : (b d o : ℕ) → Set where
@@ -60,7 +60,7 @@ leaving properties such as \lstinline|Continuous| in a quandary.
 Later, we came up with a predicate \lstinline|Null| to prevent \lstinline|[]|
 from being evaluated, but we realized that we can do just fine without
 \lstinline|[]| shortly after.
-This is reason why we insist that every numeral should possess at least one
+This is the reason why we insist that every numeral should possess at least one
 digit.
 
 \begin{lstlisting}
@@ -69,9 +69,48 @@ data Numeral : (b d o : ℕ) → Set where
     _∷_ : ∀ {b d o} → Digit d → Numeral b d o → Numeral b d o
 \end{lstlisting}
 
-\section{Extending the Universe}
+\section{Numerical Representations and Ornaments}
+
+We started off with numerical representations but then turned to
+modeling their corresponding numeral systems.
+Perhaps we can go back to index these data structures with our representations,
+and see what more can be done.
+
+Moreover, the interesting relationship between numerical representations
+and numeral systems can be captured and manipulated with \textit{ornaments}
+\cite{mcbride2010ornamental}.
+Ornaments allow us to \textit{decorate} plain datatypes with extra information,
+or \textit{erase} them from fancy datatypes using a technique called
+\textit{induction-recursion}\cite{dybjer1999finite}, which is essentially
+a universe construction for coding the datatype itself!
+
+\section{The Universe and Beyond}
+
+In chapter~\ref{translation}, we use universe constructions for expressing and
+translating propositions and proofs.
+However, our universe is minimalistic and contains only some basic operations
+and connectives such as addition, which leaves much to be desired.
+We could, for example, support constants in the terms, and perhaps negation in
+the predicates.
+Maybe we can also construct other arithmetics such as
+\textit{Heyting arithmetic} and \textit{Primitive recursive arithmetic}
+and see if they work on our representation for numbers in the future.
 
 \section{Conclusion}
 
+We have constructed a generalized positional numeral system
+and investigated some of its properties and relation with natural numbers à la
+Peano.
+We have also demonstrated how to translate propositions and proofs between these
+numeral systems.
 
+\paragraph{Acknowledgements}
+First, I would like to express my sincere gratitude to my advisor Prof.
+Shin-Cheng Mu  for his guidance, support, immense knowledge, and so many things!!!!!!
+Also, I would like to thank my co-advisor Prof. Yang for making all these
+possible, and the support from his lab.
+Besides my advisors, I would like to thank Dr. Hsiang-Shang Ko for inspiring me
+with these interesting topics.
+Finally, I would like to thank Prof. Yuwen Lai for encouraging and motivating me
+on the writing of this thesis.
 \end{document}
