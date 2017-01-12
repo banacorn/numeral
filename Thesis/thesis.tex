@@ -1,11 +1,15 @@
-\title{Generalizing Positional Numeral Systems}
-\author{
-    % Luā Tîng-Giān
-}
-% \date{\today}
-
 \documentclass[12pt, a4paper]{report}
 % \linespread{1.5}
+
+\usepackage{authblk}
+
+\title{Generalizing Positional Numeral Systems}
+\author[1]{Luā Tîng-Giān}
+\author[2]{Shin-Cheng Mu}
+\author[1]{Wuu Yang}
+\affil[1]{Institute of Computer Science and Engineering, National Chiao Tung University, Taiwan}
+\affil[2]{Institute of Information Science, Academia Sinica, Taiwan}
+\date{}
 
 % for multiple tex files
 \usepackage{subfiles}
@@ -74,14 +78,17 @@
 \newcommand{\banacorn}[1]{{\color{alizarin}\{#1\}}}
 
 %%SCM: for mac. Comment them out before commiting.
-\setCJKmainfont[BoldFont=STHeiti,ItalicFont=STKaiti]{STSong}
-\setCJKsansfont[BoldFont=STHeiti]{STXihei}
-\setCJKmonofont{STFangsong}
+% \setCJKmainfont[BoldFont=STHeiti,ItalicFont=STKaiti]{STSong}
+% \setCJKsansfont[BoldFont=STHeiti]{STXihei}
+% \setCJKmonofont{STFangsong}
 
 \begin{document}
 
 \maketitle
 
+\tableofcontents
+
+\subfile{tex/acknowledgements.tex}
 \subfile{tex/abstract.tex}
 \subfile{tex/introduction.tex}
 \subfile{tex/generalizations.tex}
@@ -89,6 +96,7 @@
 \subfile{tex/props.tex}
 \subfile{tex/constructions.tex}
 \subfile{tex/translation.tex}
+\subfile{tex/conclusion.tex}
 
 \bibliographystyle{abbrv}
 \bibliography{thesis}

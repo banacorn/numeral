@@ -9,6 +9,9 @@ to prove properties such as the commutative property of addition.
 As proofs get more complicated, we will make proving easier by introducing a
 powerful tool: \textit{equational reasoning}.
 
+\paragraph{Remark}
+Readers who are familiar with equational/preorder reasoning may skip this chapter.
+
 \section{Proving Equational Propositions}
 
 \paragraph{Right identity of addition}
@@ -570,7 +573,7 @@ suc m ⊔ suc n = suc (m ⊔ n)
         \\ the commutative property of max.
 \end{itemize}
 
-\subsection{Relational Propositions [work in process]}
+\subsection{Relational Propositions}
 
 \subsubsection{natural number}
 
@@ -607,10 +610,14 @@ suc m ⊔ suc n = suc (m ⊔ n)
         \\ the inverse of {\lstinline|+n-mono|}
     \item {\lstinline|+-mono-contra : ∀ {a b c d} → a ≥ b → a + c < b + d → c < d|}
 \end{itemize}
-\subsubsection{multiplication}
+
 \subsubsection{monus}
-\subsubsection{min and max}
 
-
+\begin{itemize}
+    \item {\lstinline|n∸m≤n : ∀ m n → n ∸ m ≤ n|}
+    \item {\lstinline|n≤m+n∸m : ∀ m n → n ≤ m + (n ∸ m)|}
+    \item {\lstinline|∸-mono : ∀ x y u v → x ≤ y → u ≥ v → x ∸ u ≤ y ∸ v|}
+        \\ the monotonicity of monus
+\end{itemize}
 
 \end{document}
