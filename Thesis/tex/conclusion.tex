@@ -1,0 +1,77 @@
+\providecommand{\main}{..}
+\documentclass[\main/thesis.tex]{subfiles}
+\begin{document}
+\chapter{Discussion and Conclusion}\label{conclusion}
+
+\section{The Definitinon of Natural Numbers}
+
+Where do natural numbers start from?
+This is a commonly debated topic.
+Some believe that natural numbers start from $ 1 $,
+while others believe that they start from $ 0 $.
+Both factions have good reasons to justify their choice.
+
+The same goes for the definition of natural numbers.
+Plato, Frege, Russel, and many others all gave their account of the definition
+of natural numbers.
+Nevertheless, we take the stance of what Benacerraf, an important figure of
+\textit{Structuralism}, believes\cite{benacerraf1965numbers}.
+It is the abstract structures that numbers represent that is important,
+rather than their ``internal'' definitions.
+
+\section{Nil of \lstinline|Numeral|}
+
+The definition of \lstinline|Numeral| started out as a special replica of
+\lstinline|List|. That is where we stole the symbol of \lstinline|_∷_|.
+
+\begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
+data Numeral : (b d o : ℕ) → Set where
+    []  : ∀ {b d o} → Numeral b d o
+    _∷_ : ∀ {b d o} → Digit d → Numeral b d o → Numeral b d o
+\end{lstlisting}
+
+Soon we face the decision of which value \lstinline|[]| should be assigned to.
+$ 0 $ seemed to be a good choice.
+However, this would result in a singular point on the number line,
+leaving properties such as \lstinline|Continuous| in a quandary.
+
+\begin{center}
+    \begin{adjustbox}{max width=\textwidth}
+        \begin{tikzpicture}
+            % the frame
+            \path[clip] (-1, -1) rectangle (11, 2);
+            % the spine
+            \draw[ultra thick] (0.5,0) -- (10,0);
+            % the body
+
+            \draw[ultra thick, fill=white] (0.05, -0.2) rectangle (0.95, +0.2);
+
+            \foreach \i in {3,...,10} {
+                \draw[ultra thick, fill=white] ({\i+0.05}, -0.2) rectangle ({\i+0.95}, +0.2);
+            };
+
+            % labels
+            \draw[->, ultra thick] (0.5,1) -- (0.5,0.5)
+                node at (0.5, 1.3) {\lstinline|⟦ [] ⟧| $ = 0 $};
+        \end{tikzpicture}
+    \end{adjustbox}
+\end{center}
+
+Later, we came up with a predicate \lstinline|Null| to prevent \lstinline|[]|
+from being evaluated, but we realized that we can do just fine without
+\lstinline|[]| shortly after.
+This is reason why we insist that every numeral should possess at least one
+digit.
+
+\begin{lstlisting}
+data Numeral : (b d o : ℕ) → Set where
+    _∙  : ∀ {b d o} → Digit d → Numeral b d o
+    _∷_ : ∀ {b d o} → Digit d → Numeral b d o → Numeral b d o
+\end{lstlisting}
+
+\section{Extending the Universe}
+
+\section{Conclusion}
+
+
+\end{document}
