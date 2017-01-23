@@ -29,7 +29,8 @@ Maximum⇒Greatest-LSD : ∀ {b} {d} {o}
 
 \paragraph{NullBase}
 
-\begin{center}
+\begin{figure}[H]
+    \centering
     \begin{adjustbox}{max width=\textwidth}
         \begin{tikzpicture}
             % the frame
@@ -51,7 +52,9 @@ Maximum⇒Greatest-LSD : ∀ {b} {d} {o}
                 node at (8.5, 1.3) {$o+d$};
         \end{tikzpicture}
     \end{adjustbox}
-\end{center}
+\caption{The location of maximum in systems of NullBase}
+\label{figure:12}
+\end{figure}
 
 It is obvious that systems of {\lstinline|NullBase|} have maximum.
 If a numeral's LSD happens to be the greatest,
@@ -81,7 +84,8 @@ by contraposition.
 
 \paragraph{AllZeros}
 
-\begin{center}
+\begin{figure}[H]
+    \centering
     \begin{adjustbox}{max width=\textwidth}
         \begin{tikzpicture}
             % the frame
@@ -96,7 +100,9 @@ by contraposition.
                 node at (2, 1.8) {$0$};
         \end{tikzpicture}
     \end{adjustbox}
-\end{center}
+\caption{The location of maximum in systems of AllZeros}
+\label{figure:13}
+\end{figure}
 
 \textit{All} numerals of systems of {\lstinline|AllZeros|} are maxima since they
 are all mapped to $ 0 $.
@@ -175,7 +181,8 @@ Maximum? xs | Proper b d o proper = no (Maximum-Proper xs proper)
 
 \paragraph{Summary}
 
-\begin{center}
+\begin{table}[H]
+    \centering
     \begin{adjustbox}{max width=\textwidth}
     \begin{tabular}{ | l | c | c | c | c | }
     \textbf{Properties} & \textbf{NullBase} & \textbf{NoDigits} & \textbf{AllZeros} & \textbf{Proper} \\
@@ -183,6 +190,8 @@ Maximum? xs | Proper b d o proper = no (Maximum-Proper xs proper)
     has an maximum & yes & no & yes & no \\
     \end{tabular}
     \end{adjustbox}
-\end{center}
+\caption{Summary of properties of each Category}
+\label{table:10}
+\end{table}
 
 \end{document}

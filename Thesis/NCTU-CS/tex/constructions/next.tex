@@ -24,7 +24,8 @@ numbers, their number lines appear to be ``gapped'' because the evaluation is
 not \textit{surjective}.
 The number ``5'', for example, has no correspondence on the numeral side.
 
-\begin{center}
+\begin{figure}[H]
+    \centering
     \begin{adjustbox}{max width=\textwidth}
         \begin{tikzpicture}
             % the frame
@@ -50,13 +51,16 @@ The number ``5'', for example, has no correspondence on the numeral side.
             \node[scale=2] at (15, -1.5) {{\lstinline|Numeral 10 5 0|}};
         \end{tikzpicture}
     \end{adjustbox}
-\end{center}
+\caption{Values of \lstinline|Numeral 10 5 0|}
+\label{figure:14}
+\end{figure}
 
 While systems such as {\lstinline|Numeral 10 15 0|} map more than one numeral
 onto the same number, we can see immediately that the evaluation is not
 \textit{injective} because those number lines ``overlap'' with each other.
 
-\begin{center}
+\begin{figure}[H]
+    \centering
     \begin{adjustbox}{max width=\textwidth}
         \begin{tikzpicture}
             % the frame
@@ -82,7 +86,9 @@ onto the same number, we can see immediately that the evaluation is not
             \node[scale=2] at (15, -1.5) {{\lstinline|Numeral 10 15 0|}};
         \end{tikzpicture}
     \end{adjustbox}
-\end{center}
+\caption{Values of \lstinline|Numeral 10 15 0|}
+\label{figure:15}
+\end{figure}
 
 Apparently numerals do not align with numbers perfectly.
 Finding ``the next number'' thus becomes a non-trivial problem.
@@ -176,7 +182,8 @@ all we have to do is to manipulate the LSD.
 Since only the value of the LSD has effect on the evaluation.
 All numerals are mapped onto a single and continuous number line as shown below.
 
-\begin{center}
+\begin{figure}[H]
+    \centering
     \begin{adjustbox}{max width=\textwidth}
         \begin{tikzpicture}
             % the frame
@@ -197,13 +204,17 @@ All numerals are mapped onto a single and continuous number line as shown below.
                 node at (8.5, 1.3) {$o+d$};
         \end{tikzpicture}
     \end{adjustbox}
-\end{center}
+\caption{Values of numerals of NullBase}
+\label{figure:16}
+\end{figure}
+
 
 Finding the next numeral is as simple as incrementing the LSD.
 To make room for the increment, numerals that are mapped onto the rightmost
 number of the line have to be excluded.
 
-\begin{center}
+\begin{figure}[H]
+    \centering
     \begin{adjustbox}{max width=\textwidth}
         \begin{tikzpicture}
             % the frame
@@ -234,7 +245,9 @@ number of the line have to be excluded.
             };
         \end{tikzpicture}
     \end{adjustbox}
-\end{center}
+\caption{Possible numerals of NullBase that may possess the next numeral}
+\label{figure:17}
+\end{figure}
 
 \subsubsection{{\lstinline|next-numeral-NullBase|}}
 
@@ -351,7 +364,8 @@ located in systems of {\lstinline|Proper|}.
 This is the simplest case like in {\lstinline|NullBase|}.
 The given numeral's LSD is not located at the end of the number line.
 
-\begin{center}
+\begin{figure}[H]
+    \centering
     \begin{adjustbox}{max width=\textwidth}
         \begin{tikzpicture}
             % the frame
@@ -390,7 +404,9 @@ The given numeral's LSD is not located at the end of the number line.
 
         \end{tikzpicture}
     \end{adjustbox}
-\end{center}
+\caption{Possible numerals in intervals that may possess the next numeral}
+\label{figure:18}
+\end{figure}
 
 \paragraph{Gapped Endpoints}
 
@@ -398,7 +414,8 @@ When the given numeral's LSD happens to be the greatest
 and there is a \textit{gap} before the next numeral.
 There are no other numerals in between that could bridge the gap.
 
-\begin{center}
+\begin{figure}[H]
+    \centering
     \begin{adjustbox}{max width=\textwidth}
         \begin{tikzpicture}
             % the frame
@@ -425,14 +442,17 @@ There are no other numerals in between that could bridge the gap.
 
         \end{tikzpicture}
     \end{adjustbox}
-\end{center}
+\caption{Possible numerals at gapped endpoints that may possess the next numeral}
+\label{figure:19}
+\end{figure}
 
 \paragraph{Ungapped Endpoints}
 
 When the given numeral's LSD happens to be the greatest
 but we can find another numeral right ahead of it.
 
-\begin{center}
+\begin{figure}[H]
+    \centering
     \begin{adjustbox}{max width=\textwidth}
         \begin{tikzpicture}
             % the frame
@@ -460,7 +480,9 @@ but we can find another numeral right ahead of it.
 
         \end{tikzpicture}
     \end{adjustbox}
-\end{center}
+\caption{Possible numerals at ungapped endpoints that may possess the next numeral}
+\label{figure:20}
+\end{figure}
 
 \subsubsection{Gaps}
 
@@ -475,7 +497,8 @@ suppose that the next numeral of {\lstinline|xs|} is {\lstinline|xs'|}.
 The value of {\lstinline|x ∷ xs|} ranges from {\lstinline|⟦ xs ⟧ × b + o|} to
 {\lstinline|⟦ xs ⟧ × b + o + d - 1|}.
 
-\begin{center}
+\begin{figure}[H]
+    \centering
     \begin{adjustbox}{max width=\textwidth}
         \begin{tikzpicture}
             % the frame
@@ -500,12 +523,16 @@ The value of {\lstinline|x ∷ xs|} ranges from {\lstinline|⟦ xs ⟧ × b + o|
 
         \end{tikzpicture}
     \end{adjustbox}
-\end{center}
+\caption{Gaps in between number lines}
+\label{figure:21}
+\end{figure}
+
 
 If we look closely, we can see that the gap comes from the difference between
 {\lstinline|⟦ xs ⟧ × b + o + d|} and {\lstinline|⟦ xs' ⟧ × b + o|}.
 
-\begin{center}
+\begin{figure}[H]
+    \centering
     \begin{adjustbox}{max width=\textwidth}
         \begin{tikzpicture}
             % the frame
@@ -530,7 +557,9 @@ If we look closely, we can see that the gap comes from the difference between
             };
         \end{tikzpicture}
     \end{adjustbox}
-\end{center}
+\caption{A closer look at the gap}
+\label{figure:22}
+\end{figure}
 
 If there are enough digits to bridge the gap between {\lstinline|⟦ xs ⟧ × b + o|}
 and {\lstinline|⟦ xs' ⟧ × b + o|}, then there will be no gaps.
@@ -662,7 +691,8 @@ next-numeral-Proper xs proper | UngappedEndpoint b d o greatest ¬gapped
 
 \paragraph{Interval}
 
-\begin{center}
+\begin{figure}[H]
+    \centering
     \begin{adjustbox}{max width=\textwidth}
         \begin{tikzpicture}
             % the frame
@@ -701,7 +731,9 @@ next-numeral-Proper xs proper | UngappedEndpoint b d o greatest ¬gapped
 
         \end{tikzpicture}
     \end{adjustbox}
-\end{center}
+\caption{Possible numerals in intervals that may possess the next numeral}
+\label{figure:23}
+\end{figure}
 
 To reach the next numeral, all we have to do is to increment the LSD.
 There is no need of performing carries or messing with other digits.
@@ -720,7 +752,8 @@ next-numeral-Proper-Interval (x ∷ xs) ¬greatest proper
 
 \paragraph{Gapped Endpoints}
 
-\begin{center}
+\begin{figure}[H]
+    \centering
     \begin{adjustbox}{max width=\textwidth}
         \begin{tikzpicture}
             % the frame
@@ -747,7 +780,10 @@ next-numeral-Proper-Interval (x ∷ xs) ¬greatest proper
 
         \end{tikzpicture}
     \end{adjustbox}
-\end{center}
+\caption{Possible numerals at gapped endpoints that may possess the next numeral}
+\label{figure:24}
+\end{figure}
+
 
 To reach the next numeral, the LSD is reset to the least digit;
 the rest of the numeral (digits of higher significance) are replaced accordingly
@@ -767,7 +803,8 @@ next-numeral-Proper-GappedEndpoint (x ∷ xs) proper gapped
 
 \paragraph{Ungapped Endpoints}
 
-\begin{center}
+\begin{figure}[H]
+    \centering
     \begin{adjustbox}{max width=\textwidth}
         \begin{tikzpicture}
             % the frame
@@ -795,7 +832,10 @@ next-numeral-Proper-GappedEndpoint (x ∷ xs) proper gapped
 
         \end{tikzpicture}
     \end{adjustbox}
-\end{center}
+\caption{Possible numerals at ungapped endpoints that may possess the next numeral}
+\label{figure:25}
+\end{figure}
+
 
 Just like in the case of \textit{gapped endpoints}, the more significant part
 of the numeral is replaced with something greater (either a carry-digit or
