@@ -204,7 +204,7 @@ Therefore, the set of terms will be inductively defined by only two rules:
     \item \textbf{Variable}: Any variable of the \textit{domain of discourse} (\lstinline|ℕ| or
         \lstinline|Numeral|) is a term.
     \item \textbf{Addition}: Any two terms put together with the addition function
-        of that domain is term as well.
+        of that domain is a term as well.
 \end{itemize}
 
 We will only have terms that look like this:
@@ -228,8 +228,7 @@ The set of predicates is inductively defined by three rules:
 With these connectives and quantifiers, we can make predicates such as:
 
 \begin{lstlisting}
-(x + y) + z ≈ x + (y + z)
-∀ x . x ≈ y → y ≈ y
+∀ x y z . (x + y) + z ≈ x + (y + z)
 \end{lstlisting}
 
 \subsection{Codes for Syntax}
@@ -262,7 +261,7 @@ The code for predicates indexed by the number of \textit{free variables} as well
 \lstinline|_≋P_| and \lstinline|_→P_| correspond to equality and implication
 connectives respectively.
 It is worth noting that \lstinline|∀P| returns a predicate with a smaller index
-because one of the free variable of the given predicate has been bound.
+because one of the free variable of the given predicate has been bounded.
 
 \subsubsection{Examples}
 

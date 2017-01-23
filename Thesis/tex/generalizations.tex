@@ -34,7 +34,7 @@ $$
 The evaluation of numerals remains the same but the assignment of digits has changed from
 
 $$
-    { 0, 1, ..., \mathit{offset} - 1 }
+    { 0, 1, ..., \mathit{base} - 1 }
 $$
 
 to
@@ -145,7 +145,7 @@ since we can always take a numeral and add leading zeros without changing it's v
 
 Incrementing a decimal numeral such as $ 999999 $ takes much more time than
 $ 999998 $ because carries or borrows can propagate.
-Redundancy provides ``buffer'' against operations these carries and borrows.
+Redundancy provides ``buffer'' against these carries and borrows.
 In this case, incrementing $ 999999 $ and $ 999998 $ of \textit{Int32} both
 results in a cost of constant time.
 
