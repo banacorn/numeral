@@ -1,0 +1,200 @@
+\providecommand{\main}{..}
+\documentclass[\main/thesis.tex]{subfiles}
+\begin{document}
+\chapter{Generalizations}\label{generalizations}
+
+
+\section{Base}
+
+Recall the evaluation function.
+
+$$
+    [\![d_0d_1d_2...d_n]\!]_{base}
+    =
+    \bar{d_0}\times base^0 + \bar{d_1}\times base^1 + \bar{d_2}\times base^2 + ... + \bar{d_n}\times base^n
+$$
+%
+where $ \bar{d_n} $ ranges from $ 0 $ to $ base - 1 $ for all $ n $.
+
+As we can see the base of numeral systems has already been generalized.
+But nonetheless, it is a good start and we will continue to abstract more things
+away.
+
+\section{Offset}
+
+To cooperate unary numerals, we relax the constraint on the range of digit
+assignment by introducing a new variable, \textit{offset}:
+
+$$
+    [\![d_0d_1d_2...d_n]\!]_{base}
+    =
+    \bar{d_0}\times base^0 + \bar{d_1}\times base^1 + \bar{d_2}\times base^2 + ... + \bar{d_n}\times base^n
+$$
+
+The evaluation of numerals remains the same but the assignment of digits has changed from
+
+$$
+    { 0, 1, ..., \mathit{base} - 1 }
+$$
+
+to
+
+$$
+    { \mathit{offset}, \mathit{offset} + 1, ..., \mathit{offset} + \mathit{base} - 1 }
+$$
+
+The codomain of the digit assignment function is \textit{shifted} by \textit{offset}.
+Now that unary numerals would have an offset of $ 1 $
+and systems of other bases would have offsets of $ 0 $.
+
+\paragraph{1-2 binary system}
+Recall \textit{1-2 random access lists} from the previous chapter,
+which is the numerical representation of a binary numeral system with an offset
+of $ 1 $.
+Let us see how to count to ten in the 1-2 binary system.
+\footnote{As a reminder, the order of non-decimal numerals are reversed.}
+
+\begin{center}
+    \begin{adjustbox}{max width=\textwidth}
+    \begin{tabular}{ | l | l |}
+    \textbf{Number} & \textbf{Numeral} \\
+    \hline
+    1 & 1  \\
+    2 & 2  \\
+    3 & 11 \\
+    4 & 21 \\
+    5 & 12 \\
+    \end{tabular}
+    \quad
+    \begin{tabular}{ | l | l | }
+    \textbf{Number} & \textbf{Numeral} \\
+    \hline
+    6  & 22 \\
+    7  & 111 \\
+    8  & 211 \\
+    9  & 121 \\
+    10 & 221 \\
+    \end{tabular}
+    \end{adjustbox}
+\end{center}
+
+There are no restrictions on the symbols of digits.
+But nonetheless, it is reasonable to choose symbols that match their assigned
+values, as we choose the symbol ``1'' and ``2'' as digits for the 1-2 binary system.
+
+% \begin{center}
+%     \begin{adjustbox}{max width=\textwidth}
+%     \begin{tabular}{ | l | r | r | }
+%     \textbf{Numeral system} & \textbf{Base} & \textbf{Offset} \\
+%     \hline
+%     decimal         & 10 & 0 \\
+%     binary          & 2  & 0 \\
+%     hexadecimal     & 16 & 0 \\
+%     unary           & 1  & 1 \\
+%     1-2 binary      & 2  & 1 \\
+%     \end{tabular}
+%     \end{adjustbox}
+% \end{center}
+
+\paragraph{bijective numerations}
+Systems with an offset of $ 1 $ are also known as \textit{bijective numerations}
+because every number can be represented by exactly one numeral. In other words,
+the evaluation function is bijective. The 1-2 binary system is one such numeration.
+
+\paragraph{zeroless representations}
+A numeral system is said to be \textit{zeroless} if no digits are assigned $ 0 $,
+i.e., $ \mathit{offset} \textgreater 0 $.
+Data structures modeled after zeroless systems are called \textit{zeroless representations}.
+These containers are preferable to their ``zeroful'' counterparts.
+The reason is that a digit of value $ 0 $ corresponds to a building block with
+$ 0 $ elements, and a building block that contains no element is not only useless,
+but also hinders traversal as it takes time to skip over these empty nodes,
+as we have seen in random access lists from the previous chapter.
+
+\section{Number of Digits}
+
+The binary numeral system running in circuits looks different from what we have
+in hand.
+Surprisingly, these binary numbers can fit into our representation with just a tweak.
+If we allow a system to have more digits,
+then a fixed-precision binary number can be regarded as a single digit!
+To illustrate this,
+a 32-bit binary number (\textit{Int32}) would become a single digit that ranges
+from $ 0 $ to $ 2^{32} $, while everything else including the base remains the same.
+
+Formerly in our representation,
+there are exactly \textit{base} number of digits and their assignments range from:
+
+$$
+    \mathit{offset}  ...  \mathit{offset} + \mathit{base} - 1
+$$
+
+By introducing a new index \textit{\#digit} to generalize the number of digits,
+their assignments range from:
+
+$$
+    \mathit{offset}  ...  \mathit{offset} + \mathit{\#digit} - 1
+$$
+
+\paragraph{Redundancy}
+
+Numeral systems like \textit{Int32} are said to be \textbf{redundant}
+because there is more than one way to represent a number.
+In fact, systems that admit $ 0 $ as one of the digits must be redundant,
+since we can always take a numeral and add leading zeros without changing it's value.
+
+Incrementing a decimal numeral such as $ 999999 $ takes much more time than
+$ 999998 $ because carries or borrows can propagate.
+Redundancy provides ``buffer'' against these carries and borrows.
+In this case, incrementing $ 999999 $ and $ 999998 $ of \textit{Int32} both
+results in a cost of constant time.
+
+Numerical representations modeled after redundant numeral systems also enjoy
+similar properties. When designed properly, redundancy can improve the performance
+of operations of data structures.
+
+
+\section{Relations with Natural Numbers}
+
+The following table contains all of the numeral systems we have addressed so far,
+with \textit{base}, \textit{offset}, and \textit{\#digit} taken into account.
+\footnote{
+\textit{Int32} and \textit{Int64} are respectively 32-bit and 64-bit machine
+integers.
+}
+
+\begin{center}
+    \begin{adjustbox}{max width=\textwidth}
+    \begin{tabular}{ | l | r | r | r | }
+    \textbf{Numeral system} & \textbf{Base} & \textbf{\#Digit} & \textbf{Offset} \\
+    \hline
+    decimal         & 10 & 10 & 0 \\
+    binary          & 2  & 2  & 0 \\
+    hexadecimal     & 16 & 16 & 0 \\
+    unary           & 1  & 1  & 1 \\
+    1-2 binary      & 2  & 2  & 1 \\
+    Int32           & 2  & $ 2^{32} $ & 0 \\
+    Int64           & 2  & $ 2^{64} $ & 0 \\
+    \end{tabular}
+    \end{adjustbox}
+\end{center}
+
+Although we are now capable of expressing those numeral systems with just a few
+indices, there are also some unexpected inhabitants included in this representation.
+There is always a trade-off between expressiveness and properties.
+
+We will explore the various types of numeral systems and define operations on
+them in the chapter~\ref{constructions}.
+
+% \subsection{Surjectiveness}
+% \subsection{Injectiveness}
+% \subsection{Continuity}
+%
+% We can immediately see that not every number can be represented by every numeral
+% system.
+%
+% Take the unary numerals for example, it has no notation for representing zero.
+% In fact, a system of offset $ n $ can only starts counting from $ n $.
+%
+
+\end{document}

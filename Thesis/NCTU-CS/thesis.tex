@@ -1,7 +1,62 @@
 \documentclass[12pt,a4paper,oneside]{book}
 
+% \usepackage{authblk}
+% for unicode symbols
+\usepackage{fontspec}
+\setmonofont{DejaVu Sans Mono}
+
+% for maths symbols
+\usepackage{mathtools}
+\usepackage{bm}
+
+% for positioning tables and figures
+\usepackage{float}
+
+% for diagrams
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric}
+\usetikzlibrary{matrix,arrows}
+\usetikzlibrary{positioning}
+\usetikzlibrary{calc}
+\usetikzlibrary{decorations.pathreplacing}
+
+% for tables
+\usepackage{adjustbox}
+\usepackage{multirow}
+
+% images
+\usepackage{graphicx}
+\graphicspath{ {images/}{../images/} }
+
+\usepackage{color}
+\definecolor{light-gray}{gray}{0.9}
+\definecolor{airforceblue}{rgb}{0.36, 0.54, 0.66}
+\definecolor{alizarin}{rgb}{0.90, 0.30, 0.23}
+%
+% \usepackage{listings}
+% \lstset{ %
+%   % basicstyle=\ttfamily,              % the size of the fonts that are used for the code
+%   basicstyle=\ttfamily\footnotesize,              % the size of the fonts that are used for the code
+%   backgroundcolor=\color{light-gray},
+%   xleftmargin=0.5cm,
+%   frame=tlbr,
+%   framesep=10pt,
+%   framerule=0pt
+% }
+
+% hyperlinked cross references
+\usepackage{hyperref}
+\hypersetup{
+    unicode=true,
+    colorlinks=true,
+    linkcolor=black,          % color of internal links (change box color with linkbordercolor)
+    citecolor=black,        % color of links to bibliography
+    filecolor=black,      % color of file links
+    urlcolor=black           % color of external links
+}
+
 % border setting
-\usepackage[ top=2.5cm,bottom=2.5cm,left=2.5cm,right=2.5cm ]{ geometry }
+\usepackage[ top=2.5cm,bottom=2.5cm,left=2.5cm,right=2.5cm ]{geometry}
 
 % The default for LaTeX is to have no indent after sectional headings, like \chapter and \section. ()
 \usepackage{indentfirst}
@@ -28,6 +83,10 @@
   numberfirstline=true
 }
 
+% for multiple tex files
+\usepackage{subfiles}
+\providecommand{\main}{.} % relative path to master.tex
+
 % setting the page number to footer
 \usepackage{fancyhdr}
 \fancyhf{}
@@ -39,15 +98,15 @@
 
 % setup bibliography
 \usepackage[sorting=none,backend=bibtex]{biblatex}
-\addbibresource{reference.bib}
+\addbibresource{thesis.bib}
 
 % line height setting
 \linespread{1.5}
 \usepackage{setspace}
 
-% Graphics settings
-\usepackage{graphicx}
-\graphicspath{ {./figures/} }
+% % Graphics settings
+% \usepackage{graphicx}
+% \graphicspath{ {./figures/} }
 
 \usepackage{background}
 \newcommand\DeactivateBG{\backgroundsetup{contents={}}}
@@ -60,30 +119,34 @@
   }
 }
 
-
-
 % do not place figure at the middle of a empty page
 \makeatletter
 \setlength{\@fptop}{0pt}
 \makeatother
 
-
 % Chinese typesetting
 \usepackage{xeCJK}
-%\setCJKmainfont{SourceHanSansTW-Light.otf}
-\setCJKmainfont[
-  BoldFont={SourceHanSansTC-Normal.otf},
-  ItalicFont={SourceHanSansTC-Light.otf}
-]{SourceHanSansTC-Light.otf}
-\newcommand{\myHuge}[1]{\fontsize{40}{50} #1}
 
-\newcommand{\chineseTitle}{中文題目}
-\newcommand{\englishTitle}{英文題目}
+% only on Mac
+\setCJKmainfont[BoldFont=STHeiti,ItalicFont=STKaiti]{STSong}
+\setCJKsansfont[BoldFont=STHeiti]{STXihei}
+\setCJKmonofont{STFangsong}
 
-\newcommand{\studentCnName}{王大名}
-\newcommand{\studentEnName}{Da-Min Wang}
-\newcommand{\advisorCnName}{吳小松}
-\newcommand{\advisorEnName}{Xiao-Sung Wu}
+
+% \setCJKmainfont{SourceHanSansTW-Light.otf}
+% \setCJKmainfont[
+%   BoldFont={fonts/SourceHanSansTC-Normal.otf},
+%   ItalicFont={fonts/SourceHanSansTC-Light.otf}
+% ]{fonts/SourceHanSansTC-Light.otf}
+% \newcommand{\myHuge}[1]{\fontsize{40}{50} #1}
+
+\newcommand{\chineseTitle}{一般化位值計數系統}
+\newcommand{\englishTitle}{Generalizing Positional Numeral Systems}
+
+\newcommand{\studentCnName}{賴廷彥}
+\newcommand{\studentEnName}{Luā Tîng-Giān}
+\newcommand{\advisorCnName}{穆信成、楊武}
+\newcommand{\advisorEnName}{Shin-Cheng Mu, Wuu Yang}
 
 \usepackage{pdfpages}
 
@@ -110,9 +173,10 @@
 \listoffigures
 \listoftables
 
-\chapter{Introduction} \pagenumbering{arabic} % enabling page numbering
+% \chapter{Introduction} \pagenumbering{arabic} % enabling page numbering
 
-NCTU latex thesis\cite{thesis}.
+\subfile{tex/introduction.tex}
+
 
 \chapter{Background}
 

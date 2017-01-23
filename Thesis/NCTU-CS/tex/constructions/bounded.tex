@@ -1,0 +1,125 @@
+\providecommand{\main}{../..}
+\documentclass[\main/thesis.tex]{subfiles}
+\begin{document}
+
+\section{Systems with an Upper Bound}\label{bounded}
+
+We say that a system is \textit{bounded} if there \textit{exists} a maximum in
+such system. In Agda, an existential proposition like this is expressed with
+a \textit{dependent sum type}, which is essentially a \textit{pair} where the
+type of the second term is dependent on the first.
+
+\begin{lstlisting}
+data Σ (A : Set) (B : A → Set) : Set where
+    _,_ : (x : A) → B x → Σ A B
+
+proj₁ : ∀ {A B} → Σ A B → A
+proj₂ : ∀ {A B} → (pair : Σ A B) → B (proj₁ pair)
+\end{lstlisting}
+
+For example, to prove that there exists a right identity for addition on natural numbers;
+we place the ``evidence'' on the left and its justification on the right.
+
+\begin{lstlisting}
+prop : ∀ n → Σ ℕ (λ e → n + e ≡ n)
+prop n = 0 , +-right-identity n
+\end{lstlisting}
+
+With a little syntax sugar, we can rewrite the proposition as
+{\lstinline|Σ[ x ∈ A ] B|} instead of {\lstinline|Σ A (λ x → B)|}.
+
+\begin{lstlisting}
+Bounded : ∀ b d o → Set
+Bounded b d o = Σ[ xs ∈ Numeral b d o ] Maximum xs
+\end{lstlisting}
+
+The proposition above can be read as follows:
+\textit{There exists a numeral {\lstinline|xs|} of type
+{\lstinline|Numeral b d o|} such that {\lstinline|Maximum xs|} holds.}
+To prove that a system is bounded, we have to place the numeral that we consider
+to be a maximum on the left of the pair, and a proof to justify it on the right.
+
+\subsection{Properties of each Category}
+
+\paragraph{NullBase}
+
+We have proven that any numeral with the greatest digit as its LSD is a maximum.
+
+\begin{lstlisting}
+Bounded-NullBase : ∀ d o → Bounded 0 (suc d) o
+Bounded-NullBase d o =
+    (greatest-digit d ∙) ,
+    (Maximum-NullBase-Greatest
+        (greatest-digit d ∙)
+        (greatest-digit-is-the-Greatest d))
+\end{lstlisting}
+
+\paragraph{NoDigits}
+
+Since {\lstinline|¬ (Bounded b 0 o)|} reduces to {\lstinline|Bounded b 0 o → ⊥|},
+we are given an addition argument, which is a proof claiming that the system is
+bounded.
+Pattern match on this argument yields a pair with a numeral of
+{\lstinline|Numeral b 0 o|} on the left.
+At this point, we do not actually care whether the numeral is a maximum
+because it should not have existed in the first place.
+Hand the numeral to {\lstinline|NoDigits-explode|} and we are done.
+
+\begin{lstlisting}
+Bounded-NoDigits : ∀ b o → ¬ (Bounded b 0 o)
+Bounded-NoDigits b o (xs , claim) = NoDigits-explode xs
+\end{lstlisting}
+
+\paragraph{AllZeros}
+
+Similar to that of {\lstinline|Bounded-NullBase|}:
+
+\begin{lstlisting}
+Bounded-AllZeros : ∀ b → Bounded (suc b) 1 0
+Bounded-AllZeros b = (z ∙) , Maximum-AllZeros (z ∙)
+\end{lstlisting}
+
+\paragraph{Proper}
+
+This proposition is proven by contradicting the fact that
+a proper numeral system has no maximum.
+
+\begin{lstlisting}
+Bounded-Proper : ∀ b d o → (proper : 2 ≤ suc (d + o))
+    → ¬ (Bounded (suc b) (suc d) o)
+Bounded-Proper b d o proper (xs , claim) =
+    contradiction claim (Maximum-Proper xs proper)
+\end{lstlisting}
+
+\subsection{The Decidable Predicate}
+
+We can determine whether a system is bounded by delegating the job to the
+helper functions we have defined above.
+
+\begin{lstlisting}
+Bounded? : ∀ b d o → Dec (Bounded b d o)
+Bounded? b d o with numView b d o
+Bounded? _ _ _ | NullBase d o
+    = yes (Bounded-NullBase d o)
+Bounded? _ _ _ | NoDigits b o
+    = no (Bounded-NoDigits b o)
+Bounded? _ _ _ | AllZeros b
+    = yes (Bounded-AllZeros b)
+Bounded? _ _ _ | Proper b d o proper
+    = no (Bounded-Proper b d o proper)
+\end{lstlisting}
+
+\paragraph{Summary}
+
+\begin{center}
+    \begin{adjustbox}{max width=\textwidth}
+    \begin{tabular}{ | l | c | c | c | c | }
+    \textbf{Properties} & \textbf{NullBase} & \textbf{NoDigits} & \textbf{AllZeros} & \textbf{Proper} \\
+    \hline
+    has an maximum     & yes & no & yes & no \\
+    has an upper bound & yes & no & yes & no \\
+    \end{tabular}
+    \end{adjustbox}
+\end{center}
+
+\end{document}

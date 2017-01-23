@@ -1,0 +1,34 @@
+\providecommand{\main}{..}
+\documentclass[\main/thesis.tex]{subfiles}
+\begin{document}
+\chapter{Constructions}\label{constructions}
+
+The representation for positional numeral systems will be constructed and
+formalized with Agda in this section,
+along with the generalizations introduced in section~\ref{generalizations}.
+
+\begin{itemize}
+    \item \textbf{base}: the base of a numeral system, denoted {\lstinline|b|}.
+    \item \textbf{\#digit}: the number of digits, denoted {\lstinline|d|}.
+    \item \textbf{offset}: the number where the digits starts from, denoted {\lstinline|o|}.
+\end{itemize}
+
+\subfile{\main/tex/constructions/digit.tex}
+\subfile{\main/tex/constructions/num.tex}
+\subfile{\main/tex/constructions/maximum.tex}
+\subfile{\main/tex/constructions/bounded.tex}
+
+\subfile{\main/tex/constructions/next.tex}
+\subfile{\main/tex/constructions/increment.tex}
+\subfile{\main/tex/constructions/continuous.tex}
+\subfile{\main/tex/constructions/fromnat.tex}
+\subfile{\main/tex/constructions/addition.tex}
+
+
+% \subsection{Maximum}
+%
+%
+%
+% \section{Conclusions}\label{conclusions}
+
+\end{document}

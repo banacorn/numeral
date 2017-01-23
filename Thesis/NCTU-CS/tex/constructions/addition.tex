@@ -1,0 +1,263 @@
+\providecommand{\main}{../..}
+\documentclass[\main/thesis.tex]{subfiles}
+\begin{document}
+
+\section{The Addition Function}\label{addition}
+
+The addition function on \lstinline|ℕ| can consequently be defined by
+recursively ``moving'' the successor function \lstinline|suc| from one number
+to the another.
+
+\begin{lstlisting}
+_+_ : ℕ → ℕ → ℕ
+zero  + y = y
+suc x + y = suc (x + y)
+\end{lstlisting}
+
+We may attempt to define addition on \lstinline|Numeral| with the same strategy.
+
+\begin{lstlisting}
+_+_ : ∀ {b d o}
+    → Numeral b d o
+    → Numeral b d o
+    → Numeral b d o
+x ∙      + ys = ? x ys
+(x ∷ xs) + ys = ? x (xs + ys)
+\end{lstlisting}
+
+However, there is not a corresponding successor function on \lstinline|Numeral|
+that allows us to recursively move a digit from one numeral to the another with.
+What we need is some sort of ``one-sided'' addition function that takes
+\textit{a digit} and \textit{a numeral} instead of two numerals.
+
+\begin{lstlisting}
+n+ : ∀ {b d o}
+    → Digit d
+    → Numeral b d o
+    → Numeral b d o
+\end{lstlisting}
+
+Moreover, to ensure that a system is closed under these operations,
+we require these systems to be \lstinline|Continuous|.
+
+\begin{lstlisting}
+∀ {b d o} → True (Continuous? b d o)
+\end{lstlisting}
+
+\subsection{Sum of Two Digits}
+
+Before implementing \lstinline|n+|, we need to take a step back and figure out
+how to add \textit{two digits} together.
+Adding two digits should result in \textbf{a digit} and
+possibly \textbf{a carry} when the sum overflows.
+
+The carry is often a \textit{fixed digit} in most of the systems that we are
+familiar with.
+However, when it comes to redundant systems,
+the carry is often \textit{indefinite},
+because there is more than one way of representing a number.
+
+\subsubsection{View for the Sum}
+
+We capture these cases with a view called \lstinline|Sum|.
+
+\begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
+data Sum : (b d o : ℕ) (x y : Digit (suc d)) → Set where
+\end{lstlisting}
+
+When the sum of two digits can still be represented by a single digit,
+we compute the sum as \lstinline|leftover| and support it with a proof.
+
+\begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
+    NoCarry : ∀ {b d o x y}
+        → (leftover : Digit (suc d))
+        → (property : Digit-toℕ leftover o ≡ sum o x y)
+        → Sum b d o x y
+\end{lstlisting}
+
+When the sum of two digits exceeds the upper bound of a digit,
+we move the exceeding part to \lstinline|carry| and leave the remainder to
+\lstinline|leftover|. \lstinline|property| ensures the integrity of this
+computation.
+
+We opt for the constructor \lstinline|Fixed| when the exceeding part that goes
+to \lstinline|carry| is fixed (equals to \lstinline|1 ⊔ o|) and
+\lstinline|Floating| when it is indefinite.
+
+\begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
+    Fixed Floating : ∀ {b d o x y}
+        → (leftover carry : Digit (suc d))
+        → (property : Digit-toℕ leftover o
+                        + (Digit-toℕ carry o) * suc b ≡ sum o x y)
+        → Sum b d o x y
+\end{lstlisting}
+
+We dispense with the implementation of the corresponding view function
+\lstinline|sumView| for brevity.
+\footnote{about 300 lines of code and reasoning.}
+
+\begin{lstlisting}
+sumView : ∀ b d o
+    → (¬gapped : ¬ (Gapped#0 b d o))
+    → (proper : 2 ≤ suc d + o)
+    → (x y : Digit (suc d))
+    → Sum b d o x y
+\end{lstlisting}
+
+\subsubsection{\lstinline|n+| on Proper Systems}
+
+Implementing \lstinline|n+| on proper systems are relatively simple since most
+of the hard work has been done by \lstinline|sumView|.
+Carries are added back by recursively calling \lstinline|n+-Proper|.
+
+\begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
+n+-Proper : ∀ {b d o}
+    → (¬gapped : ¬ (Gapped#0 b d o))
+    → (proper : suc d + o ≥ 2)
+    → (x : Digit (suc d))
+    → (xs : Numeral (suc b) (suc d) o)
+    → Numeral (suc b) (suc d) o
+n+-Proper {b} {d} {o} ¬gapped proper x xs
+    with sumView b d o ¬gapped proper x (lsd xs)
+n+-Proper ¬gapped proper x (_ ∙)    | NoCarry leftover property
+    = leftover ∙
+n+-Proper ¬gapped proper x (_ ∷ xs) | NoCarry leftover property
+    = leftover ∷ xs
+n+-Proper ¬gapped proper x (_ ∙)    | Fixed leftover carry property
+    = leftover ∷ carry ∙
+n+-Proper ¬gapped proper x (_ ∷ xs) | Fixed leftover carry property
+    = leftover ∷ n+-Proper ¬gapped proper carry xs
+n+-Proper ¬gapped proper x (_ ∙)    | Floating leftover carry property
+    = leftover ∷ carry ∙
+n+-Proper ¬gapped proper x (_ ∷ xs) | Floating leftover carry property
+    = leftover ∷ n+-Proper ¬gapped proper carry xs
+\end{lstlisting}
+
+\subsubsection{Properties of \lstinline|n+-Proper|}
+
+The property below verifies the correctness of \lstinline|n+-Proper|.
+
+\begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
+n+-Proper-toℕ : ∀ {b d o}
+    → (¬gapped : ¬ (Gapped#0 b d o))
+    → (proper : suc d + o ≥ 2)
+    → (x : Digit (suc d))
+    → (xs : Numeral (suc b) (suc d) o)
+    → ⟦ n+-Proper ¬gapped proper x xs ⟧ ≡ Digit-toℕ x o + ⟦ xs ⟧
+n+-Proper-toℕ ¬gapped proper x xs with sumView b d o ¬gapped proper x (lsd xs)
+n+-Proper-toℕ ¬gapped proper x (_ ∙)     | NoCarry _ property = property
+n+-Proper-toℕ ¬gapped proper x (x' ∷ xs) | NoCarry leftover property =
+    begin
+        ⟦ leftover ∷ xs ⟧
+    ≡⟨ ... property ... ⟩
+        Digit-toℕ x o + ⟦ x' ∷ xs ⟧
+    ∎
+n+-Proper-toℕ ¬gapped proper x (_ ∙)     | Fixed _ _ property = property
+n+-Proper-toℕ ¬gapped proper x (x' ∷ xs) | Fixed leftover carry property =
+    begin
+        ⟦ leftover ∷ n+-Proper ¬gapped proper carry xs ⟧
+    ≡⟨ ... n+-Proper-toℕ ... ⟩
+        Digit-toℕ leftover o + (Digit-toℕ carry o + ⟦ xs ⟧) * suc b
+    ≡⟨ ... property ... ⟩
+        Digit-toℕ x o + ⟦ x' ∷ xs ⟧
+    ∎
+n+-Proper-toℕ ¬gapped proper x (_ ∙)     | Floating _ _ property = property
+n+-Proper-toℕ ¬gapped proper x (x' ∷ xs) | Floating leftover carry property =
+    begin
+        ⟦ leftover ∷ n+-Proper ¬gapped proper carry xs ⟧
+    ≡⟨ ... n+-Proper-toℕ ... ⟩
+        Digit-toℕ leftover o + (Digit-toℕ carry o + ⟦ xs ⟧) * suc b
+    ≡⟨ ... property ... ⟩
+        Digit-toℕ x o + ⟦ x' ∷ xs ⟧
+    ∎
+\end{lstlisting}
+
+\subsubsection{Generalizing \lstinline|n+-Proper| to all Systems}
+
+By imposing the condition of continuity, we exclude systems that are not
+acceptable for \lstinline|n+-Proper|.
+
+\begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
+n+ : ∀ {b d o}
+    → {cont : True (Continuous? b d o)}
+    → (n : Digit d)
+    → (xs : Numeral b d o)
+    → Numeral b d o
+n+ {b} {d} {o}      n xs with numView b d o
+n+ {_} {_} {_} {()} n xs | NullBase d o
+n+ {_} {_} {_}      n xs | NoDigits b o = NoDigits-explode xs
+n+ {_} {_} {_} {()} n xs | AllZeros b
+n+ {_} {_} {_}      n xs | Proper b d o proper with Gapped#0? b d o
+n+ {_} {_} {_} {()} n xs | Proper b d o proper | yes gapped#0
+n+ {_} {_} {_}      n xs | Proper b d o proper | no ¬gapped#0
+    = n+-Proper ¬gapped#0 proper n xs
+\end{lstlisting}
+
+The proof of the correctness of \lstinline|n+-toℕ| also follows the same pattern.
+
+\begin{lstlisting}
+n+-toℕ : ∀ {b d o}
+    → {cont : True (Continuous? b d o)}
+    → (n : Digit d)
+    → (xs : Numeral b d o)
+    → ⟦ n+ {cont = cont} n xs ⟧ ≡ Digit-toℕ n o + ⟦ xs ⟧
+\end{lstlisting}
+
+\subsubsection{Implmentation of the Addition Function}
+
+First, we define the addition function on systems of \lstinline|Proper| with
+the one-sided addition function \lstinline|n+-Proper|.
+
+\begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
++-Proper : ∀ {b d o}
+    → (¬gapped : ¬ (Gapped#0 b d o))
+    → (proper : suc d + o ≥ 2)
+    → (xs ys : Numeral (suc b) (suc d) o)
+    → Numeral (suc b) (suc d) o
++-Proper ¬gapped proper (x ∙)    ys       = n+-Proper ¬gapped proper x ys
++-Proper ¬gapped proper (x ∷ xs) (y ∙)    = n+-Proper ¬gapped proper y (x ∷ xs)
++-Proper {b} {d} {o} ¬gapped proper (x ∷ xs) (y ∷ ys)
+    with sumView b d o ¬gapped proper x y
++-Proper ¬gapped proper (x ∷ xs) (y ∷ ys) | NoCarry leftover property
+    = leftover ∷ +-Proper ¬gapped proper xs ys
++-Proper ¬gapped proper (x ∷ xs) (y ∷ ys) | Fixed leftover carry property
+    = leftover ∷ n+-Proper ¬gapped proper carry (+-Proper ¬gapped proper xs ys)
++-Proper ¬gapped proper (x ∷ xs) (y ∷ ys) | Floating leftover carry property
+    = leftover ∷ n+-Proper ¬gapped proper carry (+-Proper ¬gapped proper xs ys)
+\end{lstlisting}
+
+By generalizing \lstinline|+-Proper| to all continuous numeral systems,
+the addition function we have been long for can be implemented as follows.
+
+\begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
+_+_ : ∀ {b d o}
+    → {cont : True (Continuous? b d o)}
+    → (xs ys : Numeral b d o)
+    → Numeral b d o
+_+_ {b} {d} {o}  xs ys with numView b d o
+_+_ {cont = ()}   xs ys | NullBase d o
+_+_ {cont = cont} xs ys | NoDigits b o = NoDigits-explode xs
+_+_ {cont = ()}   xs ys | AllZeros b
+_+_ {cont = cont} xs ys | Proper b d o proper with Gapped#0? b d o
+_+_ {cont = ()}   xs ys | Proper b d o proper | yes ¬gapped#0
+_+_ {cont = cont} xs ys | Proper b d o proper | no ¬gapped#0
+    = +-Proper ¬gapped#0 proper xs ys
+\end{lstlisting}
+
+\subsubsection{Properties of the Addition Function}
+
+We can prove that the evaluation function \lstinline|⟦_⟧| is a homomorphism
+between \lstinline|Numeral| and \lstinline|ℕ| that preserves their addition
+functions.
+
+\begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
+toℕ-+-homo : ∀ {b d o}
+    → (cont : True (Continuous? b d o))
+    → (xs ys : Numeral b d o)
+    → ⟦ _+_ {cont = cont} xs ys ⟧ ≡ ⟦ xs ⟧ + ⟦ ys ⟧
+\end{lstlisting}
+
+The proofs are skipped for brevity.
+\footnote{about 100 lines of code and reasoning.}
+
+\end{document}

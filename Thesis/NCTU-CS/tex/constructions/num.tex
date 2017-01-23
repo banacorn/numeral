@@ -1,0 +1,215 @@
+\providecommand{\main}{../..}
+\documentclass[\main/thesis.tex]{subfiles}
+\begin{document}
+
+\section{Num: a representation for positional numeral systems}\label{num}
+
+\subsection{Definition}
+
+Numerals of positional numeral systems are composed of sequences of digits.
+Consequently the definition of {\lstinline|Numeral|} will be similar to that of
+{\lstinline|List|},
+except that a {\lstinline|Numeral|} must contain at least one digit while a list
+may contain no elements at all.
+The most significant digit is placed near {\lstinline|_∙|} while the least
+significant digit is placed at the end of the sequence.
+
+{\lstinline|Numeral|} has three indices, which corresponds to the three
+generalizations we have introduced.
+
+\begin{lstlisting}
+infixr 5 _∷_
+
+data Numeral : (b d o : ℕ) → Set where
+    _∙  : ∀ {b d o} → Digit d → Numeral b d o
+    _∷_ : ∀ {b d o} → Digit d → Numeral b d o → Numeral b d o
+\end{lstlisting}
+
+The decimal number ``2016'' for example can be represented as:
+
+\begin{lstlisting}
+MMXVI : Numeral 10 10 0
+MMXVI = # 6 ∷ # 1 ∷ # 0 ∷ (# 2) ∙
+\end{lstlisting}
+%
+where {\lstinline|#_ : ∀ m {n} {m<n : True (suc m ≤? n)} → Fin n|} converts from
+{\lstinline|ℕ|} to {\lstinline|Fin n|} provided that the number is small enough.
+
+\lstinline|lsd| extracts the least significant digit of a numeral.
+
+\begin{lstlisting}
+lsd : ∀ {b d o} → (xs : Numeral b d o) → Digit d
+lsd (x ∙   ) = x
+lsd (x ∷ xs) = x
+\end{lstlisting}
+
+\subsection{Converting to natural numbers}
+
+Converting to natural numbers is fairly trivial.
+
+\begin{lstlisting}
+⟦_⟧ : ∀ {b d o} → (xs : Numeral b d o) → ℕ
+⟦_⟧ {_} {_} {o} (x ∙)    = Digit-toℕ x o
+⟦_⟧ {b} {_} {o} (x ∷ xs) = Digit-toℕ x o + ⟦ xs ⟧ * b
+\end{lstlisting}
+
+\section{Dissecting Numeral Systems with Views}\label{views}
+
+There are many kinds of numeral systems inhabit in {\lstinline|Numeral|}.
+These systems have different interesting properties that should be treated
+differently, so we sort them into \textbf{four categories} accordingly.
+
+\paragraph{Systems with no digits at all}
+
+The number of digits of a system is determined by the index {\lstinline|d|}.
+If {\lstinline|d|} happens to be $ 0 $, then there will be no digits in any of
+these systems. Although they seem useless, these systems have plenty of properties.
+Since there are not digits at all, any property that is related to digits would
+hold vacuously.
+
+\paragraph{Systems with base $0$}
+
+If {\lstinline|b|}, the base of a system, happens to be $ 0 $,
+then only the least significant digit would have effects on the evaluation,
+because the rest of the digits would diminish into nothing.
+
+\begin{lstlisting}
+⟦ x ∙    ⟧ = Digit-toℕ x o
+⟦ x ∷ xs ⟧ = Digit-toℕ x o + ⟦ xs ⟧ * 0
+\end{lstlisting}
+
+\paragraph{Systems with only zeros}
+
+Consider when {\lstinline|d|} is set to $ 1 $ and {\lstinline|o|} set to $ 0 $.
+There will be one digit. however, the only digit can only be assigned to $ 0 $.
+
+\begin{lstlisting}
+0, 00, 000, 0000, ...
+\end{lstlisting}
+
+As a result, every numeral would evaluate to $ 0 $ regardless of the base.
+
+\paragraph{``Proper'' systems}
+
+The rest of systems that does not fall into any of the categories above
+are considered \textit{proper}.
+
+\subsection{Categorizing Systems}
+
+These ``categories'' are represented with a datatype called {\lstinline|NumView|}
+that is indexed by the three indices: {\lstinline|b|}, {\lstinline|d|}, and {\lstinline|o|}.
+
+\begin{lstlisting}
+data NumView : (b d o : ℕ) → Set where
+    NullBase    : ∀   d o → NumView 0       (suc d) o
+    NoDigits    : ∀ b o   → NumView b       0       o
+    AllZeros    : ∀ b     → NumView (suc b) 1       0
+    Proper      : ∀ b d o → (proper : suc d + o ≥ 2)
+                          → NumView (suc b) (suc d) o
+\end{lstlisting}
+
+By pattern matching on indices, different configurations of indices are sorted into
+different {\lstinline|NumView|}s.
+
+\begin{lstlisting}
+numView : ∀ b d o → NumView b d o
+numView b       zero          o       = NoDigits b o
+numView zero    (suc d)       o       = NullBase d o
+numView (suc b) (suc zero)    zero    = AllZeros b
+numView (suc b) (suc zero)    (suc o) = Proper b zero (suc o) _
+numView (suc b) (suc (suc d)) o       = Proper b (suc d) o _
+\end{lstlisting}
+
+Together with \textit{with-abstractions}, we can, for example, define a function
+to determine whether a numeral system is interesting or not:
+
+\begin{lstlisting}
+interesting : ∀ b d o → Bool
+interesting b d o with numView b d o
+interesting _ _ _ | NullBase d o         = false
+interesting _ _ _ | NoDigits b o         = false
+interesting _ _ _ | AllZeros b           = false
+interesting _ _ _ | Proper b d o proper  = true
+\end{lstlisting}
+
+As we can see, the function {\lstinline|numView|} does more than sorting indices
+into different categories. It also reveals relevant information and properties
+about these categories. For instance, if a system {\lstinline|Numeral b d o|}
+is classified as \textit{Proper}, then we know that:
+
+\begin{itemize}
+    \item {\lstinline|b|} is greater than $ 0 $.
+    \item {\lstinline|d|} is also greater than $ 0 $.
+    \item {\lstinline|o|} can be any value as long as {\lstinline|d + o ≥ 2|};
+        we name this requirement \textit{proper}.
+\end{itemize}
+
+\subsection{Views}
+
+The sole purpose of {\lstinline|NumView|} is to sort out and expose some
+interesting properties about its indices.
+Such datatypes are called \textit{views}\cite{wadler1987views} as they present
+different aspects of the same object.
+Functions like {\lstinline|numView|} are called \textit{view functions} or
+\textit{eliminators}\cite{mcbride2004views} because they provide different ways
+of eliminating a datatype.
+
+Views are \textbf{reusable} as they free us from having to pattern match on the
+same indices or data again and again. On the other hand, they can be customized
+to our needs since they are just \textit{ordinary functions}.
+We will define more views and use them extensively in the coming sections.
+
+\section{Properties of each Category}
+
+\paragraph{NoDigits}
+
+Although systems with no digits have no practical use,
+they are pretty easy to deal with because all properties related to digits would
+hold unconditionally for systems of {\lstinline|NoDigits|}.
+This is proven by deploying \textit{the principle of explosion}.
+
+\begin{lstlisting}
+NoDigits-explode : ∀ {b o a} {Whatever : Set a}
+    → (xs : Numeral b 0 o)
+    → Whatever
+NoDigits-explode (() ∙   )
+NoDigits-explode (() ∷ xs)
+\end{lstlisting}
+
+\paragraph{NullBase}
+
+The theorem below states that, evaluating a numeral of {\lstinline|NullBase|}
+would results the same value as evaluating its least significant digit.
+
+\begin{lstlisting}
+toℕ-NullBase : ∀ {d o}
+    → (x : Digit d)
+    → (xs : Numeral 0 d o)
+    → ⟦ x ∷ xs ⟧ ≡ Digit-toℕ x o
+toℕ-NullBase {d} {o} x xs =
+    begin
+        Digit-toℕ x o + ⟦ xs ⟧ * 0
+    ≡⟨ cong (λ w → Digit-toℕ x o + w) (*-right-zero ⟦ xs ⟧) ⟩
+        Digit-toℕ x o + 0
+    ≡⟨ +-right-identity (Digit-toℕ x o) ⟩
+        Digit-toℕ x o
+    ∎
+\end{lstlisting}
+
+\paragraph{AllZeros}
+
+The theorem below states every numeral of {\lstinline|AllZeros|}
+would evaluate to $ 0 $ regardless of the base.
+We pattern match on the digit to eliminate other possible cases to exploit the
+fact that there is only one digit in such numerals.
+
+\begin{lstlisting}
+toℕ-AllZeros : ∀ {b} → (xs : Numeral b 1 0) → ⟦ xs ⟧ ≡ 0
+toℕ-AllZeros     (z    ∙   ) = refl
+toℕ-AllZeros     (s () ∙   )
+toℕ-AllZeros {b} (z    ∷ xs)
+    = cong (λ w → w * b) (toℕ-AllZeros xs)
+toℕ-AllZeros     (s () ∷ xs)
+\end{lstlisting}
+
+\end{document}
