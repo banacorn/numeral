@@ -12,7 +12,8 @@ each has a different configuration of indices.
 Here, we name the function that converts natural numbers to corresponding
 numerals \lstinline|fromℕ|.
 
-\begin{center}
+\begin{figure}[H]
+    \centering
     \begin{tikzpicture}
         \matrix (m) [matrix of nodes,row sep=6em,column sep=8em,minimum width=4em]
             {
@@ -27,7 +28,9 @@ numerals \lstinline|fromℕ|.
                 ($(m-1-1.east)+(0,-0.1)$)
             ;
     \end{tikzpicture}
-\end{center}
+\caption{Converting between natural numbers and numerals}
+\label{figure:31}
+\end{figure}
 
 Because \lstinline|fromℕ| should behave like an inverse function of \lstinline|⟦_⟧|,
 the codomain of \lstinline|⟦_⟧| should be the domain of \lstinline|fromℕ|.
@@ -40,7 +43,8 @@ Natural numbers such as $ 5 $ or $ 6 $ cannot be converted to
 \lstinline|Numeral 10 5 0| because its evaluation function \lstinline|⟦_⟧|
 is not surjective.
 
-\begin{center}
+\begin{figure}[H]
+    \centering
     \begin{adjustbox}{max width=\textwidth}
         \begin{tikzpicture}
 
@@ -70,7 +74,9 @@ is not surjective.
             \node[scale=1.5] at (-3, -2) {\lstinline|ℕ|};
         \end{tikzpicture}
     \end{adjustbox}
-\end{center}
+\caption{Not all systems are surjective}
+\label{figure:32}
+\end{figure}
 
 \subsection{Domains of \lstinline|fromℕ|}
 
@@ -79,7 +85,8 @@ possess surjective evaluation functions.
 For a system to be surjective, in addition of being continuous, its numerals
 would also have to be able to cover every natural number, including ``0''.
 
-\begin{center}
+\begin{figure}[H]
+    \centering
     \begin{adjustbox}{max width=\textwidth}
         \begin{tikzpicture}
 
@@ -101,7 +108,10 @@ would also have to be able to cover every natural number, including ``0''.
             \node[below, scale=1.2] at (0.5, -2) {$0$};
         \end{tikzpicture}
     \end{adjustbox}
-\end{center}
+\caption{Surjective evaluation}
+\label{figure:33}
+\end{figure}
+
 
 Therefore, the index $o$ can only be $0$ because that is where the least
 numeral starts counting from. We can convert all natural numbers to such systems
@@ -125,7 +135,8 @@ If we make \lstinline|fromℕ| a partial function, allowing it to convert only
 a subset of natural numbers that are greater than $ o $ instead of $ 0 $,
 then much more numeral systems will be applicable for \lstinline|fromℕ|.
 
-\begin{center}
+\begin{figure}[H]
+    \centering
     \begin{adjustbox}{max width=\textwidth}
         \begin{tikzpicture}
 
@@ -148,7 +159,10 @@ then much more numeral systems will be applicable for \lstinline|fromℕ|.
 
         \end{tikzpicture}
     \end{adjustbox}
-\end{center}
+\caption{``Partially surjective'' evaluation}
+\label{figure:34}
+\end{figure}
+
 
 Besides, functions and predicates such as \lstinline|+1| and
 \lstinline|Continuous| will still be useful;
@@ -184,7 +198,8 @@ However, there are other possible choices of the domain.
 Consider \lstinline|Numeral 1 1 2|, a unary system with only one digit
 that is ``2''.
 
-\begin{center}
+\begin{figure}[H]
+    \centering
     \begin{adjustbox}{max width=\textwidth}
         \begin{tikzpicture}
 
@@ -205,7 +220,9 @@ that is ``2''.
             }
         \end{tikzpicture}
     \end{adjustbox}
-\end{center}
+\caption{Other kinds of domain}
+\label{figure:35}
+\end{figure}
 
 Such a numeral system can represent all even numbers except for zero.
 To convert natural numbers to \lstinline|Numeral 1 1 2|, we can devise a

@@ -74,7 +74,8 @@ easy to be determined.
 Let's start with the easier case, we can know for sure that when the first gap
 \lstinline|Gapped#0| is open, the system must not be continuous.
 
-\begin{center}
+\begin{figure}[H]
+    \centering
     \begin{adjustbox}{max width=\textwidth}
         \begin{tikzpicture}
             % the frame
@@ -102,7 +103,10 @@ Let's start with the easier case, we can know for sure that when the first gap
             \node at (10.5, -1.3) {the first gap};
         \end{tikzpicture}
     \end{adjustbox}
-\end{center}
+\caption{The first gap}
+\label{figure:29}
+\end{figure}
+
 
 We construct the first endpoint with the greatest digit.
 
@@ -265,7 +269,8 @@ we can use it to increment a numeral.
 
 A numeral taking these two routes should result in the same {{\lstinline|ℕ|}}.
 
-\begin{center}
+\begin{figure}[H]
+    \centering
     \begin{tikzpicture}
         \matrix (m) [matrix of nodes,row sep=6em,column sep=8em,minimum width=4em]
             {
@@ -281,7 +286,9 @@ A numeral taking these two routes should result in the same {{\lstinline|ℕ|}}.
             (m-1-2)
                 edge node [right] {{\lstinline|⟦_⟧|}} (m-2-2);
     \end{tikzpicture}
-\end{center}
+\caption{\lstinline|⟦_⟧| preserves the successor function}
+\label{figure:30}
+\end{figure}
 
 The proof also comes for free from \lstinline|Continuous| as part of its
 definition.

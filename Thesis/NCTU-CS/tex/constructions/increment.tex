@@ -22,7 +22,8 @@ differs by only $ 1 $.
 For example, we have seen from the previous section that numerals of
 \lstinline|GappedEndpoint| of systems of \lstinline|Proper| have no successors.
 
-\begin{center}
+\begin{figure}[H]
+    \centering
     \begin{adjustbox}{max width=\textwidth}
         \begin{tikzpicture}
             % the frame
@@ -60,7 +61,9 @@ For example, we have seen from the previous section that numerals of
 
         \end{tikzpicture}
     \end{adjustbox}
-\end{center}
+\caption{The cause of gaps}
+\label{figure:26}
+\end{figure}
 
 Suppose we are to define a function called \lstinline|increment| that returns
 the successor of a given numeral.
@@ -111,8 +114,9 @@ This is proven by contradicting these two propositions:
 
 Numerals that are located in intervals of digit lines have successors.
 
-\begin{center}
-    \begin{adjustbox}{max width=\textwidth}
+\begin{figure}[H]
+    \centering
+        \begin{adjustbox}{max width=\textwidth}
         \begin{tikzpicture}
             % the frame
             \path[clip] (5.5, -1.5) rectangle (17.5, 1.5);
@@ -150,7 +154,9 @@ Numerals that are located in intervals of digit lines have successors.
 
         \end{tikzpicture}
     \end{adjustbox}
-\end{center}
+\caption{The case of intervals}
+\label{figure:27}
+\end{figure}
 
 We invoke \lstinline|next-numeral-Proper-Interval-lemma| to establish the
 successor relation between the given numeral and the next numeral.
@@ -178,7 +184,8 @@ Interval⇒Incrementable {b} {d} {o} xs ¬greatest proper
 
 Numerals that are located at gapped endpoints do not have successors.
 
-\begin{center}
+\begin{figure}[H]
+    \centering
     \begin{adjustbox}{max width=\textwidth}
         \begin{tikzpicture}
             % the frame
@@ -193,7 +200,9 @@ Numerals that are located at gapped endpoints do not have successors.
             };
         \end{tikzpicture}
     \end{adjustbox}
-\end{center}
+\caption{The case of gapped endpoints}
+\label{figure:27}
+\end{figure}
 
 \begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
 GappedEndpoint⇒¬Incrementable : ∀ {b d o}
@@ -245,7 +254,8 @@ However, the next numeral should only be greater than the given numeral
 
 Numerals that are located at ungapped endpoints also possess successors.
 
-\begin{center}
+\begin{figure}[H]
+    \centering
     \begin{adjustbox}{max width=\textwidth}
         \begin{tikzpicture}
             % the frame
@@ -270,7 +280,10 @@ Numerals that are located at ungapped endpoints also possess successors.
             \path[->, ultra thick] (C) edge[bend right] node {} (D);
         \end{tikzpicture}
     \end{adjustbox}
-\end{center}
+\caption{The case of ungapped endpoints}
+\label{figure:28}
+\end{figure}
+
 
 Similar to the case of \lstinline|Interval|, the key to the proof lies in the
 help of \lstinline|next-numeral-Proper-UngappedEndpoint-lemma|.
@@ -335,7 +348,8 @@ Incrementable? xs | no ¬max | Proper b d o proper
 The table below sums up whether a non-maximum numeral can be incremented in
 systems of each category.
 
-\begin{center}
+\begin{table}[H]
+    \centering
     \begin{adjustbox}{max width=\textwidth}
     \begin{tabular}{|c|c|c|c|c|c|}
         \hline
@@ -350,7 +364,11 @@ systems of each category.
         \hline
     \end{tabular}
     \end{adjustbox}
-\end{center}
+\caption{Summary of whether a non-maximum numeral can be incremented in
+systems of each category}
+\label{table:12}
+\end{table}
+
 
 Note that the decision of making numerals of \lstinline{NoDigits} incrementable
 is completely arbitrary as it will always hold vacuously.
