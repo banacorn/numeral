@@ -54,7 +54,8 @@ of $ 1 $.
 Let us see how to count to ten in the 1-2 binary system.
 \footnote{As a reminder, the order of non-decimal numerals are reversed.}
 
-\begin{center}
+\begin{table}[H]
+    \centering
     \begin{adjustbox}{max width=\textwidth}
     \begin{tabular}{ | l | l |}
     \textbf{Number} & \textbf{Numeral} \\
@@ -76,7 +77,9 @@ Let us see how to count to ten in the 1-2 binary system.
     10 & 221 \\
     \end{tabular}
     \end{adjustbox}
-\end{center}
+\caption{1-2 binary numeral system}
+\label{table:8}
+\end{table}
 
 There are no restrictions on the symbols of digits.
 But nonetheless, it is reasonable to choose symbols that match their assigned
@@ -163,7 +166,8 @@ with \textit{base}, \textit{offset}, and \textit{\#digit} taken into account.
 integers.
 }
 
-\begin{center}
+\begin{table}[H]
+    \centering
     \begin{adjustbox}{max width=\textwidth}
     \begin{tabular}{ | l | r | r | r | }
     \textbf{Numeral system} & \textbf{Base} & \textbf{\#Digit} & \textbf{Offset} \\
@@ -177,7 +181,10 @@ integers.
     Int64           & 2  & $ 2^{64} $ & 0 \\
     \end{tabular}
     \end{adjustbox}
-\end{center}
+\caption{Summary of indices of common numeral systems}
+\label{table:9}
+\end{table}
+
 
 Although we are now capable of expressing those numeral systems with just a few
 indices, there are also some unexpected inhabitants included in this representation.
@@ -185,16 +192,5 @@ There is always a trade-off between expressiveness and properties.
 
 We will explore the various types of numeral systems and define operations on
 them in the chapter~\ref{constructions}.
-
-% \subsection{Surjectiveness}
-% \subsection{Injectiveness}
-% \subsection{Continuity}
-%
-% We can immediately see that not every number can be represented by every numeral
-% system.
-%
-% Take the unary numerals for example, it has no notation for representing zero.
-% In fact, a system of offset $ n $ can only starts counting from $ n $.
-%
 
 \end{document}

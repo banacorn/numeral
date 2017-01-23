@@ -115,7 +115,8 @@ of a numeral system.
 The ubiquitous decimal numeral system as we know has the base of 10,
 while the binaries that can be found in our machines nowadays has the base of 2.
 
-\begin{center}
+\begin{table}[H]
+    \centering
     \begin{adjustbox}{max width=\textwidth}
     \begin{tabular}{ | l | l | *{16}{l} | }
     \textbf{Numeral system} & \textbf{Base}  & \multicolumn{16}{c |}{\textbf{Digits} } \\
@@ -127,8 +128,9 @@ while the binaries that can be found in our machines nowadays has the base of 2.
     \textbf{Assigned value}  & & \textbf{0} & \textbf{1} & \textbf{2} & \textbf{3} & \textbf{4} & \textbf{5} & \textbf{6} & \textbf{7} & \textbf{8} & \textbf{9} & \textbf{10} & \textbf{11} & \textbf{12} & \textbf{13} & \textbf{14} & \textbf{15} \\
     \end{tabular}
     \end{adjustbox}
-\end{center}
-
+\caption{Numeral systems of different bases}
+\label{table:5}
+\end{table}
 
 A numeral system of base $n$ has exactly $n$ digits, which are assigned values
 from $0$ to $n-1$.
@@ -169,7 +171,8 @@ every numeral would evaluate to zero as a result.
 The definition of digit assignments can be modified to allow unary digits to
 start counting from $ 1 $.
 
-\begin{center}
+\begin{table}[H]
+    \centering
     \begin{adjustbox}{max width=\textwidth}
     \begin{tabular}{ | l | l | *{16}{l} | }
     \textbf{Numeral system} & \textbf{Base}  & \multicolumn{16}{c |}{\textbf{Digits} } \\
@@ -182,7 +185,9 @@ start counting from $ 1 $.
     \textbf{Assigned value}  & & \textbf{0} & \textbf{1} & \textbf{2} & \textbf{3} & \textbf{4} & \textbf{5} & \textbf{6} & \textbf{7} & \textbf{8} & \textbf{9} & \textbf{10} & \textbf{11} & \textbf{12} & \textbf{13} & \textbf{14} & \textbf{15} \\
     \end{tabular}
     \end{adjustbox}
-\end{center}
+\caption{Numeral systems of different bases (with unary numerals)}
+\label{table:6}
+\end{table}
 
 However, the representation for numeral systems would have to be generalized to
 manage the inconsistency of digit assignment among systems of different bases.
@@ -201,29 +206,33 @@ them
 
 Suppose we are asked to anwser the questions below.
 
-\vspace{15pt}
-\noindent\begin{minipage}{.45\textwidth}
-    \begin{center}
-        \begin{tabular}{c@{\,}c@{\,}c@{\,}c@{\,}c@{\,}c@{\,}c@{\,}c@{\,}c@{\,}c}
-          & 2 & 5 & 3 & 2 & 9 & 8 & 1 & 2 & 3 \\
-        + & 3 & 4 & 7 & 8 & 4 & 4 & 2 & 3 & 5 \\
-        \hline
-          &   &   &   &   &   &   &   &   & ? \\
-        %   & 6 & 0 & 1 & 1 & 4 & 2 & 3 & 5 & 8 \\
-        \end{tabular}
-    \end{center}
-\end{minipage}\hfill
-\begin{minipage}{.48\textwidth}
-    \begin{center}
-        \begin{tabular}{c@{\,}c@{\,}c@{\,}c}
-              & 1 & 2 & 3 \\
-            + &   & 3 & 4 \\
+\begin{figure}[H]
+    \vspace{15pt}
+    \noindent\begin{minipage}{.45\textwidth}
+        \begin{center}
+            \begin{tabular}{c@{\,}c@{\,}c@{\,}c@{\,}c@{\,}c@{\,}c@{\,}c@{\,}c@{\,}c}
+              & 2 & 5 & 3 & 2 & 9 & 8 & 1 & 2 & 3 \\
+            + & 3 & 4 & 7 & 8 & 4 & 4 & 2 & 3 & 5 \\
             \hline
-              &   &   & ? \\
-        \end{tabular}
-    \end{center}
-\end{minipage}
-\vspace{15pt}
+              &   &   &   &   &   &   &   &   & ? \\
+            %   & 6 & 0 & 1 & 1 & 4 & 2 & 3 & 5 & 8 \\
+            \end{tabular}
+        \end{center}
+    \end{minipage}\hfill
+    \begin{minipage}{.48\textwidth}
+        \begin{center}
+            \begin{tabular}{c@{\,}c@{\,}c@{\,}c}
+                  & 1 & 2 & 3 \\
+                + &   & 3 & 4 \\
+                \hline
+                  &   &   & ? \\
+            \end{tabular}
+        \end{center}
+    \end{minipage}
+    \vspace{15pt}
+\caption{Example of long additions}
+\label{figure:1}
+\end{figure}
 
 It would take much more effort to perform long addition and anwser the question
 on the left, because it has greater numbers. The greater a number is,
@@ -286,7 +295,8 @@ a homomorphism from lists to unary numbers, does.
     txt/.style = {circle}
 }
 
-\begin{center}
+\begin{figure}[H]
+    \centering
     \begin{tikzpicture}[edge from parent/.style = {draw, -latex}]
         \node[cons]{cons}
             child[grow=right] {node[cons]{cons}
@@ -303,7 +313,9 @@ a homomorphism from lists to unary numbers, does.
             }
             child[grow=down] {node[txt]{suc} edge from parent[-, dashed]};
     \end{tikzpicture}
-\end{center}
+\caption{Structure of lists and unary numerals}
+\label{figure:2}
+\end{figure}
 
 Now let's compare addition on unary numbers and merge (append) on lists:
 
@@ -329,12 +341,13 @@ and lists both have the same time complexity. Incrementing a unary number takes
 $ O(1) $, inserting an element into a list also takes $ O(1) $; adding two unary
 numbers takes $ O(n) $, appending a list to another also takes $ O(n) $.
 
-\paragraph{binomial heaps and binary numbers}
+\paragraph{binomial heaps and binary numerals}
 
-If we look at implementations and operations of binary numbers and binomial
+If we look at implementations and operations of binary numerals and binomial
 heaps, the resemblances are also uncanny.
 
-\begin{center}
+\begin{figure}[H]
+    \centering
     \begin{tikzpicture}[
         edge from parent/.style = {draw, -latex},
         node distance=40pt
@@ -365,7 +378,9 @@ heaps, the resemblances are also uncanny.
                 }
             };
     \end{tikzpicture}
-\end{center}
+\caption{Structure of binomial heaps and binary numerals}
+\label{figure:3}
+\end{figure}
 
 The figure above is a binomial heap containing $ 13 $ elements.
 \footnote{Nodes that contain elements are painted black.}
@@ -381,7 +396,8 @@ Single cells in lists and binomial trees in binomial heaps are all different
 kind of simple data structures that are called \textit{building blocks}.
 There are also other kinds of building blocks, such as perfect leaf trees.
 
-\begin{center}
+\begin{figure}[H]
+    \centering
     \begin{tikzpicture}[
         edge from parent/.style = {draw, -latex},
         level/.style={sibling distance = 80pt/#1},
@@ -409,7 +425,9 @@ There are also other kinds of building blocks, such as perfect leaf trees.
                 }
             };
     \end{tikzpicture}
-\end{center}
+\caption{A Perfect leaf tree of rank 3}
+\label{figure:4}
+\end{figure}
 
 These building blocks can have different ranks.
 A binary leaf tree of rank n, for instance, would contain $ 2^n $ elements.
@@ -435,7 +453,8 @@ the tallest perfect leaf tree takes at most $ O(lglg n) $ to traverse.
         font=\scriptsize,
         isosceles triangle, shape border rotate=90}
 }
-\begin{center}
+\begin{figure}[H]
+    \centering
     \begin{tikzpicture}[
         edge from parent/.style = {draw, -latex},
         node distance = 60pt
@@ -453,7 +472,9 @@ the tallest perfect leaf tree takes at most $ O(lglg n) $ to traverse.
                 { node[cltree, scale=1, yshift=20pt] {1} }
             };
     \end{tikzpicture}
-\end{center}
+\caption{A random access list with 13 elements}
+\label{figure:5}
+\end{figure}
 
 Similar to that of binomial heaps, random access lists also have spines.
 Also, treating building blocks as digits also yields binary numerals of the
@@ -466,7 +487,8 @@ suggests that numeral systems can serve as templates for designing containers.
 Such data structures are called \textbf{Numerical Representations}\cite{okasaki1996purely}
 \cite{hinze1998numerical}.
 
-\begin{center}
+\begin{table}[H]
+    \centering
     \begin{adjustbox}{max width=\textwidth}
     \begin{tabular}{ l l l }
     a container of size $ n $ & corresponds to & a numeral of $ n $ \\
@@ -475,7 +497,9 @@ Such data structures are called \textbf{Numerical Representations}\cite{okasaki1
     merging two containers    & corresponds to & adding two numerals \\
     \end{tabular}
     \end{adjustbox}
-\end{center}
+\caption{Correspondences of Numerical Representations}
+\label{table:7}
+\end{table}
 
 \paragraph{Problem}
 
@@ -483,7 +507,8 @@ Retrieving the first element ({\lstinline|head|}) of a list typically takes
 only constant time. On the other hand, it takes $ O(lg n) $ on random access lists.
 To illustrate the problem, consider a random access list with $ 32 $ elements:
 
-\begin{center}
+\begin{figure}[H]
+    \centering
     \begin{tikzpicture}[
         edge from parent/.style = {draw, -latex},
         node distance = 60pt
@@ -507,7 +532,10 @@ To illustrate the problem, consider a random access list with $ 32 $ elements:
                 }
             };
     \end{tikzpicture}
-\end{center}
+\caption{A random access list with 32 elements}
+\label{figure:6}
+\end{figure}
+
 
 To access any elements from the list above, we have to skip
 through four empty nodes before reaching the first building block.
@@ -519,7 +547,8 @@ then the number $ 32 $ can be represented as $ 21111 $ instead of $ 000001 $.
 By doing so, we eliminate empty nodes and shorten the spine, thus improving
 the performance of list traversal.
 
-\begin{center}
+\begin{figure}[H]
+    \centering
     \begin{tikzpicture}[
         edge from parent/.style = {draw, -latex},
     ]
@@ -548,7 +577,9 @@ the performance of list traversal.
                 { node[cltree, scale=0.8, below left = 28pt and 5pt of root] {1} }
             };
     \end{tikzpicture}
-\end{center}
+\caption{A 1-2 random access list with 32 elements}
+\label{figure:7}
+\end{figure}
 
 The data structure introduced above is called the \textit{1-2 random access list}.
 Its presence suggests that a binary numeral system with digits ``1'' and ``2''

@@ -1,6 +1,6 @@
 \documentclass[12pt,a4paper,oneside]{book}
 
-% \usepackage{authblk}
+\usepackage{authblk}
 % for unicode symbols
 \usepackage{fontspec}
 \setmonofont{DejaVu Sans Mono}
@@ -32,17 +32,17 @@
 \definecolor{light-gray}{gray}{0.9}
 \definecolor{airforceblue}{rgb}{0.36, 0.54, 0.66}
 \definecolor{alizarin}{rgb}{0.90, 0.30, 0.23}
-%
-% \usepackage{listings}
-% \lstset{ %
-%   % basicstyle=\ttfamily,              % the size of the fonts that are used for the code
-%   basicstyle=\ttfamily\footnotesize,              % the size of the fonts that are used for the code
-%   backgroundcolor=\color{light-gray},
-%   xleftmargin=0.5cm,
-%   frame=tlbr,
-%   framesep=10pt,
-%   framerule=0pt
-% }
+
+\usepackage{listings}
+\lstset{ %
+  % basicstyle=\ttfamily,              % the size of the fonts that are used for the code
+  basicstyle=\ttfamily\footnotesize,              % the size of the fonts that are used for the code
+  backgroundcolor=\color{light-gray},
+  xleftmargin=0.5cm,
+  frame=tlbr,
+  framesep=10pt,
+  framerule=0pt
+}
 
 % hyperlinked cross references
 \usepackage{hyperref}
@@ -71,17 +71,17 @@
 \let\Oldsubsection\subsection
 \renewcommand{\subsection}{\FloatBarrier\Oldsubsection}
 
-% source code hightlighting
-\usepackage{listings}
-\lstset{
-  numbers=left,
-  stepnumber=1,
-  firstnumber=1,
-  captionpos=b,
-  tabsize=2,
-  basicstyle=\small,
-  numberfirstline=true
-}
+% % source code hightlighting
+% \usepackage{listings}
+% \lstset{
+%   numbers=left,
+%   stepnumber=1,
+%   firstnumber=1,
+%   captionpos=b,
+%   tabsize=2,
+%   basicstyle=\small,
+%   numberfirstline=true
+% }
 
 % for multiple tex files
 \usepackage{subfiles}
@@ -97,8 +97,8 @@
 \renewcommand{\footrulewidth}{0pt}
 
 % setup bibliography
-\usepackage[sorting=none,backend=bibtex]{biblatex}
-\addbibresource{thesis.bib}
+% \usepackage[sorting=none,backend=bibtex]{biblatex}
+% \addbibresource{thesis.bib}
 
 % line height setting
 \linespread{1.5}
@@ -166,32 +166,26 @@
 
 \ActivateBG
 
-\input{abstract_chinese.tex}
-\input{abstract_english.tex}
+\frontmatter
+\subfile{abstract_chinese.tex}
+\subfile{abstract_english.tex}
 
 \tableofcontents
 \listoffigures
 \listoftables
+\mainmatter
 
 % \chapter{Introduction} \pagenumbering{arabic} % enabling page numbering
-
+% \pagenumbering{arabic}
 \subfile{tex/introduction.tex}
-
-
-\chapter{Background}
-
-\chapter{Design}
-
-\chapter{Implementation}
-
-\chapter{Evaluation}
-
-\chapter{Related Work}
-
-\chapter{Conclusion}
+\subfile{tex/generalizations.tex}
+\subfile{tex/agda.tex}
+% \subfile{tex/constructions.tex}
 
 \newpage
 
-\printbibliography[title={References}]
+% \printbibliography[title={References}]
+\bibliographystyle{abbrv}
+\bibliography{thesis}
 
 \end{document}
