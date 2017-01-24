@@ -1,3 +1,6 @@
+Thesis/NCTU-CS/docs/
+Thesis/chapters/
+
 dist
 cabal-dev
 *.o

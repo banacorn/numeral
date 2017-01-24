@@ -1,0 +1,92 @@
+1 Introduction 1
+1.1 Positional Numeral Systems .......................... 1
+1.1.1 Digits .................................. 1
+1.1.2 Syntaxand Semantics ......................... 2
+1.1.3 Evaluating Numerals.......................... 3
+1.2 Unary Numbers and Peano Numbers ..................... 3
+1.3 Binary Numerals in Digital Circults...................... 4
+1.4 Numerical representation............................ 5
+1.4.1 The correspondence .......................... 7
+1.5 Motivation and Outline ............................ 9
+2 Generalizations 10
+2.1 Base....................................... 10
+2.2 Offset ...................................... 10
+2.3 Number of Digits................................ 12
+2.4 Relations with Natural Numbers ....................... 13
+3 A gentle introduction to dependently typed programming in Agda 14
+3.1 Some basics................................... 14
+3.2 Simply typed programmingin Agda...................... 15
+4 Properties of Natural Numbers and Equational Reasoning 27
+4.1 Proving Equational Propositions ....................... 27
+4.2 Equational Reasoning ............................. 29
+4.2.1 Anatomy of Equational Reasoning .................. 30
+4.3 DecidableEquality on Natural Numbers ................... 31
+4.4 Preorder..................................... 32
+4.5 Preorderreasoning ............................... 32
+4.6 Decidable Preorder on Natural Numbers ................... 33
+4.7 Skipping trivial proofs ............................. 34
+4.8 Relevant Properties of Natural Numbers ................... 34
+4.8.1 Equational Propositions ........................ 34
+4.8.2 Relational Propositions ........................ 38
+5 Constructions 40
+5.1 Digit: the basic building block......................... 40
+5.1.1 Fin.................................... 40
+5.1.2 Definition of Digit........................... 41
+5.1.3 Digit Assignment............................ 41
+5.1.4 Functions on Digit........................... 43
+5.1.5 Special Digits.............................. 46
+5.2 Num: a representation for positional numeral systems . . . . . . . . . . . . 48
+5.2.1 Definition................................ 48
+5.2.2 Converting to natural numbers .................... 49
+5.3 Dissecting Numeral Systems with Views ................... 49
+5.3.1 Categorizing Systems.......................... 50
+5.3.2 Views .................................. 51
+5.4 Properties of each Category .......................... 51
+5.5 The Maximum Numeral ............................ 52
+5.5.1 Properties of each Category ...................... 53
+5.5.2 Determine the Maximum ....................... 55
+5.6 Systems with an Upper Bound ........................ 56
+5.6.1 Properties of each Category ...................... 56
+5.6.2 The Decidable Predicate........................ 57
+5.7 The Next Numeral ............................... 58
+5.7.1 What does it mean by “The Next”?.................. 58
+5.7.2 Implementation............................. 59
+5.7.3 Validating the Implementation .................... 60
+5.7.4 Outline ................................. 60
+5.7.5 The Next Numeral of NullBase .................... 61
+5.7.6 The Next Numeral of Proper ..................... 64
+5.7.7 Putting Everything Together ..................... 74
+5.8 Incrementing a Numeral ............................ 75
+5.8.1 Incrementable............................. 76
+5.8.2 Deciding Incrementable Numerals................... 79
+5.8.3 increment................................ 80
+5.8.4 Properties of increment........................ 81
+5.9 Continuous Systems .............................. 82
+5.9.1 Look no further than the Gaps .................... 83
+5.9.2 When the First Gap is Open ..................... 83
+5.9.3 When the First Gap is Closed..................... 85
+5.9.4 Determining Continuity ........................ 86
+5.9.5 SuccessorFunction........................... 87
+5.10 Converting from Natural Numbers ...................... 87
+5.10.1 Domains of fromN ........................... 88
+5.10.2 Other options of the domain of fromN ................ 90
+5.10.3 Properties of fromN........................... 91
+5.11 The Addition Function............................. 92
+5.11.1 Sum of Two Digits ........................... 92
+6 Translating Propositions and Proofs 97
+6.1 Universe Constructions............................. 98
+6.1.1 A Simple Universe ........................... 98
+6.1.2 Summary ................................100
+6.2 First-order Logic on the Representations of Natural Numbers . . . . . . . 100
+6.2.1 Syntax..................................100
+6.2.2 Codes for Syntax............................101
+6.2.3 Semantics................................102
+6.3 Converting between Semantics of N and Numeral. . . . . . . . . . . . . . . 105
+6.3.1 Terms..................................105
+6.3.2 Predicates................................106
+7 Discussion and Conclusion 110
+7.1 The Definitinon of Natural Numbers .....................110
+7.2 Nil of Numeral..................................110
+7.3 Numerical Representations and Ornaments..................111
+7.4 The Universeand Beyond ...........................111
+7.5 Conclusion....................................112

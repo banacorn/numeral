@@ -35,7 +35,8 @@ $ 0 $ seemed to be a good choice.
 However, this would result in a singular point on the number line,
 leaving properties such as \lstinline|Continuous| in a quandary.
 
-\begin{center}
+\begin{figure}[H]
+    \centering
     \begin{adjustbox}{max width=\textwidth}
         \begin{tikzpicture}
             % the frame
@@ -55,7 +56,9 @@ leaving properties such as \lstinline|Continuous| in a quandary.
                 node at (0.5, 1.3) {\lstinline|⟦ [] ⟧| $ = 0 $};
         \end{tikzpicture}
     \end{adjustbox}
-\end{center}
+\caption{The singularity introduced by the nil}
+\label{figure:41}
+\end{figure}
 
 Later, we came up with a predicate \lstinline|Null| to prevent \lstinline|[]|
 from being evaluated, but we realized that we can do just fine without
